@@ -19,13 +19,45 @@ interface PageProps {
 // Generate SEO meta tags dynamically
 export async function generateMetadata({ params }: PageProps) {
   try {
-    const { slug } = await params;
+    const { username, slug } = await params;
     await connectToDatabase();
     const note = await Note.findOne({ slug, published: true, isTrashed: false });
-    if (!note) return {};
+    if (!note) return { title: "Blog Not Found | Notexia", robots: { index: false } };
+
+    const title = note.seoTitle || note.title || "Untitled";
+    const description =
+      note.seoDescription ||
+      `Read "${title}" on Notexia — a smart study and publishing platform.`;
+    const url = `https://notexia.in/blog/${username}/${slug}`;
+
     return {
-      title: `${note.seoTitle || note.title} | Notexia Blog`,
-      description: note.seoDescription || "Read this article on Notexia",
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: {
+        title: `${title} | Notexia`,
+        description,
+        url,
+        type: "article",
+        siteName: "Notexia",
+        locale: "en_IN",
+        publishedTime: note.createdAt ? new Date(note.createdAt).toISOString() : undefined,
+        modifiedTime: note.updatedAt ? new Date(note.updatedAt).toISOString() : undefined,
+        images: [
+          {
+            url: "/opengraph-image",
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${title} | Notexia`,
+        description,
+        images: ["/opengraph-image"],
+      },
     };
   } catch {
     return { title: "Blog Post | Notexia" };
