@@ -66,6 +66,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },
+
+  // Ensure the uploads directory is included when using standalone output
+  outputFileTracingIncludes: {
+    "/**": ["./public/uploads/**"],
+  },
 };
 
 export default nextConfig;
