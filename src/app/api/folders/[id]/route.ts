@@ -66,14 +66,17 @@ export const DELETE = auth(async function DELETE(req, context) {
 
     await connectToDatabase();
 
+    const isAdmin = req.auth?.user?.role === "admin";
+    const query = isAdmin ? { _id: id } : { _id: id, userId };
+
     // Verify folder ownership
-    const folder = await Folder.findOne({ _id: id, userId });
+    const folder = await Folder.findOne(query);
     if (!folder) {
       return NextResponse.json({ error: "Folder not found." }, { status: 404 });
     }
 
     // Execute recursive cascade delete
-    await deleteFolderCascade(id, userId);
+    await deleteFolderCascade(id, folder.userId.toString());
 
     return NextResponse.json({ message: "Folder and all its contents deleted successfully." });
   } catch (error) {

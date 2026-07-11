@@ -17,19 +17,31 @@ interface Author {
 
 interface PostData {
   _id: string;
-  title: string;
-  slug: string;
-  tags: string[];
-  category: string;
+  type?: "note" | "community";
+  // Note specific
+  title?: string;
+  slug?: string;
+  tags?: string[];
+  category?: string;
   coverImage?: string;
   readingTime?: string;
-  wordCount: number;
-  upvotes: string[];
-  isPinned: boolean;
+  wordCount?: number;
+  upvotes?: string[];
+  isPinned?: boolean;
+  upvotesCount?: number;
+  commentsCount?: number;
+  author?: Author;
+  // Community specific
+  userId?: string;
+  userName?: string;
+  userImage?: string;
+  content?: string;
+  mediaUrl?: string;
+  mediaType?: string;
+  likes?: string[];
+  // Common
+  comments?: Record<string, unknown>[];
   createdAt: string;
-  upvotesCount: number;
-  commentsCount: number;
-  author: Author;
 }
 
 interface CommentNode {
@@ -89,20 +101,35 @@ export default function FeedPage() {
       });
 
       const res = await fetch(`/api/feed?${queryParams.toString()}`);
+      let fetchedNotes = [];
       if (res.ok) {
         const data = await res.json();
-        if (reset) {
-          setPosts(data);
-          pageRef.current = 2;
-        } else {
-          setPosts((prev) => [...prev, ...data]);
-          pageRef.current = pageRef.current + 1;
+        fetchedNotes = data.map((n: Record<string, unknown>) => ({ ...n, type: "note" }));
+      }
+      
+      let fetchedCommunity = [];
+      if (reset && (category === "" || category === "Community" || category === "Forum")) {
+        const cRes = await fetch(`/api/community`);
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          fetchedCommunity = cData.map((c: Record<string, unknown>) => ({ ...c, type: "community" }));
         }
-        if (data.length < 10) {
-          setHasMore(false);
-        } else {
-          setHasMore(true);
-        }
+      }
+
+      const merged = [...fetchedNotes, ...fetchedCommunity].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+      if (reset) {
+        setPosts(merged);
+        pageRef.current = 2;
+      } else {
+        setPosts((prev) => [...prev, ...merged].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+        pageRef.current = pageRef.current + 1;
+      }
+      
+      if (fetchedNotes.length < 10) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
       }
     } catch (e) {
       console.error(e);
@@ -140,14 +167,14 @@ export default function FeedPage() {
   };
 
   const handleShare = (post: PostData) => {
-    const permalink = `${window.location.origin}/blog/${post.author.name || "user"}/${post.slug}`;
+    const permalink = `${window.location.origin}/blog/${post.author?.name || "user"}/${post.slug}`;
     navigator.clipboard.writeText(permalink);
     showAlert("Link Copied", "Post permalink copied to clipboard!");
   };
 
   const handleBookmark = async (post: PostData) => {
     try {
-      const permalink = `${window.location.origin}/blog/${post.author.name || "user"}/${post.slug}`;
+      const permalink = `${window.location.origin}/blog/${post.author?.name || "user"}/${post.slug}`;
       const res = await fetch("/api/bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -206,7 +233,7 @@ export default function FeedPage() {
         setFollowingMap((prev) => ({ ...prev, [authorId]: data.isFollowing }));
         if (sort === "following" && !data.isFollowing) {
           // Remove unfollowed user's posts from active feed
-          setPosts((prev) => prev.filter((p) => p.author._id !== authorId));
+          setPosts((prev) => prev.filter((p) => p.author?._id !== authorId));
         }
       }
     } catch (e) {
@@ -279,7 +306,7 @@ export default function FeedPage() {
         // Increment commentsCount locally
         setPosts((prev) =>
           prev.map((p) =>
-            p._id === activeCommentsPostId ? { ...p, commentsCount: p.commentsCount + 1 } : p
+            p._id === activeCommentsPostId ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p
           )
         );
       }
@@ -465,30 +492,72 @@ export default function FeedPage() {
           ) : (
             <div className="space-y-6">
               {posts.map((post) => {
+                if (post.type === "community") {
+                   const isLiked = post.likes?.includes(currentUserId || "");
+                   return (
+                    <div key={post._id} className="glass glass-card-hover overflow-hidden p-6 space-y-5 transition-all duration-300">
+                      <div className="flex items-center gap-3 select-none">
+                        {post.userImage ? (
+                          <img src={post.userImage} alt={post.userName} className="h-9 w-9 rounded-full object-cover border border-neutral-800" />
+                        ) : (
+                          <div className="h-9 w-9 rounded-full bg-neutral-950 border border-neutral-850 flex items-center justify-center text-neutral-500 text-sm font-bold">
+                            {post.userName?.[0]?.toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <Link href={`/user/${post.userId}`}>
+                            <p className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors leading-tight" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                              {post.userName}
+                            </p>
+                          </Link>
+                          <p className="text-[10px] text-neutral-605 mt-0.5" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <div className="ml-auto flex items-center gap-2">
+                           <span className="text-[9px] bg-neutral-950 border border-cyan-400/30 text-cyan-400 font-bold px-2 py-0.5 rounded" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>#Community</span>
+                        </div>
+                      </div>
+                      
+                      <p className="text-neutral-300 text-sm leading-relaxed whitespace-pre-wrap">{post.content}</p>
+
+                      {post.mediaUrl && (
+                        <div className="flex items-center justify-start w-full">
+                          {post.mediaType === "image" ? (
+                            <img src={post.mediaUrl} alt="Post content" className="max-h-[300px] object-contain w-auto rounded-xl border border-neutral-900 bg-neutral-950/40" />
+                          ) : (
+                            <video src={post.mediaUrl} controls className="max-h-[300px] object-contain w-auto rounded-xl border border-neutral-900 bg-neutral-950/40" />
+                          )}
+                        </div>
+                      )}
+                    </div>
+                   );
+                }
+
                 const userHasUpvoted = post.upvotes?.includes(currentUserId);
-                const following = followingMap[post.author._id];
+                const following = followingMap[post.author?._id || ""];
 
                 // Lazy-fetch follow statuses
-                if (following === undefined && post.author._id !== currentUserId) {
-                  checkFollowStatus(post.author._id);
+                if (following === undefined && post.author?._id !== currentUserId && post.author) {
+                  checkFollowStatus(post.author?._id);
                 }
 
                 return (
                   <div key={post._id} className="glass glass-card-hover overflow-hidden p-6 space-y-5 transition-all duration-300">
                     {/* Card Header metadata */}
                     <div className="flex items-center justify-between select-none">
-                      <Link href={`/user/${post.author._id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                        {post.author.image ? (
+                      <Link href={`/user/${post.author?._id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                        {post.author?.image ? (
                           /* eslint-disable-next-line @next/next/no-img-element */
-                          <img src={post.author.image} alt={post.author.name} className="h-9 w-9 rounded-full object-cover border border-neutral-800" />
+                          <img src={post.author?.image} alt={post.author?.name} className="h-9 w-9 rounded-full object-cover border border-neutral-800" />
                         ) : (
                           <div className="h-9 w-9 rounded-full bg-neutral-950 border border-neutral-850 flex items-center justify-center text-neutral-500 text-sm font-bold">
-                            {post.author.name?.[0]?.toUpperCase()}
+                            {post.author?.name?.[0]?.toUpperCase()}
                           </div>
                         )}
                         <div>
                           <p className="text-xs font-bold text-neutral-200 leading-tight" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                            {post.author.name}
+                            {post.author?.name}
                           </p>
                           <p className="text-[10px] text-neutral-605 mt-0.5" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
                             {new Date(post.createdAt).toLocaleDateString()}
@@ -496,9 +565,9 @@ export default function FeedPage() {
                         </div>
                       </Link>
 
-                      {post.author._id !== currentUserId && (
+                      {post.author?._id !== currentUserId && (
                         <button
-                          onClick={() => handleFollowToggle(post.author._id)}
+                          onClick={() => handleFollowToggle(post.author?._id || "")}
                           className={`text-[9px] font-bold px-3 py-1 rounded-md transition-all border uppercase tracking-wider ${
                             following
                               ? "bg-neutral-950 border-neutral-850 text-neutral-500"
@@ -513,7 +582,7 @@ export default function FeedPage() {
 
                     {/* Card Body */}
                     <div className="space-y-2">
-                      <Link href={`/blog/${post.author.name || "user"}/${post.slug}`}>
+                      <Link href={`/blog/${post.author?.name || "user"}/${post.slug}`}>
                         <h2
                           className="text-sm font-bold text-neutral-100 hover:text-cyan-400 tracking-wide leading-snug cursor-pointer transition-colors"
                           style={{ fontFamily: "var(--font-space-grotesk)" }}
@@ -526,7 +595,7 @@ export default function FeedPage() {
                         <img src={post.coverImage} alt={post.title} className="w-full h-40 object-cover rounded-xl border border-neutral-900 shadow-md" />
                       )}
                       <div className="flex flex-wrap gap-1.5 select-none pt-1">
-                        {post.tags.map((t) => (
+                        {(post.tags || []).map((t) => (
                           <span
                             key={t}
                             onClick={() => setTag(t)}
@@ -648,7 +717,7 @@ export default function FeedPage() {
               Trending Topics
             </h3>
             <div className="flex flex-col gap-2.5">
-              {["Education", "Technology", "Lifestyle", "Science", "Writing"].map((tagItem) => (
+              {["Forum", "Community", "Blog", "Note", "Education", "Technology"].map((tagItem) => (
                 <button
                   key={tagItem}
                   onClick={() => setCategory(category === tagItem ? "" : tagItem)}

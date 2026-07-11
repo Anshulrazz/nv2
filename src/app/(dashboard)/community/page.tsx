@@ -11,6 +11,8 @@ import {
   Image as ImageIcon,
   Sparkles,
   X,
+  Trash2,
+  Edit3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,6 +56,14 @@ export default function CommunityPage() {
   const [mediaType, setMediaType] = useState<"image" | "video" | "">("");
   const [isUploading, setIsUploading] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
+
+  // Edit Post modal states
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [editPostId, setEditPostId] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editMediaUrl, setEditMediaUrl] = useState("");
+  const [editMediaType, setEditMediaType] = useState<"image" | "video" | "">("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Expanded comments and text inputs
   const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
@@ -143,6 +153,63 @@ export default function CommunityPage() {
     } finally {
       setIsPosting(false);
     }
+  };
+
+  const handleUpdatePost = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editContent.trim() || isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      const res = await fetch(`/api/community/${editPostId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: editContent.trim(),
+          mediaUrl: editMediaUrl || undefined,
+          mediaType: editMediaType || undefined,
+        }),
+      });
+
+      if (res.ok) {
+        setIsEditOpen(false);
+        fetchPosts();
+        showAlert("Updated!", "Your post has been updated successfully.");
+      } else {
+        const err = await res.json();
+        showAlert("Update Failed", err.error || "Could not update post.");
+      }
+    } catch (err) {
+      console.error(err);
+      showAlert("Update Error", "An error occurred while updating post.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+    try {
+      const res = await fetch(`/api/community/${postId}`, { method: "DELETE" });
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p._id !== postId));
+        showAlert("Deleted!", "Your post was deleted.");
+      } else {
+        const err = await res.json();
+        showAlert("Delete Failed", err.error || "Could not delete post.");
+      }
+    } catch (e) {
+      console.error(e);
+      showAlert("Delete Error", "An error occurred while deleting post.");
+    }
+  };
+
+  const openEditModal = (post: PostData) => {
+    setEditPostId(post._id);
+    setEditContent(post.content);
+    setEditMediaUrl(post.mediaUrl || "");
+    setEditMediaType((post.mediaType as "image" | "video" | "") || "");
+    setIsEditOpen(true);
   };
 
   const handleLikeToggle = async (postId: string) => {
@@ -256,6 +323,24 @@ export default function CommunityPage() {
                         {new Date(post.createdAt).toLocaleString()}
                       </p>
                     </div>
+                    {post.userId === currentUserId && (
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={() => openEditModal(post)}
+                          className="p-1.5 text-neutral-500 hover:text-cyan-400 hover:bg-neutral-900 rounded-lg transition-colors"
+                          title="Edit Post"
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(post._id)}
+                          className="p-1.5 text-neutral-500 hover:text-red-400 hover:bg-neutral-900 rounded-lg transition-colors"
+                          title="Delete Post"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Post Content */}
@@ -428,6 +513,129 @@ export default function CommunityPage() {
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
                     ) : (
                       <><Sparkles className="h-3.5 w-3.5" /><span>Post (+10 pts)</span></>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Post Modal Overlay */}
+      {isEditOpen && (
+        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsEditOpen(false)} />
+          <div className="relative z-10 bg-neutral-950/80 backdrop-blur-lg border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl shadow-black/50">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-800">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-4 w-4 text-cyan-400" />
+                <h2 className="text-sm font-bold text-neutral-100" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  Edit Community Post
+                </h2>
+              </div>
+              <button
+                onClick={() => setIsEditOpen(false)}
+                className="p-1 rounded-lg text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800 transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <form onSubmit={handleUpdatePost} className="p-6 space-y-4">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                placeholder="What's on your mind? Share knowledge, updates, or insights..."
+                rows={4}
+                required
+                autoFocus
+                className="w-full rounded-xl bg-neutral-950 border border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 p-3.5 text-xs focus:outline-none resize-none transition-colors"
+              />
+
+              {/* Media preview */}
+              {editMediaUrl && (
+                <div className="relative inline-flex items-center justify-start max-h-[200px]">
+                  {editMediaType === "image" ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={editMediaUrl} alt="Attached upload" className="max-h-[200px] object-contain w-auto rounded-xl border border-neutral-900 bg-neutral-950/40" />
+                  ) : (
+                    <video src={editMediaUrl} controls className="max-h-[200px] object-contain w-auto rounded-xl border border-neutral-900 bg-neutral-950/40" />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setEditMediaUrl(""); setEditMediaType(""); }}
+                    className="absolute top-2 right-2 bg-black/70 hover:bg-black text-red-400 p-1 rounded-lg border border-red-500/20 z-10"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              )}
+
+              {/* Footer actions */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-1 gap-3">
+                <label className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border border-neutral-850 bg-neutral-950 hover:bg-neutral-900 text-[10px] font-bold text-neutral-450 hover:text-white cursor-pointer select-none transition-all">
+                  {isUploading ? (
+                    <><Loader2 className="h-3.5 w-3.5 text-cyan-400 animate-spin" /><span>Uploading...</span></>
+                  ) : (
+                    <><ImageIcon className="h-3.5 w-3.5 text-cyan-400" /><span>Change Photo / Video</span></>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setIsUploading(true);
+                      try {
+                        const formData = new FormData();
+                        formData.append("file", file);
+                        const res = await fetch("/api/upload", { method: "POST", body: formData });
+                        if (res.ok) {
+                          const data = await res.json();
+                          setEditMediaUrl(data.url);
+                          const lower = file.name.toLowerCase();
+                          if (lower.endsWith(".mp4") || lower.endsWith(".webm") || lower.endsWith(".mov") || lower.endsWith(".ogg")) {
+                            setEditMediaType("video");
+                          } else {
+                            setEditMediaType("image");
+                          }
+                        } else {
+                          showAlert("Upload Failed", "Could not upload media file.");
+                        }
+                      } catch (err) {
+                        console.error(err);
+                        showAlert("Upload Error", "An error occurred while uploading media.");
+                      } finally {
+                        setIsUploading(false);
+                      }
+                    }}
+                    disabled={isUploading}
+                    className="hidden"
+                  />
+                </label>
+
+                <div className="flex gap-2 w-full sm:w-auto justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsEditOpen(false)}
+                    className="border-neutral-800 text-neutral-400 hover:text-white bg-neutral-950 hover:bg-neutral-900 text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isUpdating || isUploading || !editContent.trim()}
+                    className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 text-neutral-950 font-bold text-xs h-9 px-4 gap-1.5 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all"
+                    style={{ fontFamily: "var(--font-space-grotesk)" }}
+                  >
+                    {isUpdating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <><Sparkles className="h-3.5 w-3.5" /><span>Update Post</span></>
                     )}
                   </Button>
                 </div>

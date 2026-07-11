@@ -14,7 +14,9 @@ export const DELETE = auth(async function DELETE(req, context) {
 
     await connectToDatabase();
 
-    const result = await Forum.deleteOne({ _id: id, userId });
+    const isAdmin = req.auth?.user?.role === "admin";
+    const query = isAdmin ? { _id: id } : { _id: id, userId };
+    const result = await Forum.deleteOne(query);
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "Forum post not found or unauthorized." }, { status: 404 });
     }

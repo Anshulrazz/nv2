@@ -23,7 +23,8 @@ const securityHeaders = [
       "img-src 'self' data: blob: https:",
       "connect-src 'self' https://api.anthropic.com https://accounts.google.com",
       "frame-src 'self' https://accounts.google.com",
-      "object-src 'none'",
+      "object-src 'self'",
+      "media-src 'self' data: blob: https:",
       "base-uri 'self'",
       "form-action 'self'",
       "upgrade-insecure-requests",
@@ -37,6 +38,15 @@ const nextConfig: NextConfig = {
 
   async headers() {
     return [
+      {
+        source: "/uploads/:path*",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: securityHeaders,
