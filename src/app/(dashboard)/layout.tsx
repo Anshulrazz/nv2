@@ -22,6 +22,7 @@ import {
   ShieldAlert,
   Users,
   GraduationCap,
+  Presentation,
   Menu,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
@@ -155,9 +156,16 @@ export default async function DashboardLayout({
             <NavLink href="/forums"       icon={<MessageSquare   className="h-4 w-4" />} label="Forums"       accent="violet" />
             <NavLink href="/bookmarks"    icon={<Bookmark        className="h-4 w-4" />} label="Bookmarks"    accent="amber" />
             <NavLink href="/leaderboard"  icon={<Trophy          className="h-4 w-4" />} label="Leaderboard"  accent="yellow" />
+            <NavLink href="/courses"      icon={<Presentation    className="h-4 w-4" />} label="Courses"      accent="violet" />
             <NavLink href="/settings"     icon={<Settings        className="h-4 w-4" />} label="Settings"     accent="cyan" />
 
-            {user.role === "admin" && (
+            {(dbUser?.role === "teacher" || dbUser?.role === "admin") && (
+              <NavLink href="/teacher/courses" icon={<Presentation className="h-4 w-4" />} label="Teacher Dashboard" accent="yellow" />
+            )}
+            
+            <NavLink href={`/user/${user.id}`} icon={<UserIcon className="h-4 w-4" />} label="My Profile" accent="violet" />
+
+            {dbUser?.role === "admin" && (
               <NavLink href="/admin" icon={<ShieldAlert className="h-4 w-4" />} label="Admin Panel" accent="red" />
             )}
           </nav>
