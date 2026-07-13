@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import {
   BookOpen,
-  Sparkles,
+  
   Settings,
   LogOut,
   User as UserIcon,

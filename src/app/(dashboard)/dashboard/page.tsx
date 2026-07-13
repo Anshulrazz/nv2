@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BookOpen, Bookmark, HelpCircle, Trophy, ArrowUpRight, Loader2 } from "lucide-react";
+import { BookOpen, Trophy, ArrowUpRight, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { GraduationCap, Plus, Loader2, Download, Search, FileText, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { GraduationCap, Plus, Loader2, Download, Search, FileText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";

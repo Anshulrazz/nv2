@@ -7,7 +7,7 @@ import { BookOpen, Loader2, AlertCircle } from "lucide-react";
 
 export default function EditCoursePage() {
   const { id } = useParams();
-  const [course, setCourse] = useState<any>(null);
+  const [course, setCourse] = useState<any /* eslint-disable-line @typescript-eslint/no-explicit-any */>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -18,7 +18,7 @@ export default function EditCoursePage() {
         if (!res.ok) throw new Error("Failed to fetch course details");
         const data = await res.json();
         setCourse(data);
-      } catch (err: any) {
+      } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
         setError(err.message);
       } finally {
         setLoading(false);

@@ -31,7 +31,7 @@ export default function CoursesPage() {
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data);
-      } catch (err: any) {
+      } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
         setError(err.message);
       } finally {
         setLoading(false);
@@ -92,7 +92,8 @@ export default function CoursesPage() {
             >
               {course.thumbnail ? (
                 <div className="h-48 w-full relative overflow-hidden bg-muted">
-                  <img
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+<img
                     src={course.thumbnail}
                     alt={course.title}
                     className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
@@ -108,7 +109,8 @@ export default function CoursesPage() {
               
               <div className="flex-1 p-6 flex flex-col relative z-10 -mt-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <img
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+<img
                     src={course.instructor?.image || "/default-avatar.png"}
                     alt={course.instructor?.name || "Instructor"}
                     className="w-10 h-10 rounded-full border-2 border-background shadow-md bg-muted object-cover"

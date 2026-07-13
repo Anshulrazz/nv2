@@ -4,7 +4,7 @@ import { CourseProgress } from "@/models/CourseProgress";
 import { Course } from "@/models/Course";
 import { User } from "@/models/User";
 
-export const GET = async function GET(req: Request, { params }: { params: { id: string } }) {
+export const GET = async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: certificateId } = await params;
 

@@ -2,14 +2,14 @@
 
 import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, Download, Award, ShieldCheck } from "lucide-react";
+import { Loader2, AlertCircle, Download, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function CertificatePage() {
   const { id } = useParams();
   const router = useRouter();
   
-  const [cert, setCert] = useState<any>(null);
+  const [cert, setCert] = useState<Record<string, string> | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -22,8 +22,8 @@ export default function CertificatePage() {
         }
         const data = await res.json();
         setCert(data);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -91,7 +91,8 @@ export default function CertificatePage() {
             
             {/* Header / Logo */}
             <div className="mb-6 md:mb-10 mt-4 md:mt-6 flex flex-col items-center">
-              <img src="/logo.png" alt="Nottexia Logo" className="h-10 md:h-12 w-auto object-contain mb-3" onError={(e) => {
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+<img src="/logo.png" alt="Nottexia Logo" className="h-10 md:h-12 w-auto object-contain mb-3" onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
               }} />
               <h2 className="text-[9px] md:text-[11px] text-amber-800/80 uppercase tracking-[0.25em] font-medium text-center" style={{ fontFamily: "'Cinzel', serif" }}>
