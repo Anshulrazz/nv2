@@ -420,6 +420,7 @@ export default function AdminPage() {
                           style={{ fontFamily: "var(--font-space-grotesk)" }}
                         >
                           <option value="user">User</option>
+                          <option value="teacher">Teacher</option>
                           <option value="admin">Admin</option>
                         </select>
                       </div>

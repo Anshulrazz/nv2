@@ -56,7 +56,7 @@ export const PATCH = auth(async function PATCH(req) {
       targetUser.isSuspended = false;
       logDetail = `Unsuspended user account: ${targetUser.email}`;
     } else if (action === "role") {
-      if (!role || !["admin", "user"].includes(role)) {
+      if (!role || !["admin", "user", "teacher"].includes(role)) {
         return NextResponse.json({ error: "Invalid role." }, { status: 400 });
       }
       targetUser.role = role;
