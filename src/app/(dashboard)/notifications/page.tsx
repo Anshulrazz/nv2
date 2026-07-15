@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Bell, Heart, MessageSquare, UserPlus, Share2, Loader2, CheckSquare, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import Pusher from "pusher-js";
 
 interface NotificationData {
   _id: string;
@@ -18,6 +20,8 @@ interface NotificationData {
 
 export default function NotificationsPage() {
   const router = useRouter();
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
   const [list, setList] = useState<NotificationData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,6 +68,28 @@ export default function NotificationsPage() {
       markAllRead();
     });
   }, [fetchNotifications, markAllRead]);
+
+  // Real-time listener for new notifications
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || "YOUR_KEY", {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "YOUR_CLUSTER",
+    });
+
+    const channel = pusher.subscribe(`user-${currentUserId}`);
+    channel.bind("new-notification", (newNotif: NotificationData) => {
+      setList((prev) => {
+        if (prev.some((n) => n._id === newNotif._id)) return prev;
+        return [newNotif, ...prev];
+      });
+    });
+
+    return () => {
+      pusher.unsubscribe(`user-${currentUserId}`);
+      pusher.disconnect();
+    };
+  }, [currentUserId]);
 
   const getAlertIcon = (type: string) => {
     switch (type) {

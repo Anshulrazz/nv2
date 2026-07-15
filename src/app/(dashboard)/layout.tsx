@@ -26,6 +26,8 @@ import {
   Menu,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
+import { PusherListener } from "@/components/PusherListener";
+import { Toaster } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SidebarTree } from "@/components/sidebar/SidebarTree";
 import { NavLink } from "@/components/sidebar/NavLink";
@@ -72,6 +74,8 @@ export default async function DashboardLayout({
 
   return (
     <div className="relative h-screen bg-background text-foreground flex overflow-hidden cyber-grid">
+      <Toaster theme="dark" position="top-center" richColors />
+      <PusherListener />
       {/* ── Premium Background Glow Shapes ── */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#8FC3DE]/5 rounded-full filter blur-[120px] pointer-events-none select-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#F28B6E]/4 rounded-full filter blur-[150px] pointer-events-none select-none" />

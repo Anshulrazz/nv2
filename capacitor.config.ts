@@ -1,13 +1,13 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+  import type { CapacitorConfig } from '@capacitor/cli';
 
-const config: CapacitorConfig = {
-  appId: 'com.notexia.app',
-  appName: 'Notexia',
-  webDir: 'out',
-  server: {
-    url: 'https://notexia.in',
-    cleartext: false,
-  },
-};
+  const config: CapacitorConfig = {
+    appId: 'com.notexia.app',
+    appName: 'Notexia',
+    webDir: 'out',
+    server: {
+      url: 'https://notexia.in',
+      cleartext: false,
+    },
+  };
 
-export default config;
+  export default config;

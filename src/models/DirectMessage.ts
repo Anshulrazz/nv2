@@ -4,8 +4,11 @@ export interface IDirectMessage extends Document {
   senderId: mongoose.Types.ObjectId;
   receiverId: mongoose.Types.ObjectId;
   content: string;
-  mediaUrl?: string;
-  mediaType?: "image" | "video" | "file" | "";
+  attachments: {
+    url: string;
+    type: "image" | "video" | "file" | "";
+    name?: string;
+  }[];
   isRead: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -16,8 +19,13 @@ const DirectMessageSchema = new Schema<IDirectMessage>(
     senderId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     receiverId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     content: { type: String, default: "" },
-    mediaUrl: { type: String, default: "" },
-    mediaType: { type: String, default: "" },
+    attachments: [
+      {
+        url: { type: String, required: true },
+        type: { type: String, default: "" },
+        name: { type: String, default: "" },
+      },
+    ],
     isRead: { type: Boolean, default: false },
   },
   { timestamps: true }

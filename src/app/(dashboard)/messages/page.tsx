@@ -19,6 +19,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import Pusher from "pusher-js";
+import { Check, CheckCheck } from "lucide-react";
 
 interface UserProfile {
   _id: string;
@@ -27,13 +29,18 @@ interface UserProfile {
   email: string;
 }
 
+export interface Attachment {
+  url: string;
+  type: "image" | "video" | "file" | "";
+  name?: string;
+}
+
 interface MessageNode {
   _id: string;
   senderId: string;
   receiverId: string;
   content: string;
-  mediaUrl?: string;
-  mediaType?: "image" | "video" | "file" | "";
+  attachments?: Attachment[];
   isRead: boolean;
   createdAt: string;
 }
@@ -63,9 +70,7 @@ export default function MessagesPage() {
   const [isMessagesLoading, setIsMessagesLoading] = useState(false);
 
   // Media Attachment Upload
-  const [attachmentUrl, setAttachmentUrl] = useState("");
-  const [attachmentType, setAttachmentType] = useState<"image" | "video" | "file" | "">("");
-  const [attachmentName, setAttachmentName] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const [isRecipientTyping, setIsRecipientTyping] = useState(false);
@@ -115,6 +120,39 @@ export default function MessagesPage() {
       if (!silent) setIsMessagesLoading(false);
     }
   }, [fetchConversations]);
+
+
+  // Pusher Real-Time Integration
+  useEffect(() => {
+    if (!currentUserId) return;
+
+    const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY || "YOUR_KEY", {
+      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "YOUR_CLUSTER",
+    });
+
+    const channel = pusher.subscribe(`user-${currentUserId}`);
+
+    channel.bind("new-message", (newMsg: MessageNode) => {
+      fetchConversations();
+      if (activeUserIdRef.current && (newMsg.senderId === activeUserIdRef.current || newMsg.receiverId === activeUserIdRef.current)) {
+         setMessages(prev => {
+           if (prev.some(m => m._id === newMsg._id)) return prev;
+           return [...prev, newMsg];
+         });
+      }
+    });
+
+    channel.bind("messages-read", (data: { readerId: string }) => {
+      if (activeUserIdRef.current === data.readerId) {
+        setMessages((prev) => prev.map(m => ({ ...m, isRead: true })));
+      }
+    });
+
+    return () => {
+      pusher.unsubscribe(`user-${currentUserId}`);
+      pusher.disconnect();
+    };
+  }, [currentUserId, fetchConversations]);
 
   // Load from search parameters (e.g. redirected from profile "Message" button)
   useEffect(() => {
@@ -250,54 +288,51 @@ export default function MessagesPage() {
 
   // 4. Handle Media Uploads
   const handleMediaUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const uploadedAttachments: Attachment[] = [];
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        setAttachmentUrl(data.url);
-        setAttachmentName(file.name);
-
-        const lower = file.name.toLowerCase();
-        if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)$/)) {
-          setAttachmentType("image");
-        } else if (lower.match(/\.(mp4|webm|mov|ogg)$/)) {
-          setAttachmentType("video");
-        } else {
-          setAttachmentType("file");
+        if (res.ok) {
+          const data = await res.json();
+          const lower = file.name.toLowerCase();
+          let type: "image"|"video"|"file" = "file";
+          if (lower.match(/\.(jpeg|jpg|gif|png|webp|svg)$/)) type = "image";
+          else if (lower.match(/\.(mp4|webm|mov|ogg)$/)) type = "video";
+          
+          uploadedAttachments.push({ url: data.url, name: file.name, type });
         }
-      } else {
-        alert("Failed to upload file.");
       }
+      setAttachments(prev => [...prev, ...uploadedAttachments]);
     } catch (err) {
       console.error(err);
-      alert("Error uploading media file.");
+      alert("Error uploading media files.");
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   // 5. Send message
   const handleSendMessage = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim() && !attachmentUrl) return;
+    if (!inputText.trim() && attachments.length === 0) return;
     if (!activeUser) return;
 
     const payload = {
       receiverId: activeUser._id,
       content: inputText.trim(),
-      mediaUrl: attachmentUrl || undefined,
-      mediaType: attachmentType || undefined,
+      attachments: attachments.length > 0 ? attachments : undefined,
     };
 
     // Optimistically add message
@@ -306,17 +341,14 @@ export default function MessagesPage() {
       senderId: currentUserId,
       receiverId: activeUser._id,
       content: inputText.trim(),
-      mediaUrl: attachmentUrl || undefined,
-      mediaType: attachmentType || undefined,
+      attachments: attachments.length > 0 ? [...attachments] : undefined,
       isRead: false,
       createdAt: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, tempMsg]);
 
     setInputText("");
-    setAttachmentUrl("");
-    setAttachmentType("");
-    setAttachmentName("");
+    setAttachments([]);
 
     try {
       const res = await fetch("/api/messages", {
@@ -424,8 +456,8 @@ export default function MessagesPage() {
             conversations.map((conv) => {
               const isSelected = activeUser?._id === conv.otherUser._id;
               const hasUnread = conv.unreadCount > 0;
-              const lastMsgSnippet = conv.lastMessage.mediaUrl 
-                ? `[Media] ${conv.lastMessage.content || "Attached file"}` 
+              const lastMsgSnippet = (conv.lastMessage.attachments && conv.lastMessage.attachments.length > 0) 
+                ? `[Media] ${conv.lastMessage.content || "Attachments"}` 
                 : conv.lastMessage.content;
 
               return (
@@ -592,24 +624,28 @@ export default function MessagesPage() {
                         }`}
                       >
                         {/* Media display */}
-                        {msg.mediaUrl && (
-                          <div className={`mb-2 flex items-center max-w-full select-none ${isSentByMe ? "justify-end" : "justify-start"}`}>
-                            {msg.mediaType === "image" ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img
-                                src={msg.mediaUrl}
-                                alt="Attachment"
-                                className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity rounded-lg border border-neutral-800/80 bg-neutral-950/40"
-                                onClick={() => window.open(msg.mediaUrl, "_blank")}
-                              />
-                            ) : msg.mediaType === "video" ? (
-                              <video src={msg.mediaUrl} controls className="max-h-60 w-auto object-contain rounded-lg border border-neutral-800/80 bg-neutral-950/40" />
-                            ) : (
-                              <div className="p-3 flex items-center gap-2.5 bg-neutral-900 hover:bg-neutral-850 cursor-pointer transition-colors" onClick={() => window.open(msg.mediaUrl, "_blank")}>
-                                <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
-                                <span className="text-[10px] text-neutral-300 truncate max-w-[200px] font-mono">Download File</span>
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className={`mb-2 flex flex-col gap-2 max-w-full select-none ${isSentByMe ? "items-end" : "items-start"}`}>
+                            {msg.attachments.map((att, i) => (
+                              <div key={i}>
+                                {att.type === "image" ? (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    src={att.url}
+                                    alt={att.name || "Attachment"}
+                                    className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity rounded-lg border border-neutral-800/80 bg-neutral-950/40"
+                                    onClick={() => window.open(att.url, "_blank")}
+                                  />
+                                ) : att.type === "video" ? (
+                                  <video src={att.url} controls className="max-h-60 w-auto object-contain rounded-lg border border-neutral-800/80 bg-neutral-950/40" />
+                                ) : (
+                                  <div className="p-3 flex items-center gap-2.5 bg-neutral-900 hover:bg-neutral-850 cursor-pointer transition-colors rounded-lg border border-neutral-800/80" onClick={() => window.open(att.url, "_blank")}>
+                                    <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
+                                    <span className="text-[10px] text-neutral-300 truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
+                                  </div>
+                                )}
                               </div>
-                            )}
+                            ))}
                           </div>
                         )}
 
@@ -618,9 +654,16 @@ export default function MessagesPage() {
                       </div>
 
                       {/* Message Meta Info */}
-                      <span className="text-[9px] text-neutral-600 font-mono mt-1 select-none">
-                        {messageTime}
-                      </span>
+                      <div className="flex items-center gap-1 mt-1 text-[9px] text-neutral-600 font-mono select-none">
+                        <span>{messageTime}</span>
+                        {isSentByMe && (
+                          msg.isRead ? (
+                            <CheckCheck className="h-3 w-3 text-cyan-500" />
+                          ) : (
+                            <Check className="h-3 w-3" />
+                          )
+                        )}
+                      </div>
                     </div>
                   );
                 })
@@ -642,33 +685,35 @@ export default function MessagesPage() {
             <div className="p-4 border-t border-white/[0.08] bg-white/[0.01] shrink-0">
               <form onSubmit={handleSendMessage} className="space-y-3">
                 {/* Media Attachment Previews */}
-                {attachmentUrl && (
-                  <div className="inline-flex items-center gap-3 p-2 bg-neutral-900 border border-neutral-800 rounded-xl relative select-none animate-[slideIn_0.2s_ease-out]">
-                    <div className="shrink-0 h-10 w-10 bg-neutral-950 rounded-lg flex items-center justify-center border border-neutral-800 overflow-hidden">
-                      {attachmentType === "image" ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={attachmentUrl} alt="Preview" className="object-cover h-full w-full" />
-                      ) : attachmentType === "video" ? (
-                        <Film className="h-5 w-5 text-cyan-400" />
-                      ) : (
-                        <FileText className="h-5 w-5 text-cyan-400" />
-                      )}
-                    </div>
-                    <div className="min-w-0 max-w-[200px] text-[10px] text-neutral-450 mr-6">
-                      <p className="truncate font-semibold text-neutral-200">{attachmentName}</p>
-                      <p className="text-[8px] uppercase tracking-wider text-cyan-500 font-bold font-mono mt-0.5">{attachmentType}</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAttachmentUrl("");
-                        setAttachmentType("");
-                        setAttachmentName("");
-                      }}
-                      className="absolute top-1.5 right-1.5 p-0.5 rounded-full bg-neutral-950 border border-neutral-800 text-neutral-500 hover:text-red-400 transition-colors"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                {attachments.length > 0 && (
+                  <div className="flex flex-wrap gap-2 animate-[slideIn_0.2s_ease-out]">
+                    {attachments.map((att, i) => (
+                      <div key={i} className="inline-flex items-center gap-3 p-2 bg-neutral-900 border border-neutral-800 rounded-xl relative select-none">
+                        <div className="shrink-0 h-10 w-10 bg-neutral-950 rounded-lg flex items-center justify-center border border-neutral-800 overflow-hidden">
+                          {att.type === "image" ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={att.url} alt="Preview" className="object-cover h-full w-full" />
+                          ) : att.type === "video" ? (
+                            <Film className="h-5 w-5 text-cyan-400" />
+                          ) : (
+                            <FileText className="h-5 w-5 text-cyan-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0 max-w-[200px] text-[10px] text-neutral-450 mr-6">
+                          <p className="truncate font-semibold text-neutral-200">{att.name}</p>
+                          <p className="text-[8px] uppercase tracking-wider text-cyan-500 font-bold font-mono mt-0.5">{att.type}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAttachments(prev => prev.filter((_, index) => index !== i));
+                          }}
+                          className="absolute top-1.5 right-1.5 p-0.5 rounded-full bg-neutral-950 border border-neutral-800 text-neutral-500 hover:text-red-400 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
 
@@ -676,6 +721,7 @@ export default function MessagesPage() {
                 <div className="flex items-center gap-2">
                   <input
                     type="file"
+                    multiple
                     onChange={handleMediaUpload}
                     ref={fileInputRef}
                     className="hidden"

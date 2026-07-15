@@ -5,6 +5,7 @@ import { DirectMessage } from "@/models/DirectMessage";
 import { User } from "@/models/User";
 import { Notification } from "@/models/Notification";
 import mongoose from "mongoose";
+import { pusherServer } from "@/lib/pusher";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -31,10 +32,17 @@ export const GET = auth(async function GET(req) {
     }).sort({ createdAt: 1 });
 
     // Mark target user's messages as read
-    await DirectMessage.updateMany(
+    const updateResult = await DirectMessage.updateMany(
       { senderId: targetUserId, receiverId: currentUserId, isRead: false },
       { $set: { isRead: true } }
     );
+
+    if (updateResult.modifiedCount > 0) {
+      // Notify target user that their messages were read
+      await pusherServer.trigger(`user-${targetUserId}`, "messages-read", {
+        readerId: currentUserId,
+      });
+    }
 
     // Check if target user is typing to current user
     const globalWithTyping = global as typeof globalThis & {
@@ -62,7 +70,7 @@ export const POST = auth(async function POST(req) {
     }
 
     const body = await req.json();
-    const { receiverId, content, mediaUrl, mediaType } = body;
+    const { receiverId, content, attachments } = body;
 
     if (!receiverId) {
       return NextResponse.json({ error: "receiverId is required." }, { status: 400 });
@@ -78,15 +86,19 @@ export const POST = auth(async function POST(req) {
       senderId: new mongoose.Types.ObjectId(currentUserId),
       receiverId: new mongoose.Types.ObjectId(receiverId),
       content: content || "",
-      mediaUrl: mediaUrl || "",
-      mediaType: mediaType || "",
+      attachments: attachments || [],
       isRead: false,
     });
+
+    // Notify receiver in real-time
+    await pusherServer.trigger(`user-${receiverId}`, "new-message", newMessage);
+    // Notify sender in real-time (to update their UI if open in multiple tabs)
+    await pusherServer.trigger(`user-${currentUserId}`, "new-message", newMessage);
 
     // Create a new Notification record for this message
     try {
       const senderUser = await User.findById(currentUserId);
-      await Notification.create({
+      const notification = await Notification.create({
         recipientId: new mongoose.Types.ObjectId(receiverId),
         senderId: new mongoose.Types.ObjectId(currentUserId),
         senderName: senderUser?.name || "Someone",
@@ -95,6 +107,8 @@ export const POST = auth(async function POST(req) {
         targetId: newMessage._id,
         isRead: false,
       });
+      // Notify receiver about new notification in real-time
+      await pusherServer.trigger(`user-${receiverId}`, "new-notification", notification);
     } catch (notifError) {
       console.error("Failed to create message notification:", notifError);
     }
