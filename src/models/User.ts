@@ -11,6 +11,9 @@ export interface IUser extends Document {
   bannerImage?: string;
   isSuspended: boolean;
   isPublic: boolean;
+  // Mobile password-reset fields (unused by web Auth.js)
+  resetTokenHash?: string;
+  resetTokenExpiry?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +30,9 @@ const UserSchema = new Schema<IUser>(
     bannerImage: { type: String, default: "" },
     isSuspended: { type: Boolean, default: false },
     isPublic: { type: Boolean, default: true },
+    // Mobile password-reset fields (unused by web Auth.js)
+    resetTokenHash: { type: String },
+    resetTokenExpiry: { type: Date },
   },
   { timestamps: true }
 );
