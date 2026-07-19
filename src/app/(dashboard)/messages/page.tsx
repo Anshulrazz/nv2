@@ -137,6 +137,21 @@ export default function MessagesPage() {
       if (activeUserIdRef.current && (newMsg.senderId === activeUserIdRef.current || newMsg.receiverId === activeUserIdRef.current)) {
          setMessages(prev => {
            if (prev.some(m => m._id === newMsg._id)) return prev;
+
+           // If we are the sender, check if we have a temporary optimistic message to replace
+           if (newMsg.senderId === currentUserId) {
+             const tempIndex = prev.findIndex(
+               m => !/^[0-9a-fA-F]{24}$/.test(m._id) &&
+                    m.senderId === currentUserId &&
+                    m.content === newMsg.content
+             );
+             if (tempIndex !== -1) {
+               const updated = [...prev];
+               updated[tempIndex] = newMsg;
+               return updated;
+             }
+           }
+
            return [...prev, newMsg];
          });
       }

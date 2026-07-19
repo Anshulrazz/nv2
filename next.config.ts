@@ -17,11 +17,11 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://js.pusher.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://api.anthropic.com https://accounts.google.com",
+      "connect-src 'self' https://api.anthropic.com https://accounts.google.com https://*.pusher.com wss://*.pusher.com",
       "frame-src 'self' https://accounts.google.com",
       "object-src 'self'",
       "media-src 'self' data: blob: https:",

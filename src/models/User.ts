@@ -33,8 +33,9 @@ const UserSchema = new Schema<IUser>(
     // Mobile password-reset fields (unused by web Auth.js)
     resetTokenHash: { type: String },
     resetTokenExpiry: { type: Date },
-  },
-  { timestamps: true }
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+  }
 );
 
 export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);

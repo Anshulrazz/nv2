@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { useAlertStore } from "@/stores/alertStore";
+import { NotificationPermissionToggle } from "@/components/NotificationPermissionToggle";
 
 export default function SettingsPage() {
   const { data: session, update: updateSession } = useSession();
@@ -269,6 +270,9 @@ export default function SettingsPage() {
             {isProfileSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile"}
           </Button>
         </form>
+
+        {/* Notification Settings */}
+        <NotificationPermissionToggle />
 
         {/* Password Change form */}
         <form onSubmit={handlePasswordSave} className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-neutral-800 rounded-xl p-6 space-y-5 transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.02)]">

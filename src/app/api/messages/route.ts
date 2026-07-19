@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { Notification } from "@/models/Notification";
 import mongoose from "mongoose";
 import { pusherServer } from "@/lib/pusher";
+import { sendPushToUser } from "@/lib/push";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -90,19 +91,30 @@ export const POST = auth(async function POST(req) {
       isRead: false,
     });
 
-    // Notify receiver in real-time
-    await pusherServer.trigger(`user-${receiverId}`, "new-message", newMessage);
+    // Look up sender info to enrich the Pusher payload
+    const senderUser = await User.findById(currentUserId);
+    const senderName = senderUser?.name || "Someone";
+    const senderImage = senderUser?.image || "";
+
+    // Build the enriched payload that PusherListener expects
+    const enrichedMessage = {
+      ...newMessage.toObject(),
+      senderName,
+      senderImage,
+    };
+
+    // Notify receiver in real-time (with sender info for toast)
+    await pusherServer.trigger(`user-${receiverId}`, "new-message", enrichedMessage);
     // Notify sender in real-time (to update their UI if open in multiple tabs)
-    await pusherServer.trigger(`user-${currentUserId}`, "new-message", newMessage);
+    await pusherServer.trigger(`user-${currentUserId}`, "new-message", enrichedMessage);
 
     // Create a new Notification record for this message
     try {
-      const senderUser = await User.findById(currentUserId);
       const notification = await Notification.create({
         recipientId: new mongoose.Types.ObjectId(receiverId),
         senderId: new mongoose.Types.ObjectId(currentUserId),
-        senderName: senderUser?.name || "Someone",
-        senderImage: senderUser?.image || "",
+        senderName,
+        senderImage,
         type: "message",
         targetId: newMessage._id,
         isRead: false,
@@ -112,6 +124,14 @@ export const POST = auth(async function POST(req) {
     } catch (notifError) {
       console.error("Failed to create message notification:", notifError);
     }
+
+    // Fire background web-push for closed-tab delivery
+    sendPushToUser(receiverId, {
+      title: `New message from ${senderName}`,
+      body: content || "You have a new direct message.",
+      icon: senderImage || undefined,
+      link: `/messages?userId=${currentUserId}`,
+    }).catch((err) => console.error("Push send error:", err));
 
     return NextResponse.json(newMessage);
   } catch (error) {

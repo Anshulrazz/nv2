@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono, Kalam } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { Toaster } from "sonner";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -117,6 +118,12 @@ export default function RootLayout({
         style={{ fontFamily: "var(--font-jakarta)" }}
       >
         <Providers>{children}</Providers>
+        <Toaster
+          theme="dark"
+          position="top-center"
+          richColors
+          visibleToasts={5}
+        />
       </body>
     </html>
   );
