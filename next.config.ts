@@ -81,6 +81,9 @@ const nextConfig: NextConfig = {
     ],
   },
 
+  // jsonwebtoken is a Node.js-only CJS package — must not be bundled by Turbopack
+  serverExternalPackages: ["jsonwebtoken"],
+
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
   },

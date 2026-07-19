@@ -15,7 +15,7 @@ export const pusherServer = (appId && key && secret && cluster)
       useTLS: true,
     })
   : {
-      trigger: async (channel: string, event: string, data: any) => {
+      trigger: async (channel: string, event: string, _data: unknown) => {
         console.warn(`[Pusher] Missing credentials. Attempted to trigger '${event}' on '${channel}'`);
       }
-    } as any;
+    } as unknown as PusherServer;
