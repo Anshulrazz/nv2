@@ -52,8 +52,20 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, description, thumbnail, isPublished, modules } = body;
 
-    if (!title || !description || title.trim() === "" || description.trim() === "") {
-      return NextResponse.json({ error: "Title and description are required." }, { status: 400 });
+    if (typeof title !== "string" || typeof description !== "string" || title.trim() === "" || description.trim() === "") {
+      return NextResponse.json({ error: "Title and description are required and must be strings." }, { status: 400 });
+    }
+
+    if (thumbnail !== undefined && thumbnail !== null && typeof thumbnail !== "string") {
+      return NextResponse.json({ error: "Thumbnail must be a string." }, { status: 400 });
+    }
+
+    if (isPublished !== undefined && typeof isPublished !== "boolean") {
+      return NextResponse.json({ error: "isPublished must be a boolean." }, { status: 400 });
+    }
+
+    if (modules !== undefined && !Array.isArray(modules)) {
+      return NextResponse.json({ error: "Modules must be an array." }, { status: 400 });
     }
 
     const course = await Course.create({

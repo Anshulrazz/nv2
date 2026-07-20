@@ -5,6 +5,7 @@ import { Note } from "@/models/Note";
 import { User } from "@/models/User";
 import { Notification } from "@/models/Notification";
 import mongoose from "mongoose";
+import { isValidObjectId } from "@/lib/validation";
 
 export const POST = auth(async function POST(req, context) {
   try {
@@ -14,6 +15,9 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

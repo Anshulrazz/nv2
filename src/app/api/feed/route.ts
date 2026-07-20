@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
 import { Follow } from "@/models/Follow";
 import { PipelineStage } from "mongoose";
+import { escapeRegex } from "@/lib/validation";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -13,8 +14,12 @@ export const GET = auth(async function GET(req) {
     const search = searchParams.get("search") || "";
     const tag = searchParams.get("tag") || "";
     const category = searchParams.get("category") || "";
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    
+    const parsedPage = parseInt(searchParams.get("page") || "1", 10);
+    const parsedLimit = parseInt(searchParams.get("limit") || "10", 10);
+    
+    const page = (isNaN(parsedPage) || parsedPage < 1) ? 1 : parsedPage;
+    const limit = (isNaN(parsedLimit) || parsedLimit < 1) ? 10 : (parsedLimit > 100 ? 100 : parsedLimit);
     const skip = (page - 1) * limit;
 
     await connectToDatabase();
@@ -25,10 +30,11 @@ export const GET = auth(async function GET(req) {
       isTrashed: false,
     };
 
-    if (search) {
+    if (search && typeof search === "string") {
+      const escapedSearch = escapeRegex(search.trim());
       matchCriteria.$or = [
-        { title: { $regex: search, $options: "i" } },
-        { tags: { $regex: search, $options: "i" } },
+        { title: { $regex: escapedSearch, $options: "i" } },
+        { tags: { $regex: escapedSearch, $options: "i" } },
       ];
     }
 

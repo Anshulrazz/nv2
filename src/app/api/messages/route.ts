@@ -7,6 +7,7 @@ import { Notification } from "@/models/Notification";
 import mongoose from "mongoose";
 import { pusherServer } from "@/lib/pusher";
 import { sendPushToUser } from "@/lib/push";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -20,6 +21,10 @@ export const GET = auth(async function GET(req) {
 
     if (!targetUserId) {
       return NextResponse.json({ error: "userId is required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(targetUserId)) {
+      return NextResponse.json({ error: "Invalid target user ID format." }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -77,11 +82,36 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "receiverId is required." }, { status: 400 });
     }
 
+    if (!isValidObjectId(receiverId)) {
+      return NextResponse.json({ error: "Invalid receiver user ID format." }, { status: 400 });
+    }
+
     if (currentUserId === receiverId) {
       return NextResponse.json({ error: "You cannot message yourself." }, { status: 400 });
     }
 
+    if (content !== undefined && typeof content !== "string") {
+      return NextResponse.json({ error: "content must be a string." }, { status: 400 });
+    }
+
+    if (attachments !== undefined && !Array.isArray(attachments)) {
+      return NextResponse.json({ error: "attachments must be an array." }, { status: 400 });
+    }
+
+    // Ensure either content or attachments has content
+    const hasContent = content && content.trim() !== "";
+    const hasAttachments = attachments && attachments.length > 0;
+    if (!hasContent && !hasAttachments) {
+      return NextResponse.json({ error: "Message content or attachments are required." }, { status: 400 });
+    }
+
     await connectToDatabase();
+
+    // Verify receiver exists
+    const receiverExists = await User.findById(receiverId);
+    if (!receiverExists) {
+      return NextResponse.json({ error: "Recipient user not found." }, { status: 404 });
+    }
 
     const newMessage = await DirectMessage.create({
       senderId: new mongoose.Types.ObjectId(currentUserId),

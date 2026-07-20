@@ -6,6 +6,7 @@ import { Note } from "@/models/Note";
 import { Notification } from "@/models/Notification";
 import { User } from "@/models/User";
 import mongoose from "mongoose";
+import { isValidObjectId } from "@/lib/validation";
 
 export const POST = auth(async function POST(req, context) {
   try {
@@ -15,7 +16,14 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid original post ID format." }, { status: 400 });
+    }
+
     const { commentary } = await req.json();
+    if (commentary !== undefined && commentary !== null && typeof commentary !== "string") {
+      return NextResponse.json({ error: "commentary must be a string." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -52,6 +60,6 @@ export const POST = auth(async function POST(req, context) {
     return NextResponse.json(newRepost);
   } catch (error) {
     console.error("Create reshare error:", error);
-    return NextResponse.json({ error: "Failed to reshare post." }, { status: 550 });
+    return NextResponse.json({ error: "Failed to reshare post." }, { status: 500 });
   }
 });

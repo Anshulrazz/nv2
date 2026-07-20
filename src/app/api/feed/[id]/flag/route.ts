@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
 import { Comment } from "@/models/Comment";
+import { isValidObjectId } from "@/lib/validation";
 
 export const POST = auth(async function POST(req, context) {
   try {
@@ -12,7 +13,16 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid feed post ID format." }, { status: 400 });
+    }
+
     const { commentId } = await req.json();
+    if (commentId !== undefined && commentId !== null) {
+      if (!isValidObjectId(commentId)) {
+        return NextResponse.json({ error: "Invalid comment ID format." }, { status: 400 });
+      }
+    }
 
     await connectToDatabase();
 

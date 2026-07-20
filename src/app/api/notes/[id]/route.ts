@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { Folder } from "@/models/Folder";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, context) {
   try {
@@ -11,6 +13,9 @@ export const GET = auth(async function GET(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -34,10 +39,41 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { title, content, folderId, isFavorite, isTrashed, assetUrl, assetName } = body;
 
+    // Validate request body updates
+    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+      return NextResponse.json({ error: "Note title cannot be empty and must be a string." }, { status: 400 });
+    }
+    if (isFavorite !== undefined && typeof isFavorite !== "boolean") {
+      return NextResponse.json({ error: "isFavorite must be a boolean." }, { status: 400 });
+    }
+    if (isTrashed !== undefined && typeof isTrashed !== "boolean") {
+      return NextResponse.json({ error: "isTrashed must be a boolean." }, { status: 400 });
+    }
+    if (assetUrl !== undefined && assetUrl !== null && typeof assetUrl !== "string") {
+      return NextResponse.json({ error: "assetUrl must be a string or null." }, { status: 400 });
+    }
+    if (assetName !== undefined && assetName !== null && typeof assetName !== "string") {
+      return NextResponse.json({ error: "assetName must be a string or null." }, { status: 400 });
+    }
+
     await connectToDatabase();
+
+    if (folderId !== undefined && folderId !== null) {
+      if (!isValidObjectId(folderId)) {
+        return NextResponse.json({ error: "Invalid folder ID format." }, { status: 400 });
+      }
+      const folder = await Folder.findOne({ _id: folderId, userId });
+      if (!folder) {
+        return NextResponse.json({ error: "Folder not found or unauthorized." }, { status: 404 });
+      }
+    }
 
     const note = await Note.findOne({ _id: id, userId });
     if (!note) {
@@ -49,8 +85,8 @@ export const PATCH = auth(async function PATCH(req, context) {
     if (folderId !== undefined) note.folderId = folderId || null;
     if (isFavorite !== undefined) note.isFavorite = isFavorite;
     if (isTrashed !== undefined) note.isTrashed = isTrashed;
-    if (assetUrl !== undefined) note.assetUrl = assetUrl;
-    if (assetName !== undefined) note.assetName = assetName;
+    if (assetUrl !== undefined) note.assetUrl = assetUrl || "";
+    if (assetName !== undefined) note.assetName = assetName || "";
 
     await note.save();
     return NextResponse.json(note);
@@ -68,6 +104,9 @@ export const DELETE = auth(async function DELETE(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

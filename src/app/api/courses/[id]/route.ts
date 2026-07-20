@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Course } from "@/models/Course";
 import { User } from "@/models/User";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, { params }) {
   try {
@@ -12,6 +13,9 @@ export const GET = auth(async function GET(req, { params }) {
     }
 
     const { id } = await params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid course ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
     
@@ -44,6 +48,9 @@ export const PUT = auth(async function PUT(req, { params }) {
     }
 
     const { id } = await params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid course ID format." }, { status: 400 });
+    }
     
     await connectToDatabase();
     const user = await User.findById(userId);
@@ -62,10 +69,48 @@ export const PUT = auth(async function PUT(req, { params }) {
     }
 
     const body = await req.json();
-    
+    const { title, description, thumbnail, isPublished, modules } = body;
+
+    const updates: Record<string, unknown> = {};
+
+    if (title !== undefined) {
+      if (typeof title !== "string" || title.trim() === "") {
+        return NextResponse.json({ error: "Title must be a non-empty string." }, { status: 400 });
+      }
+      updates.title = title.trim();
+    }
+
+    if (description !== undefined) {
+      if (typeof description !== "string" || description.trim() === "") {
+        return NextResponse.json({ error: "Description must be a non-empty string." }, { status: 400 });
+      }
+      updates.description = description.trim();
+    }
+
+    if (thumbnail !== undefined) {
+      if (thumbnail !== null && typeof thumbnail !== "string") {
+        return NextResponse.json({ error: "Thumbnail must be a string." }, { status: 400 });
+      }
+      updates.thumbnail = thumbnail;
+    }
+
+    if (isPublished !== undefined) {
+      if (typeof isPublished !== "boolean") {
+        return NextResponse.json({ error: "isPublished must be a boolean." }, { status: 400 });
+      }
+      updates.isPublished = isPublished;
+    }
+
+    if (modules !== undefined) {
+      if (!Array.isArray(modules)) {
+        return NextResponse.json({ error: "Modules must be an array." }, { status: 400 });
+      }
+      updates.modules = modules;
+    }
+
     const updatedCourse = await Course.findByIdAndUpdate(
       id,
-      { $set: body },
+      { $set: updates },
       { new: true, runValidators: true }
     );
 
@@ -84,6 +129,9 @@ export const DELETE = auth(async function DELETE(req, { params }) {
     }
 
     const { id } = await params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid course ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
     const user = await User.findById(userId);

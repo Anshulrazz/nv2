@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CommunityPost } from "@/models/CommunityPost";
+import { isValidObjectId } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -13,11 +14,23 @@ export const PUT = auth(async function PUT(req, { params }) {
     }
 
     const { id } = await params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid post ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { content, mediaUrl, mediaType } = body;
 
-    if (!content || content.trim() === "") {
-      return NextResponse.json({ error: "Content is required." }, { status: 400 });
+    if (content !== undefined && (typeof content !== "string" || content.trim() === "")) {
+      return NextResponse.json({ error: "Content must be a non-empty string." }, { status: 400 });
+    }
+
+    if (mediaUrl !== undefined && mediaUrl !== null && typeof mediaUrl !== "string") {
+      return NextResponse.json({ error: "mediaUrl must be a string." }, { status: 400 });
+    }
+
+    if (mediaType !== undefined && mediaType !== null && typeof mediaType !== "string") {
+      return NextResponse.json({ error: "mediaType must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -31,9 +44,9 @@ export const PUT = auth(async function PUT(req, { params }) {
       return NextResponse.json({ error: "Forbidden: You can only edit your own posts." }, { status: 403 });
     }
 
-    post.content = content.trim();
-    if (mediaUrl !== undefined) post.mediaUrl = mediaUrl;
-    if (mediaType !== undefined) post.mediaType = mediaType;
+    if (content !== undefined) post.content = content.trim();
+    if (mediaUrl !== undefined) post.mediaUrl = mediaUrl || "";
+    if (mediaType !== undefined) post.mediaType = mediaType || "";
     await post.save();
 
     return NextResponse.json(post);
@@ -51,6 +64,10 @@ export const DELETE = auth(async function DELETE(req, { params }) {
     }
 
     const { id } = await params;
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid post ID format." }, { status: 400 });
+    }
+
     await connectToDatabase();
 
     const post = await CommunityPost.findById(id);

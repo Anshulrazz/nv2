@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { Folder } from "@/models/Folder";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -14,6 +16,10 @@ export const GET = auth(async function GET(req) {
     const folderId = searchParams.get("folderId");
     const isFavorite = searchParams.get("isFavorite");
     const isTrashed = searchParams.get("isTrashed");
+
+    if (folderId && folderId !== "null" && !isValidObjectId(folderId)) {
+      return NextResponse.json({ error: "Invalid folder ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -50,11 +56,21 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, folderId } = body;
 
-    if (!title || title.trim() === "") {
-      return NextResponse.json({ error: "Note title is required." }, { status: 400 });
+    if (typeof title !== "string" || title.trim() === "") {
+      return NextResponse.json({ error: "Note title is required and must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();
+
+    if (folderId) {
+      if (!isValidObjectId(folderId)) {
+        return NextResponse.json({ error: "Invalid folder ID format." }, { status: 400 });
+      }
+      const folder = await Folder.findOne({ _id: folderId, userId });
+      if (!folder) {
+        return NextResponse.json({ error: "Folder not found or unauthorized." }, { status: 404 });
+      }
+    }
 
     // Default structure for TipTap rich editor documents
     const defaultContent = {

@@ -14,6 +14,8 @@ if (!globalWithTyping.typingStatuses) {
   globalWithTyping.typingStatuses = {};
 }
 
+import { isValidObjectId } from "@/lib/validation";
+
 export const POST = auth(async function POST(req) {
   try {
     const currentUserId = req.auth?.user?.id;
@@ -24,6 +26,10 @@ export const POST = auth(async function POST(req) {
     const { recipientId } = await req.json();
     if (!recipientId) {
       return NextResponse.json({ error: "recipientId is required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(recipientId)) {
+      return NextResponse.json({ error: "Invalid recipient ID format." }, { status: 400 });
     }
 
     globalWithTyping.typingStatuses![currentUserId] = {

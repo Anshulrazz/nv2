@@ -7,6 +7,8 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const dynamic = "force-dynamic";
 
+import { isValidObjectId } from "@/lib/validation";
+
 export const POST = auth(async function POST(req) {
   try {
     const userId = req.auth?.user?.id;
@@ -17,8 +19,16 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { message, chatId, contextNoteContent } = body;
 
-    if (!message || message.trim() === "") {
-      return NextResponse.json({ error: "Message is required." }, { status: 400 });
+    if (typeof message !== "string" || message.trim() === "") {
+      return NextResponse.json({ error: "Message is required and must be a string." }, { status: 400 });
+    }
+
+    if (chatId !== undefined && chatId !== null && !isValidObjectId(chatId)) {
+      return NextResponse.json({ error: "Invalid chatId format." }, { status: 400 });
+    }
+
+    if (contextNoteContent !== undefined && contextNoteContent !== null && typeof contextNoteContent !== "string") {
+      return NextResponse.json({ error: "contextNoteContent must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();
@@ -36,6 +46,8 @@ export const POST = auth(async function POST(req) {
       chatDoc = await Chat.findOne({ _id: chatId, userId }) as { messages: IMessage[] } | null;
       if (chatDoc) {
         previousMessages = chatDoc.messages || [];
+      } else {
+        return NextResponse.json({ error: "Chat session not found." }, { status: 404 });
       }
     }
 

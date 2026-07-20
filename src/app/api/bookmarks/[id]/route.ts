@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Bookmark } from "@/models/Bookmark";
+import { isValidObjectId } from "@/lib/validation";
 
 export const DELETE = auth(async function DELETE(req, context) {
   try {
@@ -11,6 +12,9 @@ export const DELETE = auth(async function DELETE(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid bookmark ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

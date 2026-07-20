@@ -22,6 +22,8 @@ export const GET = auth(async function GET(req) {
   }
 });
 
+import { isValidUrl } from "@/lib/validation";
+
 export const POST = auth(async function POST(req) {
   try {
     const userId = req.auth?.user?.id;
@@ -32,8 +34,16 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, url, category } = body;
 
-    if (!title || !url || title.trim() === "" || url.trim() === "") {
-      return NextResponse.json({ error: "Title and URL are required." }, { status: 400 });
+    if (typeof title !== "string" || title.trim() === "" || typeof url !== "string" || url.trim() === "") {
+      return NextResponse.json({ error: "Title and URL are required and must be strings." }, { status: 400 });
+    }
+
+    if (!isValidUrl(url.trim())) {
+      return NextResponse.json({ error: "Please provide a valid HTTP or HTTPS URL." }, { status: 400 });
+    }
+
+    if (category !== undefined && category !== null && typeof category !== "string") {
+      return NextResponse.json({ error: "Category must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();

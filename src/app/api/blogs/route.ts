@@ -40,8 +40,23 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, content, summary, coverImage, published } = body;
 
-    if (!title || !content || !summary || title.trim() === "" || content.trim() === "" || summary.trim() === "") {
-      return NextResponse.json({ error: "Title, content, and summary are required." }, { status: 400 });
+    if (
+      typeof title !== "string" ||
+      typeof content !== "string" ||
+      typeof summary !== "string" ||
+      title.trim() === "" ||
+      content.trim() === "" ||
+      summary.trim() === ""
+    ) {
+      return NextResponse.json({ error: "Title, content, and summary are required and must be strings." }, { status: 400 });
+    }
+
+    if (coverImage !== undefined && coverImage !== null && typeof coverImage !== "string") {
+      return NextResponse.json({ error: "coverImage must be a string." }, { status: 400 });
+    }
+
+    if (published !== undefined && typeof published !== "boolean") {
+      return NextResponse.json({ error: "published must be a boolean." }, { status: 400 });
     }
 
     await connectToDatabase();

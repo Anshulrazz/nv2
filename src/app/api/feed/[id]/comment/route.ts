@@ -6,10 +6,14 @@ import { Notification } from "@/models/Notification";
 import { User } from "@/models/User";
 import { Note } from "@/models/Note";
 import mongoose from "mongoose";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, context) {
   try {
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid post ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -30,13 +34,27 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid post ID format." }, { status: 400 });
+    }
+
     const { content, parentId } = await req.json();
 
-    if (!content?.trim()) {
-      return NextResponse.json({ error: "Content is required." }, { status: 400 });
+    if (typeof content !== "string" || !content.trim()) {
+      return NextResponse.json({ error: "Content is required and must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();
+
+    if (parentId) {
+      if (!isValidObjectId(parentId)) {
+        return NextResponse.json({ error: "Invalid parent comment ID format." }, { status: 400 });
+      }
+      const parentComment = await Comment.findById(parentId);
+      if (!parentComment) {
+        return NextResponse.json({ error: "Parent comment not found." }, { status: 404 });
+      }
+    }
 
     const user = await User.findById(userId).select("name image");
     const newComment = await Comment.create({
@@ -82,6 +100,14 @@ export const PATCH = auth(async function PATCH(req) {
 
     if (!commentId || !action) {
       return NextResponse.json({ error: "commentId and action are required." }, { status: 400 });
+    }
+
+    if (!isValidObjectId(commentId)) {
+      return NextResponse.json({ error: "Invalid comment ID format." }, { status: 400 });
+    }
+
+    if (!["upvote", "downvote"].includes(action)) {
+      return NextResponse.json({ error: "action must be 'upvote' or 'downvote'." }, { status: 400 });
     }
 
     await connectToDatabase();

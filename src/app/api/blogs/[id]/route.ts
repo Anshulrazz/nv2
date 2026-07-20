@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Blog } from "@/models/Blog";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, context) {
   try {
@@ -11,6 +12,9 @@ export const GET = auth(async function GET(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid blog ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -39,8 +43,29 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid blog ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { title, content, summary, coverImage, published } = body;
+
+    // Payload validation
+    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+      return NextResponse.json({ error: "Title cannot be empty and must be a string." }, { status: 400 });
+    }
+    if (content !== undefined && (typeof content !== "string" || content.trim() === "")) {
+      return NextResponse.json({ error: "Content cannot be empty and must be a string." }, { status: 400 });
+    }
+    if (summary !== undefined && (typeof summary !== "string" || summary.trim() === "")) {
+      return NextResponse.json({ error: "Summary cannot be empty and must be a string." }, { status: 400 });
+    }
+    if (coverImage !== undefined && coverImage !== null && typeof coverImage !== "string") {
+      return NextResponse.json({ error: "coverImage must be a string." }, { status: 400 });
+    }
+    if (published !== undefined && typeof published !== "boolean") {
+      return NextResponse.json({ error: "published must be a boolean." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -52,7 +77,7 @@ export const PATCH = auth(async function PATCH(req, context) {
     if (title !== undefined) blog.title = title.trim();
     if (content !== undefined) blog.content = content.trim();
     if (summary !== undefined) blog.summary = summary.trim();
-    if (coverImage !== undefined) blog.coverImage = coverImage;
+    if (coverImage !== undefined) blog.coverImage = coverImage || "";
     if (published !== undefined) blog.published = published;
 
     await blog.save();
@@ -71,6 +96,9 @@ export const DELETE = auth(async function DELETE(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid blog ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

@@ -5,6 +5,7 @@ import { Follow } from "@/models/Follow";
 import { Notification } from "@/models/Notification";
 import { User } from "@/models/User";
 import mongoose from "mongoose";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, context) {
   try {
@@ -14,6 +15,9 @@ export const GET = auth(async function GET(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid user ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -37,12 +41,21 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid user ID format." }, { status: 400 });
+    }
 
     if (userId === id) {
       return NextResponse.json({ error: "You cannot follow yourself." }, { status: 400 });
     }
 
     await connectToDatabase();
+
+    // Check if target user exists in the database
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      return NextResponse.json({ error: "User to follow not found." }, { status: 404 });
+    }
 
     const existingFollow = await Follow.findOne({
       followerId: userId,

@@ -29,6 +29,10 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title } = body;
 
+    if (title !== undefined && title !== null && typeof title !== "string") {
+      return NextResponse.json({ error: "Title must be a string." }, { status: 400 });
+    }
+
     await connectToDatabase();
     const chat = await Chat.create({
       title: title?.trim() || "New chat",

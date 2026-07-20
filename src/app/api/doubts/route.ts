@@ -41,8 +41,8 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, content } = body;
 
-    if (!title || !content || title.trim() === "" || content.trim() === "") {
-      return NextResponse.json({ error: "Title and content are required." }, { status: 400 });
+    if (typeof title !== "string" || typeof content !== "string" || title.trim() === "" || content.trim() === "") {
+      return NextResponse.json({ error: "Title and content are required and must be strings." }, { status: 400 });
     }
 
     await connectToDatabase();

@@ -4,6 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Forum } from "@/models/Forum";
 import { User } from "@/models/User";
 import mongoose from "mongoose";
+import { isValidObjectId } from "@/lib/validation";
 
 export const POST = auth(async function POST(req, context) {
   try {
@@ -13,11 +14,15 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid forum post ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { content } = body;
 
-    if (!content || content.trim() === "") {
-      return NextResponse.json({ error: "Comment content is required." }, { status: 400 });
+    if (typeof content !== "string" || content.trim() === "") {
+      return NextResponse.json({ error: "Comment content is required and must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();

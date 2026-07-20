@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Chat } from "@/models/Chat";
+import { isValidObjectId } from "@/lib/validation";
 
 export const dynamic = "force-dynamic";
 
@@ -13,8 +14,16 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid chat session ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { title } = body;
+
+    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+      return NextResponse.json({ error: "Title must be a non-empty string." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -43,6 +52,9 @@ export const DELETE = auth(async function DELETE(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid chat session ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

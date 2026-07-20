@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note, INoteVersion } from "@/models/Note";
+import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, context) {
   try {
@@ -11,6 +12,9 @@ export const GET = auth(async function GET(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -34,6 +38,9 @@ export const POST = auth(async function POST(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
@@ -65,10 +72,13 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
     const { versionId } = await req.json();
 
-    if (!versionId) {
-      return NextResponse.json({ error: "Version ID is required for rollback." }, { status: 400 });
+    if (!versionId || typeof versionId !== "string" || !isValidObjectId(versionId)) {
+      return NextResponse.json({ error: "Valid Version ID is required for rollback." }, { status: 400 });
     }
 
     await connectToDatabase();

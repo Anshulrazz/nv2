@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { isValidObjectId } from "@/lib/validation";
 
 function slugify(text: string) {
   return text
@@ -38,6 +39,9 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
+    }
 
     const body = await req.json();
     const {
@@ -50,6 +54,32 @@ export const PATCH = auth(async function PATCH(req, context) {
       scheduledAt,
       isPinned,
     } = body;
+
+    // Body validation
+    if (published !== undefined && typeof published !== "boolean") {
+      return NextResponse.json({ error: "published must be a boolean." }, { status: 400 });
+    }
+    if (tags !== undefined && (!Array.isArray(tags) || !tags.every((t) => typeof t === "string"))) {
+      return NextResponse.json({ error: "tags must be an array of strings." }, { status: 400 });
+    }
+    if (category !== undefined && typeof category !== "string") {
+      return NextResponse.json({ error: "category must be a string." }, { status: 400 });
+    }
+    if (coverImage !== undefined && typeof coverImage !== "string") {
+      return NextResponse.json({ error: "coverImage must be a string." }, { status: 400 });
+    }
+    if (seoTitle !== undefined && typeof seoTitle !== "string") {
+      return NextResponse.json({ error: "seoTitle must be a string." }, { status: 400 });
+    }
+    if (seoDescription !== undefined && typeof seoDescription !== "string") {
+      return NextResponse.json({ error: "seoDescription must be a string." }, { status: 400 });
+    }
+    if (scheduledAt !== undefined && scheduledAt !== null && (typeof scheduledAt !== "string" || isNaN(new Date(scheduledAt).getTime()))) {
+      return NextResponse.json({ error: "scheduledAt must be a valid date string or null." }, { status: 400 });
+    }
+    if (isPinned !== undefined && typeof isPinned !== "boolean") {
+      return NextResponse.json({ error: "isPinned must be a boolean." }, { status: 400 });
+    }
 
     await connectToDatabase();
 

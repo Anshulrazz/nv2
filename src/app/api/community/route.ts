@@ -32,8 +32,16 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { content, mediaUrl, mediaType } = body;
 
-    if (!content || content.trim() === "") {
-      return NextResponse.json({ error: "Content is required." }, { status: 400 });
+    if (typeof content !== "string" || content.trim() === "") {
+      return NextResponse.json({ error: "Content is required and must be a string." }, { status: 400 });
+    }
+
+    if (mediaUrl !== undefined && mediaUrl !== null && typeof mediaUrl !== "string") {
+      return NextResponse.json({ error: "mediaUrl must be a string." }, { status: 400 });
+    }
+
+    if (mediaType !== undefined && mediaType !== null && typeof mediaType !== "string") {
+      return NextResponse.json({ error: "mediaType must be a string." }, { status: 400 });
     }
 
     await connectToDatabase();

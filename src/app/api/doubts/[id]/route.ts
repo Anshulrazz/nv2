@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Doubt } from "@/models/Doubt";
 import { User } from "@/models/User";
+import { isValidObjectId } from "@/lib/validation";
 
 export const PATCH = auth(async function PATCH(req, context) {
   try {
@@ -12,10 +13,14 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid doubt ID format." }, { status: 400 });
+    }
+
     const body = await req.json();
     const { status } = body;
 
-    if (!status || !["open", "resolved"].includes(status)) {
+    if (typeof status !== "string" || !["open", "resolved"].includes(status)) {
       return NextResponse.json({ error: "Invalid status value." }, { status: 400 });
     }
 
@@ -50,6 +55,9 @@ export const DELETE = auth(async function DELETE(req, context) {
     }
 
     const { id } = await (context?.params as Promise<{ id: string }>);
+    if (!isValidObjectId(id)) {
+      return NextResponse.json({ error: "Invalid doubt ID format." }, { status: 400 });
+    }
 
     await connectToDatabase();
 
