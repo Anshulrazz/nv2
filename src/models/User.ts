@@ -7,6 +7,10 @@ export interface IUser extends Document {
   image?: string;
   role: "user" | "teacher" | "admin";
   points: number;
+  coins: number;
+  referralCode?: string;
+  referredBy?: mongoose.Types.ObjectId;
+  isPremiumUser: boolean;
   bio?: string;
   bannerImage?: string;
   isSuspended: boolean;
@@ -26,6 +30,15 @@ const UserSchema = new Schema<IUser>(
     image: { type: String },
     role: { type: String, enum: ["user", "teacher", "admin"], default: "user" },
     points: { type: Number, default: 0 },
+    coins: { type: Number, default: 0 },
+    referralCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      default: () => `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+    },
+    referredBy: { type: Schema.Types.ObjectId, ref: "User" },
+    isPremiumUser: { type: Boolean, default: false },
     bio: { type: String, default: "" },
     bannerImage: { type: String, default: "" },
     isSuspended: { type: Boolean, default: false },
@@ -39,3 +52,4 @@ const UserSchema = new Schema<IUser>(
 );
 
 export const User = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
+

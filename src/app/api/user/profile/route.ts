@@ -12,9 +12,32 @@ export const GET = auth(async function GET(req) {
 
     await connectToDatabase();
 
-    const user = await User.findById(userId).select("name email image role points bio bannerImage isPublic");
+    const user = await User.findById(userId);
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Ensure referral code and coins are generated and stored in DB if missing
+    let hasUpdates = false;
+    if (!user.referralCode) {
+      let uniqueCode = "";
+      let isUnique = false;
+      let attempts = 0;
+      while (!isUnique && attempts < 10) {
+        uniqueCode = `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
+        const existing = await User.findOne({ referralCode: uniqueCode });
+        if (!existing) isUnique = true;
+        attempts++;
+      }
+      user.referralCode = uniqueCode;
+      hasUpdates = true;
+    }
+    if (user.coins === undefined || user.coins === null) {
+      user.coins = 0;
+      hasUpdates = true;
+    }
+    if (hasUpdates) {
+      await user.save();
     }
 
     return NextResponse.json(user);
@@ -55,7 +78,7 @@ export const PATCH = auth(async function PATCH(req) {
       userId,
       { $set: updates },
       { new: true }
-    ).select("name email image role points isPublic");
+    ).select("name email image role points coins referralCode isPremiumUser isPublic");
 
     return NextResponse.json(updatedUser);
   } catch (error) {

@@ -14,13 +14,21 @@ import {
   X,
   Loader2,
   ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Check,
+  CheckCheck,
+  CornerUpLeft,
+  Edit3,
+  Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import Pusher from "pusher-js";
-import { Check, CheckCheck } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface UserProfile {
   _id: string;
@@ -42,6 +50,8 @@ interface MessageNode {
   content: string;
   attachments?: Attachment[];
   isRead: boolean;
+  isDeleted?: boolean;
+  isEdited?: boolean;
   createdAt: string;
 }
 
@@ -74,6 +84,122 @@ export default function MessagesPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   const [isRecipientTyping, setIsRecipientTyping] = useState(false);
+
+  // Media Gallery Viewer state
+  const [mediaGalleryIndex, setMediaGalleryIndex] = useState<number>(-1);
+
+  const getThreadMedia = useCallback(() => {
+    const list: { url: string; type: "image" | "video"; name?: string; messageId: string }[] = [];
+    messages.forEach((msg) => {
+      if (msg.attachments) {
+        msg.attachments.forEach((att) => {
+          if (att.type === "image" || att.type === "video") {
+            list.push({
+              url: att.url,
+              type: att.type,
+              name: att.name,
+              messageId: msg._id,
+            });
+          }
+        });
+      }
+    });
+    return list;
+  }, [messages]);
+
+  const handleOpenMediaViewer = (url: string) => {
+    const gallery = getThreadMedia();
+    const idx = gallery.findIndex((m) => m.url === url);
+    if (idx !== -1) {
+      setMediaGalleryIndex(idx);
+    }
+  };
+
+  const [replyingMessage, setReplyingMessage] = useState<MessageNode | null>(null);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingMessageText, setEditingMessageText] = useState("");
+  const [contextMenu, setContextMenu] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    message: MessageNode;
+  } | null>(null);
+
+  const touchTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  const handleContextMenu = (e: React.MouseEvent, msg: MessageNode) => {
+    e.preventDefault();
+    setContextMenu({
+      visible: true,
+      x: e.clientX,
+      y: e.clientY,
+      message: msg,
+    });
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, msg: MessageNode) => {
+    if (touchTimerRef.current) clearTimeout(touchTimerRef.current);
+    
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+    
+    touchTimerRef.current = setTimeout(() => {
+      setContextMenu({
+        visible: true,
+        x,
+        y: y - 50,
+        message: msg,
+      });
+      if (typeof window !== "undefined" && window.navigator?.vibrate) {
+        window.navigator.vibrate(20);
+      }
+    }, 600);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchTimerRef.current) {
+      clearTimeout(touchTimerRef.current);
+      touchTimerRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    const handleCloseMenu = () => setContextMenu(null);
+    window.addEventListener("click", handleCloseMenu);
+    return () => window.removeEventListener("click", handleCloseMenu);
+  }, []);
+
+  const handleUpdateDM = async (messageId: string, newContent: string) => {
+    if (!newContent.trim()) return;
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newContent }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setMessages((prev) => prev.map((m) => (m._id === messageId ? updated : m)));
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setEditingMessageId(null);
+    }
+  };
+
+  const handleDeleteDM = async (messageId: string) => {
+    if (!confirm("Permanently delete this message?")) return;
+    try {
+      const res = await fetch(`/api/messages/${messageId}`, { method: "DELETE" });
+      if (res.ok) {
+        setMessages((prev) => prev.filter((m) => m._id !== messageId));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
@@ -155,6 +281,20 @@ export default function MessagesPage() {
            return [...prev, newMsg];
          });
       }
+    });
+
+    channel.bind("message-updated", (updatedMsg: MessageNode) => {
+      fetchConversations();
+      if (activeUserIdRef.current && (updatedMsg.senderId === activeUserIdRef.current || updatedMsg.receiverId === activeUserIdRef.current)) {
+        setMessages((prev) =>
+          prev.map((m) => (m._id === updatedMsg._id ? updatedMsg : m))
+        );
+      }
+    });
+
+    channel.bind("message-deleted", (data: { messageId: string }) => {
+      fetchConversations();
+      setMessages((prev) => prev.filter((m) => m._id !== data.messageId));
     });
 
     channel.bind("messages-read", (data: { readerId: string }) => {
@@ -344,14 +484,35 @@ export default function MessagesPage() {
     if (!inputText.trim() && attachments.length === 0) return;
     if (!activeUser) return;
 
-    const payload = {
+    interface MessagePayload {
+      receiverId: string;
+      content: string;
+      attachments?: Attachment[];
+      repliedTo?: {
+        messageId: string;
+        content: string;
+        senderName: string;
+      };
+    }
+
+    const payload: MessagePayload = {
       receiverId: activeUser._id,
       content: inputText.trim(),
       attachments: attachments.length > 0 ? attachments : undefined,
     };
 
+    if (replyingMessage) {
+      const isSentByMe = replyingMessage.senderId === currentUserId;
+      const senderName = isSentByMe ? "You" : (activeUser.name || "Someone");
+      payload.repliedTo = {
+        messageId: replyingMessage._id,
+        content: replyingMessage.content || (replyingMessage.attachments && replyingMessage.attachments.length > 0 ? "📷 Media Attachment" : ""),
+        senderName,
+      };
+    }
+
     // Optimistically add message
-    const tempMsg: MessageNode = {
+    const tempMsg: MessageNode & { repliedTo?: MessagePayload["repliedTo"] } = {
       _id: Math.random().toString(),
       senderId: currentUserId,
       receiverId: activeUser._id,
@@ -359,11 +520,13 @@ export default function MessagesPage() {
       attachments: attachments.length > 0 ? [...attachments] : undefined,
       isRead: false,
       createdAt: new Date().toISOString(),
+      repliedTo: payload.repliedTo || undefined,
     };
     setMessages((prev) => [...prev, tempMsg]);
 
     setInputText("");
     setAttachments([]);
+    setReplyingMessage(null);
 
     try {
       const res = await fetch("/api/messages", {
@@ -624,61 +787,148 @@ export default function MessagesPage() {
                     hour: "2-digit",
                     minute: "2-digit",
                   });
+                  // @ts-expect-error custom repliedTo field
+                  const repliedToMsg = msg.repliedTo;
+                  const isDMEditing = editingMessageId === msg._id;
 
                   return (
                     <div
                       key={msg._id}
-                      className={`flex flex-col max-w-[70%] ${isSentByMe ? "self-end items-end" : "self-start items-start"}`}
+                      className={`w-full flex ${isSentByMe ? "justify-end" : "justify-start"} relative overflow-visible group`}
                     >
-                      {/* Message Bubble */}
-                      <div
-                        className={`rounded-2xl px-4 py-2.5 border text-xs leading-relaxed shadow-sm transition-all break-words w-full ${
-                          isSentByMe
-                            ? "bg-cyan-500/15 border-cyan-500/20 text-neutral-100 rounded-tr-none"
-                            : "bg-neutral-900 border-neutral-800 text-neutral-300 rounded-tl-none"
-                        }`}
+                      {/* Swipe reply indicator behind the bubble */}
+                      {!msg.isDeleted && (
+                        <div className="absolute left-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-40 transition-opacity flex items-center justify-center h-8 w-8 text-cyan-400 pointer-events-none">
+                          <CornerUpLeft className="h-4 w-4" />
+                        </div>
+                      )}
+
+                      <motion.div
+                        drag={msg.isDeleted ? false : "x"}
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={{ left: 0, right: 0.5 }}
+                        onDragEnd={(event, info) => {
+                          if (msg.isDeleted) return;
+                          if (info.offset.x > 50) {
+                            setReplyingMessage(msg);
+                            if (typeof window !== "undefined" && window.navigator?.vibrate) {
+                              window.navigator.vibrate(15);
+                            }
+                          }
+                        }}
+                        onContextMenu={(e) => { if (!msg.isDeleted) handleContextMenu(e, msg); }}
+                        onTouchStart={(e) => { if (!msg.isDeleted) handleTouchStart(e, msg); }}
+                        onTouchEnd={handleTouchEnd}
+                        className={`flex flex-col max-w-[70%] relative ${isSentByMe ? "items-end" : "items-start"}`}
                       >
-                        {/* Media display */}
-                        {msg.attachments && msg.attachments.length > 0 && (
-                          <div className={`mb-2 flex flex-col gap-2 max-w-full select-none ${isSentByMe ? "items-end" : "items-start"}`}>
-                            {msg.attachments.map((att, i) => (
-                              <div key={i}>
-                                {att.type === "image" ? (
-                                  // eslint-disable-next-line @next/next/no-img-element
-                                  <img
-                                    src={att.url}
-                                    alt={att.name || "Attachment"}
-                                    className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity rounded-lg border border-neutral-800/80 bg-neutral-950/40"
-                                    onClick={() => window.open(att.url, "_blank")}
-                                  />
-                                ) : att.type === "video" ? (
-                                  <video src={att.url} controls className="max-h-60 w-auto object-contain rounded-lg border border-neutral-800/80 bg-neutral-950/40" />
-                                ) : (
-                                  <div className="p-3 flex items-center gap-2.5 bg-neutral-900 hover:bg-neutral-850 cursor-pointer transition-colors rounded-lg border border-neutral-800/80" onClick={() => window.open(att.url, "_blank")}>
-                                    <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
-                                    <span className="text-[10px] text-neutral-300 truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        {/* Message Bubble */}
+                        <div
+                          className={`rounded-2xl px-4 py-2.5 border text-xs leading-relaxed shadow-sm transition-all break-words w-full ${
+                            isSentByMe
+                              ? "bg-cyan-500/15 border-cyan-500/20 text-neutral-100 rounded-tr-none"
+                              : "bg-neutral-900 border-neutral-800 text-neutral-300 rounded-tl-none"
+                          }`}
+                        >
+                          {/* Replied Message Preview Header */}
+                          {repliedToMsg && repliedToMsg.messageId && (
+                            <div className="mb-2 p-2 bg-neutral-950/40 border-l-2 border-cyan-400 rounded text-[10px] leading-normal text-neutral-400 flex flex-col gap-0.5 select-none">
+                              <span className="font-bold text-cyan-400 font-mono">{repliedToMsg.senderName}</span>
+                              <span className="truncate max-w-[200px]">{repliedToMsg.content}</span>
+                            </div>
+                          )}
 
-                        {/* Text Content */}
-                        {msg.content && <p>{msg.content}</p>}
-                      </div>
-
-                      {/* Message Meta Info */}
-                      <div className="flex items-center gap-1 mt-1 text-[9px] text-neutral-600 font-mono select-none">
-                        <span>{messageTime}</span>
-                        {isSentByMe && (
-                          msg.isRead ? (
-                            <CheckCheck className="h-3 w-3 text-cyan-500" />
+                          {msg.isDeleted ? (
+                            <span className="italic text-neutral-500 flex items-center gap-1.5 text-[11px] select-none py-0.5 font-sans">
+                              <span className="text-[12px]">🚫</span> This message was deleted
+                            </span>
                           ) : (
-                            <Check className="h-3 w-3" />
-                          )
-                        )}
-                      </div>
+                            <>
+                              {/* Media display */}
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className={`mb-2 flex flex-col gap-2 max-w-full select-none ${isSentByMe ? "items-end" : "items-start"}`}>
+                                  {msg.attachments.map((att, i) => (
+                                    <div key={i}>
+                                      {att.type === "image" ? (
+                                        // eslint-disable-next-line @next/next/no-img-element
+                                        <img
+                                          src={att.url}
+                                          alt={att.name || "Attachment"}
+                                          className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity rounded-lg border border-neutral-800/80 bg-neutral-950/40"
+                                          onClick={() => handleOpenMediaViewer(att.url)}
+                                        />
+                                      ) : att.type === "video" ? (
+                                        <div
+                                          className="relative max-h-60 w-auto rounded-lg border border-neutral-800/80 bg-neutral-950/40 overflow-hidden cursor-pointer group/vid"
+                                          onClick={() => handleOpenMediaViewer(att.url)}
+                                        >
+                                          <video src={att.url} className="max-h-60 w-auto object-contain pointer-events-none" />
+                                          <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/vid:bg-black/45 transition-colors">
+                                            <div className="h-10 w-10 rounded-full bg-cyan-500/90 text-neutral-950 flex items-center justify-center shadow-lg transition-transform group-hover/vid:scale-105">
+                                              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
+                                                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                                              </svg>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ) : (
+                                        <div className="p-3 flex items-center gap-2.5 bg-neutral-900 hover:bg-neutral-850 cursor-pointer transition-colors rounded-lg border border-neutral-800/80" onClick={() => window.open(att.url, "_blank")}>
+                                          <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
+                                          <span className="text-[10px] text-neutral-300 truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Text Content */}
+                              {isDMEditing ? (
+                                <div className="space-y-2 mt-2 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+                                  <textarea
+                                    value={editingMessageText}
+                                    onChange={(e) => setEditingMessageText(e.target.value)}
+                                    className="w-full min-h-[50px] p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-200 focus:outline-none focus:border-cyan-500 font-sans resize-none leading-relaxed"
+                                  />
+                                  <div className="flex items-center gap-1.5">
+                                    <Button
+                                      onClick={() => handleUpdateDM(msg._id, editingMessageText)}
+                                      className="bg-cyan-500 hover:bg-cyan-400 text-neutral-955 font-bold text-[9px] h-6 px-2.5 rounded-md flex items-center gap-0.5 cursor-pointer transition-all"
+                                      style={{ fontFamily: "var(--font-space-grotesk)" }}
+                                    >
+                                      <Check className="h-3 w-3" /> Save
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      onClick={() => setEditingMessageId(null)}
+                                      className="text-neutral-455 hover:text-neutral-200 text-[9px] h-6 px-2.5 rounded-md border border-neutral-800 hover:bg-neutral-800 transition-all"
+                                      style={{ fontFamily: "var(--font-space-grotesk)" }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </div>
+                                </div>
+                              ) : (
+                                msg.content && <p>{msg.content}</p>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {/* Message Meta Info */}
+                        <div className="flex items-center gap-1 mt-1 text-[9px] text-neutral-600 font-mono select-none">
+                          <span>{messageTime}</span>
+                          {msg.isEdited && !msg.isDeleted && (
+                            <span className="text-cyan-400 font-bold ml-1 font-sans text-[8px] lowercase">(edited)</span>
+                          )}
+                          {isSentByMe && (
+                            msg.isRead ? (
+                              <CheckCheck className="h-3 w-3 text-cyan-500" />
+                            ) : (
+                              <Check className="h-3 w-3" />
+                            )
+                          )}
+                        </div>
+                      </motion.div>
                     </div>
                   );
                 })
@@ -699,6 +949,30 @@ export default function MessagesPage() {
             {/* Bottom Text/Media Inputs Panel */}
             <div className="p-4 border-t border-white/[0.08] bg-white/[0.01] shrink-0">
               <form onSubmit={handleSendMessage} className="space-y-3">
+                {/* Replying message preview banner */}
+                {replyingMessage && (
+                  <div className="flex items-center justify-between p-3 bg-neutral-900 border border-neutral-805 rounded-xl animate-fade-in relative select-none">
+                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                      <div className="shrink-0 h-4 border-l-2 border-cyan-400 self-stretch" />
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <span className="text-[10px] font-bold text-cyan-400 font-mono">
+                          Replying to {replyingMessage.senderId === currentUserId ? "yourself" : activeUser?.name}
+                        </span>
+                        <span className="text-[10px] text-neutral-450 truncate max-w-[300px] sm:max-w-md">
+                          {replyingMessage.content || (replyingMessage.attachments && replyingMessage.attachments.length > 0 ? "📷 Media Attachment" : "")}
+                        </span>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => setReplyingMessage(null)}
+                      className="h-6 w-6 p-0 hover:bg-neutral-800 text-neutral-500 hover:text-neutral-200 rounded-lg shrink-0 flex items-center justify-center cursor-pointer transition-all"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                )}
                 {/* Media Attachment Previews */}
                 {attachments.length > 0 && (
                   <div className="flex flex-wrap gap-2 animate-[slideIn_0.2s_ease-out]">
@@ -805,6 +1079,160 @@ export default function MessagesPage() {
           </div>
         )}
       </main>
+
+      {/* WhatsApp Media Viewer Lightbox */}
+      {mediaGalleryIndex !== -1 && (() => {
+        const gallery = getThreadMedia();
+        const activeMedia = gallery[mediaGalleryIndex];
+        if (!activeMedia) return null;
+
+        const handlePrev = () => {
+          setMediaGalleryIndex((prev) => (prev > 0 ? prev - 1 : gallery.length - 1));
+        };
+
+        const handleNext = () => {
+          setMediaGalleryIndex((prev) => (prev < gallery.length - 1 ? prev + 1 : 0));
+        };
+
+        const handleDownload = () => {
+          const link = document.createElement("a");
+          link.href = activeMedia.url;
+          link.download = activeMedia.name || activeMedia.url.split("/").pop() || "media";
+          link.target = "_blank";
+          link.click();
+        };
+
+        return (
+          <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col justify-between select-none animate-fade-in">
+            {/* Header */}
+            <div className="h-16 px-6 bg-gradient-to-b from-black/50 to-transparent flex items-center justify-between text-neutral-300 relative z-10 shrink-0">
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-bold font-mono truncate max-w-xs sm:max-w-md">{activeMedia.name || "Media Attachment"}</span>
+                <span className="text-[10px] text-neutral-500 font-mono">
+                  {mediaGalleryIndex + 1} of {gallery.length}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  onClick={handleDownload}
+                  variant="ghost"
+                  className="h-9 w-9 p-0 hover:bg-neutral-900 text-neutral-400 hover:text-cyan-400 rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                  title="Download Media"
+                >
+                  <Download className="h-4 w-4" />
+                </Button>
+                <Button
+                  onClick={() => setMediaGalleryIndex(-1)}
+                  variant="ghost"
+                  className="h-9 w-9 p-0 hover:bg-neutral-900 text-neutral-400 hover:text-neutral-100 rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                  title="Close Viewer"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Viewport content */}
+            <div className="flex-1 relative flex items-center justify-center min-h-0 px-4">
+              {/* Navigation Arrows */}
+              {gallery.length > 1 && (
+                <>
+                  <button
+                    onClick={handlePrev}
+                    className="absolute left-4 sm:left-8 z-10 p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-all focus:outline-none cursor-pointer"
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                  <button
+                    onClick={handleNext}
+                    className="absolute right-4 sm:right-8 z-10 p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-250 transition-all focus:outline-none cursor-pointer"
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                </>
+              )}
+
+              {/* Media node */}
+              <div className="max-w-[85vw] max-h-[75vh] flex items-center justify-center relative">
+                {activeMedia.type === "image" ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={activeMedia.url}
+                    alt={activeMedia.name || "Attachment"}
+                    className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                  />
+                ) : (
+                  <video
+                    src={activeMedia.url}
+                    controls
+                    autoPlay
+                    className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                  />
+                )}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="h-16 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center shrink-0">
+              <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-space font-bold">
+                Notexia Media Viewer
+              </span>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Context Menu Dropdown */}
+      {contextMenu && contextMenu.visible && (
+        <div
+          className="fixed z-[99999] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl p-1 w-32 flex flex-col animate-fade-in"
+          style={{
+            top: Math.min(contextMenu.y, typeof window !== "undefined" ? window.innerHeight - 150 : contextMenu.y),
+            left: Math.min(contextMenu.x, typeof window !== "undefined" ? window.innerWidth - 140 : contextMenu.x),
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              setReplyingMessage(contextMenu.message);
+              setContextMenu(null);
+            }}
+            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-neutral-300 hover:bg-neutral-800 hover:text-cyan-400 font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            <CornerUpLeft className="h-3.5 w-3.5" />
+            <span>Reply</span>
+          </button>
+
+          {contextMenu.message.senderId === currentUserId && (
+            <>
+              <button
+                onClick={() => {
+                  setEditingMessageId(contextMenu.message._id);
+                  setEditingMessageText(contextMenu.message.content);
+                  setContextMenu(null);
+                }}
+                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-neutral-300 hover:bg-neutral-800 hover:text-cyan-400 font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                <Edit3 className="h-3.5 w-3.5" />
+                <span>Edit</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleDeleteDM(contextMenu.message._id);
+                  setContextMenu(null);
+                }}
+                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-red-400 hover:bg-neutral-800 hover:text-red-300 font-bold transition-all flex items-center gap-1.5 cursor-pointer border-t border-neutral-800 mt-0.5 pt-1.5"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete</span>
+              </button>
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

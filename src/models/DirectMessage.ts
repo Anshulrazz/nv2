@@ -10,6 +10,13 @@ export interface IDirectMessage extends Document {
     name?: string;
   }[];
   isRead: boolean;
+  isDeleted?: boolean;
+  isEdited?: boolean;
+  repliedTo?: {
+    messageId: string;
+    content: string;
+    senderName: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +34,13 @@ const DirectMessageSchema = new Schema<IDirectMessage>(
       },
     ],
     isRead: { type: Boolean, default: false },
+    isDeleted: { type: Boolean, default: false },
+    isEdited: { type: Boolean, default: false },
+    repliedTo: {
+      messageId: { type: Schema.Types.ObjectId, ref: "DirectMessage" },
+      content: { type: String, default: "" },
+      senderName: { type: String, default: "" },
+    },
   },
   { timestamps: true }
 );

@@ -2,11 +2,13 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
-import { Sparkles, MessageSquare, Send, Plus, Trash2, Loader2, FileText, CheckCircle2 } from "lucide-react";
+import { Sparkles, MessageSquare, Send, Plus, Trash2, Loader2, FileText, CheckCircle2, Edit3, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface ChatMessage {
+  _id?: string;
   role: "user" | "assistant";
   content: string;
   createdAt: string;
@@ -30,6 +32,11 @@ export default function ChatPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [useNoteContext, setUseNoteContext] = useState(false);
   const [streamedText, setStreamedText] = useState("");
+
+  const [editingChatId, setEditingChatId] = useState<string | null>(null);
+  const [editingChatTitle, setEditingChatTitle] = useState("");
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [editingMessageText, setEditingMessageText] = useState("");
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,9 +89,35 @@ export default function ChatPage() {
         setActiveChatId(newChat._id);
         setMessages([]);
         setStreamedText("");
+        toast.success("New conversation started.");
       }
     } catch (e) {
       console.error(e);
+      toast.error("Failed to start new chat.");
+    }
+  };
+
+  const handleRenameChat = async (id: string, newTitle: string) => {
+    if (!newTitle.trim()) return;
+    try {
+      const res = await fetch(`/api/chats/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle }),
+      });
+      if (res.ok) {
+        setChats((prev) =>
+          prev.map((c) => (c._id === id ? { ...c, title: newTitle } : c))
+        );
+        toast.info("Conversation title updated.");
+      } else {
+        toast.error("Failed to update chat title.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while renaming chat.");
+    } finally {
+      setEditingChatId(null);
     }
   };
 
@@ -99,9 +132,83 @@ export default function ChatPage() {
         if (activeChatId === id) {
           setActiveChatId(null);
         }
+        toast.success("Conversation deleted successfully.");
       }
     } catch (e) {
       console.error(e);
+      toast.error("Failed to delete conversation.");
+    }
+  };
+
+  const handleUpdateMessage = async (messageId: string, newContent: string) => {
+    if (!activeChatId || !newContent.trim()) return;
+    try {
+      const res = await fetch(`/api/chats/${activeChatId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "edit-message",
+          messageId,
+          content: newContent,
+        }),
+      });
+      if (res.ok) {
+        setMessages((prev) =>
+          prev.map((m) => (m._id === messageId ? { ...m, content: newContent } : m))
+        );
+        // Also update chats cache
+        setChats((prev) =>
+          prev.map((c) =>
+            c._id === activeChatId
+              ? {
+                  ...c,
+                  messages: c.messages.map((m) =>
+                    m._id === messageId ? { ...m, content: newContent } : m
+                  ),
+                }
+              : c
+          )
+        );
+        toast.success("Message edited successfully.");
+      } else {
+        toast.error("Failed to edit message.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while editing message.");
+    } finally {
+      setEditingMessageId(null);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!activeChatId || !confirm("Delete this message?")) return;
+    try {
+      const res = await fetch(`/api/chats/${activeChatId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "delete-message",
+          messageId,
+        }),
+      });
+      if (res.ok) {
+        setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        // Also update chats cache
+        setChats((prev) =>
+          prev.map((c) =>
+            c._id === activeChatId
+              ? { ...c, messages: c.messages.filter((m) => m._id !== messageId) }
+              : c
+          )
+        );
+        toast.warning("Message deleted.");
+      } else {
+        toast.error("Failed to delete message.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while deleting message.");
     }
   };
 
@@ -269,10 +376,13 @@ export default function ChatPage() {
             </div>
             {chats.map((c) => {
               const isActive = activeChatId === c._id;
+              const isEditing = editingChatId === c._id;
               return (
                 <div
                   key={c._id}
-                  onClick={() => setActiveChatId(c._id)}
+                  onClick={() => {
+                    if (!isEditing) setActiveChatId(c._id);
+                  }}
                   className={`group flex items-center justify-between py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-155 ${
                     isActive
                       ? "bg-neutral-900 border border-neutral-800 text-neutral-100 font-medium"
@@ -280,15 +390,45 @@ export default function ChatPage() {
                   }`}
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
-                    <MessageSquare className={`h-4 w-4 shrink-0 ${isActive ? "text-cyan-400" : "text-neutral-700"}`} />
-                    <span className="text-xs truncate">{c.title}</span>
+                    <MessageSquare className={`h-4 w-4 shrink-0 ${isActive ? "text-cyan-400" : "text-neutral-705"}`} />
+                    {isEditing ? (
+                      <Input
+                        value={editingChatTitle}
+                        onChange={(e) => setEditingChatTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleRenameChat(c._id, editingChatTitle);
+                          else if (e.key === "Escape") setEditingChatId(null);
+                        }}
+                        className="h-6 text-xs bg-neutral-950 border-neutral-800 py-0.5 px-2 text-neutral-200 focus:ring-1 focus:ring-cyan-500"
+                        autoFocus
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    ) : (
+                      <span className="text-xs truncate">{c.title}</span>
+                    )}
                   </div>
-                  <button
-                    onClick={(e) => handleDeleteChat(c._id, e)}
-                    className="p-1 rounded hover:bg-neutral-800 text-neutral-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
+                  {!isEditing && (
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingChatId(c._id);
+                          setEditingChatTitle(c.title);
+                        }}
+                        className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-cyan-400 transition-colors"
+                        title="Rename Chat"
+                      >
+                        <Edit3 className="h-3 w-3" />
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteChat(c._id, e)}
+                        className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-455 transition-colors"
+                        title="Delete Chat"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -349,33 +489,85 @@ export default function ChatPage() {
             </div>
           )}
 
-          {messages.map((msg, index) => (
-            <div
-              key={index}
-              className={`flex gap-4 max-w-3xl ${msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
-            >
+          {messages.map((msg, index) => {
+            const isMsgEditing = editingMessageId === msg._id;
+            return (
               <div
-                className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border select-none font-bold text-xs ${
-                  msg.role === "user"
-                    ? "bg-neutral-800 border-neutral-700 text-neutral-350"
-                    : "bg-cyan-500/10 border-cyan-500/25 text-cyan-400"
-                }`}
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
+                key={index}
+                className={`group relative flex gap-4 max-w-3xl ${msg.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
               >
-                {msg.role === "user" ? "U" : "C"}
-              </div>
+                <div
+                  className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 border select-none font-bold text-xs ${
+                    msg.role === "user"
+                      ? "bg-neutral-800 border-neutral-700 text-neutral-350"
+                      : "bg-cyan-500/10 border-cyan-500/25 text-cyan-400"
+                  }`}
+                  style={{ fontFamily: "var(--font-space-grotesk)" }}
+                >
+                  {msg.role === "user" ? "U" : "C"}
+                </div>
 
-              <div
-                className={`p-4 rounded-xl border text-xs leading-relaxed whitespace-pre-wrap ${
-                  msg.role === "user"
-                    ? "bg-cyan-500/5 border-cyan-500/20 text-neutral-200"
-                    : "bg-neutral-955/20 backdrop-blur-sm border-white/5 text-neutral-300"
-                }`}
-              >
-                {msg.content}
+                {isMsgEditing ? (
+                  <div className="p-4 rounded-xl border bg-neutral-900 border-neutral-800 text-xs w-full max-w-xl space-y-3">
+                    <textarea
+                      value={editingMessageText}
+                      onChange={(e) => setEditingMessageText(e.target.value)}
+                      className="w-full min-h-[80px] p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-205 focus:outline-none focus:border-cyan-500 font-sans resize-none leading-relaxed"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        onClick={() => handleUpdateMessage(msg._id!, editingMessageText)}
+                        className="bg-cyan-500 hover:bg-cyan-400 text-neutral-955 font-bold text-[10px] h-7 px-3 rounded-lg flex items-center gap-1 cursor-pointer transition-all"
+                        style={{ fontFamily: "var(--font-space-grotesk)" }}
+                      >
+                        <Check className="h-3 w-3" /> Save Changes
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setEditingMessageId(null)}
+                        className="text-neutral-450 hover:text-neutral-200 text-[10px] h-7 px-3 rounded-lg border border-neutral-800 hover:bg-neutral-800 transition-all"
+                        style={{ fontFamily: "var(--font-space-grotesk)" }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    className={`p-4 rounded-xl border text-xs leading-relaxed whitespace-pre-wrap relative pr-10 ${
+                      msg.role === "user"
+                        ? "bg-cyan-500/5 border-cyan-500/20 text-neutral-200"
+                        : "bg-neutral-955/20 backdrop-blur-sm border-white/5 text-neutral-300"
+                    }`}
+                  >
+                    {msg.content}
+                    
+                    {msg._id && (
+                      <div className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-neutral-900 border border-neutral-800 rounded-md p-1 shadow-md shrink-0">
+                        <button
+                          onClick={() => {
+                            setEditingMessageId(msg._id!);
+                            setEditingMessageText(msg.content);
+                          }}
+                          className="p-1 text-neutral-450 hover:text-cyan-400 rounded hover:bg-neutral-800 transition-colors"
+                          title="Edit Message"
+                        >
+                          <Edit3 className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteMessage(msg._id!)}
+                          className="p-1 text-neutral-450 hover:text-red-400 rounded hover:bg-neutral-800 transition-colors"
+                          title="Delete Message"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Real-time Streaming message */}
           {streamedText && (

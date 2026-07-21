@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { BookOpen, Trophy, ArrowUpRight, Loader2 } from "lucide-react";
+import { BookOpen, Trophy, ArrowUpRight, Loader2, Coins, Gift } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
@@ -12,6 +12,8 @@ interface RecentStats {
   bookmarksCount: number;
   doubtsCount: number;
   points: number;
+  coins: number;
+  referralsCount: number;
   recentNotes: { _id: string; title: string; updatedAt: string }[];
   recentBlogs: { _id: string; title: string; summary: string; userName: string }[];
 }
@@ -90,6 +92,8 @@ export default function DashboardOverviewPage() {
           {[
             { label: "My Notes",       value: stats.notesCount,     icon: BookOpen,  accent: "text-[#06B6D4]",   glow: "hover:border-[#06B6D4]/30 hover:shadow-[0_0_22px_rgba(6,182,212,0.15)] hover:bg-[#06B6D4]/[0.02]" },
             { label: "Activity Points",value: stats.points,         icon: Trophy,    accent: "text-[#EC4899]",   glow: "hover:border-[#EC4899]/35 hover:shadow-[0_0_22px_rgba(236,72,153,0.18)] hover:bg-[#EC4899]/[0.03]", highlight: true },
+            { label: "Coins Balance",  value: stats.coins ?? 0,     icon: Coins,     accent: "text-[#EAB308]",   glow: "hover:border-[#EAB308]/30 hover:shadow-[0_0_22px_rgba(234,179,8,0.15)] hover:bg-[#EAB308]/[0.02]" },
+            { label: "Referred Friends",value: stats.referralsCount ?? 0, icon: Gift, accent: "text-[#A855F7]",   glow: "hover:border-[#A855F7]/30 hover:shadow-[0_0_22px_rgba(168,85,247,0.15)] hover:bg-[#A855F7]/[0.02]" },
           ].map(({ label, value, icon: Icon, accent, glow, highlight }) => (
             <div
               key={label}

@@ -76,7 +76,7 @@ export const POST = auth(async function POST(req) {
     }
 
     const body = await req.json();
-    const { receiverId, content, attachments } = body;
+    const { receiverId, content, attachments, repliedTo } = body;
 
     if (!receiverId) {
       return NextResponse.json({ error: "receiverId is required." }, { status: 400 });
@@ -119,6 +119,7 @@ export const POST = auth(async function POST(req) {
       content: content || "",
       attachments: attachments || [],
       isRead: false,
+      repliedTo: repliedTo || undefined,
     });
 
     // Look up sender info to enrich the Pusher payload

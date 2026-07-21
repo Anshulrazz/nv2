@@ -16,11 +16,12 @@ export const GET = auth(async function GET(req) {
 
     await connectToDatabase();
 
-    const [notesCount, bookmarksCount, doubtsCount, dbUser] = await Promise.all([
+    const [notesCount, bookmarksCount, doubtsCount, dbUser, referralsCount] = await Promise.all([
       Note.countDocuments({ userId, isTrashed: false }),
       Bookmark.countDocuments({ userId }),
       Doubt.countDocuments({ userId }),
-      User.findById(userId).select("points"),
+      User.findById(userId).select("points coins"),
+      User.countDocuments({ referredBy: userId }),
     ]);
 
     const recentNotes = await Note.find({ userId, isTrashed: false })
@@ -38,6 +39,8 @@ export const GET = auth(async function GET(req) {
       bookmarksCount,
       doubtsCount,
       points: dbUser?.points || 0,
+      coins: dbUser?.coins || 0,
+      referralsCount: referralsCount || 0,
       recentNotes,
       recentBlogs,
     });

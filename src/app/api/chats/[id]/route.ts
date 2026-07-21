@@ -19,17 +19,42 @@ export const PATCH = auth(async function PATCH(req, context) {
     }
 
     const body = await req.json();
-    const { title } = body;
-
-    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
-      return NextResponse.json({ error: "Title must be a non-empty string." }, { status: 400 });
-    }
+    const { title, action, messageId, content } = body;
 
     await connectToDatabase();
 
     const chat = await Chat.findOne({ _id: id, userId });
     if (!chat) {
       return NextResponse.json({ error: "Chat session not found." }, { status: 404 });
+    }
+
+    if (action === "edit-message") {
+      if (!messageId) {
+        return NextResponse.json({ error: "Message ID is required." }, { status: 400 });
+      }
+      if (typeof content !== "string" || content.trim() === "") {
+        return NextResponse.json({ error: "Content must be a non-empty string." }, { status: 400 });
+      }
+      const msg = chat.messages.id(messageId);
+      if (!msg) {
+        return NextResponse.json({ error: "Message not found." }, { status: 404 });
+      }
+      msg.content = content.trim();
+      await chat.save();
+      return NextResponse.json(chat);
+    }
+
+    if (action === "delete-message") {
+      if (!messageId) {
+        return NextResponse.json({ error: "Message ID is required." }, { status: 400 });
+      }
+      chat.messages.pull(messageId);
+      await chat.save();
+      return NextResponse.json(chat);
+    }
+
+    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
+      return NextResponse.json({ error: "Title must be a non-empty string." }, { status: 400 });
     }
 
     if (title !== undefined) {

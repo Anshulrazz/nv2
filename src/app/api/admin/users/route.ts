@@ -7,6 +7,7 @@ import { Note } from "@/models/Note";
 import { Chat } from "@/models/Chat";
 import { AuditLog } from "@/models/AuditLog";
 import mongoose from "mongoose";
+import { Project } from "@/models/Project";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -112,6 +113,7 @@ export const DELETE = auth(async function DELETE(req) {
       Folder.deleteMany({ userId: targetUserId }),
       Note.deleteMany({ userId: targetUserId }),
       Chat.deleteMany({ userId: targetUserId }),
+      Project.deleteMany({ ownerId: targetUserId }),
     ]);
 
     // Log audit log

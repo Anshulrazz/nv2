@@ -24,6 +24,8 @@ import {
   GraduationCap,
   Presentation,
   Menu,
+  Briefcase,
+  Gift,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
 import { PusherListener } from "@/components/PusherListener";
@@ -159,6 +161,8 @@ export default async function DashboardLayout({
             <NavLink href="/bookmarks"    icon={<Bookmark        className="h-4 w-4" />} label="Bookmarks"    accent="amber" />
             <NavLink href="/leaderboard"  icon={<Trophy          className="h-4 w-4" />} label="Leaderboard"  accent="yellow" />
             <NavLink href="/courses"      icon={<Presentation    className="h-4 w-4" />} label="Courses"      accent="violet" />
+            <NavLink href="/projects"     icon={<Briefcase       className="h-4 w-4" />} label="Projects"     accent="cyan" />
+            <NavLink href="/referrals"    icon={<Gift            className="h-4 w-4" />} label="Referrals"    accent="yellow" />
             <NavLink href="/settings"     icon={<Settings        className="h-4 w-4" />} label="Settings"     accent="cyan" />
 
             {(dbUser?.role === "teacher" || dbUser?.role === "admin") && (
