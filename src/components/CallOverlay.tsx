@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useCallStore, CallType, CallUser } from "@/stores/callStore";
+import { useCallStore } from "@/stores/callStore";
 import Pusher from "pusher-js";
 import { Phone, PhoneOff, Mic, MicOff, Video, VideoOff, Loader2, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,21 @@ const peerConnectionConfig = {
   ],
 };
 
+interface IncomingCallPayload {
+  callerId: string;
+  callerName: string;
+  callerImage?: string;
+  callType: "voice" | "video";
+  callId: string;
+}
+
+interface WebRTCSignalPayload {
+  signalData: {
+    sdp?: RTCSessionDescriptionInit;
+    candidate?: RTCIceCandidateInit;
+  };
+}
+
 // ────────────────────────────────────────────────────────────────────────
 // Web Audio API Ringtone & Ring-back Tone Synthesizer
 // ────────────────────────────────────────────────────────────────────────
@@ -23,9 +38,8 @@ class AudioSynthesizer {
   private interval: NodeJS.Timeout | null = null;
 
   startRinging() {
-    // Caller Ring-back tone (US standard style: 440Hz + 480Hz dual frequency)
     this.stop();
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     this.ctx = new AudioContextClass();
 
@@ -52,25 +66,22 @@ class AudioSynthesizer {
       osc2.stop(this.ctx.currentTime + 1.9);
     };
 
-    // Attempt to resume audio context if suspended (browser security)
     if (this.ctx.state === "suspended") {
       this.ctx.resume().catch((e) => console.warn("AudioContext resume failed:", e));
     }
     playBeep();
-    this.interval = setInterval(playBeep, 4000); // 2s ring, 2s silent interval
+    this.interval = setInterval(playBeep, 4000);
   }
 
   startIncoming() {
-    // Incoming ringtone melody: Alternate pitch clean electronic loop
     this.stop();
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
     if (!AudioContextClass) return;
     this.ctx = new AudioContextClass();
 
     const playMelody = () => {
       if (!this.ctx || this.ctx.state === "closed") return;
       const now = this.ctx.currentTime;
-      // High pitch sweet retro digital pattern
       const notes = [659.25, 783.99, 659.25, 783.99, 880, 783.99, 880, 987.77];
       notes.forEach((freq, idx) => {
         if (!this.ctx || this.ctx.state === "closed") return;
@@ -115,9 +126,6 @@ class AudioSynthesizer {
   }
 }
 
-// ────────────────────────────────────────────────────────────────────────
-// Native Browser Desktop Notification Helper
-// ────────────────────────────────────────────────────────────────────────
 const showNativeCallNotification = (title: string, body: string, tag: string) => {
   const isVisible = typeof document !== "undefined" && document.visibilityState === "visible";
   if (!isVisible && typeof window !== "undefined" && "Notification" in window) {
@@ -150,8 +158,6 @@ export function CallOverlay() {
     duration,
     receiveCall,
     acceptCall,
-    rejectCall,
-    endCall,
     setConnected,
     setDuration,
     toggleMute,
@@ -170,19 +176,19 @@ export function CallOverlay() {
   const pusherRef = useRef<Pusher | null>(null);
   const ringTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Track who initiated the call to accurately set senderId / receiverId in logs
   const isCallerRef = useRef<boolean>(false);
   const synthRef = useRef<AudioSynthesizer | null>(null);
 
-  // Initialize synthesizer
   useEffect(() => {
     synthRef.current = new AudioSynthesizer();
+    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
     return () => {
       synthRef.current?.stop();
     };
   }, []);
 
-  // Format MM:SS duration helper
   const formatDuration = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, "0");
     const s = (secs % 60).toString().padStart(2, "0");
@@ -192,9 +198,9 @@ export function CallOverlay() {
   // ────────────────────────────────────────────────────────────────────────
   // 1. Signaling & Database Logging Helper
   // ────────────────────────────────────────────────────────────────────────
-  const sendSignal = async (
+  const sendSignal = useCallback(async (
     action: string,
-    signalData?: any,
+    signalData?: unknown,
     logParams?: { saveLog: boolean; logContent: string; logSenderId: string; logReceiverId: string }
   ) => {
     if (!otherUser?.id || !callId) return;
@@ -214,12 +220,12 @@ export function CallOverlay() {
     } catch (err) {
       console.error("[CallOverlay] Signaling error:", err);
     }
-  };
+  }, [otherUser?.id, callId, callType]);
 
   // ────────────────────────────────────────────────────────────────────────
   // 2. WebRTC Resource Cleanup
   // ────────────────────────────────────────────────────────────────────────
-  const cleanUpWebRTC = () => {
+  const cleanUpWebRTC = useCallback(() => {
     console.log("[CallOverlay] Cleaning up WebRTC streams and connection.");
     synthRef.current?.stop();
 
@@ -241,22 +247,20 @@ export function CallOverlay() {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
-  };
+  }, []);
 
   // ────────────────────────────────────────────────────────────────────────
   // 3. Setup RTCPeerConnection and Streams
   // ────────────────────────────────────────────────────────────────────────
-  const initPeerConnection = (stream: MediaStream) => {
+  const initPeerConnection = useCallback((stream: MediaStream) => {
     console.log("[CallOverlay] Initializing RTCPeerConnection.");
     const pc = new RTCPeerConnection(peerConnectionConfig);
     peerConnectionRef.current = pc;
 
-    // Add local tracks
     stream.getTracks().forEach((track) => {
       pc.addTrack(track, stream);
     });
 
-    // Handle remote tracks
     pc.ontrack = (event) => {
       console.log("[CallOverlay] Received remote track.");
       if (event.streams && event.streams[0]) {
@@ -264,7 +268,6 @@ export function CallOverlay() {
       }
     };
 
-    // Handle ICE candidates
     pc.onicecandidate = (event) => {
       if (event.candidate) {
         console.log("[CallOverlay] Sending ICE candidate.");
@@ -273,7 +276,7 @@ export function CallOverlay() {
     };
 
     return pc;
-  };
+  }, [sendSignal]);
 
   // ────────────────────────────────────────────────────────────────────────
   // 4. Initiating Call Flow (User A - Caller)
@@ -294,13 +297,10 @@ export function CallOverlay() {
         localStreamRef.current = stream;
         setLocalStream(stream);
 
-        // Notify Receiver
         await sendSignal("incoming-call");
 
-        // Set No Answer Timeout (35 seconds)
         ringTimeoutRef.current = setTimeout(() => {
           console.log("[CallOverlay] No response from receiver. Ending call.");
-          // Caller timed out, log as missed call
           sendSignal("call-ended", null, {
             saveLog: true,
             logContent: `📞 Missed ${callType} call`,
@@ -321,7 +321,7 @@ export function CallOverlay() {
     return () => {
       if (callState === "calling") cleanUpWebRTC();
     };
-  }, [callState]);
+  }, [callState, callId, callType, currentUserId, otherUser, resetCall, sendSignal, cleanUpWebRTC]);
 
   // ────────────────────────────────────────────────────────────────────────
   // 5. Accepting & Declining Call Flow (User B - Receiver)
@@ -353,9 +353,9 @@ export function CallOverlay() {
       localStreamRef.current = stream;
       setLocalStream(stream);
 
-      const pc = initPeerConnection(stream);
+      initPeerConnection(stream);
       await sendSignal("call-accepted");
-      acceptCall(); // Update store state to connected
+      acceptCall();
     } catch (err) {
       console.error("[CallOverlay] Accept call media capture error:", err);
       alert("Could not access camera/microphone to accept call.");
@@ -368,7 +368,6 @@ export function CallOverlay() {
       Notification.requestPermission().catch(() => {});
     }
     console.log("[CallOverlay] Call declined by local receiver.");
-    // Receiver declines, log as missed call immediately
     sendSignal("call-rejected", null, {
       saveLog: true,
       logContent: `📞 Missed ${callType} call`,
@@ -384,7 +383,6 @@ export function CallOverlay() {
     const isCallActive = callState === "connected";
     const formattedDuration = formatDuration(useCallStore.getState().duration);
     
-    // Caller is logSenderId, recipient is logReceiverId
     const callerId = isCallerRef.current ? currentUserId! : otherUser!.id;
     const receiverId = isCallerRef.current ? otherUser!.id : currentUserId!;
 
@@ -417,8 +415,7 @@ export function CallOverlay() {
     const channelName = `user-${currentUserId}`;
     const channel = pusher.subscribe(channelName);
 
-    // BIND EVENT: incoming-call (For User B)
-    channel.bind("incoming-call", (data: any) => {
+    channel.bind("incoming-call", (data: IncomingCallPayload) => {
       console.log("[CallOverlay] Incoming call event received:", data);
       if (useCallStore.getState().callState !== "idle") {
         console.log("[CallOverlay] Busy. Rejecting incoming call.");
@@ -442,14 +439,12 @@ export function CallOverlay() {
         data.callId
       );
 
-      // Trigger desktop native alert
       showNativeCallNotification(
         "Incoming Call",
         `Incoming ${data.callType} call from ${data.callerName}`,
         "incoming-" + data.callId
       );
 
-      // Set auto-expire if not accepted
       ringTimeoutRef.current = setTimeout(() => {
         console.log("[CallOverlay] Incoming call ring timeout.");
         cleanUpWebRTC();
@@ -457,8 +452,7 @@ export function CallOverlay() {
       }, 35000);
     });
 
-    // BIND EVENT: call-accepted (For User A)
-    channel.bind("call-accepted", async (data: any) => {
+    channel.bind("call-accepted", async () => {
       console.log("[CallOverlay] Call accepted by receiver.");
       synthRef.current?.stop();
       if (ringTimeoutRef.current) {
@@ -466,14 +460,13 @@ export function CallOverlay() {
         ringTimeoutRef.current = null;
       }
 
-      setConnected(); // Updates state to connected
+      setConnected();
 
       const stream = localStreamRef.current;
       if (!stream) return;
 
       const pc = initPeerConnection(stream);
 
-      // Create Offer
       try {
         const offer = await pc.createOffer();
         await pc.setLocalDescription(offer);
@@ -484,7 +477,6 @@ export function CallOverlay() {
       }
     });
 
-    // BIND EVENT: call-rejected (User B declined or busy)
     channel.bind("call-rejected", () => {
       console.log("[CallOverlay] Call was rejected / busy.");
       const state = useCallStore.getState().callState;
@@ -499,12 +491,10 @@ export function CallOverlay() {
       resetCall();
     });
 
-    // BIND EVENT: call-ended
     channel.bind("call-ended", () => {
       console.log("[CallOverlay] Call was ended by other user.");
       const state = useCallStore.getState().callState;
       if (state === "incoming") {
-        // Show missed call desktop notification
         showNativeCallNotification(
           "Missed Call",
           `Missed ${callType} call from ${otherUser?.name || "Someone"}`,
@@ -515,12 +505,11 @@ export function CallOverlay() {
       resetCall();
     });
 
-    // BIND EVENT: webrtc-signal
-    channel.bind("webrtc-signal", async (data: any) => {
+    channel.bind("webrtc-signal", async (data: WebRTCSignalPayload) => {
       const pc = peerConnectionRef.current;
       if (!pc) return;
 
-      const { sdp, candidate } = data.signalData || {};
+      const { sdp, candidate } = data.signalData;
 
       try {
         if (sdp) {
@@ -547,7 +536,7 @@ export function CallOverlay() {
       pusher.unsubscribe(channelName);
       pusher.disconnect();
     };
-  }, [currentUserId, callId, otherUser?.id]);
+  }, [currentUserId, callId, otherUser, callType, receiveCall, resetCall, sendSignal, initPeerConnection, setConnected, cleanUpWebRTC]);
 
   // ────────────────────────────────────────────────────────────────────────
   // 7. Track Mutex & Camera Toggles
@@ -568,7 +557,6 @@ export function CallOverlay() {
     }
   }, [isVideoOff]);
 
-  // Link Video Stream DOM References
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
@@ -590,7 +578,7 @@ export function CallOverlay() {
       setDuration((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
-  }, [callState]);
+  }, [callState, setDuration]);
 
   if (callState === "idle") return null;
 
@@ -601,10 +589,10 @@ export function CallOverlay() {
       {/* Outgoing & Incoming State Layout */}
       {(callState === "calling" || callState === "incoming") && (
         <div className="flex flex-col items-center space-y-6 text-center max-w-sm z-10">
-          {/* Avatar Container with pulse glow */}
           <div className="relative">
             <div className="absolute -inset-1 rounded-full bg-cyan-500/20 blur-md animate-pulse" />
             {otherUser?.image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={otherUser.image}
                 alt={otherUser.name}
@@ -626,7 +614,6 @@ export function CallOverlay() {
             </p>
           </div>
 
-          {/* Action Row */}
           <div className="flex items-center gap-6 pt-4">
             {callState === "incoming" ? (
               <>
@@ -661,10 +648,10 @@ export function CallOverlay() {
       {/* Connected Active Call Layout */}
       {callState === "connected" && (
         <div className="w-full h-full max-w-4xl flex flex-col justify-between relative z-10">
-          {/* Header metadata */}
           <div className="flex items-center justify-between p-4 border-b border-white/5 bg-neutral-900/40 rounded-t-2xl backdrop-blur-md">
             <div className="flex items-center gap-3">
               {otherUser?.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={otherUser.image}
                   alt={otherUser.name}
@@ -688,11 +675,9 @@ export function CallOverlay() {
             </div>
           </div>
 
-          {/* Media Viewport */}
           <div className="flex-1 bg-neutral-950/60 border-x border-white/5 flex items-center justify-center relative min-h-0 overflow-hidden">
             {callType === "video" ? (
               <div className="w-full h-full relative flex items-center justify-center">
-                {/* Remote Stream Video - Full Container */}
                 {remoteStream ? (
                   <video
                     ref={remoteVideoRef}
@@ -707,7 +692,6 @@ export function CallOverlay() {
                   </div>
                 )}
 
-                {/* Local Stream Video - Pip Window */}
                 <div className="absolute bottom-4 right-4 w-32 h-44 rounded-xl border border-white/10 bg-neutral-950 overflow-hidden shadow-2xl z-20">
                   {!isVideoOff && localStream ? (
                     <video
@@ -725,13 +709,12 @@ export function CallOverlay() {
                 </div>
               </div>
             ) : (
-              /* Voice Call Visualization */
               <div className="flex flex-col items-center space-y-6">
                 <div className="relative">
-                  {/* CSS waveform circle pulses */}
                   <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping [animation-duration:2.5s]" />
                   <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping [animation-duration:4s]" />
                   {otherUser?.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={otherUser.image}
                       alt={otherUser.name}
@@ -744,7 +727,6 @@ export function CallOverlay() {
                   )}
                 </div>
 
-                {/* Hidden Audio Nodes */}
                 {remoteStream && (
                   <audio ref={(el) => { if (el) el.srcObject = remoteStream; }} autoPlay />
                 )}
@@ -769,7 +751,6 @@ export function CallOverlay() {
             )}
           </div>
 
-          {/* Footer Control Panel */}
           <div className="p-4 border-t border-white/5 bg-neutral-900/40 rounded-b-2xl flex items-center justify-center gap-4 backdrop-blur-md">
             <Button
               onClick={toggleMute}

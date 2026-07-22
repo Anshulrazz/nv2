@@ -66,6 +66,11 @@ interface ConversationNode {
   unreadCount: number;
 }
 
+interface WallpaperProfile {
+  directMessageWallpaper: string;
+  directMessageWallpapers: Record<string, string>;
+}
+
 export default function MessagesPage() {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id || "";
@@ -73,7 +78,7 @@ export default function MessagesPage() {
   const router = useRouter();
 
   const { initiateCall } = useCallStore();
-  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+  const [currentUserProfile, setCurrentUserProfile] = useState<WallpaperProfile | null>(null);
   const [isWallpaperPickerOpen, setIsWallpaperPickerOpen] = useState(false);
   const [isUploadingWallpaper, setIsUploadingWallpaper] = useState(false);
 
@@ -571,7 +576,7 @@ export default function MessagesPage() {
 
   const updateWallpaper = async (wallpaperValue: string, isChatSpecific = true) => {
     try {
-      const payload: any = { wallpaper: wallpaperValue };
+      const payload: { wallpaper: string; otherUserId?: string } = { wallpaper: wallpaperValue };
       if (isChatSpecific && activeUser) {
         payload.otherUserId = activeUser._id;
       }
