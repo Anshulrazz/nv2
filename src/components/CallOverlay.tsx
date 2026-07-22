@@ -181,9 +181,6 @@ export function CallOverlay() {
 
   useEffect(() => {
     synthRef.current = new AudioSynthesizer();
-    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-      Notification.requestPermission().catch(() => {});
-    }
     return () => {
       synthRef.current?.stop();
     };
@@ -289,6 +286,11 @@ export function CallOverlay() {
 
     const startCall = async () => {
       console.log("[CallOverlay] Starting outgoing call.");
+      if (typeof window !== "undefined" && !window.isSecureContext) {
+        alert("WebRTC calls require a secure origin (HTTPS or localhost).");
+        resetCall();
+        return;
+      }
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: true,
@@ -337,6 +339,12 @@ export function CallOverlay() {
 
     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
       Notification.requestPermission().catch(() => {});
+    }
+
+    if (typeof window !== "undefined" && !window.isSecureContext) {
+      alert("Accepting calls requires a secure origin (HTTPS or localhost).");
+      handleDeclineCall();
+      return;
     }
 
     synthRef.current?.stop();

@@ -860,6 +860,10 @@ export default function MessagesPage() {
                     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
                       Notification.requestPermission().catch(() => {});
                     }
+                    if (typeof window !== "undefined" && !window.isSecureContext) {
+                      alert("WebRTC calls require a secure origin (HTTPS or localhost). Please test calling via localhost or HTTPS.");
+                      return;
+                    }
                     try {
                       const stream = await navigator.mediaDevices.getUserMedia({
                         audio: true,
@@ -889,6 +893,10 @@ export default function MessagesPage() {
                   onClick={async () => {
                     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
                       Notification.requestPermission().catch(() => {});
+                    }
+                    if (typeof window !== "undefined" && !window.isSecureContext) {
+                      alert("WebRTC calls require a secure origin (HTTPS or localhost). Please test calling via localhost or HTTPS.");
+                      return;
                     }
                     try {
                       const stream = await navigator.mediaDevices.getUserMedia({
