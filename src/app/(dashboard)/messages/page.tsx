@@ -877,7 +877,7 @@ export default function MessagesPage() {
                         image: activeUser.image
                       }, "voice");
                     } catch (err) {
-                      console.error("Media permission denied:", err);
+                      console.warn("Media permission denied:", err);
                       alert("Microphone permission is required to start a voice call.");
                     }
                   }}
@@ -911,7 +911,7 @@ export default function MessagesPage() {
                         image: activeUser.image
                       }, "video");
                     } catch (err) {
-                      console.error("Media permission denied:", err);
+                      console.warn("Media permission denied:", err);
                       alert("Microphone and Camera permissions are required to start a video call.");
                     }
                   }}

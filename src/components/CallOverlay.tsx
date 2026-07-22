@@ -313,7 +313,7 @@ export function CallOverlay() {
           resetCall();
         }, 35000);
       } catch (err) {
-        console.error("[CallOverlay] Failed to acquire media devices:", err);
+        console.warn("[CallOverlay] Failed to acquire media devices:", err);
         alert("Could not access camera/microphone. Check permissions.");
         resetCall();
       }
@@ -365,7 +365,7 @@ export function CallOverlay() {
       await sendSignal("call-accepted");
       acceptCall();
     } catch (err) {
-      console.error("[CallOverlay] Accept call media capture error:", err);
+      console.warn("[CallOverlay] Accept call media capture error:", err);
       alert("Could not access camera/microphone to accept call.");
       handleDeclineCall();
     }
