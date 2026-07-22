@@ -24,10 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
-    // Set token expiration time to 1 hour (3600 seconds)
     const expirationTimeInSeconds = 3600;
-    const currentTimestamp = Math.floor(Date.now() / 1000);
-    const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
 
     // Determine role (1 = publisher, 2 = subscriber)
     let userRole = RtcRole.SUBSCRIBER;
@@ -45,7 +42,8 @@ export async function POST(req: NextRequest) {
         channelName,
         String(uid),
         userRole,
-        privilegeExpiredTs
+        expirationTimeInSeconds,
+        expirationTimeInSeconds
       );
     } else {
       // Fallback for auto-assigned uids (use 0 as fallback uid for anonymous joining)
@@ -55,7 +53,8 @@ export async function POST(req: NextRequest) {
         channelName,
         0,
         userRole,
-        privilegeExpiredTs
+        expirationTimeInSeconds,
+        expirationTimeInSeconds
       );
     }
 
