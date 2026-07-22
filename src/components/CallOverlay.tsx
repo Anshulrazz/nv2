@@ -4,12 +4,13 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useCallStore } from "@/stores/callStore";
 import Pusher from "pusher-js";
-import { Phone, PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Loader2, User as UserIcon } from "lucide-react";
+import { Phone, PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Loader2, User as UserIcon, MonitorUp, MonitorX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AgoraRTC, {
   AgoraRTCProvider,
   useLocalMicrophoneTrack,
   useLocalCameraTrack,
+  useLocalScreenTrack,
   usePublish,
   useJoin,
   useRemoteUsers,
@@ -142,20 +143,64 @@ const formatDuration = (secs: number) => {
 // Agora Active Call Component
 // ────────────────────────────────────────────────────────────────────────
 function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
   const { callType, callId, otherUser, isMuted, isVideoOff, toggleMute, toggleVideo, duration, setDuration } = useCallStore();
   
+  const [token, setToken] = React.useState<string | null>(null);
+  const [isScreenSharing, setIsScreenSharing] = React.useState(false);
+  const [tokenError, setTokenError] = React.useState<string | null>(null);
+
+  // Fetch token on mount
+  useEffect(() => {
+    if (!callId || !currentUserId) return;
+    const fetchToken = async () => {
+      try {
+        const res = await fetch("/api/agora/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channelName: callId, uid: currentUserId, role: "publisher" }),
+        });
+        const data = await res.json();
+        if (data.token) {
+          setToken(data.token);
+        } else {
+          setTokenError(data.error || "Failed to fetch token");
+        }
+      } catch (err) {
+        setTokenError("Network error fetching token");
+      }
+    };
+    fetchToken();
+  }, [callId, currentUserId]);
+
   // Create tracks
   const { localMicrophoneTrack } = useLocalMicrophoneTrack(!isMuted);
-  const { localCameraTrack } = useLocalCameraTrack(callType === "video" && !isVideoOff);
+  const { localCameraTrack } = useLocalCameraTrack(callType === "video" && !isVideoOff && !isScreenSharing);
+  const { screenTrack, error: screenError } = useLocalScreenTrack(isScreenSharing, { encoderConfig: "1080p_1" }, "disable");
   
   // Join channel (using the callId as channel name)
   const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID || "";
-  useJoin({ appid: appId, channel: callId || "", token: null }, true);
   
+  // Only join if we have a token
+  useJoin(
+    { appid: appId, channel: callId || "", token: token, uid: currentUserId },
+    !!token && !!appId && !!callId
+  );
+  
+  // Handle screen share stop via browser UI
+  useEffect(() => {
+    if (screenTrack) {
+      screenTrack.on("track-ended", () => {
+        setIsScreenSharing(false);
+      });
+    }
+  }, [screenTrack]);
+
   // Publish tracks
   usePublish([
     ...(localMicrophoneTrack ? [localMicrophoneTrack] : []),
-    ...(callType === "video" && localCameraTrack ? [localCameraTrack] : [])
+    ...(isScreenSharing && screenTrack ? [screenTrack] : (callType === "video" && localCameraTrack ? [localCameraTrack] : []))
   ]);
 
   const remoteUsers = useRemoteUsers();
@@ -167,10 +212,10 @@ function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
   }, [isMuted, localMicrophoneTrack]);
 
   useEffect(() => {
-    if (localCameraTrack) {
+    if (localCameraTrack && !isScreenSharing) {
       localCameraTrack.setMuted(isVideoOff);
     }
-  }, [isVideoOff, localCameraTrack]);
+  }, [isVideoOff, localCameraTrack, isScreenSharing]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -179,8 +224,35 @@ function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
     return () => clearInterval(interval);
   }, [setDuration]);
 
+  if (tokenError) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-950 p-6 z-10 text-center">
+        <Loader2 className="w-8 h-8 text-red-500 mb-4 animate-pulse" />
+        <p className="text-sm font-mono text-red-400">Connection Error</p>
+        <p className="text-xs text-neutral-500 mt-2">{tokenError}</p>
+        <Button onClick={handleEndCall} className="mt-6 bg-neutral-800 hover:bg-neutral-700">Dismiss</Button>
+      </div>
+    );
+  }
+
+  if (!token) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-950 p-6 z-10">
+        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-4" />
+        <p className="text-xs font-mono text-cyan-500 tracking-widest uppercase">Securing connection...</p>
+      </div>
+    );
+  }
+
+  // Calculate dynamic grid layout based on number of remote users
+  const totalParticipants = remoteUsers.length + 1; // +1 for local user
+  const gridCols = totalParticipants === 1 ? 'grid-cols-1' :
+                   totalParticipants === 2 ? 'grid-cols-1 md:grid-cols-2' :
+                   totalParticipants <= 4 ? 'grid-cols-2' :
+                   'grid-cols-2 md:grid-cols-3';
+
   return (
-    <div className="w-full h-full max-w-4xl flex flex-col justify-between relative z-10">
+    <div className="w-full h-full max-w-5xl flex flex-col justify-between relative z-10 shadow-2xl overflow-hidden rounded-2xl">
       <div className="flex items-center justify-between p-4 border-b border-white/5 bg-neutral-900/40 rounded-t-2xl backdrop-blur-md">
         <div className="flex items-center gap-3">
           {otherUser?.image ? (
@@ -205,24 +277,31 @@ function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
 
       <div className="flex-1 bg-neutral-950/60 border-x border-white/5 flex items-center justify-center relative min-h-0 overflow-hidden">
         {callType === "video" ? (
-          <div className="w-full h-full relative flex items-center justify-center">
-            {remoteUsers.length > 0 ? (
-              <RemoteUser user={remoteUsers[0]} className="w-full h-full object-cover" playVideo={true} playAudio={true} />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-neutral-550">
-                <Loader2 className="w-6 h-6 animate-spin text-cyan-400" />
-                <span className="text-[10px] uppercase tracking-wider font-bold">Connecting video feed...</span>
-              </div>
-            )}
-
-            <div className="absolute bottom-4 right-4 w-32 h-44 rounded-xl border border-white/10 bg-neutral-950 overflow-hidden shadow-2xl z-20">
-              {!isVideoOff && localCameraTrack ? (
-                <LocalVideoTrack track={localCameraTrack} play={true} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-neutral-900 text-neutral-600">
-                  <VideoOff className="w-5 h-5" />
+          <div className={`w-full h-full grid ${gridCols} gap-2 p-2 relative bg-black/50`}>
+            {remoteUsers.map((u) => (
+              <div key={u.uid} className="relative rounded-xl overflow-hidden bg-neutral-900 shadow-xl border border-white/5 group">
+                <RemoteUser user={u} className="w-full h-full object-cover" playVideo={true} playAudio={true} />
+                <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-white/90 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
+                  {u.uid === otherUser?.id ? otherUser.name : `User ${u.uid}`}
                 </div>
-              )}
+              </div>
+            ))}
+
+            {/* Local Video/Screen Track */}
+            <div className={`relative rounded-xl overflow-hidden shadow-xl border border-white/10 group ${totalParticipants === 1 ? 'w-full h-full' : 'bg-neutral-900'}`}>
+              {isScreenSharing && screenTrack ? (
+                <LocalVideoTrack track={screenTrack} play={true} className="w-full h-full object-contain bg-black" />
+              ) : (!isVideoOff && localCameraTrack ? (
+                <LocalVideoTrack track={localCameraTrack} play={true} className="w-full h-full object-cover bg-black" />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-600 gap-2">
+                  <UserIcon className="w-12 h-12 opacity-20" />
+                  <span className="text-[10px] uppercase tracking-widest font-bold opacity-40">Camera Off</span>
+                </div>
+              ))}
+              <div className="absolute bottom-3 left-3 bg-cyan-500/20 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-cyan-300 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                You {isScreenSharing ? '(Screen)' : ''}
+              </div>
             </div>
           </div>
         ) : (
@@ -241,9 +320,11 @@ function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
             </div>
             
             {/* Audio streams automatically play through useRemoteUsers hook */}
-            {remoteUsers.map((u) => (
-              <RemoteUser key={u.uid} user={u} playAudio={true} playVideo={false} className="hidden" />
-            ))}
+            <div className="opacity-0 w-0 h-0 pointer-events-none absolute">
+              {remoteUsers.map((u) => (
+                <RemoteUser key={u.uid} user={u} playAudio={true} playVideo={false} />
+              ))}
+            </div>
 
             <div className="flex items-center gap-1 h-8 justify-center">
               {[...Array(6)].map((_, i) => (
@@ -263,15 +344,20 @@ function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
       </div>
 
       <div className="p-4 border-t border-white/5 bg-neutral-900/40 rounded-b-2xl flex items-center justify-center gap-4 backdrop-blur-md">
-        <Button onClick={toggleMute} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isMuted ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon">
+        <Button onClick={toggleMute} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isMuted ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" title="Toggle Microphone">
           {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
         </Button>
         {callType === "video" && (
-          <Button onClick={toggleVideo} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isVideoOff ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon">
-            {isVideoOff ? <VideoOff className="h-4 w-4" /> : <VideoIcon className="h-4 w-4" />}
-          </Button>
+          <>
+            <Button onClick={toggleVideo} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isVideoOff || isScreenSharing ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" disabled={isScreenSharing} title="Toggle Camera">
+              {isVideoOff ? <VideoOff className="h-4 w-4" /> : <VideoIcon className="h-4 w-4" />}
+            </Button>
+            <Button onClick={() => setIsScreenSharing(!isScreenSharing)} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isScreenSharing ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" title="Share Screen">
+              {isScreenSharing ? <MonitorX className="h-4 w-4" /> : <MonitorUp className="h-4 w-4" />}
+            </Button>
+          </>
         )}
-        <Button onClick={handleEndCall} className="w-11 h-11 rounded-xl bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(239,68,68,0.3)]" size="icon">
+        <Button onClick={handleEndCall} className="w-11 h-11 rounded-xl bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(239,68,68,0.3)] ml-4" size="icon" title="End Call">
           <PhoneOff className="h-4 w-4" />
         </Button>
       </div>
