@@ -14,7 +14,8 @@ import AgoraRTC, {
   useJoin,
   useRemoteUsers,
   RemoteUser,
-  LocalVideoTrack
+  LocalVideoTrack,
+  useRTCClient
 } from "agora-rtc-react";
 
 // ────────────────────────────────────────────────────────────────────────
@@ -291,13 +292,6 @@ export function CallOverlay() {
   const synthRef = useRef<AudioSynthesizer | null>(null);
   const ringTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const pusherRef = useRef<Pusher | null>(null);
-  
-  // Setup Agora client reference safely without throwing SSR errors
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const agoraClientRef = useRef<any>(null);
-  useEffect(() => {
-    agoraClientRef.current = AgoraRTC.createClient({ codec: "vp8", mode: "rtc" });
-  }, []);
 
   useEffect(() => {
     synthRef.current = new AudioSynthesizer();
@@ -474,11 +468,18 @@ export function CallOverlay() {
         </div>
       )}
 
-      {callState === "connected" && agoraClientRef.current && (
-        <AgoraRTCProvider client={agoraClientRef.current}>
-          <ActiveCall handleEndCall={handleEndCall} />
-        </AgoraRTCProvider>
+      {callState === "connected" && (
+        <ActiveCallProvider handleEndCall={handleEndCall} />
       )}
     </div>
+  );
+}
+
+function ActiveCallProvider({ handleEndCall }: { handleEndCall: () => void }) {
+  const client = useRTCClient(AgoraRTC.createClient({ codec: "vp8", mode: "rtc" }));
+  return (
+    <AgoraRTCProvider client={client}>
+      <ActiveCall handleEndCall={handleEndCall} />
+    </AgoraRTCProvider>
   );
 }
