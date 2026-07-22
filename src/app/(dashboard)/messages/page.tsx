@@ -856,15 +856,26 @@ export default function MessagesPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
+                  onClick={async () => {
                     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
                       Notification.requestPermission().catch(() => {});
                     }
-                    initiateCall({
-                      id: activeUser._id,
-                      name: activeUser.name,
-                      image: activeUser.image
-                    }, "voice");
+                    try {
+                      const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: false,
+                      });
+                      stream.getTracks().forEach((track) => track.stop());
+
+                      initiateCall({
+                        id: activeUser._id,
+                        name: activeUser.name,
+                        image: activeUser.image
+                      }, "voice");
+                    } catch (err) {
+                      console.error("Media permission denied:", err);
+                      alert("Microphone permission is required to start a voice call.");
+                    }
                   }}
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
                   title="Voice Call"
@@ -875,15 +886,26 @@ export default function MessagesPage() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => {
+                  onClick={async () => {
                     if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
                       Notification.requestPermission().catch(() => {});
                     }
-                    initiateCall({
-                      id: activeUser._id,
-                      name: activeUser.name,
-                      image: activeUser.image
-                    }, "video");
+                    try {
+                      const stream = await navigator.mediaDevices.getUserMedia({
+                        audio: true,
+                        video: true,
+                      });
+                      stream.getTracks().forEach((track) => track.stop());
+
+                      initiateCall({
+                        id: activeUser._id,
+                        name: activeUser.name,
+                        image: activeUser.image
+                      }, "video");
+                    } catch (err) {
+                      console.error("Media permission denied:", err);
+                      alert("Microphone and Camera permissions are required to start a video call.");
+                    }
                   }}
                   className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
                   title="Video Call"
