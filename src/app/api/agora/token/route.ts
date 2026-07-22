@@ -9,7 +9,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { channelName, uid, role } = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      return NextResponse.json({ error: "Invalid or empty JSON body" }, { status: 400 });
+    }
+    
+    const { channelName, uid, role } = body;
 
     if (!channelName) {
       return NextResponse.json({ error: "Channel name is required" }, { status: 400 });
