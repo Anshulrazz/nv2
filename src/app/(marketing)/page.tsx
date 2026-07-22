@@ -192,7 +192,7 @@ export default function LandingPage() {
           <div className="nx-nav-panel absolute inset-0 rounded-2xl" />
           <div className="relative px-5 sm:px-7 py-3.5 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <span className="nx-chalk-dot" />
+              <img src="/logo.png" className="h-5.5 w-auto object-contain" alt="Notexia Logo" />
               <span className="font-display text-lg sm:text-xl font-bold tracking-tight text-[color:var(--nx-chalk)]">
                 Notexia
               </span>

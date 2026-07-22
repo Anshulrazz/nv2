@@ -114,7 +114,7 @@ export default async function DashboardLayout({
           {/* Brand header */}
           <div className="h-16 px-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary neon-pulse" />
+              <img src="/logo.png" className="h-5 w-auto object-contain" alt="Notexia Logo" />
               <span
                 className="text-base font-bold tracking-widest text-primary"
                 style={{ fontFamily: "var(--font-space-grotesk)" }}

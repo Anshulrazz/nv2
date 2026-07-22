@@ -76,8 +76,8 @@ function LoginForm() {
 
         {/* Header */}
         <div className="px-8 pt-8 pb-4 text-center space-y-2">
-          <div className="flex items-center justify-center gap-2 mb-3">
-            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 neon-pulse" />
+          <div className="flex items-center justify-center gap-2.5 mb-3">
+            <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
             <span
               className="text-xl font-bold tracking-widest bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
