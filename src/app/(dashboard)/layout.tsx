@@ -29,8 +29,8 @@ import {
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
 import { PusherListener } from "@/components/PusherListener";
-import dynamic from "next/dynamic";
-const CallOverlay = dynamic(() => import("@/components/CallOverlay").then(m => m.CallOverlay), { ssr: false });
+import nextDynamic from "next/dynamic";
+const CallOverlay = nextDynamic(() => import("@/components/CallOverlay").then(m => m.CallOverlay), { ssr: false });
 import { Button } from "@/components/ui/button";
 import { SidebarTree } from "@/components/sidebar/SidebarTree";
 import { NavLink } from "@/components/sidebar/NavLink";
