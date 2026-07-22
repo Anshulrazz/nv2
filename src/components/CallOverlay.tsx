@@ -170,6 +170,10 @@ export function CallOverlay() {
 
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
+  const localAudioRef = useRef<HTMLAudioElement | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const iceCandidateQueueRef = useRef<RTCIceCandidateInit[]>([]);
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
@@ -244,6 +248,7 @@ export function CallOverlay() {
       peerConnectionRef.current.close();
       peerConnectionRef.current = null;
     }
+    iceCandidateQueueRef.current = [];
   }, []);
 
   // ────────────────────────────────────────────────────────────────────────
@@ -524,6 +529,14 @@ export function CallOverlay() {
           console.log("[CallOverlay] Received remote SDP:", sdp.type);
           await pc.setRemoteDescription(new RTCSessionDescription(sdp));
 
+          if (iceCandidateQueueRef.current.length > 0) {
+            console.log(`[CallOverlay] Processing ${iceCandidateQueueRef.current.length} queued ICE candidates.`);
+            for (const c of iceCandidateQueueRef.current) {
+              await pc.addIceCandidate(new RTCIceCandidate(c));
+            }
+            iceCandidateQueueRef.current = [];
+          }
+
           if (sdp.type === "offer") {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
@@ -531,8 +544,13 @@ export function CallOverlay() {
             sendSignal("webrtc-signal", { sdp: answer });
           }
         } else if (candidate) {
-          console.log("[CallOverlay] Received remote ICE candidate.");
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          if (pc.remoteDescription) {
+            console.log("[CallOverlay] Received and added remote ICE candidate.");
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          } else {
+            console.log("[CallOverlay] Queued remote ICE candidate (no remoteDescription yet).");
+            iceCandidateQueueRef.current.push(candidate);
+          }
         }
       } catch (err) {
         console.error("[CallOverlay] Error processing WebRTC signal:", err);
@@ -569,11 +587,18 @@ export function CallOverlay() {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
     }
+    if (localAudioRef.current && localStream) {
+      localAudioRef.current.srcObject = localStream;
+    }
   }, [localStream, callState]);
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+    }
+    if (remoteAudioRef.current && remoteStream) {
+      remoteAudioRef.current.srcObject = remoteStream;
+      remoteAudioRef.current.play().catch(e => console.warn("Remote audio play failed:", e));
     }
   }, [remoteStream, callState]);
 
@@ -737,19 +762,11 @@ export function CallOverlay() {
 
                 <audio
                   autoPlay
-                  ref={(el) => {
-                    if (el && el.srcObject !== remoteStream) {
-                      el.srcObject = remoteStream;
-                    }
-                  }}
+                  ref={remoteAudioRef}
                 />
                 <audio
                   muted
-                  ref={(el) => {
-                    if (el && el.srcObject !== localStream) {
-                      el.srcObject = localStream;
-                    }
-                  }}
+                  ref={localAudioRef}
                 />
 
                 <div className="flex items-center gap-1 h-8 justify-center">
