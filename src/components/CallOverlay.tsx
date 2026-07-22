@@ -528,7 +528,7 @@ export function CallOverlay() {
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
             console.log("[CallOverlay] Sending SDP answer.");
-            sendSignal("webrtc-signal", { answer });
+            sendSignal("webrtc-signal", { sdp: answer });
           }
         } else if (candidate) {
           console.log("[CallOverlay] Received remote ICE candidate.");
@@ -735,12 +735,22 @@ export function CallOverlay() {
                   )}
                 </div>
 
-                {remoteStream && (
-                  <audio ref={(el) => { if (el) el.srcObject = remoteStream; }} autoPlay />
-                )}
-                {localStream && (
-                  <audio ref={(el) => { if (el) el.srcObject = localStream; }} muted />
-                )}
+                <audio
+                  autoPlay
+                  ref={(el) => {
+                    if (el && el.srcObject !== remoteStream) {
+                      el.srcObject = remoteStream;
+                    }
+                  }}
+                />
+                <audio
+                  muted
+                  ref={(el) => {
+                    if (el && el.srcObject !== localStream) {
+                      el.srcObject = localStream;
+                    }
+                  }}
+                />
 
                 <div className="flex items-center gap-1 h-8 justify-center">
                   {[...Array(6)].map((_, i) => (
