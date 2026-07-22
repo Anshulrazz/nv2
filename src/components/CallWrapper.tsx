@@ -8,5 +8,9 @@ const CallOverlay = dynamic(
 );
 
 export function CallWrapper() {
-  return <CallOverlay />;
+  return (
+    <div id="agora-wrapper">
+      <CallOverlay />
+    </div>
+  );
 }
