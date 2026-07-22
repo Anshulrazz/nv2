@@ -1,4 +1,5 @@
 "use client";
+// Force HMR update
 
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
@@ -83,6 +84,10 @@ export default function MessagesPage() {
   const [isUploadingWallpaper, setIsUploadingWallpaper] = useState(false);
 
   const [conversations, setConversations] = useState<ConversationNode[]>([]);
+  const conversationsRef = useRef(conversations);
+  useEffect(() => {
+    conversationsRef.current = conversations;
+  }, [conversations]);
   const [activeUser, setActiveUser] = useState<UserProfile | null>(null);
   const [messages, setMessages] = useState<MessageNode[]>([]);
   
@@ -308,6 +313,35 @@ export default function MessagesPage() {
            return [...prev, newMsg];
          });
       }
+
+      // Fire a desktop notification for messages sent to us by someone else,
+      // but only if the tab isn't focused or we're not already looking at that thread.
+      if (
+        newMsg.senderId !== currentUserId &&
+        typeof window !== "undefined" &&
+        "Notification" in window &&
+        Notification.permission === "granted" &&
+        (document.hidden || activeUserIdRef.current !== newMsg.senderId)
+      ) {
+        try {
+          const sender = conversationsRef.current.find((c) => c.otherUser._id === newMsg.senderId)?.otherUser;
+          const title = sender?.name || "New message";
+          const body =
+            newMsg.content ||
+            (newMsg.attachments && newMsg.attachments.length > 0 ? "Sent an attachment" : "");
+          const notification = new Notification(title, {
+            body,
+            icon: sender?.image || undefined,
+          });
+          notification.onclick = () => {
+            window.focus();
+            if (sender) setActiveUser(sender);
+            notification.close();
+          };
+        } catch (err) {
+          console.error("Failed to show notification:", err);
+        }
+      }
     });
 
     channel.bind("message-updated", (updatedMsg: MessageNode) => {
@@ -364,6 +398,24 @@ export default function MessagesPage() {
       fetchCurrentUserProfile();
     }
   }, [currentUserId, fetchConversations, fetchCurrentUserProfile]);
+
+  // Ask for browser notification permission once, independent of the call buttons.
+  // This must run in a secure context (https:// or localhost) or the browser will
+  // silently refuse to show the prompt at all instead of asking.
+  useEffect(() => {
+    if (!currentUserId) return;
+    if (typeof window === "undefined") return;
+    if (!("Notification" in window)) return;
+    if (!window.isSecureContext) {
+      console.warn("Notifications require a secure context (HTTPS or localhost); skipping permission request.");
+      return;
+    }
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch((err) => {
+        console.error("Notification permission request failed:", err);
+      });
+    }
+  }, [currentUserId]);
 
   // Load active messages
   useEffect(() => {
@@ -857,9 +909,6 @@ export default function MessagesPage() {
                   variant="ghost"
                   size="icon"
                   onClick={async () => {
-                    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-                      Notification.requestPermission().catch(() => {});
-                    }
                     if (typeof window !== "undefined" && !window.isSecureContext) {
                       alert("WebRTC calls require a secure origin (HTTPS or localhost). Please test calling via localhost or HTTPS.");
                       return;
@@ -891,9 +940,6 @@ export default function MessagesPage() {
                   variant="ghost"
                   size="icon"
                   onClick={async () => {
-                    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
-                      Notification.requestPermission().catch(() => {});
-                    }
                     if (typeof window !== "undefined" && !window.isSecureContext) {
                       alert("WebRTC calls require a secure origin (HTTPS or localhost). Please test calling via localhost or HTTPS.");
                       return;
