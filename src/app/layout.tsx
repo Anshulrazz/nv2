@@ -100,8 +100,8 @@ export const metadata: Metadata = {
     google: "",
   },
   icons: {
-    icon: "/favicon.ico",
-    apple: "/favicon.ico",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
   manifest: "/manifest.webmanifest",
 };

@@ -15,6 +15,8 @@ export interface IUser extends Document {
   bannerImage?: string;
   isSuspended: boolean;
   isPublic: boolean;
+  directMessageWallpaper?: string;
+  directMessageWallpapers?: Map<string, string>;
   // Mobile password-reset fields (unused by web Auth.js)
   resetTokenHash?: string;
   resetTokenExpiry?: Date;
@@ -43,6 +45,8 @@ const UserSchema = new Schema<IUser>(
     bannerImage: { type: String, default: "" },
     isSuspended: { type: Boolean, default: false },
     isPublic: { type: Boolean, default: true },
+    directMessageWallpaper: { type: String, default: "" },
+    directMessageWallpapers: { type: Map, of: String, default: {} },
     // Mobile password-reset fields (unused by web Auth.js)
     resetTokenHash: { type: String },
     resetTokenExpiry: { type: Date },

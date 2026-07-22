@@ -21,9 +21,14 @@ import {
   CheckCheck,
   CornerUpLeft,
   Edit3,
-  Trash2
+  Trash2,
+  Phone,
+  Video,
+  Palette,
+  Image as ImageIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCallStore } from "@/stores/callStore";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -66,6 +71,11 @@ export default function MessagesPage() {
   const currentUserId = session?.user?.id || "";
   const searchParams = useSearchParams();
   const router = useRouter();
+
+  const { initiateCall } = useCallStore();
+  const [currentUserProfile, setCurrentUserProfile] = useState<any>(null);
+  const [isWallpaperPickerOpen, setIsWallpaperPickerOpen] = useState(false);
+  const [isUploadingWallpaper, setIsUploadingWallpaper] = useState(false);
 
   const [conversations, setConversations] = useState<ConversationNode[]>([]);
   const [activeUser, setActiveUser] = useState<UserProfile | null>(null);
@@ -223,6 +233,18 @@ export default function MessagesPage() {
     }
   }, []);
 
+  const fetchCurrentUserProfile = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/wallpaper");
+      if (res.ok) {
+        const data = await res.json();
+        setCurrentUserProfile(data);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
   // 2. Fetch Messages between current user and active user
   const fetchMessages = useCallback(async (targetUserId: string, silent = false) => {
     if (!silent) setIsMessagesLoading(true);
@@ -334,8 +356,9 @@ export default function MessagesPage() {
   useEffect(() => {
     if (currentUserId) {
       fetchConversations();
+      fetchCurrentUserProfile();
     }
-  }, [currentUserId, fetchConversations]);
+  }, [currentUserId, fetchConversations, fetchCurrentUserProfile]);
 
   // Load active messages
   useEffect(() => {
@@ -546,6 +569,76 @@ export default function MessagesPage() {
     }
   };
 
+  const updateWallpaper = async (wallpaperValue: string, isChatSpecific = true) => {
+    try {
+      const payload: any = { wallpaper: wallpaperValue };
+      if (isChatSpecific && activeUser) {
+        payload.otherUserId = activeUser._id;
+      }
+      const res = await fetch("/api/user/wallpaper", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setCurrentUserProfile(updated);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleWallpaperUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingWallpaper(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        await updateWallpaper(data.url);
+      } else {
+        alert("Failed to upload custom wallpaper.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error uploading wallpaper.");
+    } finally {
+      setIsUploadingWallpaper(false);
+    }
+  };
+
+  const activeWallpaper = activeUser
+    ? (currentUserProfile?.directMessageWallpapers?.[activeUser._id] || currentUserProfile?.directMessageWallpaper || "")
+    : "";
+
+  let wallpaperStyle: React.CSSProperties = {};
+  if (activeWallpaper) {
+    if (activeWallpaper.startsWith("url(") || activeWallpaper.startsWith("/") || activeWallpaper.startsWith("http")) {
+      const cleanUrl = activeWallpaper.startsWith("url(") ? activeWallpaper : `url(${activeWallpaper})`;
+      wallpaperStyle = {
+        backgroundImage: cleanUrl,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      };
+    } else if (activeWallpaper.startsWith("linear-gradient")) {
+      wallpaperStyle = {
+        background: activeWallpaper,
+      };
+    } else {
+      wallpaperStyle = {
+        backgroundColor: activeWallpaper,
+      };
+    }
+  }
+
   return (
     <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
       {/* 1. Conversations Column (Left Pane) */}
@@ -754,7 +847,55 @@ export default function MessagesPage() {
                 </div>
               </div>
 
-              <div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+                      Notification.requestPermission().catch(() => {});
+                    }
+                    initiateCall({
+                      id: activeUser._id,
+                      name: activeUser.name,
+                      image: activeUser.image
+                    }, "voice");
+                  }}
+                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                  title="Voice Call"
+                >
+                  <Phone className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => {
+                    if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
+                      Notification.requestPermission().catch(() => {});
+                    }
+                    initiateCall({
+                      id: activeUser._id,
+                      name: activeUser.name,
+                      image: activeUser.image
+                    }, "video");
+                  }}
+                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                  title="Video Call"
+                >
+                  <Video className="h-4 w-4" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsWallpaperPickerOpen(true)}
+                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                  title="Chat Theme"
+                >
+                  <Palette className="h-4 w-4" />
+                </Button>
+
                 <Link href={`/user/${activeUser._id}`}>
                   <Button
                     variant="ghost"
@@ -770,7 +911,11 @@ export default function MessagesPage() {
             </div>
 
             {/* Scrollable messages container */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4 custom-scroll bg-neutral-950/20 flex flex-col">
+            <div
+              ref={scrollContainerRef}
+              style={wallpaperStyle}
+              className="flex-1 overflow-y-auto p-6 space-y-4 custom-scroll bg-neutral-950/20 flex flex-col"
+            >
               {isMessagesLoading ? (
                 <div className="flex items-center justify-center py-10 text-neutral-550 gap-2 text-xs">
                   <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
@@ -1231,6 +1376,126 @@ export default function MessagesPage() {
               </button>
             </>
           )}
+        </div>
+      )}
+
+      {/* Wallpaper Picker Modal */}
+      {isWallpaperPickerOpen && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setIsWallpaperPickerOpen(false)}>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-2xl relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-cyan-400" />
+                <h3 className="text-sm font-bold text-neutral-200 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  Chat Wallpaper Settings
+                </h3>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsWallpaperPickerOpen(false)}
+                className="h-8 w-8 text-neutral-500 hover:text-neutral-200 rounded-lg"
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Presets - Solid Colors */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                Solid Colors
+              </h4>
+              <div className="grid grid-cols-6 gap-2.5">
+                {[
+                  { name: "Charcoal", value: "#0b141a" },
+                  { name: "Olive", value: "#1c2826" },
+                  { name: "Teal", value: "#0d2c30" },
+                  { name: "Indigo", value: "#182238" },
+                  { name: "Crimson", value: "#2e141a" },
+                  { name: "Royal", value: "#221230" },
+                ].map((color) => (
+                  <button
+                    key={color.name}
+                    title={color.name}
+                    onClick={() => updateWallpaper(color.value)}
+                    className="w-10 h-10 rounded-full border border-white/5 shadow-inner hover:scale-105 active:scale-95 transition-transform"
+                    style={{ backgroundColor: color.value }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Presets - Gradients */}
+            <div className="space-y-3">
+              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                Cyber Gradients
+              </h4>
+              <div className="grid grid-cols-4 gap-2.5">
+                {[
+                  { name: "Neon", value: "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))" },
+                  { name: "Cosmic", value: "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15))" },
+                  { name: "Flame", value: "linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 179, 8, 0.15))" },
+                  { name: "Forest", value: "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))" },
+                ].map((grad) => (
+                  <button
+                    key={grad.name}
+                    title={grad.name}
+                    onClick={() => updateWallpaper(grad.value)}
+                    className="h-10 rounded-lg border border-white/5 shadow-inner hover:scale-105 active:scale-95 transition-transform"
+                    style={{ background: grad.value }}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Custom Image Upload */}
+            <div className="space-y-3 border-t border-neutral-800 pt-4">
+              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                Custom Background Image
+              </h4>
+              <div className="flex items-center gap-3">
+                <label className="flex-1 flex flex-col items-center justify-center border border-dashed border-neutral-850 hover:border-cyan-500/50 bg-neutral-950/40 rounded-xl p-4 cursor-pointer transition-all hover:bg-neutral-950/60 select-none">
+                  {isUploadingWallpaper ? (
+                    <div className="flex items-center gap-2 text-xs text-neutral-400">
+                      <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
+                      <span>Uploading...</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1.5 text-xs text-neutral-400">
+                      <ImageIcon className="h-5 w-5 text-neutral-500" />
+                      <span className="font-semibold text-neutral-350">Choose a file...</span>
+                      <span className="text-[9px] text-neutral-600">JPG, PNG, WEBP or GIF up to 10MB</span>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleWallpaperUpload}
+                    disabled={isUploadingWallpaper}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Reset Defaults */}
+            <div className="flex items-center gap-2 border-t border-neutral-800 pt-4">
+              <Button
+                onClick={() => updateWallpaper("")}
+                className="flex-1 bg-neutral-800 hover:bg-neutral-750 text-neutral-300 text-[10px] uppercase font-space font-bold py-2 rounded-xl transition-all cursor-pointer"
+                style={{ fontFamily: "var(--font-space-grotesk)" }}
+              >
+                Clear Custom Wallpaper
+              </Button>
+            </div>
+          </motion.div>
         </div>
       )}
     </div>
