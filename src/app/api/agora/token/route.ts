@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
     let token;
     if (uid) {
       // Convert to string safely to ensure format compatibility
-      token = RtcTokenBuilder.buildTokenWithAccount(
+      token = RtcTokenBuilder.buildTokenWithUserAccount(
         appId,
         appCertificate,
         channelName,
