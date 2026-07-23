@@ -26,9 +26,16 @@ import {
   Phone,
   Video,
   Palette,
-  Image as ImageIcon
+  Image as ImageIcon,
+  MoreVertical
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useCallStore } from "@/stores/callStore";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -221,6 +228,21 @@ export default function MessagesPage() {
     }
   };
 
+  const handleClearConversation = async () => {
+    if (!activeUser) return;
+    if (!confirm("Are you sure you want to clear this entire conversation? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch(`/api/messages/clear?userId=${activeUser._id}`, { method: "DELETE" });
+      if (res.ok) {
+        setMessages([]);
+        fetchConversations();
+      }
+    } catch (err) {
+      console.error("Failed to clear conversation", err);
+    }
+  };
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -331,8 +353,10 @@ export default function MessagesPage() {
             (newMsg.attachments && newMsg.attachments.length > 0 ? "Sent an attachment" : "");
           const notification = new Notification(title, {
             body,
-            icon: sender?.image || undefined,
-          });
+            icon: sender?.image || "/logo.png",
+            badge: "/logo.png",
+            vibrate: [200, 100, 200],
+          } as NotificationOptions & { vibrate?: number[] });
           notification.onclick = () => {
             window.focus();
             if (sender) setActiveUser(sender);
@@ -967,27 +991,36 @@ export default function MessagesPage() {
                   <Video className="h-4 w-4" />
                 </Button>
 
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsWallpaperPickerOpen(true)}
-                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
-                  title="Chat Theme"
-                >
-                  <Palette className="h-4 w-4" />
-                </Button>
-
-                <Link href={`/user/${activeUser._id}`}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-[11px] gap-1.5 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all font-bold"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                        title="More Options"
+                      />
+                    }
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    View Profile
-                  </Button>
-                </Link>
+                    <MoreVertical className="h-4 w-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48 bg-neutral-900 border-neutral-800 text-neutral-300">
+                    <DropdownMenuItem onClick={() => setIsWallpaperPickerOpen(true)} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100">
+                      <Palette className="mr-2 h-4 w-4" />
+                      <span>Theme</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleClearConversation} className="cursor-pointer text-red-400 hover:bg-neutral-800 hover:text-red-300 focus:text-red-400">
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      <span>Clear Conversation</span>
+                    </DropdownMenuItem>
+                    <Link href={`/user/${activeUser._id}`} className="w-full">
+                      <DropdownMenuItem className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100">
+                        <ExternalLink className="mr-2 h-4 w-4" />
+                        <span>View Profile</span>
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 

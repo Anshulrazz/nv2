@@ -38,6 +38,7 @@ import { Notification } from "@/models/Notification";
 import { User } from "@/models/User";
 import { SiteSetting } from "@/models/SiteSetting";
 import { DirectMessage } from "@/models/DirectMessage";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 
 export default async function DashboardLayout({
   children,
@@ -143,7 +144,7 @@ export default async function DashboardLayout({
           </div>
 
           {/* Navigation links */}
-          <nav className="p-4 space-y-0.5 overflow-y-auto custom-scroll flex-1">
+          <nav className="p-4 space-y-0.5">
             <NavLink href="/dashboard"    icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard"   accent="cyan" />
             <NavLink
               href="/messages"
@@ -266,11 +267,13 @@ export default async function DashboardLayout({
           </Link>
         </header>
 
-        <main className="flex-1 flex flex-col overflow-hidden bg-transparent">
+        <main className="flex-1 flex flex-col overflow-hidden bg-transparent pb-16 lg:pb-0">
           {children}
         </main>
       </div>
 
+      <MobileBottomNav userId={user.id} unreadMessagesCount={unreadMessagesCount} />
+      
       <CustomAlertDialog />
     </div>
   );

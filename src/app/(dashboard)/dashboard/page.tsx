@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useRouter } from "next/navigation";
+import { SimpleTodo } from "@/components/notes/SimpleTodo";
 
 interface RecentStats {
   notesCount: number;
@@ -117,7 +118,7 @@ export default function DashboardOverviewPage() {
             </div>
           ))}
         </div>
-
+        <SimpleTodo/>
         {/* Recent lists grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
           {/* Recent Notes */}

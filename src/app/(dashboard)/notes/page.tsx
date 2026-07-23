@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { Editor } from "@/components/editor/Editor";
 import { PDFViewer } from "@/components/PDFViewer";
+import { SimpleTodo } from "@/components/notes/SimpleTodo";
 import {
   BookOpen,
   Plus,
@@ -719,45 +720,50 @@ export default function NotesPage() {
       {/* Decorative glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      <div className="relative z-10 space-y-6 max-w-sm">
-        <div className="h-16 w-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto">
-          <BookOpen className="h-8 w-8 text-neutral-600" />
+      <div className="relative z-10 w-full flex flex-col items-center gap-6 mt-8">
+        <div className="space-y-6 max-w-sm">
+          <div className="h-16 w-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto">
+            <BookOpen className="h-8 w-8 text-neutral-600" />
+          </div>
+
+          <div className="space-y-2">
+            <h2
+              className="text-xl font-bold text-neutral-300 tracking-tight"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              No note selected
+            </h2>
+            <p className="text-neutral-600 text-sm leading-relaxed">
+              Select a note from the sidebar or create a new one to start writing.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 items-center">
+            <Button
+              onClick={() => createNote("Untitled Note", null)}
+              className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-sm px-6 h-10 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all gap-2"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
+              <Plus className="h-4 w-4" />
+              New Note
+            </Button>
+
+            <label className="cursor-pointer text-neutral-500 hover:text-neutral-300 text-xs flex items-center gap-1.5 transition-colors">
+              <FileUp className="h-3.5 w-3.5" />
+              <span>{isImporting ? "Importing..." : "Import .txt / .md file"}</span>
+              <input
+                type="file"
+                accept=".txt,.md"
+                onChange={handleFileUpload}
+                className="sr-only"
+                disabled={isImporting}
+              />
+            </label>
+          </div>
         </div>
 
-        <div className="space-y-2">
-          <h2
-            className="text-xl font-bold text-neutral-300 tracking-tight"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            No note selected
-          </h2>
-          <p className="text-neutral-600 text-sm leading-relaxed">
-            Select a note from the sidebar or create a new one to start writing.
-          </p>
-        </div>
-
-        <div className="flex flex-col gap-3 items-center">
-          <Button
-            onClick={() => createNote("Untitled Note", null)}
-            className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-sm px-6 h-10 rounded-xl shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all gap-2"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            <Plus className="h-4 w-4" />
-            New Note
-          </Button>
-
-          <label className="cursor-pointer text-neutral-500 hover:text-neutral-300 text-xs flex items-center gap-1.5 transition-colors">
-            <FileUp className="h-3.5 w-3.5" />
-            <span>{isImporting ? "Importing..." : "Import .txt / .md file"}</span>
-            <input
-              type="file"
-              accept=".txt,.md"
-              onChange={handleFileUpload}
-              className="sr-only"
-              disabled={isImporting}
-            />
-          </label>
-        </div>
+        {/* Local Storage Todo Component placed in empty state */}
+        <SimpleTodo />
       </div>
     </div>
   );
