@@ -200,7 +200,7 @@ export function SimpleTodo() {
             <div className="h-10 w-10 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800">
               <CheckCircle2 className="h-5 w-5 text-neutral-600" />
             </div>
-            <p className="text-xs text-neutral-500 font-medium">No tasks pending.<br/>You're all caught up!</p>
+            <p className="text-xs text-neutral-500 font-medium">No tasks pending.<br/>You&apos;re all caught up!</p>
           </div>
         ) : (
           todos.map((todo) => (
