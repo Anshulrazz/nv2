@@ -22,12 +22,12 @@ import {
   CheckCheck,
   CornerUpLeft,
   Edit3,
-  Trash2,
   Phone,
   Video,
-  Palette,
   Image as ImageIcon,
-  MoreVertical
+  MoreVertical,
+  Images,
+  File as FileIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -244,6 +244,7 @@ export default function MessagesPage() {
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const lastMessageIdRef = useRef<string>("");
@@ -449,6 +450,8 @@ export default function MessagesPage() {
       setMessages([]);
     }
   }, [activeUser, fetchMessages]);
+
+
 
   // Scroll to bottom of message thread (smart snap-down scroll)
   useEffect(() => {
@@ -721,13 +724,13 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
+    <div className="flex-1 flex h-[100dvh] md:h-full bg-neutral-950 overflow-hidden relative">
       {/* 1. Conversations Column (Left Pane) */}
-      <aside className={`w-full md:w-80 border-r border-white/[0.08] bg-white/[0.02] flex flex-col shrink-0 h-full overflow-hidden ${
+      <aside className={`w-full md:w-80 lg:w-96 border-r border-white/[0.08] bg-white/[0.02] flex flex-col shrink-0 h-full overflow-hidden ${
         activeUser ? "hidden md:flex" : "flex"
       }`}>
         {/* Header */}
-        <div className="h-16 px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0 select-none">
+        <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-cyan-400" />
             <h1
@@ -740,7 +743,7 @@ export default function MessagesPage() {
         </div>
 
         {/* User Search Bar */}
-        <div className="p-4 border-b border-white/[0.06] relative">
+        <div className="p-3 sm:p-4 border-b border-white/[0.06] relative">
           <div className="relative">
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-neutral-500" />
             <Input
@@ -753,7 +756,7 @@ export default function MessagesPage() {
 
           {/* Search Dropdown Panel */}
           {searchQuery && (
-            <div className="absolute left-4 right-4 mt-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5">
+            <div className="absolute left-3 right-3 sm:left-4 sm:right-4 mt-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5">
               {isSearching ? (
                 <div className="flex items-center justify-center py-4 text-neutral-550 gap-2 text-xs">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
@@ -770,7 +773,7 @@ export default function MessagesPage() {
                     onClick={() => {
                       setActiveUser(usr);
                       setSearchQuery("");
-                      router.replace("/messages");
+                      router.replace("/messages?chat=open");
                     }}
                     className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-all text-left text-xs"
                   >
@@ -794,7 +797,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Conversations list */}
-        <div className="flex-1 overflow-y-auto custom-scroll p-3 space-y-1">
+        <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 space-y-1">
           {isConversationsLoading ? (
             <div className="flex flex-col items-center justify-center h-40 text-neutral-600 gap-2 select-none">
               <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
@@ -817,9 +820,9 @@ export default function MessagesPage() {
                   key={conv.otherUser._id}
                   onClick={() => {
                     setActiveUser(conv.otherUser);
-                    router.replace("/messages");
+                    router.replace("/messages?chat=open");
                   }}
-                  className={`w-full flex items-center gap-3.5 p-3 rounded-xl border transition-all text-left group ${
+                  className={`w-full flex items-center gap-3 sm:gap-3.5 p-2.5 sm:p-3 rounded-xl border transition-all text-left group ${
                     isSelected
                       ? "bg-cyan-500/10 border-cyan-500/25 hover:bg-cyan-500/12 shadow-[0_0_15px_rgba(6,182,212,0.04)]"
                       : "bg-transparent border-transparent hover:bg-white/[0.04] hover:border-white/5"
@@ -832,10 +835,10 @@ export default function MessagesPage() {
                       <img
                         src={conv.otherUser.image}
                         alt={conv.otherUser.name}
-                        className="h-10 w-10 rounded-full object-cover border border-neutral-800"
+                        className={`h-12 w-12 sm:h-13 sm:w-13 rounded-full object-cover border-2 ${hasUnread ? "border-cyan-400/60" : "border-neutral-800"}`}
                       />
                     ) : (
-                      <div className="h-10 w-10 rounded-full bg-neutral-850 flex items-center justify-center text-neutral-500 border border-neutral-750 font-bold uppercase text-xs">
+                      <div className={`h-12 w-12 sm:h-13 sm:w-13 rounded-full bg-neutral-850 flex items-center justify-center text-neutral-500 border-2 font-bold uppercase text-xs ${hasUnread ? "border-cyan-400/60" : "border-neutral-750"}`}>
                         {conv.otherUser.name.substring(0, 2)}
                       </div>
                     )}
@@ -847,9 +850,9 @@ export default function MessagesPage() {
 
                   {/* Message Metadata */}
                   <div className="min-w-0 flex-1 space-y-0.5">
-                    <div className="flex justify-between items-baseline select-none">
+                    <div className="flex justify-between items-baseline select-none gap-2">
                       <span
-                        className="text-xs font-bold text-neutral-200 truncate group-hover:text-neutral-100"
+                        className="text-xs sm:text-[13px] font-bold text-neutral-200 truncate group-hover:text-neutral-100"
                         style={{ fontFamily: "var(--font-space-grotesk)" }}
                       >
                         {conv.otherUser.name}
@@ -890,8 +893,8 @@ export default function MessagesPage() {
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Header controls */}
-            <div className="h-16 px-6 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-md flex items-center justify-between shrink-0 select-none">
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-md flex items-center justify-between shrink-0 select-none">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 {/* Mobile Back Button */}
                 <Button
                   variant="ghost"
@@ -900,7 +903,7 @@ export default function MessagesPage() {
                     setActiveUser(null);
                     router.replace("/messages");
                   }}
-                  className="md:hidden h-8 w-8 text-neutral-450 hover:text-neutral-250 hover:bg-white/[0.08]"
+                  className="md:hidden h-8 w-8 shrink-0 text-neutral-450 hover:text-neutral-250 hover:bg-white/[0.08]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -910,10 +913,10 @@ export default function MessagesPage() {
                   <img
                     src={activeUser.image}
                     alt={activeUser.name}
-                    className="h-9 w-9 rounded-full object-cover border border-neutral-800"
+                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border border-neutral-800 shrink-0"
                   />
                 ) : (
-                  <div className="h-9 w-9 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 border border-neutral-700 font-bold uppercase text-xs">
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 border border-neutral-700 font-bold uppercase text-xs shrink-0">
                     {activeUser.name.substring(0, 2)}
                   </div>
                 )}
@@ -924,11 +927,11 @@ export default function MessagesPage() {
                   >
                     {activeUser.name}
                   </h2>
-                  <p className="text-[10px] text-neutral-500 truncate font-mono">{activeUser.email}</p>
+                  <p className="text-[10px] text-neutral-500 truncate font-mono hidden xs:block">{activeUser.email}</p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -1006,16 +1009,13 @@ export default function MessagesPage() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48 bg-neutral-900 border-neutral-800 text-neutral-300">
                     <DropdownMenuItem onClick={() => setIsWallpaperPickerOpen(true)} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100">
-                      <Palette className="mr-2 h-4 w-4" />
                       <span>Theme</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleClearConversation} className="cursor-pointer text-red-400 hover:bg-neutral-800 hover:text-red-300 focus:text-red-400">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Clear Conversation</span>
+                      <span>Clear Chat</span>
                     </DropdownMenuItem>
                     <Link href={`/user/${activeUser._id}`} className="w-full">
                       <DropdownMenuItem className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100">
-                        <ExternalLink className="mr-2 h-4 w-4" />
                         <span>View Profile</span>
                       </DropdownMenuItem>
                     </Link>
@@ -1028,7 +1028,7 @@ export default function MessagesPage() {
             <div
               ref={scrollContainerRef}
               style={wallpaperStyle}
-              className="flex-1 overflow-y-auto p-6 space-y-4 custom-scroll bg-neutral-950/20 flex flex-col"
+              className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scroll bg-neutral-950/20 flex flex-col min-h-0"
             >
               {isMessagesLoading ? (
                 <div className="flex items-center justify-center py-10 text-neutral-550 gap-2 text-xs">
@@ -1078,20 +1078,24 @@ export default function MessagesPage() {
                         onContextMenu={(e) => { if (!msg.isDeleted) handleContextMenu(e, msg); }}
                         onTouchStart={(e) => { if (!msg.isDeleted) handleTouchStart(e, msg); }}
                         onTouchEnd={handleTouchEnd}
-                        className={`flex flex-col max-w-[70%] relative ${isSentByMe ? "items-end" : "items-start"}`}
+                        className={`flex flex-col max-w-[86%] xs:max-w-[80%] sm:max-w-[70%] relative ${isSentByMe ? "items-end" : "items-start"}`}
                       >
                         {/* Message Bubble */}
                         <div
-                          className={`rounded-2xl px-4 py-2.5 border text-xs leading-relaxed shadow-sm transition-all break-words w-full ${
+                          className={`rounded-[20px] px-3.5 py-2.5 sm:px-4 text-[13px] sm:text-xs leading-relaxed shadow-sm transition-all break-words w-full ${
                             isSentByMe
-                              ? "bg-cyan-500/15 border-cyan-500/20 text-neutral-100 rounded-tr-none"
-                              : "bg-neutral-900 border-neutral-800 text-neutral-300 rounded-tl-none"
+                              ? "bg-cyan-500 text-neutral-950 rounded-tr-md font-medium"
+                              : "bg-neutral-850 border border-neutral-800 text-neutral-200 rounded-tl-md"
                           }`}
                         >
                           {/* Replied Message Preview Header */}
                           {repliedToMsg && repliedToMsg.messageId && (
-                            <div className="mb-2 p-2 bg-neutral-950/40 border-l-2 border-cyan-400 rounded text-[10px] leading-normal text-neutral-400 flex flex-col gap-0.5 select-none">
-                              <span className="font-bold text-cyan-400 font-mono">{repliedToMsg.senderName}</span>
+                            <div className={`mb-2 p-2 rounded text-[10px] leading-normal flex flex-col gap-0.5 select-none border-l-2 ${
+                              isSentByMe
+                                ? "bg-neutral-950/15 border-neutral-950/50 text-neutral-950/80"
+                                : "bg-neutral-950/40 border-cyan-400 text-neutral-400"
+                            }`}>
+                              <span className={`font-bold font-mono ${isSentByMe ? "text-neutral-950" : "text-cyan-400"}`}>{repliedToMsg.senderName}</span>
                               <span className="truncate max-w-[200px]">{repliedToMsg.content}</span>
                             </div>
                           )}
@@ -1104,7 +1108,9 @@ export default function MessagesPage() {
                             <>
                               {/* Media display */}
                               {msg.attachments && msg.attachments.length > 0 && (
-                                <div className={`mb-2 flex flex-col gap-2 max-w-full select-none ${isSentByMe ? "items-end" : "items-start"}`}>
+                                <div className={`mb-2 grid gap-1 max-w-full select-none ${
+                                  msg.attachments.length > 1 ? "grid-cols-2" : "grid-cols-1"
+                                }`}>
                                   {msg.attachments.map((att, i) => (
                                     <div key={i}>
                                       {att.type === "image" ? (
@@ -1112,17 +1118,17 @@ export default function MessagesPage() {
                                         <img
                                           src={att.url}
                                           alt={att.name || "Attachment"}
-                                          className="max-h-60 w-auto object-contain cursor-pointer hover:opacity-90 transition-opacity rounded-lg border border-neutral-800/80 bg-neutral-950/40"
+                                          className="max-h-52 sm:max-h-60 w-full object-cover cursor-pointer hover:opacity-90 transition-opacity rounded-xl border border-neutral-950/10 bg-neutral-950/40"
                                           onClick={() => handleOpenMediaViewer(att.url)}
                                         />
                                       ) : att.type === "video" ? (
                                         <div
-                                          className="relative max-h-60 w-auto rounded-lg border border-neutral-800/80 bg-neutral-950/40 overflow-hidden cursor-pointer group/vid"
+                                          className="relative max-h-52 sm:max-h-60 w-full rounded-xl border border-neutral-950/10 bg-neutral-950/40 overflow-hidden cursor-pointer group/vid"
                                           onClick={() => handleOpenMediaViewer(att.url)}
                                         >
-                                          <video src={att.url} className="max-h-60 w-auto object-contain pointer-events-none" />
+                                          <video src={att.url} className="max-h-52 sm:max-h-60 w-full object-cover pointer-events-none" />
                                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/vid:bg-black/45 transition-colors">
-                                            <div className="h-10 w-10 rounded-full bg-cyan-500/90 text-neutral-950 flex items-center justify-center shadow-lg transition-transform group-hover/vid:scale-105">
+                                            <div className="h-10 w-10 rounded-full bg-white/90 text-neutral-950 flex items-center justify-center shadow-lg transition-transform group-hover/vid:scale-105">
                                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
                                                 <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
                                               </svg>
@@ -1130,9 +1136,16 @@ export default function MessagesPage() {
                                           </div>
                                         </div>
                                       ) : (
-                                        <div className="p-3 flex items-center gap-2.5 bg-neutral-900 hover:bg-neutral-850 cursor-pointer transition-colors rounded-lg border border-neutral-800/80" onClick={() => window.open(att.url, "_blank")}>
-                                          <FileText className="h-5 w-5 text-cyan-400 shrink-0" />
-                                          <span className="text-[10px] text-neutral-300 truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
+                                        <div
+                                          className={`p-3 flex items-center gap-2.5 cursor-pointer transition-colors rounded-xl border ${
+                                            isSentByMe
+                                              ? "bg-neutral-950/10 hover:bg-neutral-950/15 border-neutral-950/10"
+                                              : "bg-neutral-900 hover:bg-neutral-850 border-neutral-800/80"
+                                          }`}
+                                          onClick={() => window.open(att.url, "_blank")}
+                                        >
+                                          <FileText className={`h-5 w-5 shrink-0 ${isSentByMe ? "text-neutral-950" : "text-cyan-400"}`} />
+                                          <span className="text-[10px] truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
                                         </div>
                                       )}
                                     </div>
@@ -1205,9 +1218,9 @@ export default function MessagesPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Text/Media Inputs Panel */}
-            <div className="p-4 border-t border-white/[0.08] bg-white/[0.01] shrink-0">
-              <form onSubmit={handleSendMessage} className="space-y-3">
+            {/* Bottom Text/Media Inputs Panel — sticky above the safe area */}
+            <div className="sticky bottom-0 z-10 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-white/[0.08] bg-neutral-950/90 backdrop-blur-md shrink-0">
+              <form onSubmit={handleSendMessage} className="space-y-2.5 sm:space-y-3">
                 {/* Replying message preview banner */}
                 {replyingMessage && (
                   <div className="flex items-center justify-between p-3 bg-neutral-900 border border-neutral-805 rounded-xl animate-fade-in relative select-none">
@@ -1217,7 +1230,7 @@ export default function MessagesPage() {
                         <span className="text-[10px] font-bold text-cyan-400 font-mono">
                           Replying to {replyingMessage.senderId === currentUserId ? "yourself" : activeUser?.name}
                         </span>
-                        <span className="text-[10px] text-neutral-450 truncate max-w-[300px] sm:max-w-md">
+                        <span className="text-[10px] text-neutral-450 truncate max-w-[220px] sm:max-w-md">
                           {replyingMessage.content || (replyingMessage.attachments && replyingMessage.attachments.length > 0 ? "📷 Media Attachment" : "")}
                         </span>
                       </div>
@@ -1232,31 +1245,31 @@ export default function MessagesPage() {
                     </Button>
                   </div>
                 )}
-                {/* Media Attachment Previews */}
+                {/* Media Attachment Previews — Instagram-style thumbnail strip */}
                 {attachments.length > 0 && (
                   <div className="flex flex-wrap gap-2 animate-[slideIn_0.2s_ease-out]">
                     {attachments.map((att, i) => (
-                      <div key={i} className="inline-flex items-center gap-3 p-2 bg-neutral-900 border border-neutral-800 rounded-xl relative select-none">
-                        <div className="shrink-0 h-10 w-10 bg-neutral-950 rounded-lg flex items-center justify-center border border-neutral-800 overflow-hidden">
-                          {att.type === "image" ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={att.url} alt="Preview" className="object-cover h-full w-full" />
-                          ) : att.type === "video" ? (
+                      <div key={i} className="relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-neutral-800 bg-neutral-900 select-none group">
+                        {att.type === "image" ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={att.url} alt="Preview" className="object-cover h-full w-full" />
+                        ) : att.type === "video" ? (
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-neutral-950/60">
                             <Film className="h-5 w-5 text-cyan-400" />
-                          ) : (
+                            <span className="text-[7px] text-neutral-500 uppercase font-bold tracking-wide">Video</span>
+                          </div>
+                        ) : (
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-neutral-950/60 px-1.5">
                             <FileText className="h-5 w-5 text-cyan-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0 max-w-[200px] text-[10px] text-neutral-450 mr-6">
-                          <p className="truncate font-semibold text-neutral-200">{att.name}</p>
-                          <p className="text-[8px] uppercase tracking-wider text-cyan-500 font-bold font-mono mt-0.5">{att.type}</p>
-                        </div>
+                            <span className="text-[7px] text-neutral-500 truncate max-w-full font-mono">{att.name}</span>
+                          </div>
+                        )}
                         <button
                           type="button"
                           onClick={() => {
                             setAttachments(prev => prev.filter((_, index) => index !== i));
                           }}
-                          className="absolute top-1.5 right-1.5 p-0.5 rounded-full bg-neutral-950 border border-neutral-800 text-neutral-500 hover:text-red-400 transition-colors"
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-neutral-950/90 border border-neutral-700 text-neutral-300 hover:text-red-400 transition-colors opacity-90"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -1265,49 +1278,74 @@ export default function MessagesPage() {
                   </div>
                 )}
 
-                {/* Input Fields Row */}
+                {/* Input Fields Row — pill-shaped, Instagram-like */}
                 <div className="flex items-center gap-2">
                   <input
                     type="file"
                     multiple
+                    accept="image/*,video/*"
                     onChange={handleMediaUpload}
                     ref={fileInputRef}
                     className="hidden"
                     disabled={isUploading}
                   />
-
-                  {/* Attachment Icon Trigger */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => fileInputRef.current?.click()}
+                  <input
+                    type="file"
+                    multiple
+                    onChange={handleMediaUpload}
+                    ref={docInputRef}
+                    className="hidden"
                     disabled={isUploading}
-                    className="h-10 w-10 shrink-0 text-neutral-450 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-xl"
-                  >
-                    {isUploading ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
-                    ) : (
-                      <Paperclip className="h-4 w-4" />
-                    )}
-                  </Button>
+                  />
+
+                  {/* Attachment Picker Trigger */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={isUploading}
+                          className="h-10 w-10 shrink-0 text-neutral-450 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-full"
+                        />
+                      }
+                    >
+                      {isUploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
+                      ) : (
+                        <Paperclip className="h-4 w-4" />
+                      )}
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" side="top" className="w-56 bg-neutral-900 border-neutral-800 text-neutral-300">
+                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100 gap-2">
+                        <Images className="h-3.5 w-3.5 text-cyan-400" />
+                        <span>Photo or Video</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => docInputRef.current?.click()} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100 gap-2">
+                        <FileIcon className="h-3.5 w-3.5 text-cyan-400" />
+                        <span>Document</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
 
                   {/* Text Input Box */}
                   <Input
-                    placeholder="Type a message..."
+                    placeholder="Message..."
                     value={inputText}
                     onChange={(e) => {
                       setInputText(e.target.value);
                       handleTypingNotification();
                     }}
-                    className="bg-neutral-955/60 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-xs flex-1 rounded-xl"
+                    className="bg-neutral-900 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-xs sm:text-[13px] flex-1 rounded-full px-4"
                   />
 
                   {/* Send Button */}
                   <Button
                     type="submit"
                     size="icon"
-                    className="h-10 w-10 shrink-0 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 transition-all rounded-xl shadow-[0_0_12px_rgba(6,182,212,0.25)] hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                    disabled={!inputText.trim() && attachments.length === 0}
+                    className="h-10 w-10 shrink-0 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:hover:bg-cyan-500 text-neutral-950 transition-all rounded-full shadow-[0_0_12px_rgba(6,182,212,0.25)] hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -1316,7 +1354,7 @@ export default function MessagesPage() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center bg-neutral-950/20 text-center px-8 relative select-none">
+          <div className="flex-1 flex flex-col items-center justify-center bg-neutral-950/20 text-center px-6 sm:px-8 relative select-none">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-[110px] pointer-events-none" />
 
             <div className="relative z-10 space-y-5 max-w-sm">
@@ -1364,14 +1402,14 @@ export default function MessagesPage() {
         return (
           <div className="fixed inset-0 z-[9999] bg-black/95 backdrop-blur-md flex flex-col justify-between select-none animate-fade-in">
             {/* Header */}
-            <div className="h-16 px-6 bg-gradient-to-b from-black/50 to-transparent flex items-center justify-between text-neutral-300 relative z-10 shrink-0">
+            <div className="h-14 sm:h-16 px-4 sm:px-6 bg-gradient-to-b from-black/50 to-transparent flex items-center justify-between text-neutral-300 relative z-10 shrink-0">
               <div className="flex flex-col min-w-0">
-                <span className="text-xs font-bold font-mono truncate max-w-xs sm:max-w-md">{activeMedia.name || "Media Attachment"}</span>
+                <span className="text-xs font-bold font-mono truncate max-w-[180px] sm:max-w-md">{activeMedia.name || "Media Attachment"}</span>
                 <span className="text-[10px] text-neutral-500 font-mono">
                   {mediaGalleryIndex + 1} of {gallery.length}
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Button
                   onClick={handleDownload}
                   variant="ghost"
@@ -1392,19 +1430,19 @@ export default function MessagesPage() {
             </div>
 
             {/* Viewport content */}
-            <div className="flex-1 relative flex items-center justify-center min-h-0 px-4">
+            <div className="flex-1 relative flex items-center justify-center min-h-0 px-2 sm:px-4">
               {/* Navigation Arrows */}
               {gallery.length > 1 && (
                 <>
                   <button
                     onClick={handlePrev}
-                    className="absolute left-4 sm:left-8 z-10 p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-all focus:outline-none cursor-pointer"
+                    className="absolute left-2 sm:left-8 z-10 p-2 sm:p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-200 transition-all focus:outline-none cursor-pointer"
                   >
                     <ChevronLeft className="h-5 w-5" />
                   </button>
                   <button
                     onClick={handleNext}
-                    className="absolute right-4 sm:right-8 z-10 p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-250 transition-all focus:outline-none cursor-pointer"
+                    className="absolute right-2 sm:right-8 z-10 p-2 sm:p-2.5 rounded-full bg-neutral-900/60 hover:bg-neutral-900 border border-neutral-800 text-neutral-400 hover:text-neutral-250 transition-all focus:outline-none cursor-pointer"
                   >
                     <ChevronRight className="h-5 w-5" />
                   </button>
@@ -1412,27 +1450,27 @@ export default function MessagesPage() {
               )}
 
               {/* Media node */}
-              <div className="max-w-[85vw] max-h-[75vh] flex items-center justify-center relative">
+              <div className="max-w-[92vw] sm:max-w-[85vw] max-h-[70vh] sm:max-h-[75vh] flex items-center justify-center relative">
                 {activeMedia.type === "image" ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={activeMedia.url}
                     alt={activeMedia.name || "Attachment"}
-                    className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                    className="max-w-full max-h-[70vh] sm:max-h-[75vh] object-contain rounded-lg shadow-2xl"
                   />
                 ) : (
                   <video
                     src={activeMedia.url}
                     controls
                     autoPlay
-                    className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-2xl"
+                    className="max-w-full max-h-[70vh] sm:max-h-[75vh] object-contain rounded-lg shadow-2xl"
                   />
                 )}
               </div>
             </div>
 
             {/* Footer */}
-            <div className="h-16 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center shrink-0">
+            <div className="h-14 sm:h-16 bg-gradient-to-t from-black/50 to-transparent flex items-center justify-center shrink-0">
               <span className="text-[10px] text-neutral-500 uppercase tracking-widest font-space font-bold">
                 Notexia Media Viewer
               </span>
@@ -1485,7 +1523,6 @@ export default function MessagesPage() {
                 className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-red-400 hover:bg-neutral-800 hover:text-red-300 font-bold transition-all flex items-center gap-1.5 cursor-pointer border-t border-neutral-800 mt-0.5 pt-1.5"
                 style={{ fontFamily: "var(--font-space-grotesk)" }}
               >
-                <Trash2 className="h-3.5 w-3.5" />
                 <span>Delete</span>
               </button>
             </>
@@ -1500,13 +1537,12 @@ export default function MessagesPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6 shadow-2xl relative"
+            className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-6 shadow-2xl relative max-h-[85vh] overflow-y-auto custom-scroll"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
               <div className="flex items-center gap-2">
-                <Palette className="h-4 w-4 text-cyan-400" />
                 <h3 className="text-sm font-bold text-neutral-200 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                   Chat Wallpaper Settings
                 </h3>

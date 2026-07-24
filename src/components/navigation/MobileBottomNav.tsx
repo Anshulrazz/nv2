@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { HomeIcon, Users, Send, Trophy, User as UserIcon } from "lucide-react";
 
 export function MobileBottomNav({
@@ -13,6 +13,7 @@ export function MobileBottomNav({
   unreadMessagesCount: number;
 }) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const navItems = [
     {
@@ -43,8 +44,16 @@ export function MobileBottomNav({
     },
   ];
 
+  if (pathname.startsWith("/chat")) {
+    return null;
+  }
+  
+  if (pathname === "/messages" && (searchParams.get("chat") === "open" || searchParams.has("userId"))) {
+    return null;
+  }
+
   return (
-    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar border-t border-sidebar-border h-16 flex items-center justify-around px-2 pb-safe">
+    <div id="mobile-bottom-nav" className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-sidebar border-t border-sidebar-border h-16 flex items-center justify-around px-2 pb-safe">
       {navItems.map((item) => {
         const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
         return (
