@@ -295,7 +295,7 @@ export function CallOverlay() {
       setConnected();
     });
 
-    channel.bind("call-rejected", (data: any) => {
+    channel.bind("call-rejected", () => {
       const state = useCallStore.getState();
       if (state.callState === "calling") {
         const name = state.otherUser?.name || "Someone";
@@ -306,7 +306,7 @@ export function CallOverlay() {
       resetCall();
     });
 
-    channel.bind("call-ended", (data: any) => {
+    channel.bind("call-ended", () => {
       const state = useCallStore.getState();
       if (state.callState === "incoming") {
         const name = state.otherUser?.name || "Someone";
@@ -421,7 +421,7 @@ function ActiveCallProvider({ handleEndCall }: { handleEndCall: () => void }) {
   const { callType, callId, setDuration } = useCallStore();
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const zpRef = useRef<any>(null);
+  const zpRef = useRef<ReturnType<typeof ZegoUIKitPrebuilt.create> | null>(null);
   const hasJoinedRef = useRef(false);
   const endCallRef = useRef(handleEndCall);
 

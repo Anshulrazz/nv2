@@ -259,8 +259,8 @@ export default function MessagesPage() {
         const data = await res.json();
         setConversations(data);
       }
-    } catch (e: any) {
-      if (e?.name !== "AbortError") console.error(e);
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name !== "AbortError") console.error(e);
     } finally {
       setIsConversationsLoading(false);
     }
@@ -295,8 +295,8 @@ export default function MessagesPage() {
         // Refresh conversations list to update unread counts
         fetchConversations();
       }
-    } catch (e: any) {
-      if (e?.name !== "AbortError") console.error(e);
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name !== "AbortError") console.error(e);
     } finally {
       if (!silent) setIsMessagesLoading(false);
     }
