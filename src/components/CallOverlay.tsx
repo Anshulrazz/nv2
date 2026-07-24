@@ -4,20 +4,10 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useCallStore } from "@/stores/callStore";
 import Pusher from "pusher-js";
-import { Phone, PhoneOff, Mic, MicOff, Video as VideoIcon, VideoOff, Loader2, User as UserIcon, MonitorUp, MonitorX } from "lucide-react";
+import { Phone, PhoneOff, PhoneMissed, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import AgoraRTC, {
-  AgoraRTCProvider,
-  useLocalMicrophoneTrack,
-  useLocalCameraTrack,
-  useLocalScreenTrack,
-  usePublish,
-  useJoin,
-  useRemoteUsers,
-  RemoteUser,
-  LocalVideoTrack,
-  useRTCClient
-} from "agora-rtc-react";
+import { ZegoUIKitPrebuilt } from "@zegocloud/zego-uikit-prebuilt";
+import { toast } from "sonner";
 
 // ────────────────────────────────────────────────────────────────────────
 // Web Audio API Ringtone & Ring-back Tone Synthesizer
@@ -116,21 +106,68 @@ class AudioSynthesizer {
 }
 
 const showNativeCallNotification = (title: string, body: string, tag: string) => {
-  const isVisible = typeof document !== "undefined" && document.visibilityState === "visible";
-  if (!isVisible && typeof window !== "undefined" && "Notification" in window) {
-    if (Notification.permission === "granted") {
-      try {
-        new Notification(title, {
-          body,
-          tag,
-          icon: "/logo.png",
-          requireInteraction: true,
-        });
-      } catch (e) {
-        console.warn("Failed to trigger native desktop notification:", e);
-      }
+  if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
+    try {
+      new Notification(title, { body, tag, icon: "/logo.png", requireInteraction: true });
+    } catch (e) {
+      console.warn("Failed to trigger native desktop notification:", e);
     }
   }
+};
+
+const showMissedCallToast = (callerName: string, callType: string, callerImage?: string) => {
+  toast.custom(() => (
+    <div className="flex items-center gap-3 bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 shadow-2xl min-w-[260px]">
+      <div className="relative flex-shrink-0">
+        {callerImage ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={callerImage} alt={callerName} className="w-10 h-10 rounded-full object-cover border border-neutral-700" />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400">
+            <UserIcon className="w-4 h-4" />
+          </div>
+        )}
+        <span className="absolute -bottom-0.5 -right-0.5 bg-red-500 rounded-full w-4 h-4 flex items-center justify-center">
+          <PhoneMissed className="w-2.5 h-2.5 text-white" />
+        </span>
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold text-neutral-100 truncate">Missed {callType} call</p>
+        <p className="text-[11px] text-neutral-400 truncate">{callerName}</p>
+      </div>
+    </div>
+  ), { duration: 6000, position: "top-right" });
+};
+
+const showDeclinedCallToast = (otherName: string) => {
+  toast.custom(() => (
+    <div className="flex items-center gap-3 bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 shadow-2xl min-w-[260px]">
+      <div className="w-10 h-10 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center flex-shrink-0">
+        <PhoneMissed className="w-4 h-4 text-red-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold text-neutral-100">Call Declined</p>
+        <p className="text-[11px] text-neutral-400 truncate">{otherName} declined your call</p>
+      </div>
+    </div>
+  ), { duration: 5000, position: "top-right" });
+};
+
+const showCallEndedToast = (callType: string, duration: number) => {
+  const m = Math.floor(duration / 60).toString().padStart(2, "0");
+  const s = (duration % 60).toString().padStart(2, "0");
+  const formatted = `${m}:${s}`;
+  toast.custom(() => (
+    <div className="flex items-center gap-3 bg-neutral-900 border border-neutral-700 rounded-xl px-4 py-3 shadow-2xl min-w-[260px]">
+      <div className="w-10 h-10 rounded-full bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center flex-shrink-0">
+        <PhoneOff className="w-4 h-4 text-cyan-400" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-bold text-neutral-100">{callType === "video" ? "Video" : "Voice"} Call Ended</p>
+        <p className="text-[11px] text-cyan-400 font-mono">Duration: {formatted}</p>
+      </div>
+    </div>
+  ), { duration: 5000, position: "top-right" });
 };
 
 const formatDuration = (secs: number) => {
@@ -138,232 +175,6 @@ const formatDuration = (secs: number) => {
   const s = (secs % 60).toString().padStart(2, "0");
   return `${m}:${s}`;
 };
-
-// ────────────────────────────────────────────────────────────────────────
-// Agora Active Call Component
-// ────────────────────────────────────────────────────────────────────────
-function ActiveCall({ handleEndCall }: { handleEndCall: () => void }) {
-  const { data: session } = useSession();
-  const currentUserId = session?.user?.id;
-  const { callType, callId, otherUser, isMuted, isVideoOff, toggleMute, toggleVideo, duration, setDuration } = useCallStore();
-  
-  const [token, setToken] = React.useState<string | null>(null);
-  const [isScreenSharing, setIsScreenSharing] = React.useState(false);
-  const [tokenError, setTokenError] = React.useState<string | null>(null);
-
-  // Fetch token on mount
-  useEffect(() => {
-    if (!callId || !currentUserId) return;
-    const fetchToken = async () => {
-      try {
-        const res = await fetch("/api/agora/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ channelName: callId, uid: currentUserId, role: "publisher" }),
-        });
-        const data = await res.json();
-        if (data.token) {
-          setToken(data.token);
-        } else {
-          setTokenError(data.error || "Failed to fetch token");
-        }
-      } catch (err) {
-        setTokenError("Network error fetching token");
-      }
-    };
-    fetchToken();
-  }, [callId, currentUserId]);
-
-  // Create tracks
-  const { localMicrophoneTrack } = useLocalMicrophoneTrack(!isMuted);
-  const { localCameraTrack } = useLocalCameraTrack(callType === "video" && !isVideoOff && !isScreenSharing);
-  const { screenTrack, error: screenError } = useLocalScreenTrack(isScreenSharing, { encoderConfig: "1080p_1" }, "disable");
-  
-  // Join channel (using the callId as channel name)
-  const appId = process.env.NEXT_PUBLIC_AGORA_APP_ID || "";
-  
-  // Only join if we have a token
-  useJoin(
-    { appid: appId, channel: callId || "", token: token, uid: currentUserId },
-    !!token && !!appId && !!callId
-  );
-  
-  // Handle screen share stop via browser UI
-  useEffect(() => {
-    if (screenTrack) {
-      screenTrack.on("track-ended", () => {
-        setIsScreenSharing(false);
-      });
-    }
-  }, [screenTrack]);
-
-  // Publish tracks
-  usePublish([
-    ...(localMicrophoneTrack ? [localMicrophoneTrack] : []),
-    ...(isScreenSharing && screenTrack ? [screenTrack] : (callType === "video" && localCameraTrack ? [localCameraTrack] : []))
-  ]);
-
-  const remoteUsers = useRemoteUsers();
-
-  useEffect(() => {
-    if (localMicrophoneTrack) {
-      localMicrophoneTrack.setMuted(isMuted);
-    }
-  }, [isMuted, localMicrophoneTrack]);
-
-  useEffect(() => {
-    if (localCameraTrack && !isScreenSharing) {
-      localCameraTrack.setMuted(isVideoOff);
-    }
-  }, [isVideoOff, localCameraTrack, isScreenSharing]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setDuration((prev: number) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [setDuration]);
-
-  if (tokenError) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-950 p-6 z-10 text-center">
-        <Loader2 className="w-8 h-8 text-red-500 mb-4 animate-pulse" />
-        <p className="text-sm font-mono text-red-400">Connection Error</p>
-        <p className="text-xs text-neutral-500 mt-2">{tokenError}</p>
-        <Button onClick={handleEndCall} className="mt-6 bg-neutral-800 hover:bg-neutral-700">Dismiss</Button>
-      </div>
-    );
-  }
-
-  if (!token) {
-    return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-950 p-6 z-10">
-        <Loader2 className="w-8 h-8 text-cyan-400 animate-spin mb-4" />
-        <p className="text-xs font-mono text-cyan-500 tracking-widest uppercase">Securing connection...</p>
-      </div>
-    );
-  }
-
-  // Calculate dynamic grid layout based on number of remote users
-  const totalParticipants = remoteUsers.length + 1; // +1 for local user
-  const gridCols = totalParticipants === 1 ? 'grid-cols-1' :
-                   totalParticipants === 2 ? 'grid-cols-1 md:grid-cols-2' :
-                   totalParticipants <= 4 ? 'grid-cols-2' :
-                   'grid-cols-2 md:grid-cols-3';
-
-  return (
-    <div className="w-full h-full max-w-5xl flex flex-col justify-between relative z-10 shadow-2xl overflow-hidden rounded-2xl">
-      <div className="flex items-center justify-between p-4 border-b border-white/5 bg-neutral-900/40 rounded-t-2xl backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          {otherUser?.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={otherUser.image} alt={otherUser.name} className="w-9 h-9 rounded-full object-cover border border-neutral-800" />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-neutral-950 border border-neutral-800 flex items-center justify-center text-neutral-500">
-              <UserIcon className="w-4 h-4" />
-            </div>
-          )}
-          <div>
-            <h3 className="text-xs font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-              {otherUser?.name}
-            </h3>
-            <p className="text-[10px] text-cyan-400 font-mono mt-0.5">Connected • {formatDuration(duration)}</p>
-          </div>
-        </div>
-        <div className="text-[9px] uppercase tracking-widest text-neutral-500 font-mono font-bold">
-          {callType === "video" ? "Video Session" : "Voice Session"}
-        </div>
-      </div>
-
-      <div className="flex-1 bg-neutral-950/60 border-x border-white/5 flex items-center justify-center relative min-h-0 overflow-hidden">
-        {callType === "video" ? (
-          <div className={`w-full h-full grid ${gridCols} gap-2 p-2 relative bg-black/50`}>
-            {remoteUsers.map((u) => (
-              <div key={u.uid} className="relative rounded-xl overflow-hidden bg-neutral-900 shadow-xl border border-white/5 group">
-                <RemoteUser user={u} className="w-full h-full object-cover" playVideo={true} playAudio={true} />
-                <div className="absolute bottom-3 left-3 bg-black/50 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-white/90 border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity">
-                  {u.uid === otherUser?.id ? otherUser.name : `User ${u.uid}`}
-                </div>
-              </div>
-            ))}
-
-            {/* Local Video/Screen Track */}
-            <div className={`relative rounded-xl overflow-hidden shadow-xl border border-white/10 group ${totalParticipants === 1 ? 'w-full h-full' : 'bg-neutral-900'}`}>
-              {isScreenSharing && screenTrack ? (
-                <LocalVideoTrack track={screenTrack} play={true} className="w-full h-full object-contain bg-black" />
-              ) : (!isVideoOff && localCameraTrack ? (
-                <LocalVideoTrack track={localCameraTrack} play={true} className="w-full h-full object-cover bg-black" />
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-900 text-neutral-600 gap-2">
-                  <UserIcon className="w-12 h-12 opacity-20" />
-                  <span className="text-[10px] uppercase tracking-widest font-bold opacity-40">Camera Off</span>
-                </div>
-              ))}
-              <div className="absolute bottom-3 left-3 bg-cyan-500/20 backdrop-blur-md px-2 py-1 rounded text-[10px] font-mono text-cyan-300 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity">
-                You {isScreenSharing ? '(Screen)' : ''}
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-col items-center space-y-6">
-            <div className="relative">
-              <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping [animation-duration:2.5s]" />
-              <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping [animation-duration:4s]" />
-              {otherUser?.image ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={otherUser.image} alt={otherUser.name} className="w-28 h-28 rounded-full object-cover border-2 border-cyan-500/25 relative z-10" />
-              ) : (
-                <div className="w-28 h-28 rounded-full bg-neutral-900 border-2 border-cyan-500/20 flex items-center justify-center text-neutral-500 relative z-10">
-                  <UserIcon className="w-10 h-10" />
-                </div>
-              )}
-            </div>
-            
-            {/* Audio streams automatically play through useRemoteUsers hook */}
-            <div className="opacity-0 w-0 h-0 pointer-events-none absolute">
-              {remoteUsers.map((u) => (
-                <RemoteUser key={u.uid} user={u} playAudio={true} playVideo={false} />
-              ))}
-            </div>
-
-            <div className="flex items-center gap-1 h-8 justify-center">
-              {[...Array(6)].map((_, i) => (
-                <span
-                  key={i}
-                  className="w-1 rounded-full bg-cyan-400/60 animate-bounce"
-                  style={{
-                    height: `${Math.floor(Math.random() * 24) + 8}px`,
-                    animationDelay: `${i * 0.15}s`,
-                    animationDuration: "1s",
-                  }}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="p-4 border-t border-white/5 bg-neutral-900/40 rounded-b-2xl flex items-center justify-center gap-4 backdrop-blur-md">
-        <Button onClick={toggleMute} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isMuted ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" title="Toggle Microphone">
-          {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-        </Button>
-        {callType === "video" && (
-          <>
-            <Button onClick={toggleVideo} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isVideoOff || isScreenSharing ? "bg-red-500/15 border-red-500/30 text-red-400 hover:bg-red-500/25" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" disabled={isScreenSharing} title="Toggle Camera">
-              {isVideoOff ? <VideoOff className="h-4 w-4" /> : <VideoIcon className="h-4 w-4" />}
-            </Button>
-            <Button onClick={() => setIsScreenSharing(!isScreenSharing)} variant="ghost" className={`w-11 h-11 rounded-xl flex items-center justify-center border transition-all ${isScreenSharing ? "bg-cyan-500/20 border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.3)]" : "bg-white/5 border-white/10 text-neutral-300 hover:bg-white/10"}`} size="icon" title="Share Screen">
-              {isScreenSharing ? <MonitorX className="h-4 w-4" /> : <MonitorUp className="h-4 w-4" />}
-            </Button>
-          </>
-        )}
-        <Button onClick={handleEndCall} className="w-11 h-11 rounded-xl bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(239,68,68,0.3)] ml-4" size="icon" title="End Call">
-          <PhoneOff className="h-4 w-4" />
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 // ────────────────────────────────────────────────────────────────────────
 // Main Overlay (Handles Pusher Ringing / Idle states)
@@ -484,17 +295,27 @@ export function CallOverlay() {
       setConnected();
     });
 
-    channel.bind("call-rejected", () => {
-      if (useCallStore.getState().callState === "calling") {
-        showNativeCallNotification("Call Declined", `${otherUser?.name || "Someone"} declined your call.`, "declined-" + callId);
+    channel.bind("call-rejected", (data: any) => {
+      const state = useCallStore.getState();
+      if (state.callState === "calling") {
+        const name = state.otherUser?.name || "Someone";
+        showNativeCallNotification("Call Declined", `${name} declined your call.`, "declined-" + callId);
+        showDeclinedCallToast(name);
       }
       cleanUp();
       resetCall();
     });
 
-    channel.bind("call-ended", () => {
-      if (useCallStore.getState().callState === "incoming") {
-        showNativeCallNotification("Missed Call", `Missed ${callType} call from ${otherUser?.name || "Someone"}`, "missed-" + callId);
+    channel.bind("call-ended", (data: any) => {
+      const state = useCallStore.getState();
+      if (state.callState === "incoming") {
+        const name = state.otherUser?.name || "Someone";
+        const type = state.callType;
+        const img = state.otherUser?.image;
+        showNativeCallNotification("Missed Call", `Missed ${type} call from ${name}`, "missed-" + callId);
+        showMissedCallToast(name, type, img);
+      } else if (state.callState === "connected") {
+        showCallEndedToast(state.callType, state.duration);
       }
       cleanUp();
       resetCall();
@@ -510,45 +331,78 @@ export function CallOverlay() {
   if (callState === "idle") return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-neutral-950/80 backdrop-blur-xl flex flex-col items-center justify-center p-6 text-neutral-100 select-none animate-fade-in">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="fixed inset-0 z-[99999] bg-neutral-950/90 backdrop-blur-xl flex flex-col items-center justify-center text-neutral-100 select-none animate-fade-in overflow-hidden">
+      {/* Background glow — scaled for mobile */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] bg-cyan-500/10 rounded-full blur-[100px] sm:blur-[140px] pointer-events-none" />
 
       {(callState === "calling" || callState === "incoming") && (
-        <div className="flex flex-col items-center space-y-6 text-center max-w-sm z-10">
-          <div className="relative">
+        <div className="flex flex-col items-center space-y-5 sm:space-y-6 text-center px-6 w-full max-w-xs sm:max-w-sm z-10">
+          {/* Avatar with pulsing rings */}
+          <div className="relative flex-shrink-0">
             <div className="absolute inset-0 rounded-full border border-cyan-500/20 animate-ping [animation-duration:2.5s]" />
             <div className="absolute inset-0 rounded-full border border-cyan-500/10 animate-ping [animation-duration:4s]" />
             {otherUser?.image ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={otherUser.image} alt={otherUser.name} className="w-28 h-28 rounded-full object-cover border-2 border-cyan-500/25 relative z-10" />
+              <img
+                src={otherUser.image}
+                alt={otherUser.name}
+                className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-2 border-cyan-500/25 relative z-10"
+              />
             ) : (
-              <div className="w-28 h-28 rounded-full bg-neutral-900 border-2 border-cyan-500/20 flex items-center justify-center text-neutral-500 relative z-10">
-                <UserIcon className="w-10 h-10" />
+              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-neutral-900 border-2 border-cyan-500/20 flex items-center justify-center text-neutral-500 relative z-10">
+                <UserIcon className="w-8 h-8 sm:w-10 sm:h-10" />
               </div>
             )}
           </div>
+
           <div>
-            <h2 className="text-3xl font-extrabold tracking-tight mb-2" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+            <h2
+              className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 truncate max-w-[200px] sm:max-w-none"
+              style={{ fontFamily: "var(--font-space-grotesk)" }}
+            >
               {otherUser?.name}
             </h2>
-            <p className="text-sm text-cyan-400 font-mono tracking-widest uppercase">
-              {callState === "calling" ? `Calling...` : `Incoming ${callType} call`}
+            <p className="text-xs sm:text-sm text-cyan-400 font-mono tracking-widest uppercase">
+              {callState === "calling" ? "Calling..." : `Incoming ${callType} call`}
             </p>
           </div>
-          <div className="flex items-center gap-6 pt-4">
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-8 sm:gap-10 pt-2">
             {callState === "incoming" ? (
               <>
-                <Button onClick={handleAcceptCall} className="w-12 h-12 rounded-full bg-green-500 hover:bg-green-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(34,197,94,0.4)]" size="icon">
-                  <Phone className="h-5 w-5" />
-                </Button>
-                <Button onClick={handleDeclineCall} className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(239,68,68,0.4)]" size="icon">
-                  <PhoneOff className="h-5 w-5" />
-                </Button>
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    onClick={handleAcceptCall}
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-green-500 hover:bg-green-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_20px_rgba(34,197,94,0.5)]"
+                    size="icon"
+                  >
+                    <Phone className="h-5 w-5 sm:h-6 sm:h-6" />
+                  </Button>
+                  <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest">Accept</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <Button
+                    onClick={handleDeclineCall}
+                    className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+                    size="icon"
+                  >
+                    <PhoneOff className="h-5 w-5 sm:h-6 sm:h-6" />
+                  </Button>
+                  <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest">Decline</span>
+                </div>
               </>
             ) : (
-              <Button onClick={handleEndCall} className="w-12 h-12 rounded-full bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_15px_rgba(239,68,68,0.4)]" size="icon">
-                <PhoneOff className="h-5 w-5" />
-              </Button>
+              <div className="flex flex-col items-center gap-2">
+                <Button
+                  onClick={handleEndCall}
+                  className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-red-500 hover:bg-red-400 text-neutral-950 flex items-center justify-center transition-transform hover:scale-105 shadow-[0_0_20px_rgba(239,68,68,0.5)]"
+                  size="icon"
+                >
+                  <PhoneOff className="h-5 w-5 sm:h-6 sm:h-6" />
+                </Button>
+                <span className="text-[10px] text-neutral-400 font-mono uppercase tracking-widest">Cancel</span>
+              </div>
             )}
           </div>
         </div>
@@ -561,11 +415,91 @@ export function CallOverlay() {
   );
 }
 
+
 function ActiveCallProvider({ handleEndCall }: { handleEndCall: () => void }) {
-  const client = useRTCClient(AgoraRTC.createClient({ codec: "vp8", mode: "rtc" }));
+  const { data: session, status } = useSession();
+  const { callType, callId, setDuration } = useCallStore();
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const zpRef = useRef<any>(null);
+  const hasJoinedRef = useRef(false);
+  const endCallRef = useRef(handleEndCall);
+
+  // Keep endCallRef up-to-date without triggering re-renders
+  useEffect(() => {
+    endCallRef.current = handleEndCall;
+  }, [handleEndCall]);
+
+  // Duration timer — increments callStore.duration every second while connected
+  useEffect(() => {
+    setDuration(0);
+    const timer = setInterval(() => {
+      setDuration((prev: number) => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    // Wait until session is loaded and we have all required values
+    if (status !== "authenticated" || !session?.user?.id || !callId) return;
+    // Guard against double-init (React Strict Mode / fast refresh)
+    if (hasJoinedRef.current || zpRef.current) return;
+    const element = containerRef.current;
+    if (!element) return;
+
+    const appID = parseInt(process.env.NEXT_PUBLIC_ZEGO_APP_ID || "0");
+    const serverSecret = process.env.NEXT_PUBLIC_ZEGO_SERVER_SECRET || "";
+    if (!appID || !serverSecret) {
+      console.error("[Zego] App ID or Server Secret is missing from .env");
+      return;
+    }
+
+    hasJoinedRef.current = true;
+    console.log("[Zego] Joining room:", callId, "as", session.user.id, "type:", callType);
+
+    const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(
+      appID,
+      serverSecret,
+      callId,
+      session.user.id,
+      session.user.name || "User"
+    );
+
+    const zp = ZegoUIKitPrebuilt.create(kitToken);
+    zpRef.current = zp;
+
+    // Both voice and video are 1-on-1 calls — always use OneONoneCall
+    zp.joinRoom({
+      container: element,
+      scenario: {
+        mode: ZegoUIKitPrebuilt.OneONoneCall,
+      },
+      turnOnCameraWhenJoining: callType === "video",
+      turnOnMicrophoneWhenJoining: true,
+      showMyCameraToggleButton: callType === "video",
+      showPreJoinView: false,
+      onLeaveRoom: () => {
+        endCallRef.current();
+      },
+    });
+
+    return () => {
+      if (zpRef.current && typeof zpRef.current.destroy === "function") {
+        zpRef.current.destroy();
+        zpRef.current = null;
+      }
+      // NOTE: hasJoinedRef is intentionally NOT reset here.
+      // React Strict Mode runs cleanup + re-run on every mount.
+      // If we reset it, the second run re-initializes ZegoCloud on a
+      // partially-destroyed SDK instance → "Cannot set properties of null".
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, session?.user?.id, callId]);
+
   return (
-    <AgoraRTCProvider client={client}>
-      <ActiveCall handleEndCall={handleEndCall} />
-    </AgoraRTCProvider>
+    <div className="w-full h-full sm:max-w-5xl relative z-10 shadow-2xl overflow-hidden sm:rounded-2xl bg-black">
+      <div className="w-full h-full" ref={containerRef} />
+    </div>
   );
 }

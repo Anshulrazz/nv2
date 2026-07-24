@@ -252,15 +252,15 @@ export default function MessagesPage() {
   const activeUserIdRef = useRef<string>("");
 
   // 1. Fetch Conversations list
-  const fetchConversations = useCallback(async () => {
+  const fetchConversations = useCallback(async (signal?: AbortSignal) => {
     try {
-      const res = await fetch("/api/messages/conversations");
+      const res = await fetch("/api/messages/conversations", { signal });
       if (res.ok) {
         const data = await res.json();
         setConversations(data);
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e?.name !== "AbortError") console.error(e);
     } finally {
       setIsConversationsLoading(false);
     }
@@ -279,10 +279,10 @@ export default function MessagesPage() {
   }, []);
 
   // 2. Fetch Messages between current user and active user
-  const fetchMessages = useCallback(async (targetUserId: string, silent = false) => {
+  const fetchMessages = useCallback(async (targetUserId: string, silent = false, signal?: AbortSignal) => {
     if (!silent) setIsMessagesLoading(true);
     try {
-      const res = await fetch(`/api/messages?userId=${targetUserId}`);
+      const res = await fetch(`/api/messages?userId=${targetUserId}`, { signal });
       if (res.ok) {
         const data = await res.json();
         if (data && typeof data === "object" && "messages" in data) {
@@ -295,8 +295,8 @@ export default function MessagesPage() {
         // Refresh conversations list to update unread counts
         fetchConversations();
       }
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      if (e?.name !== "AbortError") console.error(e);
     } finally {
       if (!silent) setIsMessagesLoading(false);
     }
@@ -491,19 +491,29 @@ export default function MessagesPage() {
   // Polling for new messages and typing status every 1.5 seconds
   useEffect(() => {
     if (!activeUser) return;
+    let controller: AbortController | null = null;
     const interval = setInterval(() => {
-      fetchMessages(activeUser._id, true);
+      controller = new AbortController();
+      fetchMessages(activeUser._id, true, controller.signal);
     }, 1500);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      controller?.abort();
+    };
   }, [activeUser, fetchMessages]);
 
   // Polling for active conversation list updates
   useEffect(() => {
     if (!currentUserId) return;
+    let controller: AbortController | null = null;
     const interval = setInterval(() => {
-      fetchConversations();
+      controller = new AbortController();
+      fetchConversations(controller.signal);
     }, 3000);
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      controller?.abort();
+    };
   }, [currentUserId, fetchConversations]);
 
   const lastTypedRef = useRef<number>(0);
@@ -724,7 +734,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex-1 flex h-[100dvh] md:h-full bg-neutral-950 overflow-hidden relative">
+    <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
       {/* 1. Conversations Column (Left Pane) */}
       <aside className={`w-full md:w-80 lg:w-96 border-r border-white/[0.08] bg-white/[0.02] flex flex-col shrink-0 h-full overflow-hidden ${
         activeUser ? "hidden md:flex" : "flex"
@@ -1179,9 +1189,44 @@ export default function MessagesPage() {
                                     </Button>
                                   </div>
                                 </div>
-                              ) : (
-                                msg.content && <p>{msg.content}</p>
-                              )}
+                              ) : msg.content ? (
+                                msg.content.startsWith("📞") ? (
+                                  (() => {
+                                    const isMissed = msg.content.includes("Missed");
+                                    const isVoice = msg.content.includes("Voice") || (!msg.content.includes("Video") && !isMissed);
+                                    const durationMatch = msg.content.match(/\((\d{2}:\d{2})\)/);
+                                    const duration = durationMatch ? durationMatch[1] : null;
+                                    return (
+                                      <div className={`flex items-center gap-2.5 py-0.5 select-none ${isSentByMe ? "text-neutral-950" : "text-neutral-200"}`}>
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                          isMissed
+                                            ? (isSentByMe ? "bg-neutral-950/20" : "bg-red-500/20")
+                                            : (isSentByMe ? "bg-neutral-950/20" : "bg-cyan-500/15")
+                                        }`}>
+                                          <span className="text-sm">{isMissed ? "📵" : isVoice ? "📞" : "📹"}</span>
+                                        </div>
+                                        <div>
+                                          <p className="text-[11px] font-bold">
+                                            {isMissed ? "Missed call" : isVoice ? "Voice call" : "Video call"}
+                                          </p>
+                                          {duration && (
+                                            <p className={`text-[10px] font-mono ${isSentByMe ? "text-neutral-950/70" : "text-cyan-400"}`}>
+                                              {duration}
+                                            </p>
+                                          )}
+                                          {isMissed && (
+                                            <p className={`text-[10px] ${isSentByMe ? "text-neutral-950/60" : "text-red-400"}`}>
+                                              Not answered
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()
+                                ) : (
+                                  <p>{msg.content}</p>
+                                )
+                              ) : null}
                             </>
                           )}
                         </div>

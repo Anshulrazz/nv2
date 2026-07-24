@@ -7,7 +7,7 @@ const securityHeaders = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
     key: "Permissions-Policy",
-    value: "geolocation=(), interest-cohort=()",
+    value: "camera=*, microphone=*, geolocation=()",
   },
   {
     key: "Strict-Transport-Security",
@@ -17,17 +17,17 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://js.pusher.com https://static.cloudflareinsights.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://js.pusher.com https://static.cloudflareinsights.com https://*.zegocloud.com https://*.zego.im",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://api.anthropic.com https://accounts.google.com https://*.pusher.com wss://*.pusher.com https://cloudflareinsights.com",
+      "connect-src 'self' https://api.anthropic.com https://accounts.google.com https://*.pusher.com wss://*.pusher.com https://cloudflareinsights.com https://*.zegocloud.com https://*.zego.im wss:",
       "frame-src 'self' https://accounts.google.com",
       "object-src 'self'",
-      "media-src 'self' data: blob: https:",
+      "media-src 'self' data: blob: https: mediastream:",
       "base-uri 'self'",
       "form-action 'self'",
-      "upgrade-insecure-requests",
+      "worker-src 'self' blob:",
     ].join("; "),
   },
 ];
