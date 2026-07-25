@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono, Kalam } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
