@@ -2,6 +2,7 @@ import React from "react";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
 import { User } from "@/models/User";
+import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
 import { notFound } from "next/navigation";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -259,6 +260,9 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
         <article className="prose prose-invert max-w-none prose-sm leading-relaxed">
           {renderTipTapJSON(note.content as unknown as TipTapNode)}
         </article>
+
+        {/* Public Blog Google Ad Placement */}
+        <GoogleAdBanner adSlot="1003" className="mt-8" />
       </main>
     </div>
   );

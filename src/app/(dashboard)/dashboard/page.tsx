@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useRouter } from "next/navigation";
 import { SimpleTodo } from "@/components/notes/SimpleTodo";
+import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
 
 interface RecentStats {
   notesCount: number;
@@ -213,6 +214,9 @@ export default function DashboardOverviewPage() {
             </div>
           </div>
         </div>
+
+        {/* Unobtrusive Google Ad Placement */}
+        <GoogleAdBanner adSlot="1001" className="mt-4" />
       </div>
     </div>
   );

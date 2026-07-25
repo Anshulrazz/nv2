@@ -5,6 +5,8 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAlertStore } from "@/stores/alertStore";
 import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
@@ -740,6 +742,9 @@ const isLiked = post.likes?.includes(currentUserId || "");
               ))}
             </div>
           </div>
+
+          {/* Unobtrusive Sidebar Ad Placement */}
+          <GoogleAdBanner adSlot="1002" adFormat="rectangle" />
         </div>
       </div>
 
