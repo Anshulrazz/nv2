@@ -97,8 +97,8 @@ export const metadata: Metadata = {
     images: ["/opengraph-image"],
     creator: "@notexia",
   },
-  verification: {
-    google: "",
+  other: {
+    "google-adsense-account": "ca-pub-1957290146491296",
   },
   icons: {
     icon: "/logo.png",
@@ -117,11 +117,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <head>
-        <Script
+        <meta name="google-adsense-account" content={adClientId} />
+        <script
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClientId}`}
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body
