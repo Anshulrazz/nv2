@@ -22,12 +22,11 @@
 /.codex
 /.claude
 /.gemini
-/.obsidian
 /.agent/
-/.agent/skills/
+/.agents/
 .agents/
 .agents/skills/
-.agents/skills/
+
 
 # production
 /build
