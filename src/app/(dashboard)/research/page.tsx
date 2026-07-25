@@ -10,11 +10,9 @@ import {
   FileText,
   Sparkles,
   Send,
-  X,
   BookOpen,
   Edit,
   ArrowLeft,
-  ChevronRight,
   Upload,
   ExternalLink,
 } from "lucide-react";
@@ -274,7 +272,7 @@ export default function ResearchPage() {
                     return updated;
                   });
                 }
-              } catch (e) {
+              } catch {
                 // Ignore parse errors from partial streaming lines
               }
             }

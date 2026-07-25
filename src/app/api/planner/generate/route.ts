@@ -7,23 +7,8 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const dynamic = "force-dynamic";
 
-interface TipTapNode {
-  type?: string;
-  text?: string;
-  content?: TipTapNode[];
-}
-
-function extractText(node: TipTapNode): string {
-  if (!node) return "";
-  if (node.type === "text") return node.text || "";
-  if (node.content) {
-    return node.content.map(extractText).join(" ");
-  }
-  return "";
-}
-
 // Fallback dynamic study planner when Claude API Key is not configured
-function generateFallbackPlan(notesList: any[], pendingTodos: any[]) {
+function generateFallbackPlan(notesList: Array<{ title?: string }>, pendingTodos: Array<{ title?: string }>) {
   const dateStr = "2026-07-25";
   const focus = pendingTodos.length > 0 
     ? `Address critical outstanding assignments: "${pendingTodos[0].title}". Also digest recent updates in notes.`

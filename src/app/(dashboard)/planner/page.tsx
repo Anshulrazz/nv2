@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useWorkspaceStore } from "@/stores/workspaceStore";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import {
   Calendar,
@@ -12,8 +11,6 @@ import {
   Moon,
   Clock,
   CheckCircle,
-  HelpCircle,
-  Plus,
   ArrowRight,
   ClipboardList,
 } from "lucide-react";
@@ -33,7 +30,6 @@ interface PlannerData {
 }
 
 export default function PlannerPage() {
-  const { notes } = useWorkspaceStore();
   const [isPlanning, setIsPlanning] = useState<boolean>(false);
   const [planData, setPlanData] = useState<PlannerData | null>(null);
   
@@ -135,7 +131,7 @@ export default function PlannerPage() {
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              <span>Generate Today's Plan</span>
+              <span>Generate Today&apos;s Plan</span>
             </>
           )}
         </Button>
@@ -173,9 +169,9 @@ export default function PlannerPage() {
           ) : !planData ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center py-28 select-none">
               <ClipboardList className="h-12 w-12 text-neutral-800 mb-3 animate-pulse opacity-55" />
-              <p className="text-sm font-bold text-neutral-300 uppercase tracking-wider font-space">Today's Schedule Empty</p>
+              <p className="text-sm font-bold text-neutral-300 uppercase tracking-wider font-space">Today&apos;s Schedule Empty</p>
               <p className="text-[11px] text-neutral-550 max-w-sm mt-1 leading-relaxed">
-                Click "Generate Today's Plan" at the top right to start compiling a timeline based on your notes and outstanding checklists.
+                Click &quot;Generate Today&apos;s Plan&quot; at the top right to start compiling a timeline based on your notes and outstanding checklists.
               </p>
             </div>
           ) : (
@@ -184,7 +180,7 @@ export default function PlannerPage() {
               {/* Daily Focus block */}
               <div className="bg-neutral-950/60 border border-neutral-855 rounded-2xl p-5 shadow-inner">
                 <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider font-space mb-2.5 flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-violet-400" /> Today's Core Focus
+                  <Sparkles className="h-4 w-4 text-violet-400" /> Today&apos;s Core Focus
                 </h3>
                 <p className="text-xs text-neutral-300 leading-relaxed font-sans select-text">
                   {planData.focus}
@@ -195,14 +191,11 @@ export default function PlannerPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {planData.timeline.map((item, idx) => {
                   let iconElement = <Sun className="h-5 w-5 text-amber-500" />;
-                  let timeColor = "text-amber-500 bg-amber-500/10 border-amber-500/20";
                   
                   if (item.timeSlot === "Afternoon") {
                     iconElement = <Sunset className="h-5 w-5 text-yellow-500" />;
-                    timeColor = "text-yellow-500 bg-yellow-500/10 border-yellow-500/20";
                   } else if (item.timeSlot === "Evening") {
                     iconElement = <Moon className="h-5 w-5 text-indigo-400" />;
-                    timeColor = "text-indigo-400 bg-indigo-400/10 border-indigo-400/20";
                   }
 
                   return (

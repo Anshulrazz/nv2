@@ -9,9 +9,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
-  Plus,
   Save,
-  Check,
   BrainCircuit,
   Award,
   HelpCircle,
@@ -20,7 +18,6 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 // Structured interfaces matching the API payload schemas
 interface CheatSheetConcept {
@@ -143,7 +140,7 @@ export default function RevisionPage() {
       if (!newNote) throw new Error("Failed to create new document.");
 
       // Formulate content array representing the structured study data
-      const docContent: any[] = [
+      const docContent: Record<string, unknown>[] = [
         {
           type: "heading",
           attrs: { level: 2 },

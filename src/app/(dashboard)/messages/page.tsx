@@ -8,7 +8,6 @@ import {
   Search,
   Send,
   Paperclip,
-  ExternalLink,
   Film,
   FileText,
   User as UserIcon,

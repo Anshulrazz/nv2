@@ -24,7 +24,6 @@ import {
   ChevronDown,
   ChevronRight,
   FolderOpen,
-  FolderClosed,
 } from "lucide-react";
 
 interface SidebarNavigationProps {
@@ -34,7 +33,6 @@ interface SidebarNavigationProps {
 }
 
 export function SidebarNavigation({
-  userId,
   userRole,
   unreadMessagesCount,
 }: SidebarNavigationProps) {

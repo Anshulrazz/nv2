@@ -131,7 +131,7 @@ export const POST = auth(async function POST(req) {
                         assistantReply += text;
                         controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
                       }
-                    } catch (e) {
+                    } catch {
                       // Skip partial line parse errors
                     }
                   }
@@ -147,7 +147,7 @@ export const POST = auth(async function POST(req) {
                     assistantReply += text;
                     controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
                   }
-                } catch (e) {}
+                } catch {}
               }
             }
 

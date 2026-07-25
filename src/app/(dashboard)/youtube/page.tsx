@@ -7,9 +7,7 @@ import {
   Play,
   Loader2,
   BookOpen,
-  ChevronRight,
   Save,
-  Check,
   Award,
   HelpCircle,
   RefreshCw,
@@ -105,7 +103,7 @@ export default function YouTubeLearningPage() {
       if (!newNote) throw new Error("Failed to create document.");
 
       // Formulate content nodes representing summary and study guides
-      const docContent: any[] = [
+      const docContent: Record<string, unknown>[] = [
         {
           type: "heading",
           attrs: { level: 2 },
