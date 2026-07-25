@@ -618,8 +618,8 @@ export default function ResearchPage() {
       {/* Ambient glow */}
       <div className="absolute top-0 right-1/4 w-[400px] h-[300px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
 
-      {/* Top Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-955/80 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shrink-0 z-10 relative">
+      {/* Top Banner — now sticky so it doesn't scroll away/hide */}
+      <div className="sticky top-0 border-b border-neutral-900 bg-neutral-955/95 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 z-20">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             <GraduationCap className="h-5 w-5 text-cyan-400" />
@@ -635,7 +635,7 @@ export default function ResearchPage() {
         <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Button
             onClick={handleOpenWritingMode}
-            className="bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-300 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg cursor-pointer"
+            className="flex-1 sm:flex-none justify-center bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-300 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg cursor-pointer"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             <Edit className="h-3.5 w-3.5 text-cyan-400" /> <span className="whitespace-nowrap">Write Paper</span>
@@ -643,7 +643,7 @@ export default function ResearchPage() {
 
           <Button
             onClick={() => setIsUploadOpen(true)}
-            className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer font-heading"
+            className="flex-1 sm:flex-none justify-center bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all cursor-pointer font-heading"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             <Plus className="h-4 w-4" /> <span className="whitespace-nowrap">Upload PDF</span>
