@@ -5,27 +5,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import {
-  BookOpen,
-  
-  Settings,
   LogOut,
   User as UserIcon,
-  LayoutDashboard,
-  HelpCircle,
-  MessageSquare,
-  MessageCircle,
-  Rss,
-  Bookmark,
-  Trophy,
   Bell,
-  Newspaper,
-  ShieldAlert,
-  Users,
-  GraduationCap,
-  Presentation,
   Menu,
-  Briefcase,
-  Gift,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
 import { PusherListener } from "@/components/PusherListener";
@@ -33,6 +16,7 @@ import { CallWrapper } from "@/components/CallWrapper";
 import { Button } from "@/components/ui/button";
 import { SidebarTree } from "@/components/sidebar/SidebarTree";
 import { NavLink } from "@/components/sidebar/NavLink";
+import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Notification } from "@/models/Notification";
 import { User } from "@/models/User";
@@ -76,7 +60,7 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="relative h-screen bg-background text-foreground flex overflow-hidden cyber-grid">
+    <div className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden cyber-grid">
       <PusherListener />
       <CallWrapper />
       {/* ── Premium Background Glow Shapes ── */}
@@ -129,6 +113,17 @@ export default async function DashboardLayout({
               >
                 MVP
               </span>
+
+              {/* Desktop Notification Bell (Moved to Sidebar to avoid overlay) */}
+              <Link href="/notifications" className="hidden lg:flex relative items-center justify-center h-7 w-7 rounded-lg hover:bg-sidebar-accent transition-colors group">
+                <Bell className="h-4 w-4 text-neutral-450 group-hover:text-primary transition-colors" />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-3.5 min-w-[14px] px-1 bg-destructive text-neutral-100 text-[8px] font-extrabold flex items-center justify-center rounded-full border border-sidebar shadow-md">
+                    {unreadCount}
+                  </span>
+                )}
+              </Link>
+
               {/* Close button – mobile only */}
               <label
                 htmlFor="sidebar-toggle"
@@ -144,39 +139,16 @@ export default async function DashboardLayout({
           </div>
 
           {/* Navigation links */}
-          <nav className="p-4 space-y-0.5">
-            <NavLink href="/dashboard"    icon={<LayoutDashboard className="h-4 w-4" />} label="Dashboard"   accent="cyan" />
-            <NavLink
-              href="/messages"
-              icon={<MessageCircle className="h-4 w-4" />}
-              label="Messages"
-              accent="cyan"
-              badge={unreadMessagesCount > 0 ? unreadMessagesCount : undefined}
+          <nav className="p-4 space-y-3">
+            <SidebarNavigation
+              userId={user.id}
+              userRole={dbUser?.role}
+              unreadMessagesCount={unreadMessagesCount}
             />
-            <NavLink href="/notes"        icon={<BookOpen        className="h-4 w-4" />} label="Notes"        accent="cyan" />
-            <NavLink href="/feed"         icon={<Rss             className="h-4 w-4" />} label="Public Feed"  accent="violet" />
-            <NavLink href="/community"    icon={<Users           className="h-4 w-4" />} label="Community"    accent="cyan" />
-            <NavLink href="/blogs"        icon={<Newspaper       className="h-4 w-4" />} label="Blogs"        accent="violet" />
-            <NavLink href="/research"     icon={<GraduationCap   className="h-4 w-4" />} label="Research"     accent="violet" />
-            {/* <NavLink href="/chat"         icon={<Sparkles        className="h-4 w-4" />} label="AI Chat"      accent="violet" /> */}
-            <NavLink href="/doubts"       icon={<HelpCircle      className="h-4 w-4" />} label="Doubts"       accent="cyan" />
-            <NavLink href="/forums"       icon={<MessageSquare   className="h-4 w-4" />} label="Forums"       accent="violet" />
-            <NavLink href="/bookmarks"    icon={<Bookmark        className="h-4 w-4" />} label="Bookmarks"    accent="amber" />
-            <NavLink href="/leaderboard"  icon={<Trophy          className="h-4 w-4" />} label="Leaderboard"  accent="yellow" />
-            <NavLink href="/courses"      icon={<Presentation    className="h-4 w-4" />} label="Courses"      accent="violet" />
-            <NavLink href="/projects"     icon={<Briefcase       className="h-4 w-4" />} label="Projects"     accent="cyan" />
-            <NavLink href="/referrals"    icon={<Gift            className="h-4 w-4" />} label="Referrals"    accent="yellow" />
-            <NavLink href="/settings"     icon={<Settings        className="h-4 w-4" />} label="Settings"     accent="cyan" />
-
-            {(dbUser?.role === "teacher" || dbUser?.role === "admin") && (
-              <NavLink href="/teacher/courses" icon={<Presentation className="h-4 w-4" />} label="Teacher Dashboard" accent="yellow" />
-            )}
             
-            <NavLink href={`/user/${user.id}`} icon={<UserIcon className="h-4 w-4" />} label="My Profile" accent="violet" />
+            <div className="h-px bg-sidebar-border w-full my-2" />
 
-            {dbUser?.role === "admin" && (
-              <NavLink href="/admin" icon={<ShieldAlert className="h-4 w-4" />} label="Admin Panel" accent="red" />
-            )}
+            <NavLink href={`/user/${user.id}`} icon={<UserIcon className="h-4 w-4" />} label="My Profile" accent="violet" />
           </nav>
 
           {/* Divider */}
@@ -226,19 +198,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* ── Main content ── */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative z-10">
-        {/* Floating Notification Bell - Desktop Only */}
-        <div className="absolute top-3.5 right-6 z-50 pointer-events-auto select-none hidden lg:block">
-          <Link href="/notifications" className="flex items-center justify-center h-8.5 w-8.5 rounded-xl bg-sidebar border border-sidebar-border hover:border-primary/40 shadow-lg transition-all group">
-            <Bell className="h-4 w-4 text-neutral-450 group-hover:text-primary transition-colors" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 h-4 min-w-[16px] px-1 bg-destructive text-neutral-100 text-[8px] font-extrabold flex items-center justify-center rounded-full border border-background shadow-md">
-                {unreadCount}
-              </span>
-            )}
-          </Link>
-        </div>
-
+      <div className="flex-1 flex flex-col min-w-0 h-full w-full overflow-hidden relative z-10">
         {/* Top bar – mobile only */}
         <header className="lg:hidden sticky top-0 z-30 h-14 flex items-center justify-between px-4 border-b border-sidebar-border bg-sidebar shrink-0">
           <div className="flex items-center">
@@ -267,7 +227,7 @@ export default async function DashboardLayout({
           </Link>
         </header>
 
-        <main className="flex-1 flex flex-col overflow-hidden bg-transparent pb-16 lg:pb-0">
+        <main className="flex-1 flex flex-col h-full w-full overflow-hidden bg-transparent pb-16 lg:pb-0">
           {children}
         </main>
       </div>

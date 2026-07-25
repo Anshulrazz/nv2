@@ -72,29 +72,96 @@ export const POST = auth(async function POST(req) {
       });
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const geminiApiKey = process.env.GEMINI_API_KEY;
+    const geminiModel = process.env.GEMINI_MODEL || "gemini-flash-latest";
+    const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
     const textEncoder = new TextEncoder();
 
-    // 1. Fallback simulated stream if API key is not present in development
-    if (!apiKey || apiKey === "placeholder" || apiKey === "") {
-      const responseText = `[WARNING: ANTHROPIC_API_KEY is not configured. Simulating Claude response.]\n\nI received your query: "${message}".\n\nIf you have a note open, its content is sent to help me reply. Feel free to use folders tree in the sidebar and create new documents. I can also help you with Doubts, Forums, Blogs, Bookmarks, and check the Admin Panel for analytics graphs!`;
+    // ─── 1. Google Gemini API Stream ───
+    if (geminiApiKey && geminiApiKey !== "placeholder" && geminiApiKey !== "") {
+      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "api-key": geminiApiKey,
+          "x-goog-api-key": geminiApiKey,
+          "Authorization": `Bearer ${geminiApiKey}`,
+        },
+        body: JSON.stringify({
+          model: geminiModel,
+          messages: formattedMessages,
+          max_tokens: 4096,
+          temperature: 1.00,
+          top_p: 0.95,
+          stream: true,
+        }),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Gemini API Error: ${response.status} - ${errText}`);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
 
       const readableStream = new ReadableStream({
         async start(controller) {
-          const words = responseText.split(" ");
-          for (const word of words) {
-            controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text: word + " " })}\n\n`));
-            await new Promise((r) => setTimeout(r, 45)); // Typing speed simulation
-          }
+          let assistantReply = "";
+          let buffer = "";
 
-          // Save conversation logs
           try {
-            await saveChatHistory(chatId, userId, message, responseText);
-          } catch (e) {
-            console.error("Save simulation error:", e);
-          }
+            if (reader) {
+              while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-          controller.close();
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop() || "";
+
+                for (const line of lines) {
+                  const trimmed = line.trim();
+                  if (trimmed === "data: [DONE]") continue;
+                  if (trimmed.startsWith("data: ")) {
+                    try {
+                      const parsed = JSON.parse(trimmed.substring(6));
+                      const text = parsed.choices?.[0]?.delta?.content || "";
+                      if (text) {
+                        assistantReply += text;
+                        controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                      }
+                    } catch (e) {
+                      // Skip partial line parse errors
+                    }
+                  }
+                }
+              }
+
+              // Flush final buffer line
+              if (buffer.startsWith("data: ")) {
+                try {
+                  const parsed = JSON.parse(buffer.substring(6));
+                  const text = parsed.choices?.[0]?.delta?.content || "";
+                  if (text) {
+                    assistantReply += text;
+                    controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                  }
+                } catch (e) {}
+              }
+            }
+
+            // Save conversation history and reward points
+            await saveChatHistory(chatId, userId, message, assistantReply);
+            await awardPoints(userId, 5);
+
+          } catch (err) {
+            console.error("Gemini Stream parse error:", err);
+            const errMsg = err instanceof Error ? err.message : String(err);
+            controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+          } finally {
+            controller.close();
+          }
         },
       });
 
@@ -107,40 +174,70 @@ export const POST = auth(async function POST(req) {
       });
     }
 
-    // 2. Real Claude SDK stream
-    const anthropic = new Anthropic({ apiKey });
-    const stream = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 4096,
-      system: "You are Claude, Notexia's built-in AI assistant. Help users structure notes, analyze content, resolve doubts, and write blogs.",
-      messages: formattedMessages,
-      stream: true,
-    });
+    // ─── 2. Claude Anthropic API Stream ───
+    if (anthropicApiKey && anthropicApiKey !== "placeholder" && anthropicApiKey !== "") {
+      const anthropic = new Anthropic({ apiKey: anthropicApiKey });
+      const stream = await anthropic.messages.create({
+        model: "claude-3-5-sonnet-20241022",
+        max_tokens: 4096,
+        system: "You are Claude, Notexia's built-in AI assistant. Help users structure notes, analyze content, resolve doubts, and write blogs.",
+        messages: formattedMessages,
+        stream: true,
+      });
+
+      const readableStream = new ReadableStream({
+        async start(controller) {
+          let assistantReply = "";
+
+          try {
+            for await (const chunk of stream) {
+              if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
+                const text = chunk.delta.text;
+                assistantReply += text;
+                controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+              }
+            }
+
+            await saveChatHistory(chatId, userId, message, assistantReply);
+            await awardPoints(userId, 5);
+
+          } catch (err) {
+            console.error("Claude Streaming error:", err);
+            const errMsg = err instanceof Error ? err.message : String(err);
+            controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+          } finally {
+            controller.close();
+          }
+        },
+      });
+
+      return new Response(readableStream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive",
+        },
+      });
+    }
+
+    // ─── 3. Local Simulation Fallback (Development Mode) ───
+    const responseText = `[WARNING: NVIDIA_API_KEY / ANTHROPIC_API_KEY not configured. Simulating Claude response.]\n\nI received your query: "${message}".\n\nIf you have a note open, its content is sent to help me reply. Feel free to use folders tree in the sidebar and create new documents. I can also help you with Doubts, Forums, Blogs, Bookmarks, and check the Admin Panel for analytics graphs!`;
 
     const readableStream = new ReadableStream({
       async start(controller) {
-        let assistantReply = "";
+        const words = responseText.split(" ");
+        for (const word of words) {
+          controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text: word + " " })}\n\n`));
+          await new Promise((r) => setTimeout(r, 45));
+        }
 
         try {
-          for await (const chunk of stream) {
-            if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
-              const text = chunk.delta.text;
-              assistantReply += text;
-              controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
-            }
-          }
-
-          // Log complete conversation in DB & award activity points
-          await saveChatHistory(chatId, userId, message, assistantReply);
-          await awardPoints(userId, 5);
-
-        } catch (err) {
-          console.error("Streaming error:", err);
-          const errMsg = err instanceof Error ? err.message : String(err);
-          controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
-        } finally {
-          controller.close();
+          await saveChatHistory(chatId, userId, message, responseText);
+        } catch (e) {
+          console.error("Save simulation error:", e);
         }
+
+        controller.close();
       },
     });
 

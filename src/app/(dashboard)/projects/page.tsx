@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
 import {
   Loader2,
   Coins,
@@ -208,6 +209,11 @@ export default function ProjectsPage() {
   const [viewingSelectedFile, setViewingSelectedFile] = useState<ProjectFile | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [copiedFile, setCopiedFile] = useState(false);
+
+  // Premium Code Editor states
+  const [isEditingCodeFile, setIsEditingCodeFile] = useState(false);
+  const [editedCodeContent, setEditedCodeContent] = useState("");
+  const [isSavingCodeFile, setIsSavingCodeFile] = useState(false);
 
   // Responsive mobile views toggle
   const [mobileTab, setMobileTab] = useState<"files" | "code">("files");
@@ -762,6 +768,8 @@ export default function ProjectsPage() {
   const handleSelectFile = (file: ProjectFile) => {
     setViewingSelectedFile(file);
     setMobileTab("code");
+    setIsEditingCodeFile(false);
+    setEditedCodeContent("");
   };
 
   const handleCopyFileContent = () => {
@@ -769,6 +777,156 @@ export default function ProjectsPage() {
     navigator.clipboard.writeText(viewingSelectedFile.content);
     setCopiedFile(true);
     setTimeout(() => setCopiedFile(false), 2000);
+  };
+
+  const closeProjectViewer = () => {
+    setViewingProject(null);
+    setViewingSelectedFile(null);
+    setIsEditingCodeFile(false);
+    setEditedCodeContent("");
+  };
+
+  const handleSaveFileContent = async () => {
+    if (!viewingProject || !viewingSelectedFile) return;
+
+    try {
+      setIsSavingCodeFile(true);
+      const updatedFiles = viewingProject.files.map((f) =>
+        f.path === viewingSelectedFile.path ? { ...f, content: editedCodeContent } : f
+      );
+
+      const res = await fetch(`/api/projects/${viewingProject.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: updatedFiles }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to save file contents.");
+      }
+
+      // Update state
+      const updatedProj = { ...viewingProject, files: updatedFiles };
+      setViewingProject(updatedProj);
+      setViewingSelectedFile({ ...viewingSelectedFile, content: editedCodeContent });
+      setProjects((prev) =>
+        prev.map((p) => (p.id === viewingProject.id ? { ...p, files: updatedFiles } : p))
+      );
+      setIsEditingCodeFile(false);
+      setEditedCodeContent("");
+      toast.success("File updated successfully!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error saving file.");
+    } finally {
+      setIsSavingCodeFile(false);
+    }
+  };
+
+  const handleCreateNewFile = async () => {
+    if (!viewingProject) return;
+
+    const path = prompt("Enter the new file path (e.g., src/components/Header.tsx):");
+    if (!path) return;
+
+    const cleanPath = path.trim();
+    if (!cleanPath) return;
+
+    // Check duplicates
+    if (viewingProject.files.some((f) => f.path.toLowerCase() === cleanPath.toLowerCase())) {
+      alert("A file with this path already exists!");
+      return;
+    }
+
+    // Check limit
+    const limit = isPremiumUser ? 150 : 50;
+    if (viewingProject.files.length >= limit) {
+      alert(`File count limit exceeded! You cannot have more than ${limit} files.`);
+      return;
+    }
+
+    try {
+      const newFile = { path: cleanPath, content: "" };
+      const updatedFiles = [...viewingProject.files, newFile];
+
+      const res = await fetch(`/api/projects/${viewingProject.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: updatedFiles }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to create new file.");
+      }
+
+      const updatedProj = { ...viewingProject, files: updatedFiles };
+      setViewingProject(updatedProj);
+      setViewingSelectedFile(newFile);
+      setProjects((prev) =>
+        prev.map((p) => (p.id === viewingProject.id ? { ...p, files: updatedFiles } : p))
+      );
+
+      // Auto-expand new file folders in the tree
+      const parts = cleanPath.split("/");
+      let current = "";
+      const newExp = { ...expandedFolders };
+      parts.slice(0, -1).forEach((part) => {
+        current = current ? `${current}/${part}` : part;
+        newExp[current] = true;
+      });
+      setExpandedFolders(newExp);
+
+      // Auto-enter edit mode
+      setEditedCodeContent("");
+      setIsEditingCodeFile(true);
+      toast.success(`File ${cleanPath} created!`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error creating file.");
+    }
+  };
+
+  const handleDeleteFile = async () => {
+    if (!viewingProject || !viewingSelectedFile) return;
+
+    if (!confirm(`Are you sure you want to delete ${viewingSelectedFile.path}?`)) {
+      return;
+    }
+
+    try {
+      const updatedFiles = viewingProject.files.filter((f) => f.path !== viewingSelectedFile.path);
+
+      const res = await fetch(`/api/projects/${viewingProject.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ files: updatedFiles }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete file.");
+      }
+
+      const updatedProj = { ...viewingProject, files: updatedFiles };
+      setViewingProject(updatedProj);
+
+      // Find next selected file
+      if (updatedFiles.length > 0) {
+        const readme = updatedFiles.find((f) => f.path.toLowerCase() === "readme.md");
+        setViewingSelectedFile(readme || updatedFiles[0]);
+      } else {
+        setViewingSelectedFile(null);
+      }
+
+      setProjects((prev) =>
+        prev.map((p) => (p.id === viewingProject.id ? { ...p, files: updatedFiles } : p))
+      );
+      setIsEditingCodeFile(false);
+      setEditedCodeContent("");
+      toast.success("File deleted successfully.");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Error deleting file.");
+    }
   };
 
   if (isLoading) {
@@ -1509,7 +1667,7 @@ export default function ProjectsPage() {
                 )}
               </div>
 
-              <button onClick={() => setViewingProject(null)} className="text-neutral-500 hover:text-neutral-200 p-1 rounded-lg transition-colors shrink-0">
+              <button onClick={closeProjectViewer} className="text-neutral-500 hover:text-neutral-200 p-1 rounded-lg transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
@@ -1527,9 +1685,32 @@ export default function ProjectsPage() {
               {/* Left Side: Folder Tree Explorer (Hidden on mobile if viewing code) */}
               <div className={`w-full md:w-64 shrink-0 overflow-y-auto p-4 custom-scroll space-y-3 select-none ${mobileTab === "files" ? "block" : "hidden md:block"}`}>
                 <div className="flex items-center justify-between border-b border-neutral-900 pb-2">
-                  <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider font-space">
-                    Files Explorer
-                  </span>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider font-space">
+                      Files Explorer
+                    </span>
+                    {viewingProject.isOwner && (
+                      isPremiumUser ? (
+                        <button
+                          onClick={handleCreateNewFile}
+                          className="text-cyan-400 hover:text-cyan-300 transition-colors p-0.5 rounded hover:bg-neutral-800 shrink-0 cursor-pointer"
+                          title="Create New File"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            alert("Upgrade to Premium to edit, create, and delete files directly in the browser!");
+                          }}
+                          className="text-yellow-500/70 hover:text-yellow-400 transition-colors p-0.5 rounded hover:bg-neutral-800 shrink-0 cursor-pointer"
+                          title="Premium Feature: Create New File"
+                        >
+                          <Lock className="h-3 w-3" />
+                        </button>
+                      )
+                    )}
+                  </div>
                   <span className="text-[9px] text-neutral-600 font-mono">
                     {viewingProject.files?.length || 0} items
                   </span>
@@ -1573,29 +1754,131 @@ export default function ProjectsPage() {
                           {viewingSelectedFile.path}
                         </span>
                       </div>
-                      <Button
-                        onClick={handleCopyFileContent}
-                        variant="ghost"
-                        className="h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors gap-1 rounded-md shrink-0"
-                      >
-                        {copiedFile ? <Check className="h-3.5 w-3.5 text-green-400" /> : <Copy className="h-3.5 w-3.5" />}
-                        <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">{copiedFile ? "Copied" : "Copy"}</span>
-                      </Button>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {copiedFile ? (
+                          <Button
+                            variant="ghost"
+                            className="h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors gap-1 rounded-md cursor-pointer"
+                          >
+                            <Check className="h-3.5 w-3.5 text-green-400" />
+                            <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Copied</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            onClick={handleCopyFileContent}
+                            variant="ghost"
+                            className="h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors gap-1 rounded-md cursor-pointer"
+                          >
+                            <Copy className="h-3.5 w-3.5" />
+                            <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Copy</span>
+                          </Button>
+                        )}
+
+                        {viewingProject.isOwner && (
+                          isPremiumUser ? (
+                            isEditingCodeFile ? (
+                              <>
+                                <Button
+                                  onClick={handleSaveFileContent}
+                                  disabled={isSavingCodeFile}
+                                  variant="ghost"
+                                  className="h-7 px-2 hover:bg-neutral-800 text-green-400 hover:text-green-300 transition-colors gap-1 rounded-md font-bold cursor-pointer"
+                                >
+                                  {isSavingCodeFile ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <Check className="h-3.5 w-3.5" />
+                                  )}
+                                  <span className="text-[10px] font-bold uppercase font-space">Save</span>
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    setIsEditingCodeFile(false);
+                                    setEditedCodeContent("");
+                                  }}
+                                  disabled={isSavingCodeFile}
+                                  variant="ghost"
+                                  className="h-7 px-2 hover:bg-neutral-800 text-red-400 hover:text-red-300 transition-colors gap-1 rounded-md cursor-pointer"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-bold uppercase font-space">Cancel</span>
+                                </Button>
+                              </>
+                            ) : (
+                              <>
+                                <Button
+                                  onClick={() => {
+                                    setEditedCodeContent(viewingSelectedFile.content);
+                                    setIsEditingCodeFile(true);
+                                  }}
+                                  variant="ghost"
+                                  className="h-7 px-2 hover:bg-neutral-800 text-cyan-400 hover:text-cyan-300 transition-colors gap-1 rounded-md cursor-pointer"
+                                >
+                                  <Edit3 className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-bold uppercase font-space">Edit</span>
+                                </Button>
+                                <Button
+                                  onClick={handleDeleteFile}
+                                  variant="ghost"
+                                  className="h-7 px-2 hover:bg-neutral-800 text-red-500 hover:text-red-400 transition-colors gap-1 rounded-md cursor-pointer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                  <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Delete</span>
+                                </Button>
+                              </>
+                            )
+                          ) : (
+                            <Button
+                              onClick={() => {
+                                alert("Upgrade to Premium to edit, create, and delete files directly in the browser!");
+                              }}
+                              variant="ghost"
+                              className="h-7 px-2 hover:bg-neutral-800 text-yellow-500 hover:text-yellow-400 transition-colors gap-1 rounded-md opacity-70 cursor-pointer"
+                            >
+                              <Lock className="h-3.5 w-3.5" />
+                              <span className="text-[10px] font-bold uppercase font-space">Edit File</span>
+                            </Button>
+                          )
+                        )}
+                      </div>
                     </div>
 
                     {/* Code Code Block */}
                     <div className="flex-1 overflow-auto custom-scroll p-3 sm:p-4 font-mono text-xs leading-relaxed text-neutral-300 select-text flex">
                       {/* Line Numbers */}
                       <div className="select-none text-neutral-700 text-right pr-3 sm:pr-4 border-r border-neutral-850 text-[11px] font-mono leading-relaxed mr-3 sm:mr-4 shrink-0">
-                        {viewingSelectedFile.content.split("\n").map((_, i) => (
+                        {(isEditingCodeFile ? editedCodeContent : viewingSelectedFile.content).split("\n").map((_, i) => (
                           <div key={i}>{i + 1}</div>
                         ))}
                       </div>
 
                       {/* Code Content */}
-                      <pre className="flex-1 whitespace-pre font-mono text-[11px] leading-relaxed overflow-x-auto">
-                        {viewingSelectedFile.content || "// Empty file"}
-                      </pre>
+                      {isEditingCodeFile ? (
+                        <textarea
+                          value={editedCodeContent}
+                          onChange={(e) => setEditedCodeContent(e.target.value)}
+                          className="flex-1 bg-transparent text-neutral-300 font-mono text-[11px] leading-relaxed resize-none focus:outline-none overflow-x-auto whitespace-pre outline-none"
+                          style={{ fontFamily: "var(--font-jetbrains-mono)", tabSize: 2 }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Tab") {
+                              e.preventDefault();
+                              const target = e.currentTarget;
+                              const start = target.selectionStart;
+                              const end = target.selectionEnd;
+                              const val = target.value;
+                              const newValue = val.substring(0, start) + "  " + val.substring(end);
+                              setEditedCodeContent(newValue);
+                              setTimeout(() => {
+                                target.selectionStart = target.selectionEnd = start + 2;
+                              }, 0);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <pre className="flex-1 whitespace-pre font-mono text-[11px] leading-relaxed overflow-x-auto">
+                          {viewingSelectedFile.content || "// Empty file"}
+                        </pre>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -1662,8 +1945,8 @@ export default function ProjectsPage() {
                   <span>Download ZIP</span>
                 </Button>
                 <Button
-                  onClick={() => setViewingProject(null)}
-                  className="bg-neutral-950 border border-neutral-850 hover:bg-neutral-800 text-neutral-300 font-bold h-8 px-4 rounded-xl text-xs w-full sm:w-auto"
+                  onClick={closeProjectViewer}
+                  className="bg-neutral-950 border border-neutral-850 hover:bg-neutral-800 text-neutral-300 font-bold h-8 px-4 rounded-xl text-xs w-full sm:w-auto cursor-pointer"
                 >
                   Close Repository
                 </Button>

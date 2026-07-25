@@ -17,5 +17,4 @@ chat, Zustand + TanStack Query.
   embedded messages for free; deleting a User must explicitly delete their
   Folders/Notes/Chats too) — Mongo won't cascade this automatically.
 - Loading/empty/error states are required on every list/detail view, not optional polish.
-- Do not touch billing, admin, calendar, tasks, or multi-workspace code — out of
-  scope for this phase (see Phase 2 Backlog in notexia-mvp-plan.md).
+

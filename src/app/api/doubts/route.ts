@@ -22,6 +22,7 @@ export const GET = auth(async function GET(req) {
 
     const doubts = await Doubt.find(query)
       .populate("userId", "name email image")
+      .populate({ path: "replies.userId", select: "name email image", strictPopulate: false })
       .sort({ createdAt: -1 });
 
     return NextResponse.json(doubts);

@@ -19,6 +19,16 @@ interface DoubtData {
     email: string;
     image?: string;
   };
+  replies?: {
+    _id: string;
+    userId: {
+      _id: string;
+      name: string;
+      image?: string;
+    };
+    content: string;
+    createdAt: string;
+  }[];
   createdAt: string;
 }
 
@@ -35,6 +45,11 @@ export default function DoubtsPage() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reply states
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const fetchDoubts = useCallback(async () => {
     setIsLoading(true);
@@ -76,6 +91,28 @@ export default function DoubtsPage() {
       console.error("submit doubt error:", e);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleReplySubmit = async (doubtId: string) => {
+    if (!replyContent.trim() || isSubmittingReply) return;
+
+    setIsSubmittingReply(true);
+    try {
+      const res = await fetch(`/api/doubts/${doubtId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: replyContent }),
+      });
+      if (res.ok) {
+        setReplyContent("");
+        setReplyingTo(null);
+        fetchDoubts();
+      }
+    } catch (e) {
+      console.error("submit reply error:", e);
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -266,6 +303,77 @@ export default function DoubtsPage() {
                           🎉 Resolved successfully! (+15 pts)
                         </span>
                       )}
+                    </div>
+                  )}
+                  
+                  {/* Replies Section */}
+                  {(doubt.replies && doubt.replies.length > 0) || replyingTo === doubt._id ? (
+                    <div className="mt-4 pt-4 border-t border-neutral-900/60 space-y-4">
+                      <h3 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider font-space">
+                        Replies ({doubt.replies?.length || 0})
+                      </h3>
+                      
+                      <div className="space-y-3">
+                        {doubt.replies?.map((reply) => (
+                          <div key={reply._id} className="bg-neutral-900/30 rounded-lg p-3 border border-neutral-800/50">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="text-[10px] font-bold text-neutral-300" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                                {reply.userId?.name || "Unknown"}
+                              </span>
+                              <span className="text-[9px] text-neutral-500 font-mono">
+                                • {new Date(reply.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-neutral-400 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                          </div>
+                        ))}
+                      </div>
+
+                      {replyingTo === doubt._id && !isResolved && (
+                        <div className="pt-2 flex flex-col gap-2">
+                          <textarea
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder="Write your reply..."
+                            className="w-full input-premium placeholder-neutral-600 p-2 text-[11px] resize-none h-16"
+                          />
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setReplyingTo(null);
+                                setReplyContent("");
+                              }}
+                              className="h-7 px-3 text-[10px] text-neutral-500 hover:text-neutral-300"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleReplySubmit(doubt._id)}
+                              disabled={isSubmittingReply || !replyContent.trim()}
+                              className="btn-premium-primary h-7 px-3 text-[10px] font-bold"
+                            >
+                              {isSubmittingReply ? "Posting..." : "Post Reply"}
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+
+                  {!isResolved && replyingTo !== doubt._id && (
+                    <div className="pt-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => setReplyingTo(doubt._id)}
+                        className="h-7 px-3 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/30 font-bold transition-colors"
+                        style={{ fontFamily: "var(--font-space-grotesk)" }}
+                      >
+                        Reply to Doubt
+                      </Button>
                     </div>
                   )}
                 </div>

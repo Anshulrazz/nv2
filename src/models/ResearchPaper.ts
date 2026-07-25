@@ -7,6 +7,7 @@ export interface IResearchPaper extends Document {
   fileUrl: string; // PDF link
   userId: mongoose.Types.ObjectId;
   userName: string;
+  content?: string;
   pointsAwarded: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -17,7 +18,8 @@ const ResearchPaperSchema = new Schema<IResearchPaper>(
     title: { type: String, required: true, trim: true },
     authors: { type: String, required: true, trim: true },
     abstract: { type: String, required: true, trim: true },
-    fileUrl: { type: String, required: true },
+    fileUrl: { type: String, default: "" },
+    content: { type: String, default: "" },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     userName: { type: String, required: true },
     pointsAwarded: { type: Boolean, default: true },

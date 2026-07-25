@@ -331,7 +331,7 @@ export function CallOverlay() {
   if (callState === "idle") return null;
 
   return (
-    <div className="fixed inset-0 z-[99999] bg-neutral-950/90 backdrop-blur-xl flex flex-col items-center justify-center text-neutral-100 select-none animate-fade-in overflow-hidden">
+    <div className="fixed inset-0 z-[99999] bg-neutral-950/90 backdrop-blur-xl flex flex-col items-center justify-center text-neutral-100 select-none animate-fade-in overflow-hidden pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] px-[max(1rem,env(safe-area-inset-left))]">
       {/* Background glow — scaled for mobile */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] md:w-[500px] md:h-[500px] bg-cyan-500/10 rounded-full blur-[100px] sm:blur-[140px] pointer-events-none" />
 
@@ -500,6 +500,18 @@ function ActiveCallProvider({ handleEndCall }: { handleEndCall: () => void }) {
   return (
     <div className="w-full h-full sm:max-w-5xl relative z-10 shadow-2xl overflow-hidden sm:rounded-2xl bg-black">
       <div className="w-full h-full" ref={containerRef} />
+      
+      {/* Custom Floating End Call Button (highly visible on mobile/phone) */}
+      <div className="absolute top-4 right-4 z-[9999]">
+        <Button
+          onClick={handleEndCall}
+          className="w-12 h-12 rounded-full bg-red-600 hover:bg-red-500 text-white flex items-center justify-center transition-transform hover:scale-105 active:scale-95 shadow-[0_0_15px_rgba(220,38,38,0.6)] border border-red-500/30"
+          size="icon"
+          title="End Call"
+        >
+          <PhoneOff className="h-5 w-5" />
+        </Button>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { Editor } from "@/components/editor/Editor";
 import { PDFViewer } from "@/components/PDFViewer";
-import { SimpleTodo } from "@/components/notes/SimpleTodo";
 import {
   BookOpen,
   Plus,
@@ -763,7 +762,6 @@ export default function NotesPage() {
         </div>
 
         {/* Local Storage Todo Component placed in empty state */}
-        <SimpleTodo />
       </div>
     </div>
   );

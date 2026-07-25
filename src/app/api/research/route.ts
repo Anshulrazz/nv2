@@ -30,20 +30,19 @@ export const POST = auth(async function POST(req) {
     }
 
     const body = await req.json();
-    const { title, authors, abstract, fileUrl } = body;
+    const { title, authors, abstract, fileUrl, content } = body;
 
     if (
       !title ||
       !authors ||
       !abstract ||
-      !fileUrl ||
       title.trim() === "" ||
       authors.trim() === "" ||
       abstract.trim() === "" ||
-      fileUrl.trim() === ""
+      (!fileUrl?.trim() && !content?.trim())
     ) {
       return NextResponse.json(
-        { error: "Title, authors, abstract, and file are required." },
+        { error: "Title, authors, abstract, and either a PDF upload or written content are required." },
         { status: 400 }
       );
     }
@@ -57,7 +56,8 @@ export const POST = auth(async function POST(req) {
       title: title.trim(),
       authors: authors.trim(),
       abstract: abstract.trim(),
-      fileUrl: fileUrl.trim(),
+      fileUrl: (fileUrl || "").trim(),
+      content: content || "",
       userId,
       userName,
       pointsAwarded: true,
