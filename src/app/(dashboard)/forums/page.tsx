@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { MessageSquare, Plus, ThumbsUp, Send, Trash2, FolderHeart, CornerDownRight, Loader2, Upload } from "lucide-react";
+import { MessageSquare, Plus, ThumbsUp, Send, FolderHeart, CornerDownRight, Loader2, Upload, ArrowUpRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -204,403 +205,286 @@ export default function ForumsPage() {
   };
 
   return (
-    <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
-      {/* Ambient background glows */}
-      <div className="absolute top-0 right-1/4 w-[400px] h-[300px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+      </div>
 
-      {/* ── Mobile forums-sidebar checkbox toggle ── */}
-      <input type="checkbox" id="forums-sidebar-toggle" className="peer hidden" />
-
-      {/* ── Mobile backdrop ── */}
-      <label
-        htmlFor="forums-sidebar-toggle"
-        className="fixed inset-0 bg-black/60 z-40 md:hidden
-                   opacity-0 pointer-events-none
-                   peer-checked:opacity-100 peer-checked:pointer-events-auto
-                   transition-opacity duration-300"
-        aria-hidden="true"
-      />
-
-      {/* Categories Sidebar */}
-      <div className="
-        fixed md:static inset-y-0 left-0 z-50
-        w-56 shrink-0
-        border-r border-neutral-900 bg-neutral-950/98 md:bg-neutral-950/60 backdrop-blur-md
-        flex flex-col justify-between
-        select-none
-        -translate-x-full peer-checked:translate-x-0
-        md:translate-x-0
-        transition-transform duration-300 ease-in-out
-      ">
-        <div className="p-4 flex flex-col space-y-4 h-full">
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setIsOpen(true)}
-              className="flex-1 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold gap-1.5 h-9 rounded-lg transition-all shadow-[0_0_12px_rgba(6,182,212,0.25)]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              <Plus className="h-4 w-4" /> New Post
-            </Button>
-            {/* Close button — mobile only */}
-            <label
-              htmlFor="forums-sidebar-toggle"
-              className="md:hidden p-1.5 rounded-md text-neutral-400 hover:text-neutral-100 hover:bg-neutral-800 cursor-pointer transition-colors"
-              aria-label="Close categories"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </label>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scroll">
-            <div
-              className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest mb-2 px-2"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Categories
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+              <MessageSquare className="size-7" />
             </div>
-            {CATEGORIES.map((cat) => {
-              const isActive = selectedCategory === cat;
-              return (
-                <div
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`flex items-center gap-2 py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-155 text-xs ${
-                    isActive
-                      ? "bg-neutral-900 border border-neutral-800 text-neutral-100 font-medium"
-                      : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/45"
-                  }`}
-                >
-                  <FolderHeart className={`h-3.5 w-3.5 shrink-0 ${isActive ? "text-cyan-400" : "text-neutral-700"}`} />
-                  <span>{cat}</span>
-                </div>
-              );
-            })}
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                Student Forums
+                <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
+                  DISCUSSION DISPATCH
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                Ask questions, share tutorials, and join focused topic discussions with fellow engineers.
+              </p>
+            </div>
           </div>
+
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          >
+            <Plus className="size-4 text-zinc-950" />
+            <span>New Thread</span>
+            <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Button>
         </div>
       </div>
 
-      {/* Posts List Grid */}
-      <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll z-10 relative">
-        <div className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between shrink-0 select-none">
-          <div className="space-y-1">
-            {/* Mobile hamburger for forums sidebar */}
-            <div className="flex items-center gap-3">
-              <label
-                htmlFor="forums-sidebar-toggle"
-                className="md:hidden p-1.5 rounded-md bg-neutral-800 hover:bg-neutral-700 cursor-pointer transition-colors"
-                aria-label="Open categories"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-neutral-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="3" y1="6" x2="21" y2="6" />
-                  <line x1="3" y1="12" x2="21" y2="12" />
-                  <line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              </label>
-              <MessageSquare className="h-5 w-5 text-cyan-400" />
-              <h1
-                className="text-xl font-bold text-neutral-100 tracking-tight"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Forums
-              </h1>
-            </div>
-            <p className="text-neutral-500 text-xs">Join study threads, post tutorials, ask questions, and share insights.</p>
-          </div>
+      {/* Category Pills & Main Feed Container */}
+      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+        {/* Category Pills */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
+                selectedCategory === cat
+                  ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5 border border-transparent"
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
         </div>
 
-        <div className="p-4 sm:p-8 space-y-6 max-w-3xl w-full mx-auto">
-          {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center text-neutral-500 text-xs gap-2 select-none font-semibold">
-              <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
-              <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>SYNCING DISCUSSIONS...</span>
+        {/* Loading state */}
+        {isLoading ? (
+          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-violet-400" />
+            <span className="font-mono text-zinc-400 tracking-widest">LOADING FORUM THREADS...</span>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
+              <FolderHeart className="size-10 text-zinc-600" />
+              <h3 className="text-lg font-bold text-white">No discussions found</h3>
+              <p className="text-xs text-zinc-400 font-light max-w-xs">
+                Be the first scholar to start a topic thread in this category!
+              </p>
             </div>
-          ) : posts.length === 0 ? (
-            <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-neutral-900 rounded-2xl bg-neutral-900/5 select-none">
-              <MessageSquare className="h-10 w-10 text-neutral-700" />
-              <div className="space-y-1">
-                <h3 className="text-neutral-350 font-bold text-sm" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                  No discussions yet
-                </h3>
-                <p className="text-neutral-550 text-xs max-w-xs leading-normal">
-                  Be the first to post inside the &quot;{selectedCategory}&quot; category!
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-4">
-              {posts.map((post) => {
-                const isExpanded = expandedPostId === post._id;
-                const userHasUpvoted = post.upvotes?.some((uid) => uid.toString() === currentUserId);
-                const isOwner = currentUserId === post.userId;
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {posts.map((post) => {
+              const isUpvoted = currentUserId ? post.upvotes?.includes(currentUserId) : false;
+              const isExpanded = expandedPostId === post._id;
 
-                return (
+              return (
+                <div key={post._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl">
                   <div
-                    key={post._id}
                     onClick={() => setExpandedPostId(isExpanded ? null : post._id)}
-                    className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.04)] rounded-xl p-5 transition-all duration-300 space-y-4 cursor-pointer"
+                    className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-4 cursor-pointer hover:border-white/20 transition-all duration-300"
                   >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className="text-[9px] bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 px-1.5 py-0.5 rounded font-bold uppercase tracking-widest shrink-0"
-                            style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                          >
-                            {post.category}
-                          </span>
-                          <h2
-                            className="text-sm font-bold text-neutral-105 leading-snug"
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            {post.title}
-                          </h2>
-                        </div>
-                        <div
-                          className="flex items-center gap-2 text-[10px] text-neutral-500 pt-1"
-                          style={{ fontFamily: "var(--font-jetbrains-mono)" }}
+                    {/* Header */}
+                    <div className="flex items-center justify-between select-none">
+                      <div className="flex items-center gap-3">
+                        <span className="text-[9px] font-mono bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                          {post.category}
+                        </span>
+                        <span className="text-xs font-bold text-zinc-400">
+                          By <Link href={`/user/${post.userId}`} onClick={(e) => e.stopPropagation()} className="text-white hover:text-cyan-400 transition-colors">{post.userName}</Link>
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        {new Date(post.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-2">
+                      <h2 className="text-lg font-bold text-white hover:text-violet-400 transition-colors tracking-tight">
+                        {post.title}
+                      </h2>
+                      <p className={`text-xs text-zinc-300 font-light leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
+                        {post.content}
+                      </p>
+                    </div>
+
+                    {/* Media preview */}
+                    {post.mediaUrl && isExpanded && (
+                      <div className="pt-2">
+                        {post.mediaType === "image" ? (
+                          <img src={post.mediaUrl} alt="Post attachment" className="max-h-80 w-auto rounded-2xl border border-white/10 bg-zinc-950 object-contain" />
+                        ) : post.mediaType === "video" ? (
+                          <video src={post.mediaUrl} controls className="max-h-80 w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                        ) : (
+                          <a href={post.mediaUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 underline">
+                            View attached PDF document
+                          </a>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Engagement Actions */}
+                    <div className="flex items-center justify-between border-t border-white/5 pt-4 select-none">
+                      <div className="flex items-center gap-4 text-xs font-mono">
+                        <button
+                          onClick={(e) => handleUpvote(post._id, e)}
+                          className={`flex items-center gap-1.5 font-bold transition-colors ${
+                            isUpvoted ? "text-violet-400" : "text-zinc-500 hover:text-white"
+                          }`}
                         >
-                          <span>By: <Link href={`/user/${post.userId}`} className="text-neutral-400 hover:text-cyan-400 transition-colors font-bold" onClick={(e) => e.stopPropagation()}>{post.userName}</Link></span>
-                          <span>•</span>
-                          <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                          <ThumbsUp className="size-4" />
+                          <span>{post.upvotes?.length || 0}</span>
+                        </button>
+                        <div className="flex items-center gap-1.5 text-zinc-500 font-bold">
+                          <MessageSquare className="size-4" />
+                          <span>{post.comments?.length || 0} replies</span>
                         </div>
                       </div>
 
-                      {isOwner && (
+                      {currentUserId === post.userId && (
                         <button
                           onClick={(e) => handleDelete(post._id, e)}
-                          className="p-1 rounded hover:bg-neutral-805 text-neutral-500 hover:text-red-400 transition-colors"
+                          className="text-[10px] font-mono text-zinc-500 hover:text-rose-400 transition-colors uppercase font-bold"
                         >
-                          <Trash2 className="h-3.5 w-3.5" />
+                          Delete
                         </button>
                       )}
                     </div>
 
-                    <p className={`text-neutral-400 text-xs leading-relaxed ${isExpanded ? "" : "line-clamp-2"}`}>
-                      {post.content}
-                    </p>
-
-                    {post.mediaUrl && (
-                      <div className="mt-3 select-none" onClick={(e) => e.stopPropagation()}>
-                        {post.mediaType === "image" && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={post.mediaUrl}
-                            alt="Forum attachment"
-                            className="max-h-[300px] w-full rounded-xl border border-neutral-900 object-contain bg-neutral-950/40"
-                          />
-                        )}
-                        {post.mediaType === "video" && (
-                          <video
-                            src={post.mediaUrl}
-                            controls
-                            className="max-h-[300px] w-full rounded-xl border border-neutral-900 object-contain bg-neutral-950/40"
-                          />
-                        )}
-                        {post.mediaType === "pdf" && (
-                          <div className="flex items-center gap-3 p-3 bg-neutral-950 border border-neutral-850 rounded-xl max-w-sm">
-                            <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
-                            <span className="text-[11px] text-neutral-350 font-mono truncate flex-1">
-                              {post.mediaUrl.split("/").pop()}
-                            </span>
-                            <a
-                              href={post.mediaUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[10px] bg-neutral-900 border border-neutral-800 hover:border-cyan-400 text-neutral-400 hover:text-cyan-400 font-bold px-2 py-1 rounded transition-colors"
-                            >
-                              Download PDF
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-4 pt-2 border-t border-neutral-900/60 select-none">
-                      <button
-                        onClick={(e) => handleUpvote(post._id, e)}
-                        className={`flex items-center gap-1.5 text-[11px] font-bold py-1 px-2.5 rounded border transition-all ${
-                          userHasUpvoted
-                            ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
-                            : "bg-neutral-900 border-neutral-800 text-neutral-500 hover:text-neutral-350"
-                        }`}
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        <ThumbsUp className="h-3 w-3" />
-                        <span>{post.upvotes?.length || 0}</span>
-                      </button>
-
-                      <div
-                        className="flex items-center gap-1.5 text-[11px] text-neutral-500 font-bold"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        <MessageSquare className="h-3.5 w-3.5 text-neutral-600" />
-                        <span>{post.comments?.length || 0} Comments</span>
-                      </div>
-                    </div>
-
+                    {/* Comment Thread Drawer */}
                     {isExpanded && (
-                      <div
-                        className="space-y-4 pt-4 border-t border-neutral-900/80 cursor-default"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="border-t border-white/5 pt-4 space-y-4 cursor-default" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Write a response..."
+                            value={commentText[post._id] || ""}
+                            onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleAddComment(post._id);
+                            }}
+                            className="bg-zinc-950 border-white/10 focus:border-violet-400 text-white placeholder-zinc-600 h-10 text-xs rounded-xl"
+                          />
+                          <Button
+                            onClick={() => handleAddComment(post._id)}
+                            disabled={isCommenting[post._id]}
+                            className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs h-10 px-5 font-bold cursor-pointer transition-all"
+                          >
+                            {isCommenting[post._id] ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : <Send className="size-4 text-zinc-950" />}
+                          </Button>
+                        </div>
+
+                        {/* List Comments */}
                         <div className="space-y-3">
                           {post.comments?.map((comment, index) => (
-                            <div key={index} className="flex gap-2 bg-neutral-950 border border-neutral-900/40 p-3 rounded-lg">
-                              <CornerDownRight className="h-3.5 w-3.5 text-neutral-700 shrink-0 mt-0.5" />
-                              <div className="space-y-1">
-                                <div
-                                  className="flex items-center gap-2 text-[10px] text-neutral-500 font-bold"
-                                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                                >
-                                  <span className="text-neutral-300">{comment.userName}</span>
-                                  <span>•</span>
-                                  <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                                    {new Date(comment.createdAt).toLocaleDateString()}
-                                  </span>
+                            <div key={index} className="flex gap-3 bg-zinc-950 p-3.5 rounded-2xl border border-white/5">
+                              <CornerDownRight className="size-4 text-zinc-600 shrink-0 mt-1" />
+                              <div className="space-y-1 min-w-0 flex-1">
+                                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 select-none">
+                                  <span className="font-bold text-white">{comment.userName}</span>
+                                  <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <p className="text-neutral-400 text-[11px] leading-relaxed">{comment.content}</p>
+                                <p className="text-xs text-zinc-300 font-light leading-relaxed">{comment.content}</p>
                               </div>
                             </div>
                           ))}
                         </div>
-
-                        {/* Comment input form fields */}
-                        <div className="flex items-center gap-2 mt-2">
-                          <Input
-                            placeholder="Add a comment..."
-                            value={commentText[post._id] || ""}
-                            onChange={(e) => setCommentText((prev) => ({ ...prev, [post._id]: e.target.value }))}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleAddComment(post._id);
-                            }}
-                            className="flex-1 bg-neutral-950 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-700 h-8 text-[11px]"
-                          />
-                          <Button
-                            size="icon"
-                            onClick={() => handleAddComment(post._id)}
-                            disabled={!commentText[post._id]?.trim()}
-                            className="bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 text-neutral-950 h-8 w-8 shrink-0 rounded-lg transition-all"
-                          >
-                            <Send className="h-3 w-3" />
-                          </Button>
-                        </div>
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
-      {/* Add post dialog */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-neutral-955/80 backdrop-blur-lg border border-white/10 text-neutral-100 max-w-md cyber-panel">
-          <form onSubmit={handleCreatePost} className="space-y-4">
-            <DialogHeader>
-              <DialogTitle
-                className="text-neutral-100 text-sm font-bold"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Create a Discussion Thread
-              </DialogTitle>
+      {/* New Post Dialog Modal */}
+      {isOpen && (
+        <Dialog open={true} onOpenChange={() => setIsOpen(false)}>
+          <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-lg rounded-3xl p-6">
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-lg font-bold text-white">Create New Thread</DialogTitle>
+              <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white">
+                <X className="size-4" />
+              </button>
             </DialogHeader>
-            <div className="space-y-3 py-2">
-              <Input
-                placeholder="Thread Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="input-premium h-10 text-xs placeholder-neutral-600 font-sans"
-              />
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full input-premium p-2 text-xs font-space-grotesk"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                {CATEGORIES.slice(1).map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-              <textarea
-                placeholder="Post content details..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                required
-                rows={5}
-                className="w-full input-premium placeholder-neutral-700 p-3 text-xs resize-none transition-all"
-              />
-              
-              {/* Media Attachment */}
+
+            <form onSubmit={handleCreatePost} className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block font-space-grotesk">
-                  Media Attachment (Optional)
-                </label>
-                {mediaUrl ? (
-                  <div className="flex items-center justify-between p-2.5 bg-white/[0.02] border border-white/[0.12] rounded-xl text-xs">
-                    <span className="text-neutral-450 truncate max-w-[200px] font-mono text-[10px]">
-                      {mediaUrl.split("/").pop()} ({mediaType})
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => { setMediaUrl(""); setMediaType(""); }}
-                      className="text-[10px] text-red-400 hover:underline font-bold font-space-grotesk"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                ) : (
-                  <label className="flex items-center justify-center border border-dashed border-white/[0.12] hover:border-white/[0.2] bg-white/[0.02] rounded-xl p-3 cursor-pointer transition-all gap-1.5 text-xs text-neutral-400 hover:text-neutral-200">
-                    {isUploadingMedia ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
-                        <span className="font-space-grotesk text-[10px] font-bold">Uploading Media...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Upload className="h-4 w-4 text-cyan-400" />
-                        <span className="font-space-grotesk text-[10px] font-bold">Upload Image / Video / PDF</span>
-                      </>
-                    )}
-                    <input
-                      type="file"
-                      accept="image/*,video/*,application/pdf"
-                      onChange={handleMediaUpload}
-                      disabled={isUploadingMedia}
-                      className="hidden"
-                    />
-                  </label>
-                )}
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Thread topic title..."
+                  required
+                  className="bg-zinc-900 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                />
               </div>
-            </div>
-            <DialogFooter className="gap-2">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="btn-premium-secondary text-xs h-9 px-4 cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-premium-primary text-xs h-9 px-4 font-bold cursor-pointer"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                {isSubmitting ? "Posting..." : "Create Post"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl h-11 px-3 text-xs text-white outline-none"
+                >
+                  {CATEGORIES.filter((c) => c !== "All").map((c) => (
+                    <option key={c} value={c} className="bg-zinc-950 text-white">
+                      {c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Discussion Details</label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Elaborate your question, idea, or study topic..."
+                  rows={5}
+                  required
+                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-400 resize-none transition-colors"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Media Attachment (Optional)</label>
+                <label className="flex items-center justify-center border border-dashed border-white/10 hover:border-violet-400 bg-zinc-900/60 rounded-2xl p-4 cursor-pointer transition-all gap-2 text-xs font-mono text-zinc-400 hover:text-white">
+                  {isUploadingMedia ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin text-violet-400" />
+                      <span>Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="size-4 text-violet-400" />
+                      <span>{mediaUrl ? "Media Attached ✓" : "Upload Image, Video, or PDF"}</span>
+                    </>
+                  )}
+                  <input type="file" onChange={handleMediaUpload} disabled={isUploadingMedia} className="hidden" />
+                </label>
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 transition-all"
+                >
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Post Discussion Thread"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

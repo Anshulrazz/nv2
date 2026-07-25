@@ -60,8 +60,8 @@ export function MobileBottomNav({
           <Link
             key={item.href}
             href={item.href}
-            className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative group ${
-              isActive ? "text-primary" : "text-neutral-500 hover:text-neutral-300"
+            className={`flex flex-col items-center justify-center w-full h-full space-y-1 relative group transition-[transform,color] duration-150 ease-out active:scale-90 ${
+              isActive ? "text-primary font-medium" : "text-neutral-500 hover:text-neutral-300"
             }`}
           >
             <div className="relative">

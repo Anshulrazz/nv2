@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { HelpCircle, Plus, CheckCircle2, Clock, Trash2, ShieldQuestion, Loader2 } from "lucide-react";
+import { HelpCircle, Plus, CheckCircle2, Clock, Trash2, ShieldQuestion, Loader2, ArrowUpRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -147,235 +148,215 @@ export default function DoubtsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll relative">
-      {/* Top ambient glows */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[200px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Top Header Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-900/10 px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between shrink-0 select-none relative z-10">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <HelpCircle className="h-5 w-5 text-cyan-400" />
-            <h1
-              className="text-xl font-bold text-neutral-100 tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Doubts Q&amp;A
-            </h1>
-          </div>
-          <p className="text-neutral-500 text-xs">
-            Submit doubts, collaborate, and close tickets to earn activity points.
-          </p>
-        </div>
-
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
-        >
-          <Plus className="h-4 w-4" /> Ask a Doubt
-        </Button>
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
       </div>
 
-      {/* Content wrapper */}
-      <div className="p-4 sm:p-8 space-y-6 max-w-4xl w-full mx-auto relative z-10">
-        <div className="flex items-center gap-2 border-b border-neutral-900 pb-2 select-none">
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
+              <HelpCircle className="size-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                Doubts &amp; Solution Q&amp;A
+                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
+                  TICKET RESOLUTION
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                Submit academic doubts, collaborate on solutions, and earn activity points for verified answers.
+              </p>
+            </div>
+          </div>
+
+          <Button
+            onClick={() => setIsOpen(true)}
+            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          >
+            <Plus className="size-4 text-zinc-950" />
+            <span>Ask a Doubt</span>
+            <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter Tabs & Doubt Tickets */}
+      <div className="p-6 sm:p-10 max-w-4xl w-full mx-auto space-y-8 relative z-10">
+        <div className="flex items-center gap-2 border-b border-white/5 pb-4 select-none">
           <button
             onClick={() => setActiveTab("all")}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
               activeTab === "all"
-                ? "bg-neutral-900 border border-neutral-800 text-neutral-100"
-                : "text-neutral-500 hover:text-neutral-300"
+                ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300 border border-transparent"
             }`}
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             All Doubts
           </button>
           <button
             onClick={() => setActiveTab("mine")}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
               activeTab === "mine"
-                ? "bg-neutral-900 border border-neutral-800 text-neutral-100"
-                : "text-neutral-500 hover:text-neutral-300"
+                ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300 border border-transparent"
             }`}
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            My Doubts
+            My Submitted Tickets
           </button>
         </div>
 
+        {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-neutral-500 text-xs gap-2 select-none font-semibold">
-            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
-            <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>SYNCING DOUBTS QUEUE...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-cyan-400" />
+            <span className="font-mono text-zinc-400 tracking-widest">LOADING DOUBT TICKETS...</span>
           </div>
         ) : doubts.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-neutral-900 rounded-2xl bg-neutral-900/5">
-            <ShieldQuestion className="h-10 w-10 text-neutral-700" />
-            <div className="space-y-1">
-              <h3 className="text-neutral-300 font-bold text-sm" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                No doubts recorded
-              </h3>
-              <p className="text-neutral-500 text-xs max-w-xs leading-normal">
-                {activeTab === "mine" ? "You haven't submitted any doubts yet." : "No active doubts submitted by users."}
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
+              <ShieldQuestion className="size-10 text-zinc-600" />
+              <h3 className="text-lg font-bold text-white">No doubt tickets found</h3>
+              <p className="text-xs text-zinc-400 font-light max-w-xs">
+                {activeTab === "mine" ? "You haven't submitted any doubts yet." : "No open doubts currently logged."}
               </p>
             </div>
           </div>
         ) : (
-          <div className="grid gap-4">
+          <div className="space-y-6">
             {doubts.map((doubt) => {
-              const isOwner = currentUserId === doubt.userId?._id;
-              const isResolved = doubt.status === "resolved";
+              const isOwner = currentUserId === doubt.userId._id;
 
               return (
-                <div
-                  key={doubt._id}
-                  className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.04)] rounded-xl p-5 transition-all duration-300 space-y-4"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <h2
-                        className="text-sm font-bold text-neutral-100 leading-snug"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        {doubt.title}
-                      </h2>
-                      <div
-                        className="flex items-center gap-2 text-[10px] text-neutral-500"
-                        style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                      >
-                        <span>Asked by: <Link href={`/user/${doubt.userId?._id}`} className="text-neutral-400 hover:text-cyan-400 transition-colors font-bold">{doubt.userId?.name || "Deleted User"}</Link></span>
-                        <span>•</span>
-                        <span>{new Date(doubt.createdAt).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 shrink-0 select-none">
-                      <span
-                        className={`text-[9px] px-2.5 py-0.5 rounded border font-bold flex items-center gap-1 ${
-                          isResolved
-                            ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                            : "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                        }`}
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        {isResolved ? <CheckCircle2 className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                        {isResolved ? "Resolved" : "Open"}
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-neutral-405 text-xs leading-relaxed whitespace-pre-wrap">{doubt.content}</p>
-
-                  {(isOwner || isResolved) && (
-                    <div className="flex items-center justify-between border-t border-neutral-900/60 pt-3 select-none">
-                      {isOwner ? (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleToggleStatus(doubt._id, doubt.status)}
-                            className={`h-7 px-2.5 text-[10px] font-bold transition-colors ${
-                              isResolved ? "text-amber-450 hover:text-amber-300" : "text-emerald-450 hover:text-emerald-300"
-                            }`}
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            {isResolved ? "Reopen Doubt" : "Mark as Resolved"}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleDelete(doubt._id)}
-                            className="h-7 px-2.5 text-[10px] text-neutral-500 hover:text-red-400 hover:bg-neutral-900 transition-colors"
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <div />
-                      )}
-                      {isResolved && (
-                        <span
-                          className="text-[10px] text-emerald-400/80 italic flex items-center gap-1 font-bold"
-                          style={{ fontFamily: "var(--font-space-grotesk)" }}
-                        >
-                          🎉 Resolved successfully! (+15 pts)
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* Replies Section */}
-                  {(doubt.replies && doubt.replies.length > 0) || replyingTo === doubt._id ? (
-                    <div className="mt-4 pt-4 border-t border-neutral-900/60 space-y-4">
-                      <h3 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider font-space">
-                        Replies ({doubt.replies?.length || 0})
-                      </h3>
-                      
-                      <div className="space-y-3">
-                        {doubt.replies?.map((reply) => (
-                          <div key={reply._id} className="bg-neutral-900/30 rounded-lg p-3 border border-neutral-800/50">
-                            <div className="flex items-center gap-2 mb-1.5">
-                              <span className="text-[10px] font-bold text-neutral-300" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                                {reply.userId?.name || "Unknown"}
-                              </span>
-                              <span className="text-[9px] text-neutral-500 font-mono">
-                                • {new Date(reply.createdAt).toLocaleDateString()}
-                              </span>
-                            </div>
-                            <p className="text-[11px] text-neutral-400 leading-relaxed whitespace-pre-wrap">{reply.content}</p>
+                <div key={doubt._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl">
+                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-5">
+                    {/* Ticket Header */}
+                    <div className="flex items-center justify-between select-none">
+                      <div className="flex items-center gap-3">
+                        {doubt.userId?.image ? (
+                          <img src={doubt.userId.image} alt={doubt.userId.name} className="size-9 rounded-full object-cover border border-white/10 bg-zinc-900" />
+                        ) : (
+                          <div className="size-9 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center text-zinc-400 text-xs font-bold">
+                            {doubt.userId?.name?.[0]?.toUpperCase()}
                           </div>
-                        ))}
+                        )}
+                        <div>
+                          <Link href={`/user/${doubt.userId._id}`}>
+                            <p className="text-xs font-bold text-white hover:text-cyan-400 transition-colors">
+                              {doubt.userId?.name}
+                            </p>
+                          </Link>
+                          <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                            {new Date(doubt.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
                       </div>
 
-                      {replyingTo === doubt._id && !isResolved && (
-                        <div className="pt-2 flex flex-col gap-2">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={`text-[9px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-widest flex items-center gap-1.5 border ${
+                            doubt.status === "resolved"
+                              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                              : "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                          }`}
+                        >
+                          {doubt.status === "resolved" ? (
+                            <>
+                              <CheckCircle2 className="size-3" /> Resolved
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="size-3 animate-pulse" /> Open
+                            </>
+                          )}
+                        </span>
+
+                        {isOwner && (
+                          <button
+                            onClick={() => handleToggleStatus(doubt._id, doubt.status)}
+                            className="text-[10px] font-mono text-zinc-400 hover:text-white transition-colors underline"
+                          >
+                            Mark {doubt.status === "open" ? "Resolved" : "Open"}
+                          </button>
+                        )}
+                        {isOwner && (
+                          <button onClick={() => handleDelete(doubt._id)} className="text-zinc-500 hover:text-rose-400 transition-colors">
+                            <Trash2 className="size-4" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="space-y-2">
+                      <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                        {doubt.title}
+                      </h3>
+                      <p className="text-xs text-zinc-300 font-light leading-relaxed whitespace-pre-wrap">
+                        {doubt.content}
+                      </p>
+                    </div>
+
+                    {/* Reply Form */}
+                    <div className="border-t border-white/5 pt-4 space-y-4">
+                      {replyingTo === doubt._id ? (
+                        <div className="space-y-3">
                           <textarea
                             value={replyContent}
                             onChange={(e) => setReplyContent(e.target.value)}
-                            placeholder="Write your reply..."
-                            className="w-full input-premium placeholder-neutral-600 p-2 text-[11px] resize-none h-16"
+                            placeholder="Write your explanation or solution steps..."
+                            rows={3}
+                            className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none transition-colors"
                           />
-                          <div className="flex items-center justify-end gap-2">
+                          <div className="flex gap-2 justify-end">
                             <Button
-                              size="sm"
                               variant="ghost"
-                              onClick={() => {
-                                setReplyingTo(null);
-                                setReplyContent("");
-                              }}
-                              className="h-7 px-3 text-[10px] text-neutral-500 hover:text-neutral-300"
+                              onClick={() => setReplyingTo(null)}
+                              className="text-xs text-zinc-400 hover:text-white rounded-full px-4"
                             >
                               Cancel
                             </Button>
                             <Button
-                              size="sm"
                               onClick={() => handleReplySubmit(doubt._id)}
-                              disabled={isSubmittingReply || !replyContent.trim()}
-                              className="btn-premium-primary h-7 px-3 text-[10px] font-bold"
+                              disabled={isSubmittingReply}
+                              className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-5 transition-all"
                             >
-                              {isSubmittingReply ? "Posting..." : "Post Reply"}
+                              {isSubmittingReply ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Post Answer"}
                             </Button>
                           </div>
                         </div>
+                      ) : (
+                        <button
+                          onClick={() => setReplyingTo(doubt._id)}
+                          className="text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold tracking-wider uppercase transition-colors"
+                        >
+                          + Write Solution Answer
+                        </button>
+                      )}
+
+                      {/* Solutions list */}
+                      {doubt.replies && doubt.replies.length > 0 && (
+                        <div className="space-y-3 pt-2">
+                          <h4 className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest">
+                            Peer Solutions ({doubt.replies.length})
+                          </h4>
+                          {doubt.replies.map((reply) => (
+                            <div key={reply._id} className="bg-zinc-950 p-4 rounded-2xl border border-white/5 space-y-2">
+                              <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                                <span className="font-bold text-white">{reply.userId?.name || "Peer Scholar"}</span>
+                                <span>{new Date(reply.createdAt).toLocaleDateString()}</span>
+                              </div>
+                              <p className="text-xs text-zinc-300 font-light leading-relaxed">{reply.content}</p>
+                            </div>
+                          ))}
+                        </div>
                       )}
                     </div>
-                  ) : null}
-
-                  {!isResolved && replyingTo !== doubt._id && (
-                    <div className="pt-2">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setReplyingTo(doubt._id)}
-                        className="h-7 px-3 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/30 font-bold transition-colors"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        Reply to Doubt
-                      </Button>
-                    </div>
-                  )}
+                  </div>
                 </div>
               );
             })}
@@ -383,56 +364,54 @@ export default function DoubtsPage() {
         )}
       </div>
 
-      {/* Ask Doubt modal */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="bg-neutral-955/80 backdrop-blur-lg border border-white/10 text-neutral-100 max-w-md cyber-panel">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <DialogHeader>
-              <DialogTitle
-                className="text-neutral-105 text-sm font-bold"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Ask a New Doubt
-              </DialogTitle>
+      {/* New Doubt Modal */}
+      {isOpen && (
+        <Dialog open={true} onOpenChange={() => setIsOpen(false)}>
+          <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-md rounded-3xl p-6">
+            <DialogHeader className="flex flex-row items-center justify-between">
+              <DialogTitle className="text-lg font-bold text-white">Ask an Academic Doubt</DialogTitle>
+              <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white">
+                <X className="size-4" />
+              </button>
             </DialogHeader>
-            <div className="space-y-3 py-2">
-              <Input
-                placeholder="Title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-                className="input-premium h-10 text-xs placeholder-neutral-600 font-sans"
-              />
-              <textarea
-                placeholder="Describe your query in detail..."
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                required
-                rows={4}
-                className="w-full input-premium placeholder-neutral-600 p-3 text-xs resize-none transition-all"
-              />
-            </div>
-            <DialogFooter className="gap-2">
-              <Button
-                variant="outline"
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="btn-premium-secondary text-xs h-9 px-4 cursor-pointer"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-premium-primary text-xs h-9 px-4 font-bold cursor-pointer"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                {isSubmitting ? "Submitting..." : "Submit Doubt"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+
+            <form onSubmit={handleSubmit} className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Doubt Headline</label>
+                <Input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Why does DFS use stack while BFS uses queue?"
+                  required
+                  className="bg-zinc-900 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Detailed Explanation</label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Describe your exact doubt context, code snippet, or formula..."
+                  rows={5}
+                  required
+                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none transition-colors"
+                />
+              </div>
+
+              <DialogFooter className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 transition-all"
+                >
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Log Doubt Ticket"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

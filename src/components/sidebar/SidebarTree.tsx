@@ -125,7 +125,7 @@ export function SidebarTree() {
         <div
           onClick={() => setSelectedFolderId(folder._id)}
           style={{ paddingLeft: `${level * 12 + 8}px` }}
-          className={`group flex items-center justify-between py-1.5 pr-2 rounded-lg cursor-pointer transition-all duration-150 select-none ${
+          className={`group flex items-center justify-between py-1.5 pr-2 rounded-lg cursor-pointer transition-[background-color,color,border-color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
             isSelected
               ? "bg-cyan-500/10 text-neutral-100 border-l-2 border-cyan-400"
               : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-900/50"
@@ -221,7 +221,7 @@ export function SidebarTree() {
                     closeMobileSidebar();
                   }}
                   style={{ paddingLeft: `${(level + 1) * 12 + 18}px` }}
-                  className={`group flex items-center justify-between py-1 pr-2 rounded-lg cursor-pointer transition-all duration-150 select-none ${
+                  className={`group flex items-center justify-between py-1 pr-2 rounded-lg cursor-pointer transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
                     isNoteActive
                       ? "bg-neutral-800 text-neutral-100 font-medium"
                       : "text-neutral-600 hover:text-neutral-300 hover:bg-neutral-900/30"
@@ -288,7 +288,7 @@ export function SidebarTree() {
                 setActiveNoteId(note._id);
                 closeMobileSidebar();
               }}
-              className={`group flex items-center justify-between py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-150 select-none ${
+              className={`group flex items-center justify-between py-1.5 px-3 rounded-lg cursor-pointer transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
                 isNoteActive
                   ? "bg-neutral-800 text-neutral-100 font-medium"
                   : "text-neutral-505 hover:text-neutral-350 hover:bg-neutral-900/50"
@@ -345,7 +345,7 @@ export function SidebarTree() {
             </Button>
             <Button
               onClick={handleCreateFolder}
-              className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs h-9 px-4 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all"
+              className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs h-9 px-4 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-[background-color,transform,box-shadow] duration-150 ease-out active:scale-[0.97]"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
               Create Folder

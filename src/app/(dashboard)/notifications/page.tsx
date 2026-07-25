@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
@@ -64,12 +65,10 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     fetchNotifications().then(() => {
-      // Auto-clear unread notifications on page open
       markAllRead();
     });
   }, [fetchNotifications, markAllRead]);
 
-  // Real-time listener for new notifications
   useEffect(() => {
     if (!currentUserId) return;
 
@@ -94,17 +93,17 @@ export default function NotificationsPage() {
   const getAlertIcon = (type: string) => {
     switch (type) {
       case "like":
-        return <Heart className="h-4 w-4 text-red-400" />;
+        return <Heart className="size-4 text-rose-400" />;
       case "comment":
-        return <MessageSquare className="h-4 w-4 text-indigo-400" />;
+        return <MessageSquare className="size-4 text-indigo-400" />;
       case "follow":
-        return <UserPlus className="h-4 w-4 text-emerald-400" />;
+        return <UserPlus className="size-4 text-emerald-400" />;
       case "mention":
-        return <Share2 className="h-4 w-4 text-cyan-400" />;
+        return <Share2 className="size-4 text-cyan-400" />;
       case "message":
-        return <MessageCircle className="h-4 w-4 text-cyan-400 animate-pulse" />;
+        return <MessageCircle className="size-4 text-cyan-400 animate-pulse" />;
       default:
-        return <Bell className="h-4 w-4 text-neutral-400" />;
+        return <Bell className="size-4 text-zinc-400" />;
     }
   };
 
@@ -126,87 +125,94 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll relative">
-      {/* Ambient background glows */}
-      <div className="absolute top-0 right-1/4 w-[450px] h-[250px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Top Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-900/10 px-4 sm:px-8 py-4 sm:py-6 flex items-center justify-between shrink-0 select-none relative z-10">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-cyan-400" />
-            <h1
-              className="text-xl font-bold text-neutral-100 tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Alerts
-            </h1>
-          </div>
-          <p className="text-neutral-500 text-xs">Stay updated on peer interactions, likes, comments, and new followers.</p>
-        </div>
-
-        {list.some((n) => !n.isRead) && (
-          <Button
-            onClick={markAllRead}
-            variant="ghost"
-            size="sm"
-            className="text-[11px] font-bold text-cyan-400 hover:text-white hover:bg-neutral-900 gap-1.5 h-9 transition-colors"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            <CheckSquare className="h-3.5 w-3.5" /> Mark all read
-          </Button>
-        )}
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
       </div>
 
-      <div className="p-4 sm:p-8 max-w-2xl w-full mx-auto space-y-4 relative z-10">
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
+              <Bell className="size-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                Notifications Inbox
+                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
+                  LIVE FEED
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                Stay updated on peer interactions, likes, comments, and direct message notifications.
+              </p>
+            </div>
+          </div>
+
+          {list.some((n) => !n.isRead) && (
+            <Button
+              onClick={markAllRead}
+              className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-5 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97]"
+            >
+              <CheckSquare className="size-4 text-zinc-950" />
+              <span>Mark All Read</span>
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="p-6 sm:p-10 max-w-3xl w-full mx-auto space-y-4 relative z-10">
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-neutral-500 text-xs font-semibold gap-2 select-none">
-            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
-            <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>RETRIEVING INBOX...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs font-semibold gap-3">
+            <Loader2 className="size-8 animate-spin text-cyan-400" />
+            <span className="font-mono text-zinc-400 tracking-widest">RETRIEVING INBOX...</span>
           </div>
         ) : list.length === 0 ? (
-          <div className="py-20 text-center text-neutral-600 italic select-none">Inbox is empty. No new notifications.</div>
+          <div className="py-20 text-center text-zinc-500 italic select-none">Inbox is empty. No new notifications.</div>
         ) : (
-          <div className="divide-y divide-white/5 border border-white/5 rounded-2xl bg-neutral-955/30 backdrop-blur-md shadow-lg overflow-hidden">
-            {list.map((n) => (
-              <div
-                key={n._id}
-                onClick={() => handleNotificationClick(n)}
-                className={`p-4 flex items-center justify-between hover:bg-neutral-900/10 transition-colors cursor-pointer ${
-                  !n.isRead ? "bg-cyan-500/5" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-xl bg-neutral-950 border border-neutral-850 shrink-0">
-                    {getAlertIcon(n.type)}
-                  </div>
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden divide-y divide-white/5">
+              {list.map((n) => (
+                <div
+                  key={n._id}
+                  onClick={() => handleNotificationClick(n)}
+                  className={`p-5 flex items-center justify-between hover:bg-white/5 transition-colors cursor-pointer ${
+                    !n.isRead ? "bg-cyan-500/10" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="p-2.5 rounded-2xl bg-zinc-950 border border-white/10 shrink-0">
+                      {getAlertIcon(n.type)}
+                    </div>
 
-                  <div className="flex items-center gap-2">
-                    {n.senderImage ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img src={n.senderImage} alt={n.senderName} className="h-7 w-7 rounded-full object-cover shrink-0 border border-neutral-800" />
-                    ) : (
-                      <div className="h-7 w-7 rounded-full bg-neutral-950 border border-neutral-850 flex items-center justify-center text-neutral-500 font-bold shrink-0 text-xs">
-                        {n.senderName?.[0]?.toUpperCase()}
+                    <div className="flex items-center gap-3">
+                      {n.senderImage ? (
+                        <img src={n.senderImage} alt={n.senderName} className="size-8 rounded-full object-cover shrink-0 border border-white/10 bg-zinc-900" />
+                      ) : (
+                        <div className="size-8 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center text-zinc-400 font-bold shrink-0 text-xs">
+                          {n.senderName?.[0]?.toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-xs text-zinc-300">
+                          <span className="font-bold text-white">{n.senderName}</span>{" "}
+                          {getAlertDescription(n)}
+                        </p>
+                        <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                          {new Date(n.createdAt).toLocaleDateString()}
+                        </p>
                       </div>
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs text-neutral-300">
-                        <span className="font-bold text-neutral-100" style={{ fontFamily: "var(--font-space-grotesk)" }}>{n.senderName}</span>{" "}
-                        {getAlertDescription(n)}
-                      </p>
-                      <p className="text-[9px] text-neutral-600 select-none mt-0.5" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                        {new Date(n.createdAt).toLocaleDateString()}
-                      </p>
                     </div>
                   </div>
-                </div>
 
-                {!n.isRead && (
-                  <span className="h-2 w-2 rounded-full bg-cyan-400 select-none animate-pulse shrink-0 ml-4" />
-                )}
-              </div>
-            ))}
+                  {!n.isRead && (
+                    <span className="size-2 rounded-full bg-cyan-400 animate-pulse shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

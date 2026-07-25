@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -77,10 +78,18 @@ export default function YouTubeLearningPage() {
         body: JSON.stringify({ url: youtubeUrl }),
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to parse video content.");
+        let errMessage = "Failed to parse video content.";
+        try {
+          const errData = await res.json();
+          if (errData.error) errMessage = errData.error;
+        } catch {
+          // ignore non-JSON error body
+        }
+        throw new Error(errMessage);
       }
+
+      const data = await res.json();
 
       setStudyData(data);
       toast.success("YouTube video digested into study guide!");

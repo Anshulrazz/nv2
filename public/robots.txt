@@ -1,0 +1,30 @@
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: *
+Allow: /
+Allow: /blogs
+Allow: /blog/
+Allow: /forums
+Allow: /leaderboard
+Allow: /community
+Allow: /login
+Allow: /signup
+Allow: /ads.txt
+Allow: /sitemap.xml
+Disallow: /dashboard
+Disallow: /notes
+Disallow: /admin
+Disallow: /api/
+Disallow: /settings
+Disallow: /messages
+Disallow: /notifications
+Disallow: /bookmarks
+Disallow: /prototype
+Disallow: /feed
+Disallow: /research
+Disallow: /doubts
+Disallow: /chat
+Disallow: /user/
+
+Sitemap: https://notexia.in/sitemap.xml

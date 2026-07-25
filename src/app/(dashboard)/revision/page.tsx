@@ -112,10 +112,18 @@ export default function RevisionPage() {
         }),
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Generation request failed.");
+        let errMessage = "Generation request failed.";
+        try {
+          const errData = await res.json();
+          if (errData.error) errMessage = errData.error;
+        } catch {
+          // ignore non-JSON error body
+        }
+        throw new Error(errMessage);
       }
+
+      const data = await res.json();
 
       setRevisionData(data);
       toast.success(`${revisionMode === "cheatsheet" ? "Cheat Sheet" : revisionMode === "flashcards" ? "Flashcards" : "Quiz"} generated successfully!`);

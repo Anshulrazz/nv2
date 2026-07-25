@@ -1,7 +1,8 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Settings, User as UserIcon, Lock, Loader2, Check, Camera } from "lucide-react";
+import { Settings, User as UserIcon, Lock, Loader2, Check, Camera, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
@@ -133,212 +134,206 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll">
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+      </div>
+
       {/* Page header */}
-      <div className="border-b border-neutral-900 bg-neutral-900/10 px-4 sm:px-8 py-4 sm:py-6 shrink-0 select-none relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-32 bg-cyan-500/5 rounded-full blur-[80px] pointer-events-none" />
-        <div className="flex items-center gap-3 relative z-10">
-          <div className="h-8 w-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-            <Settings className="h-4 w-4 text-cyan-400" />
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex items-center gap-4">
+          <div className="size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
+            <Settings className="size-7" />
           </div>
           <div>
-            <h1
-              className="text-xl font-bold text-neutral-100 tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
+            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
               Account Settings
+              <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
+                VAULT SECURITY
+              </span>
             </h1>
-            <p className="text-neutral-500 text-[11px]">
-              Manage profile attributes and secure credential options.
+            <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+              Manage your student profile attributes, visibility preferences, and secure credentials.
             </p>
           </div>
         </div>
       </div>
 
-      <div className="p-4 sm:p-8 max-w-2xl w-full mx-auto space-y-6">
-        {/* Profile Settings form */}
-        <form onSubmit={handleProfileSave} className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-neutral-800 rounded-xl p-6 space-y-5 transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.02)]">
-          <div className="flex items-center gap-2 border-b border-neutral-900/80 pb-3 select-none">
-            <UserIcon className="h-4 w-4 text-cyan-400" />
-            <h2
-              className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Profile Information
-            </h2>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-6 items-center border-b border-neutral-900/60 pb-5">
-            {/* Avatar Preview */}
-            <div className="relative shrink-0 select-none">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"}
-                alt="Avatar Preview"
-                className="w-20 h-20 rounded-2xl object-cover border border-neutral-800 bg-neutral-950"
-              />
-              <label className="absolute -bottom-1 -right-1 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 p-1.5 rounded-lg cursor-pointer transition-colors shadow flex items-center justify-center">
-                {isUploadingPhoto ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Camera className="h-3.5 w-3.5" />
-                )}
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handlePhotoUpload}
-                  disabled={isUploadingPhoto}
-                  className="hidden"
-                />
-              </label>
+      <div className="p-6 sm:p-10 max-w-3xl w-full mx-auto space-y-8 relative z-10">
+        {/* Profile Settings Form */}
+        <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+          <form onSubmit={handleProfileSave} className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-4 select-none">
+              <UserIcon className="size-4 text-cyan-400" />
+              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-widest">
+                Profile Information
+              </h2>
             </div>
 
-            <div className="flex-1 w-full grid sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <label
-                  className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Display Name
-                </label>
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="input-premium h-10 text-xs placeholder-neutral-700 font-sans"
+            <div className="flex flex-col sm:flex-row gap-6 items-center border-b border-white/5 pb-6">
+              {/* Avatar Preview */}
+              <div className="relative shrink-0 select-none">
+                <img
+                  src={image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"}
+                  alt="Avatar Preview"
+                  className="size-20 rounded-2xl object-cover border border-white/10 bg-zinc-950 shadow-md"
                 />
+                <label className="absolute -bottom-1 -right-1 bg-cyan-500 hover:bg-cyan-400 text-zinc-950 p-2 rounded-xl cursor-pointer transition-colors shadow-lg flex items-center justify-center">
+                  {isUploadingPhoto ? (
+                    <Loader2 className="size-4 animate-spin text-zinc-950" />
+                  ) : (
+                    <Camera className="size-4 text-zinc-950" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    disabled={isUploadingPhoto}
+                    className="hidden"
+                  />
+                </label>
               </div>
 
-              <div className="space-y-1.5">
-                <label
-                  className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Avatar Image URL
-                </label>
-                <Input
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://example.com/avatar.jpg"
-                  className="input-premium h-10 text-xs placeholder-neutral-700 font-sans"
-                />
+              <div className="flex-1 w-full grid sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">
+                    Display Name
+                  </label>
+                  <Input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">
+                    Avatar Image URL
+                  </label>
+                  <Input
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                    placeholder="https://example.com/avatar.jpg"
+                    className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Profile Visibility Toggle */}
-          <div className="flex items-center justify-between border-t border-neutral-900/60 pt-4 select-none">
-            <div className="space-y-0.5">
-              <span
-                className="text-[10px] font-bold text-neutral-200 uppercase tracking-wider block"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Profile Visibility
-              </span>
-              <p className="text-[10px] text-neutral-500 leading-normal">
-                {isPublic ? "Public — other users can view your profile and contributions." : "Private — other users cannot view your profile."}
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsPublic(!isPublic)}
-              className={`h-5 w-9 rounded-full transition-all relative shrink-0 ${
-                isPublic ? "bg-cyan-500" : "bg-neutral-805"
-              }`}
-            >
-              <div
-                className={`h-3 w-3 bg-neutral-950 rounded-full absolute top-1 transition-all ${
-                  isPublic ? "right-1" : "left-1"
+            {/* Profile Visibility Toggle */}
+            <div className="flex items-center justify-between pt-2 select-none">
+              <div className="space-y-0.5">
+                <span className="text-[10px] font-mono font-bold text-white uppercase tracking-wider block">
+                  Profile Visibility
+                </span>
+                <p className="text-[10px] text-zinc-400 font-light leading-normal">
+                  {isPublic ? "Public — other users can view your profile and contributions." : "Private — other users cannot view your profile."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPublic(!isPublic)}
+                className={`h-5 w-9 rounded-full transition-all relative shrink-0 ${
+                  isPublic ? "bg-cyan-500" : "bg-zinc-800"
                 }`}
-              />
-            </button>
-          </div>
-
-          {profileMsg && (
-            <div className={`flex items-center gap-2 text-xs font-semibold select-none ${profileMsg.includes("successfully") ? "text-emerald-400" : "text-red-400"}`}>
-              {profileMsg.includes("successfully") && <Check className="h-3.5 w-3.5" />}
-              <span>{profileMsg}</span>
+              >
+                <div
+                  className={`h-3 w-3 bg-zinc-950 rounded-full absolute top-1 transition-all ${
+                    isPublic ? "right-1" : "left-1"
+                  }`}
+                />
+              </button>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            disabled={isProfileSaving}
-            className="btn-premium-primary text-xs h-9 px-5 font-bold cursor-pointer"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            {isProfileSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Profile"}
-          </Button>
-        </form>
+            {profileMsg && (
+              <div className={`flex items-center gap-2 text-xs font-semibold select-none ${profileMsg.includes("successfully") ? "text-emerald-400" : "text-rose-400"}`}>
+                {profileMsg.includes("successfully") && <Check className="size-4" />}
+                <span>{profileMsg}</span>
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isProfileSaving}
+              className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+            >
+              {isProfileSaving ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : (
+                <>
+                  <span>Save Profile</span>
+                  <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
 
         {/* Notification Settings */}
         <NotificationPermissionToggle />
 
-        {/* Password Change form */}
-        <form onSubmit={handlePasswordSave} className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-neutral-800 rounded-xl p-6 space-y-5 transition-all hover:shadow-[0_0_25px_rgba(255,255,255,0.02)]">
-          <div className="flex items-center gap-2 border-b border-neutral-900/80 pb-3 select-none">
-            <Lock className="h-4 w-4 text-violet-400" />
-            <h2
-              className="text-[10px] font-bold text-neutral-300 uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
+        {/* Password Change Form */}
+        <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+          <form onSubmit={handlePasswordSave} className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+            <div className="flex items-center gap-2 border-b border-white/5 pb-4 select-none">
+              <Lock className="size-4 text-violet-400" />
+              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-widest">
+                Change Password
+              </h2>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">
+                  Current Password
+                </label>
+                <Input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                  className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">
+                  New Password
+                </label>
+                <Input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                />
+              </div>
+            </div>
+
+            {passwordMsg && (
+              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 select-none">
+                <Check className="size-4" />
+                <span>{passwordMsg}</span>
+              </div>
+            )}
+            {passwordError && (
+              <p className="text-xs font-semibold text-rose-400 select-none">{passwordError}</p>
+            )}
+
+            <Button
+              type="submit"
+              disabled={isPasswordSaving}
+              className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
             >
-              Change Password
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-              <label
-                className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Current Password
-              </label>
-              <Input
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                required
-                className="input-premium h-10 text-xs"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <label
-                className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                New Password
-              </label>
-              <Input
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                required
-                className="input-premium h-10 text-xs"
-              />
-            </div>
-          </div>
-
-          {passwordMsg && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400 select-none">
-              <Check className="h-3.5 w-3.5" />
-              <span>{passwordMsg}</span>
-            </div>
-          )}
-          {passwordError && (
-            <p className="text-xs font-semibold text-red-400 select-none">{passwordError}</p>
-          )}
-
-          <Button
-            type="submit"
-            disabled={isPasswordSaving}
-            className="btn-premium-primary text-xs h-9 px-5 font-bold cursor-pointer"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            {isPasswordSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Password"}
-          </Button>
-        </form>
+              {isPasswordSaving ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : (
+                <>
+                  <span>Update Password</span>
+                  <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   );

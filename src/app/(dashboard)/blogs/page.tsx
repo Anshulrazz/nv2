@@ -1,6 +1,7 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import {
   Rss,
   Plus,
@@ -19,14 +20,14 @@ import {
   Quote,
   List,
   Image as ImageIcon,
+  ArrowUpRight,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { useAlertStore } from "@/stores/alertStore";
 
 interface BlogData {
@@ -45,12 +46,9 @@ export default function BlogsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 flex items-center justify-center bg-neutral-950 text-neutral-500 select-none gap-2">
-          <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
-          <span
-            className="text-xs font-bold uppercase tracking-widest"
-            style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-          >
+        <div className="flex-1 flex items-center justify-center bg-[#030305] text-zinc-500 select-none gap-2">
+          <Loader2 className="size-5 animate-spin text-cyan-400" />
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
             Loading blogs...
           </span>
         </div>
@@ -89,7 +87,6 @@ function BlogsPageContent() {
   const isMountedRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync editor fields when editingBlog is loaded
   useEffect(() => {
     if (editingBlog) {
       setTitle(editingBlog.title || "");
@@ -100,7 +97,6 @@ function BlogsPageContent() {
     }
   }, [editingBlog]);
 
-  // Auto-load blog if blogId query parameter is present
   useEffect(() => {
     const loadSpecificBlog = async () => {
       if (!blogIdParam) return;
@@ -117,7 +113,6 @@ function BlogsPageContent() {
     loadSpecificBlog();
   }, [blogIdParam]);
 
-  // Track latest state values to prevent stale closures in debounced saves
   const latestTitleRef = useRef(title);
   const latestContentRef = useRef(content);
   const latestSummaryRef = useRef(summary);
@@ -157,7 +152,6 @@ function BlogsPageContent() {
     fetchBlogs();
   }, [fetchBlogs]);
 
-  // Debounced Autosave Handler
   const triggerAutosave = () => {
     if (!editingBlog) return;
     setSaveState("saving");
@@ -198,53 +192,32 @@ function BlogsPageContent() {
         body: JSON.stringify({
           title: "Untitled Blog",
           summary: "A brief summary of your blog post.",
-          content: "# Welcome to your new blog\nStart writing here...",
-          coverImage: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80",
-          published: false,
+          content: "# Welcome to your new blog post\n\nStart writing markdown content here...",
         }),
       });
       if (res.ok) {
         const newBlog = await res.json();
         setEditingBlog(newBlog);
-        fetchBlogs();
       }
     } catch (e) {
-      console.error("submit blog error:", e);
+      console.error("create blog error:", e);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTogglePublish = async (blogId: string, currentVal: boolean) => {
-    try {
-      const res = await fetch(`/api/blogs/${blogId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ published: !currentVal }),
-      });
-      if (res.ok) {
-        fetchBlogs();
-      }
-    } catch (e) {
-      console.error("toggle publish error:", e);
-    }
-  };
-
-  const handleDelete = async (blogId: string) => {
+  const handleDeleteBlog = async (blogId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     showConfirm(
       "Delete Blog",
-      "Are you sure you want to delete this blog post? This action is permanent.",
+      "Are you sure you want to delete this blog post? This action cannot be undone.",
       async () => {
         try {
-          const res = await fetch(`/api/blogs/${blogId}`, {
-            method: "DELETE",
-          });
+          const res = await fetch(`/api/blogs/${blogId}`, { method: "DELETE" });
           if (res.ok) {
-            if (editingBlog?._id === blogId) {
-              setEditingBlog(null);
-            }
-            setSelectedBlog(null);
-            fetchBlogs();
+            setBlogs((prev) => prev.filter((b) => b._id !== blogId));
+            if (selectedBlog?._id === blogId) setSelectedBlog(null);
+            if (editingBlog?._id === blogId) setEditingBlog(null);
           }
         } catch (e) {
           console.error("delete blog error:", e);
@@ -253,51 +226,29 @@ function BlogsPageContent() {
     );
   };
 
-  const handleBookmark = async (blogItem: BlogData) => {
+  const handleBookmark = async (blog: BlogData, e: React.MouseEvent) => {
+    e.stopPropagation();
     try {
-      const permalink = `${window.location.origin}/blogs?blogId=${blogItem._id}`;
+      const permalink = `${window.location.origin}/blogs?blogId=${blog._id}`;
       const res = await fetch("/api/bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: blogItem.title,
+          title: blog.title,
           url: permalink,
-          category: "Blogs",
+          category: "Blog",
         }),
       });
       if (res.ok) {
-        showAlert("Bookmarked", "Blog article added to bookmarks!");
+        showAlert("Bookmarked", "Blog post saved to your bookmarks!");
       } else {
         const errData = await res.json();
-        showAlert("Bookmark Failed", errData.error || "Failed to bookmark blog article.");
+        showAlert("Bookmark Failed", errData.error || "Failed to bookmark blog post.");
       }
     } catch (e) {
       console.error(e);
-      showAlert("Bookmark Error", "Error bookmarking blog article.");
+      showAlert("Bookmark Error", "An error occurred while saving bookmark.");
     }
-  };
-
-  // Helper to inject Markdown tags at the current cursor selection
-  const insertMarkdown = (before: string, after = "") => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const text = textarea.value;
-
-    const selectedText = text.substring(start, end);
-    const replacement = before + selectedText + after;
-
-    const newContent = text.substring(0, start) + replacement + text.substring(end);
-    setContent(newContent);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
-    }, 0);
-
-    triggerAutosave();
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -315,637 +266,340 @@ function BlogsPageContent() {
       });
 
       if (res.ok) {
-        const { url } = await res.json();
-        insertMarkdown(`![${file.name}](${url})`);
+        const data = await res.json();
+        setCoverImage(data.url);
+        triggerAutosave();
       } else {
-        showAlert("Upload Failed", "Failed to upload image.");
+        showAlert("Upload Failed", "Could not upload cover image. Please try again.");
       }
     } catch (err) {
       console.error(err);
-      showAlert("Upload Error", "Error uploading image.");
+      showAlert("Upload Error", "An error occurred while uploading cover image.");
     } finally {
       setIsUploadingImage(false);
     }
   };
 
-  /* ── VIEW 1: Full-Screen Blog Editor Workspace ── */
+  const insertMarkdown = (prefix: string, suffix = "") => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const previousText = textarea.value;
+    const selectedText = previousText.substring(start, end);
+
+    const replacement = `${prefix}${selectedText || "text"}${suffix}`;
+    const newText = previousText.substring(0, start) + replacement + previousText.substring(end);
+
+    setContent(newText);
+    triggerAutosave();
+
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selectedText.length || 4));
+    }, 0);
+  };
+
   if (editingBlog) {
-    const wordCount = content.trim().split(/\s+/).filter(Boolean).length;
-
     return (
-      <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
-        {/* Main Editor Panel */}
-        <div className="flex-1 flex flex-col h-full overflow-hidden">
-          {/* Editor Header */}
-          <div className="h-14 border-b border-neutral-900 bg-neutral-950 px-6 flex items-center justify-between shrink-0 select-none">
-            <div className="flex items-center gap-4 text-xs text-neutral-400">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-                  // Quick final save before leaving
-                  fetch(`/api/blogs/${editingBlog._id}`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      title: latestTitleRef.current,
-                      content: latestContentRef.current,
-                      summary: latestSummaryRef.current,
-                      coverImage: latestCoverImageRef.current,
-                      published: latestPublishedRef.current,
-                    }),
-                  }).then(() => {
-                    fetchBlogs();
-                    setEditingBlog(null);
-                  });
-                }}
-                className="h-8 text-neutral-400 hover:text-neutral-100 hover:bg-neutral-900 text-[11px] gap-1.5 transition-all"
-              >
-                <ChevronLeft className="h-3.5 w-3.5" /> Back
-              </Button>
-              <div className="w-px h-3 bg-neutral-800" />
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  triggerAutosave();
-                }}
-                placeholder="Untitled Blog"
-                className="text-sm font-bold text-neutral-200 bg-transparent focus:outline-none placeholder-neutral-700 min-w-0 max-w-[200px] md:max-w-[400px]"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              />
-              <div className="w-px h-3 bg-neutral-800 hidden sm:block" />
-              <span className="hidden sm:inline font-mono" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                {wordCount} words
-              </span>
-              {/* Autosave Status Indicator */}
-              <div className="flex items-center gap-1.5">
-                <div
-                  className={`h-1.5 w-1.5 rounded-full transition-colors ${
-                    saveState === "saving"
-                      ? "bg-amber-400 animate-pulse"
-                      : saveState === "saved"
-                      ? "bg-emerald-400"
-                      : "bg-neutral-700"
-                  }`}
-                />
-                <span
-                  className="text-[10px] text-neutral-600 font-bold"
-                  style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                >
-                  {saveState === "saving" ? "SAVING" : saveState === "saved" ? "SAVED" : "AUTO"}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowPanel(!showPanel)}
-                className={`h-8 text-[11px] gap-1.5 transition-all ${
-                  showPanel
-                    ? "bg-neutral-900 text-neutral-100 border border-neutral-800"
-                    : "text-neutral-400 hover:text-neutral-100 hover:bg-neutral-900"
-                }`}
-              >
-                <Settings className="h-3.5 w-3.5" /> Blog Settings
-              </Button>
-            </div>
+      <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-hidden antialiased">
+        <div className="border-b border-white/10 bg-zinc-950/80 px-6 py-4 flex items-center justify-between shrink-0 select-none">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => {
+                setEditingBlog(null);
+                fetchBlogs();
+              }}
+              className="flex items-center gap-1.5 text-xs font-mono text-zinc-400 hover:text-white transition-colors"
+            >
+              <ChevronLeft className="size-4" /> Back to Blogs
+            </button>
+            <div className="h-4 w-px bg-white/10" />
+            <span className="text-xs font-mono font-bold text-cyan-400 uppercase tracking-widest flex items-center gap-2">
+              <Edit2 className="size-3.5" /> Blog Editor
+            </span>
           </div>
 
-          {/* Markdown Toolbar */}
-          <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-neutral-900 bg-neutral-900/10 shrink-0 select-none">
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("**", "**")}
-              title="Bold"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <Bold className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("*", "*")}
-              title="Italic"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <Italic className="h-4 w-4" />
-            </Button>
-            <div className="w-[1px] h-5 bg-neutral-900 mx-1" />
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("# ")}
-              title="Heading 1"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <Heading1 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("## ")}
-              title="Heading 2"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <Heading2 className="h-4 w-4" />
-            </Button>
-            <div className="w-[1px] h-5 bg-neutral-900 mx-1" />
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("- ")}
-              title="Bullet List"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <List className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("\n```\n", "\n```\n")}
-              title="Code Block"
-              className="h-8 w-8 text-neutral-450 hover:text-white hover:bg-neutral-900"
-            >
-              <Code className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("> ")}
-              title="Blockquote"
-              className="h-8 w-8 text-neutral-455 hover:text-white hover:bg-neutral-900"
-            >
-              <Quote className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              type="button"
-              onClick={() => insertMarkdown("[", "](url)")}
-              title="Insert Link"
-              className="h-8 w-8 text-neutral-455 hover:text-white hover:bg-neutral-900"
-            >
-              <LinkIcon className="h-4 w-4" />
-            </Button>
-            <div className="w-[1px] h-5 bg-neutral-900 mx-1" />
-            <label
-              className="h-8 w-8 rounded-md flex items-center justify-center cursor-pointer hover:bg-neutral-900 text-neutral-455 hover:text-white transition-colors"
-              title="Upload Image"
-            >
-              {isUploadingImage ? (
-                <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
-              ) : (
-                <ImageIcon className="h-4 w-4" />
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageUpload}
-                className="hidden"
-                disabled={isUploadingImage}
-              />
-            </label>
-          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono font-bold uppercase text-zinc-400">
+              {saveState === "saving" ? "Saving..." : saveState === "saved" ? "Saved ✓" : published ? "Published" : "Draft"}
+            </span>
 
-          {/* Workspaces: Split Screen grid */}
-          <div className="flex-1 flex overflow-hidden p-3 sm:p-6 gap-4 sm:gap-6">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 h-full overflow-hidden">
-              {/* Left Column: Markdown editor */}
-              <div className="flex flex-col h-full bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-4 focus-within:border-neutral-800 transition-colors overflow-hidden">
-                <textarea
-                  ref={textareaRef}
-                  value={content}
-                  onChange={(e) => {
-                    setContent(e.target.value);
-                    triggerAutosave();
-                  }}
-                  placeholder="Write your blog article in markdown here..."
-                  className="w-full flex-1 bg-transparent text-neutral-100 placeholder-neutral-800 text-xs focus:outline-none resize-none font-mono leading-relaxed overflow-y-auto custom-scroll"
-                  style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                />
-              </div>
+            <Button
+              onClick={() => setShowPanel(!showPanel)}
+              variant="outline"
+              size="sm"
+              className="bg-zinc-900 border-white/10 text-xs text-white hover:bg-zinc-800"
+            >
+              <Settings className="size-3.5 mr-1" /> Settings
+            </Button>
 
-              {/* Right Column: Live Markdown Preview */}
-              <div className="h-full bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-6 overflow-y-auto custom-scroll relative">
-                <div
-                  className="absolute top-3 right-3 text-[9px] font-bold text-neutral-700 select-none uppercase tracking-widest"
-                  style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                >
-                  Live Preview
-                </div>
-                <article className="prose prose-invert max-w-none">
-                  {content ? (
-                    <MarkdownRenderer content={content} />
-                  ) : (
-                    <p className="text-neutral-600 text-xs italic">Start writing to see the preview here...</p>
-                  )}
-                </article>
-              </div>
-            </div>
+            <Button
+              onClick={() => {
+                const nextPub = !published;
+                setPublished(nextPub);
+                triggerAutosave();
+              }}
+              className={`rounded-full text-xs font-bold px-5 h-9 transition-all ${
+                published ? "bg-emerald-500 hover:bg-emerald-400 text-zinc-950" : "bg-white hover:bg-zinc-100 text-zinc-950"
+              }`}
+            >
+              {published ? "Published ✓" : "Publish Blog"}
+            </Button>
           </div>
         </div>
 
-        {/* Collapsible settings panel */}
-        {showPanel && (
-          <aside className="w-80 border-l border-neutral-900 bg-neutral-950 flex flex-col shrink-0 h-full overflow-hidden select-none">
-            <div className="h-14 border-b border-neutral-900 px-5 flex items-center shrink-0">
-              <span
-                className="text-[10px] font-bold text-neutral-200 uppercase tracking-widest"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Blog Settings
-              </span>
+        <div className="flex-1 flex overflow-hidden">
+          <div className="flex-1 flex flex-col p-6 overflow-y-auto space-y-6 max-w-4xl mx-auto w-full">
+            <Input
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                triggerAutosave();
+              }}
+              placeholder="Blog Title..."
+              className="bg-transparent border-none text-2xl sm:text-3xl font-extrabold text-white placeholder-zinc-700 focus-visible:ring-0 px-0 h-auto"
+            />
+
+            <div className="flex items-center gap-1 border-y border-white/5 py-2 select-none flex-wrap">
+              <button onClick={() => insertMarkdown("**", "**")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Bold">
+                <Bold className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("*", "*")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Italic">
+                <Italic className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("# ")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Heading 1">
+                <Heading1 className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("## ")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Heading 2">
+                <Heading2 className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("[", "](url)")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Link">
+                <LinkIcon className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("```\n", "\n```")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Code Block">
+                <Code className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("> ")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Quote">
+                <Quote className="size-4" />
+              </button>
+              <button onClick={() => insertMarkdown("- ")} className="p-2 rounded-lg hover:bg-white/5 text-zinc-400 hover:text-white" title="Unordered List">
+                <List className="size-4" />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 custom-scroll text-xs">
-              {/* Published Switch */}
-              <div className="flex items-center justify-between border-b border-neutral-900 pb-4">
-                <div className="space-y-0.5">
-                  <span
-                    className="text-[10px] font-bold text-neutral-200 uppercase tracking-wider block"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    Publish Post
-                  </span>
-                  <p className="text-[10px] text-neutral-500 leading-normal">
-                    Make this blog visible in the public feed.
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const next = !published;
-                    setPublished(next);
-                    triggerAutosave();
-                  }}
-                  className={`h-5 w-9 rounded-full transition-all relative ${
-                    published ? "bg-cyan-500" : "bg-neutral-800"
-                  }`}
-                >
-                  <div
-                    className={`h-3 w-3 bg-neutral-950 rounded-full absolute top-1 transition-all ${
-                      published ? "right-1" : "left-1"
-                    }`}
-                  />
-                </button>
-              </div>
+            <textarea
+              ref={textareaRef}
+              value={content}
+              onChange={(e) => {
+                setContent(e.target.value);
+                triggerAutosave();
+              }}
+              placeholder="Write your article in Markdown..."
+              className="flex-1 w-full bg-transparent text-sm text-zinc-200 placeholder-zinc-700 resize-none outline-none font-mono leading-relaxed min-h-[400px]"
+            />
+          </div>
 
-              {/* Cover Image URL */}
-              <div className="space-y-1.5">
-                <label
-                  className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Cover Image URL
-                </label>
-                <Input
-                  value={coverImage}
-                  onChange={(e) => {
-                    setCoverImage(e.target.value);
-                    triggerAutosave();
-                  }}
-                  placeholder="https://example.com/cover.jpg"
-                  className="bg-neutral-950 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-700 h-9 text-[11px]"
-                />
-                {coverImage && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={coverImage}
-                    alt="Cover preview"
-                    className="w-full h-24 object-cover rounded-lg border border-neutral-900 mt-2"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = "none";
-                    }}
-                  />
-                )}
-              </div>
+          {showPanel && (
+            <div className="w-80 border-l border-white/10 bg-zinc-950/60 p-6 space-y-6 overflow-y-auto">
+              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">Article Metadata</h3>
 
-              {/* Summary Description */}
-              <div className="space-y-1.5">
-                <label
-                  className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Summary Description
-                </label>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Summary</label>
                 <textarea
                   value={summary}
                   onChange={(e) => {
                     setSummary(e.target.value);
                     triggerAutosave();
                   }}
-                  rows={4}
-                  placeholder="Short excerpt shown on the cards..."
-                  className="w-full bg-neutral-950 border border-neutral-850 focus:border-cyan-400 rounded-xl px-3 py-2 text-neutral-100 text-[11px] placeholder-neutral-700 outline-none resize-none transition-colors"
+                  rows={3}
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl p-3 text-xs text-white placeholder-zinc-600 outline-none resize-none"
                 />
               </div>
 
-              {/* Danger Zone */}
-              <div className="pt-4 border-t border-neutral-900 space-y-3">
-                <span
-                  className="text-[10px] font-bold text-red-400 uppercase tracking-wider block"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Danger Zone
-                </span>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => handleDelete(editingBlog._id)}
-                  className="w-full bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/20 hover:border-red-500 h-9 font-bold text-xs rounded-xl transition-all"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  Delete Blog Post
-                </Button>
+              <div className="space-y-2">
+                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Cover Image</label>
+                {coverImage && <img src={coverImage} alt="Cover" className="w-full h-32 object-cover rounded-xl border border-white/10" />}
+                <label className="flex items-center justify-center border border-dashed border-white/10 hover:border-cyan-400 bg-zinc-900 rounded-xl p-3 cursor-pointer text-xs font-mono text-zinc-400 hover:text-white gap-2">
+                  {isUploadingImage ? <Loader2 className="size-4 animate-spin text-cyan-400" /> : <ImageIcon className="size-4 text-cyan-400" />}
+                  <span>{coverImage ? "Change Cover" : "Upload Image"}</span>
+                  <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploadingImage} className="hidden" />
+                </label>
               </div>
             </div>
-          </aside>
-        )}
+          )}
+        </div>
       </div>
     );
   }
 
-  /* ── VIEW 2: Blog Reader View (Detail Pane) ── */
   if (selectedBlog) {
-    const isOwner = currentUserId === selectedBlog.userId;
-
     return (
-      <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll relative">
-        <div className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md px-4 sm:px-8 py-3 sm:py-6 flex flex-wrap items-center justify-between gap-2 shrink-0">
-          <Button
-            variant="ghost"
+      <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative">
+        <div className="border-b border-white/5 bg-zinc-950/40 p-6 sm:p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+          <button
             onClick={() => setSelectedBlog(null)}
-            className="text-neutral-450 hover:text-neutral-100 text-xs font-bold gap-1.5 px-3 h-9 transition-colors"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
+            className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest mb-4"
           >
-            <ChevronLeft className="h-4 w-4" /> Back to Blogs
-          </Button>
-
-          <div className="flex items-center gap-2">
-            {isOwner && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setEditingBlog(selectedBlog);
-                  setSelectedBlog(null);
-                }}
-                className="border-neutral-800 text-neutral-350 hover:text-white bg-neutral-900 text-xs font-bold h-9 gap-1.5"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                <Edit2 className="h-4 w-4" /> Edit Blog
-              </Button>
-            )}
-
-            <Button
-              variant="ghost"
-              onClick={() => handleBookmark(selectedBlog)}
-              className="text-neutral-450 hover:text-cyan-400 text-xs font-bold gap-1.5 px-3 h-9 transition-colors"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              <Bookmark className="h-4 w-4" /> Bookmark
-            </Button>
+            <ChevronLeft className="size-4" /> Back to Blog Feed
+          </button>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight leading-tight">
+            {selectedBlog.title}
+          </h1>
+          <div className="flex items-center gap-3 text-xs font-mono text-zinc-400 mt-3">
+            <span>By {selectedBlog.userName}</span>
+            <span>•</span>
+            <span>{new Date(selectedBlog.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
 
-        <div className="max-w-2xl w-full mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-6 z-10 relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={selectedBlog.coverImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80"}
-            alt={selectedBlog.title}
-            className="w-full h-64 object-cover rounded-2xl border border-neutral-900 shadow-xl"
-          />
+        <div className="p-6 sm:p-10 max-w-4xl w-full mx-auto space-y-8 relative z-10">
+          {selectedBlog.coverImage && (
+            <img src={selectedBlog.coverImage} alt={selectedBlog.title} className="w-full max-h-96 object-cover rounded-[2rem] border border-white/10" />
+          )}
 
-          <div className="space-y-3">
-            <h1
-              className="text-3xl font-extrabold text-neutral-100 leading-tight tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              {selectedBlog.title}
-            </h1>
-            <div
-              className="flex items-center gap-2 text-xs text-neutral-500"
-              style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-            >
-              <span>
-                By:{" "}
-                <Link
-                  href={`/user/${selectedBlog.userId}`}
-                  className="text-neutral-350 hover:text-cyan-400 transition-colors"
-                >
-                  {selectedBlog.userName}
-                </Link>
-              </span>
-              <span>•</span>
-              <span>{new Date(selectedBlog.createdAt).toLocaleDateString()}</span>
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 text-zinc-200">
+              <MarkdownRenderer content={selectedBlog.content} />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+      </div>
+
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+              <Rss className="size-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                Scholar Blogs
+                <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
+                  EDITORIAL DISPATCH
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                Read deep-dive articles, engineering tutorials, and technical research written by student scholars.
+              </p>
             </div>
           </div>
 
-          <div className="border-l-2 border-cyan-400 pl-4 py-1 italic text-neutral-400 text-sm leading-relaxed">
-            {selectedBlog.summary}
-          </div>
-
-          <hr className="border-neutral-900" />
-
-          {/* Render article markdown context safely */}
-          <div className="prose prose-invert max-w-none">
-            <MarkdownRenderer content={selectedBlog.content} />
-          </div>
+          <Button
+            onClick={handleCreateBlog}
+            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          >
+            <Plus className="size-4 text-zinc-950" />
+            <span>Write Blog</span>
+            <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+          </Button>
         </div>
       </div>
-    );
-  }
 
-  /* ── VIEW 3: Blogs List View ── */
-  return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll relative">
-      {/* Ambient background glows */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Top Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shrink-0 select-none z-10 relative">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <Rss className="h-5 w-5 text-cyan-400" />
-            <h1
-              className="text-xl font-bold text-neutral-100 tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Scholar Blogs
-            </h1>
-          </div>
-          <p className="text-neutral-500 text-xs">
-            Publish articles, share study guides, and get upvoted to score Leaderboard points.
-          </p>
-        </div>
-
-        <Button
-          onClick={handleCreateBlog}
-          className="bg-cyan-500 hover:bg-cyan-400 text-neutral-955 text-xs font-bold gap-1.5 h-9 px-4 rounded-lg shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-all"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
-        >
-          <Plus className="h-4 w-4" /> Create Blog
-        </Button>
-      </div>
-
-      {/* Content wrapper */}
-      <div className="p-4 sm:p-8 space-y-6 max-w-5xl w-full mx-auto z-10 relative">
-        <div className="flex items-center gap-2 border-b border-neutral-900 pb-2 select-none">
+      {/* Content & Tab Filter */}
+      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+        <div className="flex items-center gap-2 border-b border-white/5 pb-4 select-none">
           <button
             onClick={() => setActiveTab("feed")}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
               activeTab === "feed"
-                ? "bg-neutral-900 border border-neutral-800 text-neutral-100"
-                : "text-neutral-500 hover:text-neutral-300"
+                ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300 border border-transparent"
             }`}
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            Published Feed
+            Public Feed
           </button>
           <button
             onClick={() => setActiveTab("mine")}
-            className={`text-xs font-bold px-3 py-1.5 rounded-lg uppercase tracking-wider transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
               activeTab === "mine"
-                ? "bg-neutral-900 border border-neutral-800 text-neutral-100"
-                : "text-neutral-500 hover:text-neutral-300"
+                ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                : "text-zinc-500 hover:text-zinc-300 border border-transparent"
             }`}
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            My Drafts &amp; Blogs
+            My Written Articles
           </button>
         </div>
 
+        {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-neutral-500 text-xs gap-2 select-none font-semibold">
-            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
-            <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>RETRIEVING ARTICLES...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-violet-400" />
+            <span className="font-mono text-zinc-400 tracking-widest">LOADING ARTICLES...</span>
           </div>
         ) : blogs.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center space-y-4 border border-dashed border-neutral-900 rounded-2xl bg-neutral-900/5 select-none">
-            <Rss className="h-10 w-10 text-neutral-700" />
-            <div className="space-y-1">
-              <h3 className="text-neutral-300 font-bold text-sm" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                No articles found
-              </h3>
-              <p className="text-neutral-500 text-xs max-w-xs leading-normal">
-                {activeTab === "mine"
-                  ? "You haven't written any articles yet."
-                  : "No published articles available inside the feed."}
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
+              <Sparkles className="size-10 text-zinc-600" />
+              <h3 className="text-lg font-bold text-white">No articles published yet</h3>
+              <p className="text-xs text-zinc-400 font-light max-w-xs">
+                {activeTab === "mine" ? "You haven't written any blogs yet." : "Be the first scholar to publish a blog article!"}
               </p>
             </div>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blogItem) => {
-              const isOwner = currentUserId === blogItem.userId;
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {blogs.map((blog) => {
+              const isOwner = currentUserId === blog.userId;
 
               return (
-                <div
-                  key={blogItem._id}
-                  onClick={() => {
-                    if (isOwner) {
-                      setEditingBlog(blogItem);
-                    } else {
-                      setSelectedBlog(blogItem);
-                    }
-                  }}
-                  className="group bg-neutral-955/30 backdrop-blur-md border border-white/5 hover:border-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] rounded-xl overflow-hidden cursor-pointer transition-all duration-300 flex flex-col"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={blogItem.coverImage || "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=500&q=80"}
-                    alt={blogItem.title}
-                    className="w-full h-40 object-cover border-b border-neutral-900 group-hover:scale-[1.01] transition-transform duration-300"
-                  />
-
-                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                    <div className="space-y-2">
-                      <h2
-                        className="text-sm font-bold text-neutral-100 group-hover:text-cyan-400 transition-colors line-clamp-2"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        {blogItem.title}
-                      </h2>
-                      <p className="text-neutral-450 text-[11px] leading-relaxed line-clamp-3">
-                        {blogItem.summary}
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 pt-3 border-t border-neutral-900/60">
-                      <div
-                        className="flex items-center justify-between text-[10px] text-neutral-500 select-none font-bold"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        <span>
-                          By:{" "}
-                          <Link
-                            href={`/user/${blogItem.userId}`}
-                            className="text-neutral-400 hover:text-cyan-400 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {blogItem.userName}
-                          </Link>
-                        </span>
-                        <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                          {new Date(blogItem.createdAt).toLocaleDateString()}
-                        </span>
+                <div key={blog._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full">
+                  <div
+                    onClick={() => setSelectedBlog(blog)}
+                    className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-full cursor-pointer group"
+                  >
+                    {blog.coverImage && (
+                      <div className="h-44 w-full relative overflow-hidden bg-zinc-950">
+                        <img src={blog.coverImage} alt={blog.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                      </div>
+                    )}
+                    <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 select-none">
+                          <span>By {blog.userName}</span>
+                          <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <h3 className="text-lg font-bold text-white group-hover:text-violet-400 transition-colors line-clamp-1">
+                          {blog.title}
+                        </h3>
+                        <p className="text-xs text-zinc-400 font-light line-clamp-2 leading-relaxed">
+                          {blog.summary}
+                        </p>
                       </div>
 
-                      <div
-                        className="flex items-center justify-between pt-1 select-none"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {isOwner ? (
-                          <button
-                            onClick={() => handleTogglePublish(blogItem._id, blogItem.published)}
-                            className={`text-[9px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider transition-all ${
-                              blogItem.published
-                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                                : "bg-neutral-950 border-neutral-850 text-neutral-500"
-                            }`}
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            {blogItem.published ? "Published" : "Draft"}
-                          </button>
-                        ) : (
-                          <div />
-                        )}
+                      <div className="flex items-center justify-between border-t border-white/5 pt-4 select-none">
+                        <span className="text-xs font-mono text-cyan-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                          Read Article →
+                        </span>
                         <div className="flex items-center gap-2">
+                          <button onClick={(e) => handleBookmark(blog, e)} className="text-zinc-500 hover:text-amber-400 transition-colors">
+                            <Bookmark className="size-4" />
+                          </button>
                           {isOwner && (
                             <button
-                              onClick={() => setEditingBlog(blogItem)}
-                              className="p-1 rounded hover:bg-neutral-900 text-neutral-550 hover:text-cyan-400 transition-colors"
-                              title="Edit blog"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setEditingBlog(blog);
+                              }}
+                              className="text-zinc-500 hover:text-white transition-colors"
                             >
-                              <Edit2 className="h-3.5 w-3.5" />
+                              <Edit2 className="size-4" />
                             </button>
                           )}
-                          <button
-                            onClick={() => handleBookmark(blogItem)}
-                            className="p-1 rounded hover:bg-neutral-900 text-neutral-550 hover:text-cyan-400 transition-colors"
-                            title="Bookmark article"
-                          >
-                            <Bookmark className="h-3.5 w-3.5" />
-                          </button>
                           {isOwner && (
-                            <button
-                              onClick={() => handleDelete(blogItem._id)}
-                              className="p-1 rounded hover:bg-neutral-900 text-neutral-550 hover:text-red-400 transition-colors"
-                              title="Delete blog"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
+                            <button onClick={(e) => handleDeleteBlog(blog._id, e)} className="text-zinc-500 hover:text-rose-400 transition-colors">
+                              <Trash2 className="size-4" />
                             </button>
                           )}
                         </div>

@@ -138,9 +138,9 @@ export function SimpleTodo() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto my-4 bg-neutral-900/60 border border-neutral-800/80 backdrop-blur-xl rounded-2xl p-5 shadow-2xl relative overflow-hidden">
+    <div className="w-full bg-zinc-900/40 border border-white/10 backdrop-blur-xl rounded-[2rem] p-6 shadow-2xl relative overflow-hidden">
       {/* Decorative gradient orb */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/20 rounded-full blur-[40px] pointer-events-none" />
+      <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-[40px] pointer-events-none" />
       
       <div className="flex items-center justify-between mb-5 relative z-10">
         <h3 className="text-sm font-extrabold text-neutral-100 tracking-wider flex items-center gap-2" style={{ fontFamily: "var(--font-space-grotesk)" }}>

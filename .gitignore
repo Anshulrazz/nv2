@@ -16,6 +16,15 @@
 # next.js
 /.next/
 /out/
+/agent
+/models
+/.impeccable
+/.codex
+/.claude
+/.gemini
+/.obsidian
+/.agent/
+/.agent/skills
 
 # production
 /build

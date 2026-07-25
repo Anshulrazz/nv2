@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, Suspense } from "react";
@@ -10,7 +11,7 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowUpRight } from "lucide-react";
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -70,42 +71,34 @@ function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-md relative">
-      {/* Cyber corner-cut card */}
-      <div className="bg-neutral-900/60 border border-neutral-800 backdrop-blur-xl shadow-2xl cyber-panel overflow-hidden">
-        {/* Top accent line */}
-        <div className="h-px bg-gradient-to-r from-violet-500 via-indigo-500 to-cyan-500 w-full" />
-
-        {/* Header */}
-        <div className="px-8 pt-8 pb-4 text-center space-y-2">
-          <div className="flex items-center justify-center gap-2.5 mb-3">
-            <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
-            <span
-              className="text-xl font-bold tracking-widest bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              NOTEXIA
-            </span>
+    <div className="w-full max-w-md relative z-10">
+      {/* Doppelrand (Double-Bezel) Hardware Shell */}
+      <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)]">
+        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+          {/* Header */}
+          <div className="text-center space-y-3">
+            <div className="flex items-center justify-center gap-2.5 mb-2">
+              <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
+              <span className="text-xl font-extrabold tracking-tight text-white">
+                Notexia
+              </span>
+            </div>
+            <h1 className="text-2xl font-black text-white tracking-tight">
+              Create your account
+            </h1>
+            <p className="text-zinc-400 text-xs font-light">
+              Start organizing your ideas with AI-powered notes
+            </p>
           </div>
-          <h1
-            className="text-2xl font-bold text-neutral-100 tracking-tight"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
-          >
-            Create your account
-          </h1>
-          <p className="text-neutral-500 text-sm">
-            Start organizing your ideas with AI-powered notes
-          </p>
-        </div>
 
-        {/* Form body */}
-        <div className="px-8 pb-6 space-y-4">
+          {/* Error message */}
           {error && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm font-medium">
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium">
               {error}
             </div>
           )}
 
+          {/* Form */}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -113,20 +106,17 @@ function SignupForm() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
+                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
                       Display Name
                     </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="John Doe"
-                        className="bg-neutral-950/80 border-neutral-800 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-sm"
+                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400 text-xs" />
+                    <FormMessage className="text-rose-400 text-xs" />
                   </FormItem>
                 )}
               />
@@ -136,21 +126,18 @@ function SignupForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
+                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="you@example.com"
-                        className="bg-neutral-950/80 border-neutral-800 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-sm"
+                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400 text-xs" />
+                    <FormMessage className="text-rose-400 text-xs" />
                   </FormItem>
                 )}
               />
@@ -160,21 +147,18 @@ function SignupForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
+                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
                       Password
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         placeholder="••••••••"
-                        className="bg-neutral-950/80 border-neutral-800 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-sm"
+                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400 text-xs" />
+                    <FormMessage className="text-rose-400 text-xs" />
                   </FormItem>
                 )}
               />
@@ -184,57 +168,56 @@ function SignupForm() {
                 name="referralCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel
-                      className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
+                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
                       Referral Code (Optional)
                     </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="REF-XXXXXX"
-                        className="bg-neutral-950/80 border-neutral-800 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-sm"
+                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out font-mono"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-red-400 text-xs" />
+                    <FormMessage className="text-rose-400 text-xs" />
                   </FormItem>
                 )}
               />
 
+              {/* Button-in-Button CTA Architecture */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all duration-200 mt-2 h-10"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
+                className="group w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 mt-2 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(255,255,255,0.2)]"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
                     <span>Initializing node...</span>
                   </div>
                 ) : (
-                  "Create Account"
+                  <>
+                    <span>Create Account</span>
+                    <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </>
                 )}
               </Button>
             </form>
           </Form>
 
+          {/* Separator */}
           <div className="relative flex items-center justify-center my-4">
-            <span className="absolute w-full h-px bg-neutral-800" />
-            <span
-              className="relative px-3 bg-neutral-900 text-neutral-600 text-[10px] font-bold uppercase tracking-wider"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
+            <span className="absolute w-full h-px bg-white/5" />
+            <span className="relative px-3 bg-[#07070a] text-zinc-500 text-[10px] font-mono font-bold uppercase tracking-widest">
               Or continue with
             </span>
           </div>
 
+          {/* Google Signup */}
           <Button
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
-            className="w-full border-neutral-800 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900 text-neutral-300 hover:text-neutral-100 transition-all h-10 flex items-center justify-center gap-3 font-medium text-sm"
+            className="w-full rounded-full border-white/10 bg-zinc-950 hover:bg-zinc-900 text-zinc-300 hover:text-white h-11 flex items-center justify-center gap-3 font-medium text-xs transition-colors"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -244,40 +227,38 @@ function SignupForm() {
             </svg>
             Sign up with Google
           </Button>
-        </div>
 
-        {/* Footer */}
-        <div className="px-8 pb-8 text-center">
-          <p className="text-neutral-500 text-sm">
-            Already have an account?{" "}
-            <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold hover:underline transition-colors">
-              Log in
-            </Link>
-          </p>
+          {/* Footer */}
+          <div className="pt-2 text-center">
+            <p className="text-zinc-500 text-xs">
+              Already have an account?{" "}
+              <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold hover:underline transition-colors">
+                Log in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
-
-      {/* Decorative glow */}
-      <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-64 h-64 bg-violet-500/8 rounded-full blur-[80px] pointer-events-none" />
     </div>
   );
 }
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-4 relative overflow-hidden">
-      {/* Cyber grid background */}
-      <div className="absolute inset-0 cyber-grid opacity-60 pointer-events-none" />
-      {/* Ambient glow blobs */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-violet-500/6 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-cyan-500/6 rounded-full blur-[100px] pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center bg-[#030305] p-4 relative overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-200 antialiased">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-violet-500/15 via-cyan-600/10 to-transparent blur-[140px] opacity-70" />
+      </div>
 
-      <Suspense fallback={
-        <div className="flex-1 flex items-center justify-center text-neutral-500 select-none gap-2">
-          <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
-          <span className="text-xs font-bold uppercase tracking-widest">Loading signup form...</span>
-        </div>
-      }>
+      <Suspense
+        fallback={
+          <div className="flex items-center justify-center text-zinc-100 gap-2 bg-zinc-900/80 p-8 rounded-2xl border border-white/10">
+            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
+            <span className="text-xs font-mono">Loading signup form...</span>
+          </div>
+        }
+      >
         <SignupForm />
       </Suspense>
     </div>

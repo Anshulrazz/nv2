@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Presentation, Loader2, BookOpen, Clock, AlertCircle } from "lucide-react";
+import { Presentation, Loader2, BookOpen, Clock, AlertCircle, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -31,8 +32,9 @@ export default function CoursesPage() {
         if (!res.ok) throw new Error("Failed to fetch courses");
         const data = await res.json();
         setCourses(data);
-      } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
-        setError(err.message);
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "Error fetching courses";
+        setError(message);
       } finally {
         setLoading(false);
       }
@@ -41,101 +43,111 @@ export default function CoursesPage() {
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-transparent">
-      {/* Header */}
-      <div className="flex flex-col gap-4 border-b border-border/40 pb-8">
-        <div className="flex items-center gap-3">
-          <div className="h-12 w-12 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20">
-            <Presentation className="h-6 w-6 text-violet-400" />
+    <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#030305] text-zinc-100 antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+      </div>
+
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl">
+        <div className="flex items-center gap-4">
+          <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+            <Presentation className="size-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-2">
-              Courses
-              <span className="text-xs bg-violet-500/20 text-violet-300 px-2 py-0.5 rounded-full border border-violet-500/30">
-                New
+            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+              Interactive Courses
+              <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
+                VERIFIED TRACKS
               </span>
             </h1>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Explore premium educational content curated by top instructors.
+            <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+              Explore premium educational content curated by top instructors and earn completion certificates.
             </p>
           </div>
         </div>
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-violet-500" />
-          <p className="text-sm text-muted-foreground animate-pulse">Loading courses...</p>
+        <div className="flex flex-col items-center justify-center py-20 gap-4 text-zinc-500">
+          <Loader2 className="size-8 animate-spin text-violet-400" />
+          <p className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">Loading courses...</p>
         </div>
       ) : error ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4 bg-destructive/5 border border-destructive/20 rounded-2xl">
-          <AlertCircle className="h-8 w-8 text-destructive" />
-          <p className="text-sm text-destructive font-medium">{error}</p>
+        <div className="flex flex-col items-center justify-center py-16 gap-4 bg-rose-500/10 border border-rose-500/20 rounded-[2rem]">
+          <AlertCircle className="size-8 text-rose-400" />
+          <p className="text-xs font-mono text-rose-300 font-medium">{error}</p>
         </div>
       ) : courses.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 gap-4 bg-sidebar/30 border border-border/40 rounded-3xl">
-          <BookOpen className="h-12 w-12 text-muted-foreground/50" />
-          <h3 className="text-lg font-semibold text-foreground">No courses available</h3>
-          <p className="text-sm text-muted-foreground max-w-sm text-center">
-            It looks like there are no published courses right now. Check back later!
-          </p>
+        <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
+          <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
+            <BookOpen className="size-10 text-zinc-600" />
+            <h3 className="text-lg font-bold text-white">No courses available</h3>
+            <p className="text-xs text-zinc-400 font-light max-w-xs">
+              It looks like there are no published courses right now. Check back later!
+            </p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 relative z-10">
           {courses.map((course, idx) => (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: idx * 0.05 }}
               key={course._id}
-              className="group flex flex-col bg-sidebar/50 rounded-3xl overflow-hidden border border-border/40 hover:border-violet-500/50 hover:shadow-[0_0_30px_-5px_rgba(139,92,246,0.15)] transition-all duration-300"
+              className="group rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full"
             >
-              {course.thumbnail ? (
-                <div className="h-48 w-full relative overflow-hidden bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-<img
-                    src={course.thumbnail}
-                    alt={course.title}
-                    className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-                </div>
-              ) : (
-                <div className="h-48 w-full bg-gradient-to-br from-violet-500/20 to-fuchsia-500/20 relative overflow-hidden flex items-center justify-center">
-                  <Presentation className="h-16 w-16 text-violet-500/40 group-hover:scale-110 transition-transform duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 to-transparent" />
-                </div>
-              )}
-              
-              <div className="flex-1 p-6 flex flex-col relative z-10 -mt-8">
-                <div className="flex items-center gap-3 mb-4">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-<img
-                    src={course.instructor?.image || "/default-avatar.png"}
-                    alt={course.instructor?.name || "Instructor"}
-                    className="w-10 h-10 rounded-full border-2 border-background shadow-md bg-muted object-cover"
-                  />
-                  <div>
-                    <p className="text-xs font-semibold text-foreground">{course.instructor?.name || "Anonymous"}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="w-3 h-3" />
-                      {new Date(course.createdAt).toLocaleDateString()}
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-full">
+                {course.thumbnail ? (
+                  <div className="h-48 w-full relative overflow-hidden bg-zinc-950">
+                    <img
+                      src={course.thumbnail}
+                      alt={course.title}
+                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
+                  </div>
+                ) : (
+                  <div className="h-48 w-full bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-white/5">
+                    <Presentation className="size-16 text-violet-500/20 group-hover:scale-110 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
+                  </div>
+                )}
+                
+                <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={course.instructor?.image || "/default-avatar.png"}
+                        alt={course.instructor?.name || "Instructor"}
+                        className="size-9 rounded-full border border-white/10 object-cover bg-zinc-900"
+                      />
+                      <div>
+                        <p className="text-xs font-bold text-white">{course.instructor?.name || "Anonymous"}</p>
+                        <p className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
+                          <Clock className="size-3 text-violet-400" />
+                          {new Date(course.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-bold text-white line-clamp-1 group-hover:text-violet-400 transition-colors">
+                      {course.title}
+                    </h3>
+                    <p className="text-xs text-zinc-400 font-light line-clamp-2 leading-relaxed">
+                      {course.description}
                     </p>
                   </div>
+
+                  <Link href={`/courses/${course._id}`} className="block w-full">
+                    <Button className="group/btn w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                      <span>Start Course</span>
+                      <ArrowUpRight className="size-4 text-zinc-950 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                    </Button>
+                  </Link>
                 </div>
-
-                <h3 className="text-lg font-bold text-foreground mb-2 line-clamp-1 group-hover:text-violet-400 transition-colors">
-                  {course.title}
-                </h3>
-                <p className="text-sm text-muted-foreground line-clamp-2 flex-1 mb-6">
-                  {course.description}
-                </p>
-
-                <Link href={`/courses/${course._id}`} className="block w-full">
-                  <Button className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-xl shadow-lg shadow-violet-500/20">
-                    Start Course
-                  </Button>
-                </Link>
               </div>
             </motion.div>
           ))}

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 import React from "react";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
@@ -9,7 +10,7 @@ import { Follow } from "@/models/Follow";
 import { CommunityPost, ICommunityPost } from "@/models/CommunityPost";
 import { Forum, IForum } from "@/models/Forum";
 import { Doubt, IDoubt } from "@/models/Doubt";
-import { EyeOff, ArrowLeft, MessageCircle } from "lucide-react";
+import { EyeOff, ArrowLeft, MessageCircle, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/app/(dashboard)/user/[id]/FollowButton";
@@ -30,7 +31,6 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
   await connectToDatabase();
 
-  // Load target user
   const targetUser = await User.findById(targetUserId);
   if (!targetUser || targetUser.isSuspended) {
     notFound();
@@ -40,7 +40,6 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   const isAdmin = session.user.role === "admin";
   const canViewProfile = targetUser.isPublic || isOwnProfile || isAdmin;
 
-  // Check follow status
   let isFollowing = false;
   if (!isOwnProfile) {
     const followRecord = await Follow.findOne({
@@ -50,7 +49,6 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     isFollowing = !!followRecord;
   }
 
-  // Load followers & following populated lists
   const followers = (await Follow.find({ followingId: targetUserId })
     .populate({ path: "followerId", model: User, select: "_id name email image" })) as unknown as Array<{
       followerId?: {
@@ -93,23 +91,21 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
   const joinDate = new Date(targetUser.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long' });
 
-  // Scholar Rank Tier based on points
   const points = targetUser.points || 0;
   let scholarRank = "Novice Scholar";
-  let scholarRankColor = "text-neutral-400 bg-neutral-400/5 border-neutral-500/20 shadow-[0_0_15px_rgba(163,163,163,0.05)]";
+  let scholarRankColor = "text-zinc-400 bg-zinc-800/40 border-white/10";
   
   if (points >= 2000) {
     scholarRank = "Grandmaster Scholar";
-    scholarRankColor = "text-cyan-400 bg-cyan-500/10 border-cyan-500/25 shadow-[0_0_20px_rgba(34,211,238,0.25)]";
+    scholarRankColor = "text-cyan-400 bg-cyan-500/10 border-cyan-500/30";
   } else if (points >= 500) {
     scholarRank = "Academic Specialist";
-    scholarRankColor = "text-violet-400 bg-violet-500/10 border-violet-500/25 shadow-[0_0_15px_rgba(167,139,250,0.2)]";
+    scholarRankColor = "text-violet-400 bg-violet-500/10 border-violet-500/30";
   } else if (points >= 100) {
     scholarRank = "Research Associate";
-    scholarRankColor = "text-amber-400 bg-amber-500/10 border-amber-500/25 shadow-[0_0_15px_rgba(245,158,11,0.2)]";
+    scholarRankColor = "text-amber-400 bg-amber-500/10 border-amber-500/30";
   }
 
-  // Load user's public contributions
   let publicNotes: INote[] = [];
   let publicBlogs: IBlog[] = [];
   let communityPosts: ICommunityPost[] = [];
@@ -142,115 +138,105 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-955 overflow-y-auto custom-scroll">
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+      </div>
+
       {/* Header */}
-      <div className="border-b border-neutral-900 bg-neutral-950/40 backdrop-blur-md px-4 sm:px-8 py-4 sm:py-5 shrink-0 select-none relative overflow-hidden flex items-center justify-between">
-        <div className="absolute top-0 right-0 w-64 h-32 bg-cyan-500/5 rounded-full blur-[80px] pointer-events-none" />
-        
-        <Link href="/dashboard" className="text-xs text-neutral-450 hover:text-neutral-250 flex items-center gap-1.5 font-bold transition-colors">
-          <ArrowLeft className="h-3.5 w-3.5" /> Back to Dashboard
+      <div className="border-b border-white/5 bg-zinc-950/40 p-6 sm:p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0 flex items-center justify-between">
+        <Link href="/dashboard" className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-2 font-bold uppercase tracking-widest transition-colors">
+          <ArrowLeft className="size-4" /> Back to Dashboard
         </Link>
         
         {isOwnProfile && (
           <Link href="/settings">
-            <Button variant="ghost" className="h-8 border border-neutral-850 hover:bg-neutral-900 text-xs text-neutral-300 font-bold">
-              Edit Settings
+            <Button className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-5">
+              Edit Profile Settings
             </Button>
           </Link>
         )}
       </div>
 
-      <div className="p-4 sm:p-8 max-w-4xl w-full mx-auto space-y-6 sm:space-y-8 z-10 relative">
-        {/* User Card */}
-        <div className="bg-neutral-955/40 backdrop-blur-lg border border-white/5 hover:border-neutral-800/80 hover:shadow-[0_0_35px_rgba(6,182,212,0.08)] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 transition-all duration-300 cyber-panel">
-          {/* Avatar */}
-          <div className="relative shrink-0 select-none">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={targetUser.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"}
-              alt={targetUser.name || "User Profile"}
-              className="w-20 h-20 md:w-24 md:h-24 rounded-2xl object-cover border border-neutral-800 shadow-lg bg-neutral-955"
-            />
-            {targetUser.role === "admin" && (
-              <span className="absolute -bottom-1 -right-1 bg-red-500/10 border border-red-500/30 text-red-400 text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-md font-mono select-none">
-                Admin
-              </span>
-            )}
-          </div>
-
-          {/* Details */}
-          <div className="flex-1 text-center md:text-left space-y-4">
-            <div className="space-y-1.5">
-              <div className="flex flex-col md:flex-row md:items-center gap-2.5">
-                <h1 className="text-xl font-bold text-neutral-100 tracking-tight" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                  {targetUser.name || "Scholar Scholar"}
-                </h1>
-                
-                {/* Privacy Badge */}
-                {!targetUser.isPublic && (
-                  <span className="inline-flex items-center gap-1 mx-auto md:mx-0 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[8.5px] font-bold uppercase tracking-wider select-none font-mono">
-                    <EyeOff className="h-2.5 w-2.5" /> Private Profile
-                  </span>
-                )}
-              </div>
-              
-              <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-1 text-neutral-500 text-xs font-mono select-none">
-                <span>{targetUser.email}</span>
-                <span>•</span>
-                <span>Joined {joinDate}</span>
-              </div>
+      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 z-10 relative">
+        {/* User Doppelrand Card */}
+        <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+          <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col md:flex-row items-center md:items-start gap-8">
+            {/* Avatar */}
+            <div className="relative shrink-0 select-none">
+              <img
+                src={targetUser.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"}
+                alt={targetUser.name || "User Profile"}
+                className="size-24 md:size-28 rounded-2xl object-cover border border-white/10 shadow-lg bg-zinc-950"
+              />
+              {targetUser.role === "admin" && (
+                <span className="absolute -bottom-1 -right-1 bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[8px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-full select-none">
+                  Admin
+                </span>
+              )}
             </div>
 
-            {targetUser.bio && (
-              <p className="text-neutral-400 text-xs leading-relaxed max-w-xl mx-auto md:mx-0">
-                {targetUser.bio}
-              </p>
-            )}
-
-            {/* Follow/CTA/Message Buttons */}
-            {!isOwnProfile && canViewProfile && (
-              <div className="flex justify-center md:justify-start gap-3 pt-1 select-none">
-                <FollowButton targetUserId={targetUserId} initialFollowing={isFollowing} />
-                <Link href={`/messages?userId=${targetUserId}`}>
-                  <Button variant="outline" className="h-8 border border-neutral-800 hover:bg-neutral-900 hover:text-cyan-400 text-xs text-neutral-300 font-bold gap-1.5 transition-all">
-                    <MessageCircle className="h-3.5 w-3.5" />
-                    Message
-                  </Button>
-                </Link>
+            {/* Details */}
+            <div className="flex-1 text-center md:text-left space-y-4">
+              <div className="space-y-2">
+                <div className="flex flex-col md:flex-row md:items-center gap-3">
+                  <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
+                    {targetUser.name || "Scholar Scholar"}
+                  </h1>
+                  
+                  {!targetUser.isPublic && (
+                    <span className="inline-flex items-center gap-1 mx-auto md:mx-0 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest select-none">
+                      <EyeOff className="size-3" /> Private Profile
+                    </span>
+                  )}
+                </div>
+                
+                <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-1 text-zinc-400 text-xs font-mono select-none">
+                  <span>{targetUser.email}</span>
+                  <span>•</span>
+                  <span>Joined {joinDate}</span>
+                </div>
               </div>
-            )}
+
+              {/* Scholar Rank Badge */}
+              <div className="pt-1 flex flex-wrap justify-center md:justify-start gap-3 items-center">
+                <div className={`px-4 py-1.5 rounded-full border text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2 ${scholarRankColor}`}>
+                  <Sparkles className="size-3.5" />
+                  <span>{scholarRank}</span>
+                  <span>({points} pts)</span>
+                </div>
+
+                {!isOwnProfile && canViewProfile && (
+                  <Link href={`/messages?userId=${targetUser._id}`}>
+                    <Button variant="outline" className="rounded-full bg-zinc-900 border-white/10 text-xs text-white hover:bg-zinc-800 h-9 px-4 flex items-center gap-2">
+                      <MessageCircle className="size-4 text-cyan-400" />
+                      <span>Message</span>
+                    </Button>
+                  </Link>
+                )}
+
+                {!isOwnProfile && (
+                  <FollowButton targetUserId={targetUserId} initialFollowing={isFollowing} />
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Interactive Stats & Contributions Client Wrapper */}
-        {!canViewProfile ? (
-          <div className="text-center py-16 border border-dashed border-neutral-900 rounded-2xl bg-neutral-955/20 backdrop-blur-md space-y-3">
-            <EyeOff className="h-10 w-10 text-neutral-700 mx-auto" />
-            <h3 className="text-sm font-bold text-neutral-300" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-              This Profile is Private
-            </h3>
-            <p className="text-xs text-neutral-500 max-w-xs mx-auto leading-normal">
-              You cannot view notes, blogs, community posts, or lists from this user because they have set their visibility settings to Private.
-            </p>
-          </div>
-        ) : (
-          <ProfileClient
-            targetUser={{
-              ...JSON.parse(JSON.stringify(targetUser)),
-              scholarRank,
-              scholarRankColor,
-            }}
-            followers={followersList}
-            following={followingList}
-            notes={JSON.parse(JSON.stringify(publicNotes))}
-            blogs={JSON.parse(JSON.stringify(publicBlogs))}
-            socialPosts={JSON.parse(JSON.stringify(communityPosts))}
-            forums={JSON.parse(JSON.stringify(forums))}
-            doubts={JSON.parse(JSON.stringify(doubts))}
-            currentUserId={session.user.id}
-            canViewProfile={canViewProfile}
-          />
-        )}
+        {/* Tabbed Contributions */}
+        <ProfileClient
+          targetUser={JSON.parse(JSON.stringify(targetUser))}
+          followers={followersList}
+          following={followingList}
+          notes={JSON.parse(JSON.stringify(publicNotes))}
+          blogs={JSON.parse(JSON.stringify(publicBlogs))}
+          socialPosts={JSON.parse(JSON.stringify(communityPosts))}
+          forums={JSON.parse(JSON.stringify(forums))}
+          doubts={JSON.parse(JSON.stringify(doubts))}
+          currentUserId={session.user.id}
+          canViewProfile={canViewProfile}
+        />
       </div>
     </div>
   );

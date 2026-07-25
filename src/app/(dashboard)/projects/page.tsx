@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -1022,7 +1023,7 @@ export default function ProjectsPage() {
             Refresh Connection
           </Button>
         </div>
-      ) : (
+      ) : !viewingProject ? (
         <div className="p-4 sm:p-8 max-w-5xl w-full mx-auto flex-1">
           {projects.length === 0 ? (
             <div className="py-14 sm:py-20 px-4 text-center select-none border border-dashed border-neutral-900 rounded-3xl bg-neutral-900/10 flex flex-col items-center justify-center">
@@ -1168,7 +1169,7 @@ export default function ProjectsPage() {
             </div>
           )}
         </div>
-      )}
+      ) : null}
 
       {/* CREATE DIALOG MODAL */}
       {isModalOpen && (
@@ -1643,31 +1644,34 @@ export default function ProjectsPage() {
         </div>
       )}
 
-      {/* GITHUB STYLE EXPLORER MODAL */}
+      {/* INLINE GITHUB STYLE REPOSITORY IDE WORKSPACE */}
       {viewingProject && (
-        <div className="fixed inset-0 lg:left-64 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm select-none">
-          <div className="w-full max-w-5xl bg-neutral-900 border border-neutral-855 rounded-2xl shadow-2xl overflow-hidden relative flex flex-col h-[95vh] sm:h-[85vh]">
+        <div className="p-4 sm:p-8 max-w-6xl w-full mx-auto flex-1 select-none z-20 relative">
+          <div className="w-full bg-[#07070a] border border-white/10 rounded-[2.5rem] p-2.5 backdrop-blur-3xl shadow-2xl overflow-hidden relative flex flex-col min-h-[700px] h-[80vh]">
             <div className="h-px bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-500 w-full shrink-0" />
 
             {/* GitHub Header */}
-            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-neutral-850 shrink-0 bg-neutral-900">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-white/5 shrink-0 bg-zinc-950/80">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <BookOpen className="h-4 w-4 text-cyan-400 shrink-0" />
-                <h3 className="text-xs sm:text-sm font-bold text-neutral-200 tracking-tight truncate" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <Button onClick={closeProjectViewer} variant="ghost" className="h-8 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold gap-1 px-3 rounded-full border border-cyan-500/20 bg-cyan-500/10">
+                  <ChevronLeft className="size-4" /> Back
+                </Button>
+                <BookOpen className="h-4 w-4 text-cyan-400 shrink-0 ml-1" />
+                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">
                   {viewingProject.owner.name} / {viewingProject.title.toLowerCase().replace(/\s+/g, "-")}
                 </h3>
                 {viewingProject.isPremium ? (
-                  <span className="text-[8px] bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-400 px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Premium
                   </span>
                 ) : (
-                  <span className="text-[8px] bg-neutral-800 border border-neutral-750 text-neutral-500 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-zinc-800 border border-white/10 text-zinc-400 px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Free
                   </span>
                 )}
               </div>
 
-              <button onClick={closeProjectViewer} className="text-neutral-500 hover:text-neutral-200 p-1 rounded-lg transition-colors shrink-0 cursor-pointer">
+              <button onClick={closeProjectViewer} className="text-zinc-500 hover:text-white p-1 rounded-lg transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -13,6 +14,7 @@ import {
   CheckCircle,
   ArrowRight,
   ClipboardList,
+  ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -37,7 +39,6 @@ export default function PlannerPage() {
   const [isCommitting, setIsCommitting] = useState<boolean>(false);
   const [isCommitted, setIsCommitted] = useState<boolean>(false);
 
-  // Auto-generate on load if data is empty (or have user click)
   const handleGeneratePlan = async () => {
     setIsPlanning(true);
     setPlanData(null);
@@ -49,10 +50,18 @@ export default function PlannerPage() {
         headers: { "Content-Type": "application/json" },
       });
 
-      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to generate schedule.");
+        let errMessage = "Failed to generate schedule.";
+        try {
+          const errData = await res.json();
+          if (errData.error) errMessage = errData.error;
+        } catch {
+          // ignore non-JSON body
+        }
+        throw new Error(errMessage);
       }
+
+      const data = await res.json();
 
       setPlanData(data);
       toast.success("AI Daily Plan compiled! Review your timeline.");
@@ -64,13 +73,11 @@ export default function PlannerPage() {
     }
   };
 
-  // Push AI planner items directly into MongoDB via /api/todos POST API
   const handleCommitPlanToTodo = async () => {
     if (!planData) return;
     setIsCommitting(true);
 
     try {
-      // Execute serial POST fetches to register each timeline item into the database Todo list
       for (const item of planData.timeline) {
         const titleText = `[AI Planner] ${item.task} (${item.timeSlot})`;
         const res = await fetch("/api/todos", {
@@ -78,7 +85,7 @@ export default function PlannerPage() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: titleText,
-            reminderAt: null, // Default to null, can be customized
+            reminderAt: null,
           }),
         });
         if (!res.ok) {
@@ -97,196 +104,148 @@ export default function PlannerPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll p-4 sm:p-6 lg:p-8 select-none relative">
-      
-      {/* Decorative gradients */}
-      <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] bg-violet-600/5 rounded-full filter blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] left-[-10%] w-[400px] h-[400px] bg-cyan-600/4 rounded-full filter blur-[120px] pointer-events-none" />
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+      </div>
 
-      {/* Page Header */}
-      <header className="mb-6 sm:mb-8 shrink-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Calendar className="h-6 w-6 text-violet-400 animate-pulse" />
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-100 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-              AI Daily Planner
-            </h1>
-            <span className="text-[9px] bg-gradient-to-r from-amber-500/20 to-purple-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/30 font-mono flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-amber-400" /> GEMINI AI PREMIUM
-            </span>
-          </div>
-          <p className="text-xs text-neutral-550 max-w-xl leading-relaxed">
-            Consolidate your studies. The agent parses active Notes documents and outstanding Todo items to generate a customized hourly timeline planner.
-          </p>
-        </div>
-        
-        <Button
-          onClick={handleGeneratePlan}
-          disabled={isPlanning}
-          className="btn-premium-primary text-xs font-bold uppercase tracking-wider h-11 px-6 rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-lg sm:w-auto"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
-        >
-          {isPlanning ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span>Analyzing Workspace...</span>
-            </>
-          ) : (
-            <>
-              <Sparkles className="h-4 w-4" />
-              <span>Generate Today&apos;s Plan</span>
-            </>
-          )}
-        </Button>
-      </header>
-
-      {/* Main Workspace Body */}
-      <main className="flex-1 bg-neutral-900/40 border border-neutral-850 rounded-2xl overflow-hidden flex flex-col shadow-2xl relative z-10 min-h-[450px]">
-        
-        {/* Output Header Panel */}
-        <div className="px-5 py-3.5 border-b border-neutral-850 bg-neutral-900/70 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-violet-400 animate-pulse" />
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-widest font-space">
-              Timeline Desk
-            </span>
-          </div>
-
-          {planData && (
-            <span className="text-[10px] text-neutral-500 font-mono">
-              Date Context: {planData.date}
-            </span>
-          )}
-        </div>
-
-        {/* Output Body Content */}
-        <div className="flex-1 p-5 sm:p-6 overflow-y-auto custom-scroll flex flex-col">
-          {isPlanning ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-20 gap-4">
-              <Loader2 className="h-10 w-10 animate-spin text-violet-400" />
-              <div>
-                <p className="text-sm font-bold text-neutral-200 uppercase tracking-widest font-space">AI Planner Agent Running</p>
-                <p className="text-[11px] text-neutral-555 italic mt-1.5">Scanning files structure, fetching checklists, building timeline schedule...</p>
-              </div>
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+              <Calendar className="size-7" />
             </div>
-          ) : !planData ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-28 select-none">
-              <ClipboardList className="h-12 w-12 text-neutral-800 mb-3 animate-pulse opacity-55" />
-              <p className="text-sm font-bold text-neutral-300 uppercase tracking-wider font-space">Today&apos;s Schedule Empty</p>
-              <p className="text-[11px] text-neutral-550 max-w-sm mt-1 leading-relaxed">
-                Click &quot;Generate Today&apos;s Plan&quot; at the top right to start compiling a timeline based on your notes and outstanding checklists.
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                AI Daily Planner
+                <span className="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30 uppercase tracking-widest flex items-center gap-1">
+                  <Sparkles className="size-3 text-amber-400" /> GEMINI AI ENHANCED
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                The AI agent parses your notes and todo items to craft an optimized hourly daily schedule.
               </p>
             </div>
-          ) : (
-            <div className="flex-1 flex flex-col gap-6 animate-fade-in">
-              
-              {/* Daily Focus block */}
-              <div className="bg-neutral-950/60 border border-neutral-855 rounded-2xl p-5 shadow-inner">
-                <h3 className="text-xs font-bold text-violet-400 uppercase tracking-wider font-space mb-2.5 flex items-center gap-1.5">
-                  <Sparkles className="h-4 w-4 text-violet-400" /> Today&apos;s Core Focus
+          </div>
+
+          <Button
+            onClick={handleGeneratePlan}
+            disabled={isPlanning}
+            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+          >
+            {isPlanning ? (
+              <>
+                <Loader2 className="size-4 animate-spin text-zinc-950" />
+                <span>Analyzing Workspace...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4 text-zinc-950" />
+                <span>Generate Today&apos;s Plan</span>
+                <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              </>
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Main Workspace Body */}
+      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+        {isPlanning ? (
+          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-violet-400" />
+            <span className="font-mono text-zinc-400 tracking-widest">COMPILING HOURLY TIMELINE...</span>
+          </div>
+        ) : !planData ? (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
+              <ClipboardList className="size-10 text-zinc-600 animate-pulse" />
+              <h3 className="text-lg font-bold text-white">Schedule Empty</h3>
+              <p className="text-xs text-zinc-400 font-light max-w-xs leading-relaxed">
+                Click &quot;Generate Today&apos;s Plan&quot; above to compile your personalized study timeline based on workspace notes and pending tasks.
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Core Focus Header */}
+            <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-6 space-y-2">
+                <h3 className="text-xs font-mono font-bold text-violet-400 uppercase tracking-widest flex items-center gap-2">
+                  <Sparkles className="size-4 text-violet-400" /> Today&apos;s Core Focus
                 </h3>
-                <p className="text-xs text-neutral-300 leading-relaxed font-sans select-text">
-                  {planData.focus}
-                </p>
+                <p className="text-xs text-zinc-300 font-light leading-relaxed">{planData.focus}</p>
               </div>
+            </div>
 
-              {/* Timeline list section */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {planData.timeline.map((item, idx) => {
-                  let iconElement = <Sun className="h-5 w-5 text-amber-500" />;
-                  
-                  if (item.timeSlot === "Afternoon") {
-                    iconElement = <Sunset className="h-5 w-5 text-yellow-500" />;
-                  } else if (item.timeSlot === "Evening") {
-                    iconElement = <Moon className="h-5 w-5 text-indigo-400" />;
-                  }
+            {/* Timeline Item Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {planData.timeline.map((item, idx) => {
+                let iconElement = <Sun className="size-5 text-amber-400" />;
+                if (item.timeSlot === "Afternoon") {
+                  iconElement = <Sunset className="size-5 text-yellow-400" />;
+                } else if (item.timeSlot === "Evening") {
+                  iconElement = <Moon className="size-5 text-violet-400" />;
+                }
 
-                  return (
-                    <div 
-                      key={idx} 
-                      className="bg-neutral-950/20 border border-neutral-850 p-5 rounded-2xl flex flex-col justify-between gap-5 relative hover:border-violet-500/20 transition-all shadow-md group"
-                    >
-                      {/* Slots Header */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-neutral-900 border border-neutral-800 flex items-center justify-center flex-shrink-0">
+                return (
+                  <div key={idx} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full">
+                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-4 flex flex-col justify-between h-full">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
                             {iconElement}
+                            <span className="text-xs font-mono font-bold text-white uppercase tracking-wider">{item.timeSlot}</span>
                           </div>
-                          <span className="text-[10px] font-bold text-neutral-200 uppercase tracking-widest font-space">
-                            {item.timeSlot}
+                          <span className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
+                            <Clock className="size-3 text-cyan-400" /> {item.estimatedMinutes}m
                           </span>
                         </div>
-                        <span className="text-[9px] bg-neutral-900 border border-neutral-800 text-neutral-450 font-bold px-2 py-0.5 rounded font-mono">
-                          {item.estimatedMinutes} mins
-                        </span>
-                      </div>
 
-                      {/* Info section */}
-                      <div className="space-y-2 select-text flex-1">
-                        <h4 className="text-xs sm:text-sm font-bold text-neutral-205 leading-snug group-hover:text-violet-400 transition-colors">
-                          {item.task}
-                        </h4>
-                        <p className="text-[11px] text-neutral-450 leading-relaxed font-sans">
-                          {item.reason}
-                        </p>
-                      </div>
-
-                      {/* Time slot metadata info */}
-                      <div className="flex items-center gap-1.5 text-[9px] font-mono text-neutral-600 border-t border-neutral-900/60 pt-2.5 select-none">
-                        <Clock className="h-3 w-3" />
-                        <span>Recommended target duration</span>
+                        <h4 className="text-sm font-bold text-white">{item.task}</h4>
+                        <p className="text-xs text-zinc-400 font-light leading-relaxed">{item.reason}</p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Commit Synchronizer footer block */}
-              <div className="mt-auto pt-6 border-t border-neutral-850/60 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-start gap-2.5">
-                  <div className="h-9 w-9 rounded-full bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shrink-0">
-                    <ClipboardList className="h-4.5 w-4.5" />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-neutral-200 font-space uppercase">Checklist database sync</p>
-                    <p className="text-[10px] text-neutral-550 max-w-sm leading-relaxed mt-0.5">Commit these generated plan items directly to your Todo checklist database as actionable checklist tasks.</p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={handleCommitPlanToTodo}
-                  disabled={isCommitting || isCommitted}
-                  className={`w-full sm:w-auto h-10 px-6 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shadow-lg transition-all ${
-                    isCommitted 
-                      ? "bg-green-500/10 border border-green-500/30 text-green-400 cursor-default" 
-                      : "btn-premium-primary"
-                  }`}
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  {isCommitting ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Syncing tasks...</span>
-                    </>
-                  ) : isCommitted ? (
-                    <>
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      <span>Committed to Todos</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>Commit Plan to Todo List</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </>
-                  )}
-                </Button>
-              </div>
-
+                );
+              })}
             </div>
-          )}
-        </div>
-      </main>
 
+            {/* Commit to Todo Action */}
+            <div className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div>
+                <h4 className="text-sm font-bold text-white">Commit Timeline to Checklist</h4>
+                <p className="text-xs text-zinc-400 font-light mt-0.5">Export these AI scheduled tasks directly into your interactive Todo Checklist.</p>
+              </div>
+
+              <Button
+                onClick={handleCommitPlanToTodo}
+                disabled={isCommitting || isCommitted}
+                className={`rounded-full text-xs font-bold px-6 h-11 transition-all ${
+                  isCommitted
+                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                    : "bg-white hover:bg-zinc-100 text-zinc-950 active:scale-[0.97]"
+                }`}
+              >
+                {isCommitting ? (
+                  <Loader2 className="size-4 animate-spin text-zinc-950" />
+                ) : isCommitted ? (
+                  <>
+                    <CheckCircle className="size-4 mr-2" /> Tasks Committed
+                  </>
+                ) : (
+                  <>
+                    <span>Commit Tasks</span>
+                    <ArrowRight className="size-4 ml-2" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

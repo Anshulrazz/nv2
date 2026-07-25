@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
-import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Settings, Download, ScrollText } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -57,7 +58,6 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<"analytics" | "users" | "moderation" | "settings" | "audit" | "export">("analytics");
   const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
-  // States data caches
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [flaggedNotes, setFlaggedNotes] = useState<FlaggedItem[]>([]);
@@ -148,7 +148,6 @@ export default function AdminPage() {
     }
   }, [activeTab, interval, session, isMounted, fetchTabDetails]);
 
-  // Operations actions
   const handleUserModify = async (targetUserId: string, action: string, role?: string) => {
     try {
       const res = await fetch("/api/admin/users", {
@@ -199,7 +198,7 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ key, value: nextVal }),
+        body: JSON.stringify({ [key]: nextVal }),
       });
       if (res.ok) {
         setSiteSettings((prev) => ({ ...prev, [key]: nextVal }));
@@ -209,526 +208,322 @@ export default function AdminPage() {
     }
   };
 
-  if (status === "loading" || !isMounted) {
-    return (
-      <div className="flex-1 flex items-center justify-center bg-zinc-950 text-zinc-550 select-none font-semibold text-xs gap-2">
-        <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
-        <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>INITIALIZING OPERATIONAL SYSTEM...</span>
-      </div>
-    );
-  }
-
-  if (!session || session.user?.role !== "admin") {
-    return (
-      <div className="flex items-center justify-center h-full text-neutral-400 select-none font-medium text-lg">
-        Access denied: Admins only.
-      </div>
-    );
-  }
+  const handleExportData = async (format: "csv" | "json") => {
+    try {
+      const res = await fetch(`/api/admin/export?format=${format}`);
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `nottexia-db-export-${Date.now()}.${format}`;
+        a.click();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-hidden select-none relative">
-      {/* Ambient background glows */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[300px] bg-red-500/3 rounded-full blur-[120px] pointer-events-none" />
+    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      {/* Background Ambient Mesh Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-rose-500/10 rounded-full blur-[140px]" />
+      </div>
 
-      {/* Top Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md px-8 py-6 shrink-0 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 z-10">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="h-5 w-5 text-red-400 neon-pulse" />
-            <h1
-              className="text-xl font-bold text-neutral-100 tracking-tight"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              Operations Center
-            </h1>
+      {/* Header Banner */}
+      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-rose-400">
+              <ShieldAlert className="size-7" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+                Admin Panel
+                <span className="text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 px-3 py-1 rounded-full border border-rose-500/30 uppercase tracking-widest">
+                  COMMAND CENTER
+                </span>
+              </h1>
+              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
+                Oversee platform telemetry, manage user permissions, moderate flagged content, and review audit logs.
+              </p>
+            </div>
           </div>
-          <p className="text-neutral-500 text-xs">Manage active user permissions, moderate flags queue, and export stats summaries.</p>
         </div>
+      </div>
 
-        {/* Tab triggers */}
-        <div className="flex items-center gap-1 border border-neutral-900 bg-neutral-950/40 p-1 rounded-xl max-w-full overflow-x-auto custom-scroll shrink-0 whitespace-nowrap">
-          {(["analytics", "users", "moderation", "settings", "audit", "export"] as const).map((tab) => (
+      {/* Navigation Sub-Tabs */}
+      <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-8 relative z-10">
+        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none">
+          {[
+            { id: "analytics", label: "Analytics & Telemetry" },
+            { id: "users", label: "User Management" },
+            { id: "moderation", label: "Content Moderation" },
+            { id: "settings", label: "System Settings" },
+            { id: "audit", label: "Audit Log Records" },
+            { id: "export", label: "Database Export" },
+          ].map((tab) => (
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-[9px] font-bold px-3 py-1.5 rounded-lg uppercase tracking-widest transition-all ${
-                activeTab === tab
-                  ? "bg-neutral-900 border border-neutral-800 text-neutral-100 font-extrabold"
-                  : "text-neutral-500 hover:text-neutral-300"
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as typeof activeTab)}
+              className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "bg-white/10 border border-white/20 text-white shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-300 border border-transparent"
               }`}
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
-              {tab}
+              {tab.label}
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Main scrolling viewport content */}
-      <div className="flex-1 overflow-y-auto p-4 sm:p-8 max-w-5xl w-full mx-auto custom-scroll z-10 relative">
-        {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-neutral-500 text-xs font-semibold gap-2">
-            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
-            <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>SYNCING OPERATIONAL DATA...</span>
-          </div>
-        ) : (
-          <div className="space-y-8 animate-fade-in">
-            {/* TAB: ANALYTICS OVERVIEW */}
-            {activeTab === "analytics" && stats && (
-              <div className="space-y-8">
-                {/* Interval toggle */}
-                <div className="flex justify-between items-center border-b border-neutral-900 pb-3">
-                  <span
-                    className="text-xs font-bold text-neutral-300 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
+        {/* Tab 1: Analytics & Telemetry */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            <div className="flex justify-end select-none">
+              <div className="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-full border border-white/10">
+                {(["daily", "monthly", "yearly"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => setInterval(mode)}
+                    className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider transition-all ${
+                      interval === mode ? "bg-white text-zinc-950" : "text-zinc-500 hover:text-white"
+                    }`}
                   >
-                    KPI Growth Aggregations
-                  </span>
-                  <div className="flex items-center gap-1 border border-neutral-850 bg-neutral-950 p-0.5 rounded-lg">
-                    {(["daily", "monthly", "yearly"] as const).map((mode) => (
-                      <button
-                        key={mode}
-                        onClick={() => setInterval(mode)}
-                        className={`text-[9px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider transition-all ${
-                          interval === mode ? "bg-neutral-800 text-neutral-100" : "text-neutral-500 hover:text-neutral-300"
-                        }`}
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        {mode}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* KPI Snapshots grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {[
-                    { label: "Total Accounts", value: stats.totals.users, icon: Users, color: "text-cyan-400" },
-                    { label: "Notes Created", value: stats.totals.notes, icon: BookOpen, color: "text-violet-400" },
-                    { label: "Forums Posts", value: stats.totals.forums, icon: MessageSquare, color: "text-indigo-400" },
-                    { label: "Active Doubts", value: stats.totals.doubts, icon: HelpCircle, color: "text-amber-400" },
-                  ].map(({ label, value, icon: Icon, color }) => (
-                    <div key={label} className="bg-neutral-955/30 backdrop-blur-md border border-white/5 hover:border-neutral-800 transition-all duration-300 p-5 rounded-2xl space-y-3 hover:shadow-[0_0_20px_rgba(255,255,255,0.01)]">
-                      <div className="flex items-center justify-between text-neutral-500">
-                        <span
-                          className="text-[9px] font-bold uppercase tracking-widest"
-                          style={{ fontFamily: "var(--font-space-grotesk)" }}
-                        >
-                          {label}
-                        </span>
-                        <Icon className={`h-4 w-4 ${color} opacity-60`} />
-                      </div>
-                      <h2
-                        className="text-2xl font-extrabold text-neutral-100"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
-                      >
-                        {value}
-                      </h2>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Charts Area */}
-                <div className="grid md:grid-cols-2 gap-8">
-                  <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 p-6 rounded-2xl space-y-4 shadow-lg">
-                    <h3
-                      className="text-xs font-bold text-neutral-350 uppercase tracking-widest"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
-                      Account Registrations
-                    </h3>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={stats.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                          <defs>
-                            <linearGradient id="colorUsers" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1c1c1f" />
-                          <XAxis dataKey="label" stroke="#52525b" fontSize={9} tickLine={false} style={{ fontFamily: "var(--font-jetbrains-mono)" }} />
-                          <YAxis stroke="#52525b" fontSize={9} tickLine={false} style={{ fontFamily: "var(--font-jetbrains-mono)" }} />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "#09090b", border: "1px solid #27272a", borderRadius: "8px", fontSize: "11px", fontFamily: "var(--font-jakarta)" }}
-                          />
-                          <Area type="monotone" dataKey="users" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorUsers)" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-
-                  <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 p-6 rounded-2xl space-y-4 shadow-lg">
-                    <h3
-                      className="text-xs font-bold text-neutral-350 uppercase tracking-widest"
-                      style={{ fontFamily: "var(--font-space-grotesk)" }}
-                    >
-                      Content Contributions
-                    </h3>
-                    <div className="h-64 w-full">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={stats.chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1c1c1f" />
-                          <XAxis dataKey="label" stroke="#52525b" fontSize={9} tickLine={false} style={{ fontFamily: "var(--font-jetbrains-mono)" }} />
-                          <YAxis stroke="#52525b" fontSize={9} tickLine={false} style={{ fontFamily: "var(--font-jetbrains-mono)" }} />
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "#09090b", border: "1px solid #27272a", borderRadius: "8px", fontSize: "11px", fontFamily: "var(--font-jakarta)" }}
-                          />
-                          <Legend wrapperStyle={{ fontSize: "9px", paddingTop: "10px", fontFamily: "var(--font-space-grotesk)" }} />
-                          <Bar dataKey="notes" fill="#818cf8" radius={[4, 4, 0, 0]} name="Notes" />
-                          <Bar dataKey="forums" fill="#a78bfa" radius={[4, 4, 0, 0]} name="Forums" />
-                          <Bar dataKey="doubts" fill="#22d3ee" radius={[4, 4, 0, 0]} name="Doubts" />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </div>
-                </div>
+                    {mode}
+                  </button>
+                ))}
               </div>
-            )}
+            </div>
 
-            {/* TAB: USER MANAGER */}
-            {activeTab === "users" && (
-              <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl overflow-hidden shadow-lg">
-                <div
-                  className="hidden md:grid px-5 py-3.5 border-b border-neutral-900 bg-neutral-900/20 text-[9px] font-bold text-neutral-500 uppercase tracking-widest grid-cols-12"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
-                >
-                  <div className="col-span-4">User Details</div>
-                  <div className="col-span-2">Role</div>
-                  <div className="col-span-2">Points</div>
-                  <div className="col-span-2">Status</div>
-                  <div className="col-span-2 text-right">Actions</div>
-                </div>
-
-                <div className="divide-y divide-neutral-900/60">
-                  {users.map((u) => (
-                    <div key={u._id} className="px-5 py-4 flex flex-col md:grid md:grid-cols-12 gap-3.5 md:gap-0 items-start md:items-center hover:bg-neutral-900/10 transition-all text-xs">
-                      <div className="col-span-4 w-full min-w-0">
-                        <p className="font-bold text-neutral-200" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                          {u.name || "Scholar User"}
-                        </p>
-                        <p className="text-[10px] text-neutral-500 truncate">{u.email}</p>
-                      </div>
-
-                      <div className="col-span-2 w-full md:w-auto flex items-center justify-between md:block">
-                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest md:hidden">Role</span>
-                        <select
-                          value={u.role}
-                          onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
-                          className="bg-neutral-950 border border-neutral-850 rounded-md text-[11px] font-bold text-neutral-350 p-1 focus:outline-none focus:border-cyan-400"
-                          style={{ fontFamily: "var(--font-space-grotesk)" }}
-                        >
-                          <option value="user">User</option>
-                          <option value="teacher">Teacher</option>
-                          <option value="admin">Admin</option>
-                        </select>
-                      </div>
-
-                      <div
-                        className="col-span-2 w-full md:w-auto flex items-center justify-between md:block font-bold text-cyan-400"
-                        style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-                      >
-                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest md:hidden font-sans">Points</span>
-                        <span>{u.points} pts</span>
-                      </div>
-
-                      <div className="col-span-2 w-full md:w-auto flex items-center justify-between md:block select-none">
-                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest md:hidden">Status</span>
-                        {u.isSuspended ? (
-                          <span
-                            className="text-[9px] font-extrabold uppercase bg-red-500/10 border border-red-500/20 text-red-400 px-2 py-0.5 rounded"
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            Suspended
-                          </span>
-                        ) : (
-                          <span
-                            className="text-[9px] font-extrabold uppercase bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded"
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
-                          >
-                            Active
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="col-span-2 w-full md:w-auto flex items-center justify-between md:justify-end gap-2 mt-2 md:mt-0 border-t border-neutral-900/40 pt-3 md:pt-0 md:border-0">
-                        <span className="text-[9px] font-bold text-neutral-500 uppercase tracking-widest md:hidden">Actions</span>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUserModify(u._id, u.isSuspended ? "unsuspend" : "suspend")}
-                            className="h-8 w-8 text-neutral-500 hover:text-neutral-250 hover:bg-neutral-900 rounded-lg transition-colors"
-                          >
-                            <Ban className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleUserDelete(u._id)}
-                            className="h-8 w-8 text-neutral-500 hover:text-red-400 hover:bg-neutral-900 rounded-lg transition-colors"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* TAB: CONTENT MODERATION */}
-            {activeTab === "moderation" && (
-              <div className="space-y-6">
-                <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-5 space-y-4 shadow-lg">
-                  <h3
-                    className="text-xs font-bold text-neutral-350 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    Reported Note Posts ({flaggedNotes.length})
-                  </h3>
-                  {flaggedNotes.length === 0 ? (
-                    <p className="text-xs text-neutral-600 italic py-4">No reported posts in queue.</p>
-                  ) : (
-                    <div className="divide-y divide-neutral-900/60">
-                      {flaggedNotes.map((n) => (
-                        <div key={n._id} className="py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs border-b border-neutral-900/40 last:border-0">
-                          <div className="min-w-0 w-full sm:w-auto">
-                            <p className="font-bold text-neutral-250 truncate" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                              {n.title}
-                            </p>
-                            <p className="text-[10px] text-neutral-500 mt-0.5" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                              Reported on {new Date(n.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="flex gap-2 select-none shrink-0 w-full sm:w-auto justify-end">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleModerationResolve(n._id, "note", "approve")}
-                              className="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white text-[10px] font-bold h-8 rounded-lg transition-colors"
-                              style={{ fontFamily: "var(--font-space-grotesk)" }}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleModerationResolve(n._id, "note", "delete")}
-                              className="bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white text-[10px] font-bold h-8 rounded-lg transition-colors"
-                              style={{ fontFamily: "var(--font-space-grotesk)" }}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-5 space-y-4 shadow-lg">
-                  <h3
-                    className="text-xs font-bold text-neutral-355 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    Reported Comments ({flaggedComments.length})
-                  </h3>
-                  {flaggedComments.length === 0 ? (
-                    <p className="text-xs text-neutral-600 italic py-4">No reported comments in queue.</p>
-                  ) : (
-                    <div className="divide-y divide-neutral-900/60">
-                      {flaggedComments.map((c) => (
-                        <div key={c._id} className="py-3.5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs border-b border-neutral-900/40 last:border-0">
-                          <div className="min-w-0 w-full sm:w-auto">
-                            <p className="text-neutral-300 italic break-words">&quot;{c.content}&quot;</p>
-                            <p className="text-[10px] text-neutral-505 mt-0.5">
-                              By <strong className="text-neutral-400">{c.userName}</strong> •{" "}
-                              <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                                {new Date(c.createdAt).toLocaleDateString()}
-                              </span>
-                            </p>
-                          </div>
-                          <div className="flex gap-2 select-none shrink-0 w-full sm:w-auto justify-end">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleModerationResolve(c._id, "comment", "approve")}
-                              className="bg-emerald-600/10 hover:bg-emerald-600 text-emerald-400 hover:text-white text-[10px] font-bold h-8 rounded-lg transition-colors"
-                              style={{ fontFamily: "var(--font-space-grotesk)" }}
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleModerationResolve(c._id, "comment", "delete")}
-                              className="bg-red-600/10 hover:bg-red-600 text-red-400 hover:text-white text-[10px] font-bold h-8 rounded-lg transition-colors"
-                              style={{ fontFamily: "var(--font-space-grotesk)" }}
-                            >
-                              Remove
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* TAB: SITE SETTINGS */}
-            {activeTab === "settings" && (
-              <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-6 space-y-5 shadow-lg">
-                <div className="flex items-center gap-2 border-b border-neutral-900/80 pb-3">
-                  <Settings className="h-4 w-4 text-cyan-400" />
-                  <h2
-                    className="text-xs font-bold text-neutral-250 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    Global Configuration Flags
-                  </h2>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Maintenance Mode */}
-                  <div className="flex items-center justify-between border-b border-neutral-900 pb-3 select-none">
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-neutral-100" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                        Maintenance Mode
-                      </h4>
-                      <p className="text-[10px] text-neutral-500 leading-relaxed">Locks access to non-admin users with a maintenance screen.</p>
-                    </div>
-                    <button
-                      onClick={() => handleToggleSiteSetting("maintenanceMode")}
-                      className={`h-5 w-9 rounded-full transition-all relative ${
-                        siteSettings.maintenanceMode ? "bg-red-600" : "bg-neutral-800"
-                      }`}
-                    >
-                      <div
-                        className={`h-4.5 w-4.5 rounded-full bg-neutral-950 absolute top-0.5 transition-all ${
-                          siteSettings.maintenanceMode ? "right-0.5" : "left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Enable Comments */}
-                  <div className="flex items-center justify-between border-b border-neutral-900 pb-3 select-none">
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-neutral-100" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                        Enable Social Commenting
-                      </h4>
-                      <p className="text-[10px] text-neutral-505 leading-relaxed">Allows users to create nested thread comments on public feed notes.</p>
-                    </div>
-                    <button
-                      onClick={() => handleToggleSiteSetting("enableComments")}
-                      className={`h-5 w-9 rounded-full transition-all relative ${
-                        siteSettings.enableComments ? "bg-cyan-500" : "bg-neutral-805"
-                      }`}
-                    >
-                      <div
-                        className={`h-4.5 w-4.5 rounded-full bg-neutral-950 absolute top-0.5 transition-all ${
-                          siteSettings.enableComments ? "right-0.5" : "left-0.5"
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Enable Registrations */}
-                  <div className="flex items-center justify-between select-none">
-                    <div className="space-y-0.5">
-                      <h4 className="text-xs font-bold text-neutral-100" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                        Public Account Registrations
-                      </h4>
-                      <p className="text-[10px] text-neutral-505 leading-relaxed">Enables email/password account registrations on the signup screen.</p>
-                    </div>
-                    <button
-                      onClick={() => handleToggleSiteSetting("enableRegistrations")}
-                      className={`h-5 w-9 rounded-full transition-all relative ${
-                        siteSettings.enableRegistrations ? "bg-cyan-500" : "bg-neutral-805"
-                      }`}
-                    >
-                      <div
-                        className={`h-4.5 w-4.5 rounded-full bg-neutral-950 absolute top-0.5 transition-all ${
-                          siteSettings.enableRegistrations ? "right-0.5" : "left-0.5"
-                        }`}
-                      />
-                    </button>
+            {/* Totals Metric Doppelrand Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+              {[
+                { label: "Total Scholars", val: stats?.totals?.users || 0, icon: Users, color: "text-cyan-400" },
+                { label: "Published Notes", val: stats?.totals?.notes || 0, icon: BookOpen, color: "text-violet-400" },
+                { label: "Forum Discussions", val: stats?.totals?.forums || 0, icon: MessageSquare, color: "text-amber-400" },
+                { label: "Doubt Tickets", val: stats?.totals?.doubts || 0, icon: HelpCircle, color: "text-rose-400" },
+              ].map((card, idx) => (
+                <div key={idx} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl">
+                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-2 text-center">
+                    <card.icon className={`size-6 ${card.color} mx-auto mb-1`} />
+                    <p className="text-2xl font-black text-white font-mono">{card.val}</p>
+                    <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{card.label}</p>
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
 
-            {/* TAB: AUDIT LOGS */}
-            {activeTab === "audit" && (
-              <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-5 space-y-4 shadow-lg">
-                <div className="flex items-center gap-2 border-b border-neutral-900 pb-3">
-                  <ScrollText className="h-4 w-4 text-cyan-400" />
-                  <h3
-                    className="text-xs font-bold text-neutral-350 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    Audit Log Tracker
-                  </h3>
-                </div>
-
-                {auditLogs.length === 0 ? (
-                  <p className="text-xs text-neutral-550 italic py-4">No audit logs recorded.</p>
+            {/* Charts Panel */}
+            <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">
+                  Platform Growth Telemetry ({interval})
+                </h3>
+                {stats?.chartData && isMounted ? (
+                  <div className="h-80 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={stats.chartData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+                        <XAxis dataKey="label" stroke="#71717a" fontSize={10} />
+                        <YAxis stroke="#71717a" fontSize={10} />
+                        <Tooltip contentStyle={{ backgroundColor: "#09090b", borderColor: "#27272a", borderRadius: "1rem" }} />
+                        <Area type="monotone" dataKey="users" stroke="#22d3ee" fill="#22d3ee" fillOpacity={0.15} name="Scholars" />
+                        <Area type="monotone" dataKey="notes" stroke="#a78bfa" fill="#a78bfa" fillOpacity={0.15} name="Notes" />
+                        <Area type="monotone" dataKey="forums" stroke="#fbbf24" fill="#fbbf24" fillOpacity={0.15} name="Forums" />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </div>
                 ) : (
-                  <div className="space-y-3 font-mono text-[10px]">
-                    {auditLogs.map((log) => (
-                      <div key={log._id} className="p-3 bg-neutral-950 border border-neutral-900/60 rounded-xl space-y-1.5">
-                        <div className="flex flex-col sm:flex-row justify-between text-neutral-555 font-bold gap-1">
-                          <span>{log.adminName} ({log.action})</span>
-                          <span>{new Date(log.createdAt).toLocaleString()}</span>
+                  <div className="py-20 flex justify-center">
+                    <Loader2 className="size-8 animate-spin text-rose-400" />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 2: User Management */}
+        {activeTab === "users" && (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="bg-zinc-950/80 text-zinc-400 font-mono text-[10px] uppercase tracking-widest border-b border-white/5">
+                    <tr>
+                      <th className="px-6 py-4 font-bold">User</th>
+                      <th className="px-6 py-4 font-bold">Role</th>
+                      <th className="px-6 py-4 font-bold">Points</th>
+                      <th className="px-6 py-4 font-bold">Status</th>
+                      <th className="px-6 py-4 font-bold text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {users.map((u) => (
+                      <tr key={u._id} className="hover:bg-white/5 transition-colors">
+                        <td className="px-6 py-4 font-bold text-white">
+                          <p className="truncate max-w-[180px]">{u.name}</p>
+                          <p className="text-[10px] font-mono text-zinc-500 font-normal">{u.email}</p>
+                        </td>
+                        <td className="px-6 py-4">
+                          <select
+                            value={u.role}
+                            onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
+                            className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${
+                              u.role === "admin"
+                                ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
+                                : u.role === "teacher"
+                                ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                                : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
+                            }`}
+                          >
+                            <option value="user" className="bg-zinc-950 text-cyan-400 font-mono">User (Student)</option>
+                            <option value="teacher" className="bg-zinc-950 text-amber-400 font-mono">Teacher (Instructor)</option>
+                            <option value="admin" className="bg-zinc-950 text-rose-400 font-mono">Admin</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold text-amber-400">{u.points} pts</td>
+                        <td className="px-6 py-4">
+                          {u.isSuspended ? (
+                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase">
+                              Suspended
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                              Active
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUserModify(u._id, u.isSuspended ? "unsuspend" : "suspend")}
+                            className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-xs text-zinc-300"
+                          >
+                            <Ban className="size-3.5 mr-1" /> {u.isSuspended ? "Unsuspend" : "Suspend"}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleUserDelete(u._id)}
+                            className="bg-zinc-900 border-white/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Content Moderation Queue */}
+        {activeTab === "moderation" && (
+          <div className="space-y-6">
+            <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl space-y-4">
+              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-4">
+                <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">
+                  Flagged Notes Queue ({flaggedNotes.length})
+                </h3>
+                {flaggedNotes.length === 0 ? (
+                  <p className="text-xs text-zinc-500 italic">No flagged notes currently in queue.</p>
+                ) : (
+                  <div className="space-y-3">
+                    {flaggedNotes.map((item) => (
+                      <div key={item._id} className="p-4 bg-zinc-950 rounded-2xl border border-white/5 flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-bold text-white">{item.title || "Untitled Note"}</p>
+                          <p className="text-[10px] font-mono text-zinc-500">By {item.userName}</p>
                         </div>
-                        <p className="text-neutral-300">{log.details}</p>
+                        <div className="flex gap-2">
+                          <Button size="sm" onClick={() => handleModerationResolve(item._id, "note", "approve")} className="rounded-full bg-emerald-500 text-zinc-950 text-xs font-bold px-4">
+                            Approve
+                          </Button>
+                          <Button size="sm" onClick={() => handleModerationResolve(item._id, "note", "delete")} className="rounded-full bg-rose-500 text-white text-xs font-bold px-4">
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          </div>
+        )}
 
-            {/* TAB: EXPORTS CENTER */}
-            {activeTab === "export" && (
-              <div className="bg-neutral-955/30 backdrop-blur-md border border-white/5 rounded-2xl p-6 space-y-5 shadow-lg">
-                <div className="flex items-center gap-2 border-b border-neutral-900 pb-3 select-none">
-                  <Download className="h-4 w-4 text-cyan-400" />
-                  <h3
-                    className="text-xs font-bold text-neutral-350 uppercase tracking-widest"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
+        {/* Tab 4: System Settings */}
+        {activeTab === "settings" && (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">Platform Operations Toggles</h3>
+
+              {[
+                { key: "maintenanceMode", label: "Maintenance Mode", desc: "Restrict student traffic to read-only mode." },
+                { key: "enableComments", label: "Public Comments", desc: "Allow discussions on notes and blogs." },
+                { key: "enableRegistrations", label: "Student Registrations", desc: "Allow new student account signups." },
+              ].map((setting) => (
+                <div key={setting.key} className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <div>
+                    <p className="text-xs font-bold text-white">{setting.label}</p>
+                    <p className="text-[10px] font-mono text-zinc-500">{setting.desc}</p>
+                  </div>
+                  <button
+                    onClick={() => handleToggleSiteSetting(setting.key)}
+                    className={`h-6 w-11 rounded-full transition-all relative ${siteSettings[setting.key] ? "bg-emerald-500" : "bg-zinc-800"}`}
                   >
-                    CSV Data Backup Console
-                  </h3>
+                    <div className={`size-4 bg-zinc-950 rounded-full absolute top-1 transition-all ${siteSettings[setting.key] ? "right-1" : "left-1"}`} />
+                  </button>
                 </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <a
-                    href="/api/admin/export?target=users"
-                    download="nottexia-users-export.csv"
-                    className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-900 hover:border-cyan-400/35 rounded-2xl text-xs font-bold text-neutral-300 hover:text-neutral-100 transition-all shadow-lg"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    <span>Export Accounts register (.csv)</span>
-                    <Download className="h-4 w-4 text-neutral-500" />
-                  </a>
-
-                  <a
-                    href="/api/admin/export?target=notes"
-                    download="nottexia-posts-export.csv"
-                    className="flex items-center justify-between p-4 bg-neutral-950 border border-neutral-900 hover:border-cyan-400/35 rounded-2xl text-xs font-bold text-neutral-300 hover:text-neutral-100 transition-all shadow-lg"
-                    style={{ fontFamily: "var(--font-space-grotesk)" }}
-                  >
-                    <span>Export Published Posts logs (.csv)</span>
-                    <Download className="h-4 w-4 text-neutral-500" />
-                  </a>
-                </div>
+        {/* Tab 5: Audit Log Records */}
+        {activeTab === "audit" && (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-4">
+              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest">System Audit Log History</h3>
+              <div className="space-y-3">
+                {auditLogs.map((log) => (
+                  <div key={log._id} className="p-4 bg-zinc-950 rounded-2xl border border-white/5 flex items-center justify-between text-xs">
+                    <div>
+                      <p className="font-bold text-white">{log.action}</p>
+                      <p className="text-[10px] font-mono text-zinc-500">{log.details}</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-zinc-500">{new Date(log.createdAt).toLocaleString()}</span>
+                  </div>
+                ))}
               </div>
-            )}
+            </div>
+          </div>
+        )}
+
+        {/* Tab 6: Database Export */}
+        {activeTab === "export" && (
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+              <Download className="size-10 text-cyan-400 mx-auto" />
+              <div>
+                <h3 className="text-lg font-bold text-white">Database Backup &amp; Export</h3>
+                <p className="text-xs text-zinc-400 font-light mt-1">Export full database records in CSV or JSON format.</p>
+              </div>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={() => handleExportData("csv")} className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-5">
+                  Export CSV
+                </Button>
+                <Button onClick={() => handleExportData("json")} className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/10 font-bold text-xs h-10 px-5">
+                  Export JSON
+                </Button>
+              </div>
+            </div>
           </div>
         )}
       </div>
