@@ -62,7 +62,7 @@ export function GoogleAdBanner({
     return null;
   }
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID || "ca-pub-0000000000000000";
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID || "ca-pub-1957290146491296";
 
   return (
     <div className={`w-full my-4 flex flex-col items-center justify-center select-none ${className}`}>
