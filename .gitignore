@@ -24,7 +24,10 @@
 /.gemini
 /.obsidian
 /.agent/
-/.agent/skills
+/.agent/skills/
+.agents/
+.agents/skills/
+.agents/skills/
 
 # production
 /build
