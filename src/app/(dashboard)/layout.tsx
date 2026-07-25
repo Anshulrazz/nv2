@@ -60,7 +60,7 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden cyber-grid">
+    <div suppressHydrationWarning className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden cyber-grid">
       <PusherListener />
       <CallWrapper />
       {/* ── Premium Background Glow Shapes ── */}

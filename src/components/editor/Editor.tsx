@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import { toast } from "sonner";
 import {
   Bold,
   Italic,
@@ -22,6 +23,11 @@ import {
   Link as LinkIcon,
   Image as ImageIcon,
   Loader2,
+  Sparkles,
+  Wand2,
+  FileText,
+  CheckSquare,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -35,6 +41,8 @@ interface EditorProps {
 export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorProps) {
   const [title, setTitle] = useState(initialTitle);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAiWriting, setIsAiWriting] = useState(false);
+  const [showAiMenu, setShowAiMenu] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(false);
 
@@ -116,6 +124,52 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
     }
   };
 
+  const handleAiAction = async (action: "continue" | "summarize" | "improve" | "action_items") => {
+    if (!editor || isAiWriting) return;
+    const textContent = editor.getText();
+    if (!textContent || textContent.trim() === "") {
+      toast.error("Please add some text to your note before using Smart AI Writer.");
+      return;
+    }
+
+    setIsAiWriting(true);
+    setShowAiMenu(false);
+    const toastId = toast.loading("Gemini AI Smart Writer working...");
+
+    try {
+      const res = await fetch("/api/notes/ai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, text: textContent, title }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.isPremiumRequired) {
+          toast.error(data.error || "Premium membership required.", { id: toastId });
+        } else {
+          toast.error(data.error || "AI Writing request failed.", { id: toastId });
+        }
+        return;
+      }
+
+      if (data.result) {
+        if (action === "continue") {
+          editor.chain().focus().insertContent(`\n\n${data.result}`).run();
+        } else {
+          editor.chain().focus().insertContent(`\n\n<hr /><p><strong>AI ${action.toUpperCase()}:</strong></p><p>${data.result.replace(/\n/g, "<br/>")}</p>`).run();
+        }
+        triggerAutosave(title, editor.getJSON());
+        toast.success("AI Writing generated successfully!", { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Error generating AI content.", { id: toastId });
+    } finally {
+      setIsAiWriting(false);
+    }
+  };
+
   const setLink = () => {
     if (!editor) return;
     const previousUrl = editor.getAttributes("link").href;
@@ -158,7 +212,65 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
       </div>
 
       {/* Rich Text Toolbar */}
-      <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-zinc-900 bg-zinc-900/20 shrink-0 select-none">
+      <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-zinc-900 bg-zinc-900/20 shrink-0 select-none relative">
+        {/* Smart AI Writer Menu Button */}
+        <div className="relative">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowAiMenu(!showAiMenu)}
+            disabled={isAiWriting}
+            className="h-8 px-2.5 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-300 font-bold text-xs gap-1.5 rounded-lg transition-all"
+          >
+            {isAiWriting ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+            )}
+            <span>AI Writer</span>
+            <ChevronDown className="h-3 w-3 text-indigo-400" />
+          </Button>
+
+          {showAiMenu && (
+            <div className="absolute top-10 left-0 z-50 w-52 bg-zinc-900 border border-zinc-800 rounded-xl p-1.5 shadow-2xl space-y-1">
+              <button
+                type="button"
+                onClick={() => handleAiAction("continue")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+              >
+                <Wand2 className="h-3.5 w-3.5 text-indigo-400" />
+                <span>Continue Writing</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAiAction("summarize")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+              >
+                <FileText className="h-3.5 w-3.5 text-cyan-400" />
+                <span>Summarize Note</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAiAction("improve")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+              >
+                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
+                <span>Improve & Polish</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleAiAction("action_items")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+              >
+                <CheckSquare className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Extract Action Items</span>
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
         <Button
           size="icon"
           variant="ghost"

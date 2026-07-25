@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import Anthropic from "@anthropic-ai/sdk";
+import { verifyPremiumUser } from "@/lib/premium";
+import { generateGeminiContent } from "@/lib/gemini";
 
 export const dynamic = "force-dynamic";
 
@@ -128,24 +129,36 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Verify Premium Membership
+    const { isPremium } = await verifyPremiumUser(userId);
+    if (!isPremium) {
+      return NextResponse.json(
+        {
+          error: "YouTube AI Study Digest is an exclusive Premium feature. Upgrade to Premium to unlock Gemini AI video digestion!",
+          isPremiumRequired: true,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { url } = body;
 
-    if (!url || typeof url !== "string") {
-      return NextResponse.json({ error: "YouTube video URL is required." }, { status: 400 });
+    if (!url || typeof url !== "string" || !url.trim()) {
+      return NextResponse.json({ error: "YouTube URL is required." }, { status: 400 });
     }
 
     const videoId = extractVideoId(url);
     if (!videoId) {
-      return NextResponse.json({ error: "Invalid YouTube URL format. Please paste a standard watch or share link." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid YouTube URL format." }, { status: 400 });
     }
 
-    let videoTitle = "YouTube Video Lecture";
-    let authorName = "Video Creator";
-    let oEmbedThumbnail = "";
+    // Fetch video metadata via oEmbed
+    let videoTitle = "Educational YouTube Video";
+    let authorName = "YouTube Creator";
+    let oEmbedThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
     try {
-      // Fetch metadata from YouTube's keyless oEmbed API
       const oEmbedUrl = `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`;
       const metaRes = await fetch(oEmbedUrl);
       if (metaRes.ok) {
@@ -158,75 +171,79 @@ export const POST = auth(async function POST(req) {
       console.warn("YouTube oEmbed fetch failed, using fallbacks:", metaErr);
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const systemPrompt = `You are Notexia's smart YouTube study assistant. Analyze the video details provided by the user. 
+    Using your knowledge on the topic of the video, generate a comprehensive educational package in strict, clean JSON format. 
+    Do NOT include any conversational preamble or markdown code blocks. Return only raw JSON.`;
 
-    // 1. Fallback simulated compiler if API key is missing
-    if (!apiKey || apiKey === "placeholder" || apiKey === "") {
-      const fallbackResult = generateFallbackStudyPackage(videoTitle, authorName, url, videoId);
-      // Simulate delay for generating the stack
-      await new Promise(r => setTimeout(r, 1500));
-      return NextResponse.json(fallbackResult);
-    }
-
-    // 2. Query Claude for comprehensive study JSON structures
-    const anthropic = new Anthropic({ apiKey });
-    const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 4096,
-      system: `You are Notexia's smart YouTube study assistant. Analyze the video details provided by the user. 
-      Using your knowledge on the topic of the video, generate a comprehensive educational package in strict, clean JSON format. 
-      Do NOT include any conversational preamble or markdown blocks. Return only raw JSON.`,
-      messages: [
+    const userPrompt = `Generate highly detailed study materials based on this YouTube video metadata:
+    - Video Title: "${videoTitle}"
+    - Creator/Channel: "${authorName}"
+    
+    Required Output Schema:
+    {
+      "title": "${videoTitle}",
+      "author": "${authorName}",
+      "thumbnailUrl": "${oEmbedThumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}",
+      "summary": "A highly detailed, comprehensive 4-5 paragraph summary of the topic/lessons covered in the video, explaining context in depth.",
+      "keyPoints": [
+        { "term": "Concept Term Name", "definition": "In-depth explanation of the term." }
+      ],
+      "notes": "An exhaustive, highly structured lecture-mode markdown document summarizing the entire topic, including clear headers (H3, H4), detailed explanations, lists, and examples. Minimum 8-10 substantial paragraphs.",
+      "quiz": [
         {
-          role: "user",
-          content: `Generate highly detailed study materials based on this YouTube video metadata:
-          - Video Title: "${videoTitle}"
-          - Creator/Channel: "${authorName}"
-          
-          Required Output Schema:
-          {
-            "title": "${videoTitle}",
-            "author": "${authorName}",
-            "thumbnailUrl": "${oEmbedThumbnail || `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}",
-            "summary": "A highly detailed, comprehensive 4-5 paragraph summary of the topic/lessons covered in the video, explaining context in depth.",
-            "keyPoints": [
-              { "term": "Concept Term Name", "definition": "In-depth explanation of the term." }
-            ],
-            "notes": "An exhaustive, highly structured lecture-mode markdown document summarizing the entire topic, including clear headers (H3, H4), detailed explanations, lists, and examples. Minimum 8-10 substantial paragraphs.",
-            "quiz": [
-              {
-                "question": "Comprehension question based on the topic",
-                "options": ["Choice A", "Choice B", "Choice C", "Choice D"],
-                "correctAnswerIndex": 0,
-                "explanation": "Detailed explanation of why the selected choice is correct."
-              }
-            ]
-          }
-          
-          Provide exactly 10 keyPoints and exactly 10 quiz questions. Ensure the JSON is clean and valid.`
+          "question": "Comprehension question based on the topic",
+          "options": ["Choice A", "Choice B", "Choice C", "Choice D"],
+          "correctAnswerIndex": 0,
+          "explanation": "Detailed explanation of why the selected choice is correct."
         }
       ]
-    });
-
-    let rawText = response.content[0].type === "text" ? response.content[0].text : "";
+    }
     
-    // Strip markdown code blocks if Claude wraps them
-    if (rawText.startsWith("```json")) {
-      rawText = rawText.substring(7);
-    }
-    if (rawText.endsWith("```")) {
-      rawText = rawText.substring(0, rawText.length - 3);
-    }
-    rawText = rawText.trim();
+    Provide exactly 10 keyPoints and exactly 10 quiz questions. Ensure the JSON is clean and valid.`;
 
-    try {
-      const parsed = JSON.parse(rawText);
-      return NextResponse.json(parsed);
-    } catch (parseErr) {
-      console.error("Failed to parse JSON from Claude response:", parseErr, rawText);
-      const fallbackResult = generateFallbackStudyPackage(videoTitle, authorName, url, videoId);
-      return NextResponse.json(fallbackResult);
+    // 1. Try Gemini API
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && geminiKey !== "placeholder" && geminiKey.trim() !== "") {
+      try {
+        const rawJson = await generateGeminiContent({
+          systemPrompt,
+          userPrompt,
+          jsonMode: true,
+        });
+
+        const cleaned = rawJson.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(cleaned);
+        return NextResponse.json(parsed);
+      } catch (geminiErr) {
+        console.warn("Gemini YouTube digest failed, trying Anthropic fallback:", geminiErr);
+      }
     }
+
+    // 2. Try Anthropic API
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (apiKey && apiKey !== "placeholder" && apiKey !== "") {
+      try {
+        const Anthropic = (await import("@anthropic-ai/sdk")).default;
+        const anthropic = new Anthropic({ apiKey });
+        const response = await anthropic.messages.create({
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 4096,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }],
+        });
+
+        let rawText = response.content[0].type === "text" ? response.content[0].text : "";
+        rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(rawText);
+        return NextResponse.json(parsed);
+      } catch (anthropicErr) {
+        console.warn("Anthropic YouTube digest failed:", anthropicErr);
+      }
+    }
+
+    // 3. Fallback Compiler
+    const fallbackResult = generateFallbackStudyPackage(videoTitle, authorName, url, videoId);
+    return NextResponse.json(fallbackResult);
   } catch (error) {
     console.error("YouTube Learning API error:", error);
     return NextResponse.json({ error: "Failed to digest YouTube video." }, { status: 500 });

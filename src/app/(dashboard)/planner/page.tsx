@@ -111,6 +111,9 @@ export default function PlannerPage() {
             <h1 className="text-xl sm:text-2xl font-bold text-neutral-100 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
               AI Daily Planner
             </h1>
+            <span className="text-[9px] bg-gradient-to-r from-amber-500/20 to-purple-500/20 text-amber-300 font-bold px-2 py-0.5 rounded border border-amber-500/30 font-mono flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-amber-400" /> GEMINI AI PREMIUM
+            </span>
           </div>
           <p className="text-xs text-neutral-550 max-w-xl leading-relaxed">
             Consolidate your studies. The agent parses active Notes documents and outstanding Todo items to generate a customized hourly timeline planner.

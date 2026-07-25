@@ -340,6 +340,9 @@ export default function YouTubeLearningPage() {
           <h1 className="text-xl sm:text-2xl font-bold text-neutral-100 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
             YouTube Learning Workspace
           </h1>
+          <span className="text-[9px] bg-gradient-to-r from-red-500/20 to-amber-500/20 text-red-300 font-bold px-2 py-0.5 rounded border border-red-500/30 font-mono flex items-center gap-1">
+            <Film className="h-3 w-3 text-red-400" /> GEMINI AI PREMIUM
+          </span>
         </div>
         <p className="text-xs text-neutral-550 max-w-xl leading-relaxed">
           Paste any YouTube tutorial URL to retrieve video details, generate notes, summarize core lessons, list key glossary terms, and test your knowledge.

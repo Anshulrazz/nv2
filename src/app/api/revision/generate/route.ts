@@ -5,6 +5,9 @@ import { Note } from "@/models/Note";
 import Anthropic from "@anthropic-ai/sdk";
 import { isValidObjectId } from "@/lib/validation";
 
+import { verifyPremiumUser } from "@/lib/premium";
+import { generateGeminiContent } from "@/lib/gemini";
+
 export const dynamic = "force-dynamic";
 
 interface TipTapNode {
@@ -133,25 +136,38 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Verify Premium Membership
+    const { isPremium } = await verifyPremiumUser(userId);
+    if (!isPremium) {
+      return NextResponse.json(
+        {
+          error: "Revision Generator (Cheat Sheets, Flashcards, Quizzes) is an exclusive Premium feature. Upgrade to Premium to unlock Gemini AI!",
+          isPremiumRequired: true,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const { noteId, customText, mode } = body;
 
     if (!mode || !["cheatsheet", "flashcards", "quiz"].includes(mode)) {
-      return NextResponse.json({ error: "Mode must be 'cheatsheet', 'flashcards', or 'quiz'." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid revision mode specified." }, { status: 400 });
     }
-
-    let studyText = "";
-    let noteTitle = "";
 
     await connectToDatabase();
 
-    if (noteId) {
+    let studyText = "";
+    let noteTitle = "Untitled Study Note";
+
+    if (noteId && typeof noteId === "string") {
       if (!isValidObjectId(noteId)) {
-        return NextResponse.json({ error: "Invalid noteId format." }, { status: 400 });
+        return NextResponse.json({ error: "Invalid note ID format." }, { status: 400 });
       }
+
       const note = await Note.findOne({ _id: noteId, userId });
       if (!note) {
-        return NextResponse.json({ error: "Note not found or access forbidden." }, { status: 404 });
+        return NextResponse.json({ error: "Study note not found or access denied." }, { status: 404 });
       }
       noteTitle = note.title;
       studyText = extractText(note.content as TipTapNode) || note.title;
@@ -164,19 +180,6 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Please select a note with content or paste study text." }, { status: 400 });
     }
 
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-
-    // 1. Fallback dynamic mock model in development if key is missing
-    if (!apiKey || apiKey === "placeholder" || apiKey === "") {
-      const fallbackResult = generateFallbackMaterial(studyText, mode, noteTitle);
-      // Add a slight simulation delay
-      await new Promise(r => setTimeout(r, 1200));
-      return NextResponse.json(fallbackResult);
-    }
-
-    // 2. Real Anthropic prompt for JSON outputs
-    const anthropic = new Anthropic({ apiKey });
-    
     let promptDetails = "";
     if (mode === "cheatsheet") {
       promptDetails = `
@@ -231,41 +234,54 @@ export const POST = auth(async function POST(req) {
       `;
     }
 
-    const response = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
-      max_tokens: 4090,
-      system: `You are Notexia's smart study assistant. You generate revision materials (Cheat sheets, Flashcards, and Quizzes) from notes in strict, clean JSON. 
-      Do NOT include any preamble or conversational text. Return only the raw JSON. No markdown blocks.`,
-      messages: [
-        {
-          role: "user",
-          content: `Analyze this content:\n\n${studyText}\n\nTask: ${promptDetails}`
-        }
-      ]
-    });
+    const systemPrompt = `You are Notexia's smart study assistant. You generate revision materials (Cheat sheets, Flashcards, and Quizzes) from notes in strict, clean JSON. 
+    Do NOT include any preamble or conversational text. Return only raw JSON. No markdown code blocks.`;
+    const userPrompt = `Analyze this content:\n\n${studyText}\n\nTask: ${promptDetails}`;
 
-    let rawText = response.content[0].type === "text" ? response.content[0].text : "";
-    
-    // Strip markdown blocks if Claude puts them
-    if (rawText.startsWith("```json")) {
-      rawText = rawText.substring(7);
-    }
-    if (rawText.endsWith("```")) {
-      rawText = rawText.substring(0, rawText.length - 3);
-    }
-    rawText = rawText.trim();
+    // 1. Try Gemini API
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (geminiKey && geminiKey !== "placeholder" && geminiKey.trim() !== "") {
+      try {
+        const rawJson = await generateGeminiContent({
+          systemPrompt,
+          userPrompt,
+          jsonMode: true,
+        });
 
-    try {
-      const parsed = JSON.parse(rawText);
-      return NextResponse.json(parsed);
-    } catch (parseError) {
-      console.error("JSON parsing error from Claude output:", parseError, rawText);
-      // Fallback if AI JSON output is malformed
-      const fallbackResult = generateFallbackMaterial(studyText, mode, noteTitle);
-      return NextResponse.json(fallbackResult);
+        const cleaned = rawJson.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(cleaned);
+        return NextResponse.json(parsed);
+      } catch (geminiErr) {
+        console.warn("Gemini revision failed, trying Anthropic fallback:", geminiErr);
+      }
     }
+
+    // 2. Try Anthropic API
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (apiKey && apiKey !== "placeholder" && apiKey !== "") {
+      try {
+        const anthropic = new Anthropic({ apiKey });
+        const response = await anthropic.messages.create({
+          model: "claude-3-5-sonnet-20241022",
+          max_tokens: 4090,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }],
+        });
+
+        let rawText = response.content[0].type === "text" ? response.content[0].text : "";
+        rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
+        const parsed = JSON.parse(rawText);
+        return NextResponse.json(parsed);
+      } catch (anthropicErr) {
+        console.warn("Anthropic revision failed:", anthropicErr);
+      }
+    }
+
+    // 3. Fallback Dynamic Generator
+    const fallbackResult = generateFallbackMaterial(studyText, mode, noteTitle);
+    return NextResponse.json(fallbackResult);
   } catch (error) {
-    console.error("Smart revision generation error:", error);
-    return NextResponse.json({ error: "Failed to generate revision material." }, { status: 500 });
+    console.error("Generate revision error:", error);
+    return NextResponse.json({ error: "Failed to generate revision materials." }, { status: 500 });
   }
 });
