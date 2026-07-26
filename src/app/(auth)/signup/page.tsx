@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, ArrowUpRight } from "lucide-react";
+import { trackPixelEvent } from "@/lib/pixel";
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -48,6 +49,7 @@ function SignupForm() {
       if (!response.ok) {
         throw new Error(result.error || "Something went wrong during sign up.");
       }
+      trackPixelEvent("CompleteRegistration", { method: "credentials" });
       const signInResult = await signIn("credentials", {
         redirect: false,
         email: data.email,
@@ -67,6 +69,7 @@ function SignupForm() {
   };
 
   const handleGoogleSignIn = () => {
+    trackPixelEvent("CompleteRegistration", { method: "google" });
     signIn("google", { callbackUrl: "/dashboard" });
   };
 

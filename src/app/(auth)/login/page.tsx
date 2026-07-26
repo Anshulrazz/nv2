@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, ArrowUpRight } from "lucide-react";
+import { trackPixelEvent } from "@/lib/pixel";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -65,6 +66,7 @@ function LoginForm() {
   };
 
   const handleGoogleSignIn = () => {
+    trackPixelEvent("CompleteRegistration", { method: "google" });
     signIn("google", { callbackUrl: "/notes" });
   };
 

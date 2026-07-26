@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono, Kalam } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
+import MetaPixel from "@/components/MetaPixel";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -127,6 +128,7 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${kalam.variable} antialiased bg-background text-foreground`}
         style={{ fontFamily: "var(--font-jakarta)" }}
       >
+        <MetaPixel />
         <Providers>{children}</Providers>
         <Toaster
           theme="dark"
