@@ -123,6 +123,7 @@ export default function RootLayout({
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClientId}`}
           crossOrigin="anonymous"
         />
+      <MetaPixel />
       </head>
       <body
         className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${kalam.variable} antialiased bg-background text-foreground`}
