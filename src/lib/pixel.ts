@@ -1,13 +1,13 @@
 declare global {
   interface Window {
-    fbq?: (...args: any[]) => void;
-    _fbq?: any;
+    fbq?: (...args: unknown[]) => void;
+    _fbq?: unknown;
   }
 }
 
 export const trackPixelEvent = (
   eventName: string,
-  options?: Record<string, any>
+  options?: Record<string, unknown>
 ) => {
   if (typeof window !== "undefined" && typeof window.fbq === "function") {
     window.fbq("track", eventName, options);
