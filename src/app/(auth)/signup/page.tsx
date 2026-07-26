@@ -54,6 +54,7 @@ function SignupForm() {
         throw new Error(result.error || "Something went wrong during sign up.");
       }
       trackPixelEvent("CompleteRegistration", { method: "credentials" });
+      trackPixelEvent("SubmitApplication");
       const signInResult = await signIn("credentials", {
         redirect: false,
         email: data.email,
@@ -74,6 +75,7 @@ function SignupForm() {
 
   const handleGoogleSignIn = () => {
     trackPixelEvent("CompleteRegistration", { method: "google" });
+    trackPixelEvent("SubmitApplication");
     signIn("google", { callbackUrl: "/dashboard" });
   };
 
