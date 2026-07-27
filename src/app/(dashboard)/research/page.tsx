@@ -26,7 +26,7 @@ import { useAlertStore } from "@/stores/alertStore";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import { SimpleEditor } from "@/components/editor/SimpleEditor";
-import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
 import { TopicGeneratorModal } from "@/components/notes/TopicGeneratorModal";
 import { NoteSideChat } from "@/components/notes/NoteSideChat";
 
@@ -499,19 +499,7 @@ export default function ResearchPage() {
                   </a>
                 ) : selectedPaper.content ? (
                   <div className="w-full pt-2">
-                    {typeof selectedPaper.content === "string" &&
-                    (selectedPaper.content.includes("<h") ||
-                      selectedPaper.content.includes("<figure") ||
-                      selectedPaper.content.includes("<p>") ||
-                      selectedPaper.content.includes("<ul>") ||
-                      selectedPaper.content.includes("<table>")) ? (
-                      <div
-                        className="prose prose-invert max-w-none text-zinc-200 text-sm sm:text-base leading-relaxed space-y-6 font-sans w-full"
-                        dangerouslySetInnerHTML={{ __html: selectedPaper.content }}
-                      />
-                    ) : (
-                      <MarkdownRenderer content={selectedPaper.content} />
-                    )}
+                    <BlogContentRenderer content={selectedPaper.content} />
                   </div>
                 ) : null}
               </div>

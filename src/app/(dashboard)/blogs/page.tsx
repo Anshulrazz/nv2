@@ -26,7 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAlertStore } from "@/stores/alertStore";
@@ -547,10 +547,7 @@ function BlogsPageContent() {
           )}
 
           <div className="w-full">
-            <MarkdownRenderer
-              content={selectedBlog.content}
-              className="[&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl [&_p]:text-base [&_li]:text-base [&_td]:text-base [&_th]:text-sm"
-            />
+            <BlogContentRenderer content={selectedBlog.content} />
           </div>
         </div>
       </div>
