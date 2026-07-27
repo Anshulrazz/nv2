@@ -97,6 +97,8 @@ const PROSE_CSS = `
 .md-body code .katex { color: #a5f3fc; }
 `;
 
+const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
+
 let cssInjected = false;
 function injectCSS() {
   if (cssInjected || typeof document === "undefined") return;
@@ -169,6 +171,14 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
 
   if (!content) return null;
 
+  // Pre-process content: unescape &lt; and &gt;, and auto-wrap raw un-delimited TeX expressions like \tau < t or \theta < t
+  const sanitizedContent = (content || "")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/(?<![\$`\\])(\\(?:tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|partial|nabla|infty)\b(?:[^$\n`]*?))(?=[\s,.;:!?)]|$)/g, (match) => {
+      return `$${match.trim()}$`;
+    });
+
   return (
     <div className={`md-body ${className}`}>
       <ReactMarkdown
@@ -176,12 +186,14 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
         rehypePlugins={[rehypeSlug, rehypeKatex]}
         components={{
           code({ className: cls, children, ...props }) {
-            const childrenStr = Array.isArray(children) ? children.join("") : String(children ?? "");
+            const childrenStr = (Array.isArray(children) ? children.join("") : String(children ?? ""))
+              .replace(/&lt;/g, "<")
+              .replace(/&gt;/g, ">");
             const isBlock = /language-\w+/.test(cls || "");
             if (isBlock) return <CodeBlock className={cls}>{children}</CodeBlock>;
 
             // Check if inline code string contains LaTeX formula notation
-            if (/\\(text|frac|sqrt|int|sum|prod|lim|Delta|gamma|alpha|beta|sigma|mu|theta|hat|vec|left|right|mathbb|mathbf|in|approx|le|ge|neq|times|cdot|partial)\b/.test(childrenStr)) {
+            if (LATEX_COMMAND_RE.test(childrenStr)) {
               try {
                 const isDisplayMode = childrenStr.includes("\\int") || childrenStr.includes("\\sum") || childrenStr.includes("\\frac") || childrenStr.length > 35;
                 const html = katex.renderToString(childrenStr.trim(), {
@@ -224,7 +236,7 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
           },
         }}
       >
-        {content}
+        {sanitizedContent}
       </ReactMarkdown>
     </div>
   );

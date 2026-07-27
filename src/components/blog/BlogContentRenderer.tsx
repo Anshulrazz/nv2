@@ -9,21 +9,23 @@ interface BlogContentRendererProps {
   className?: string;
 }
 
+const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
+
 /**
- * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, and <code>\text{...}</code>) using KaTeX.
+ * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, <code>\text{...}</code>, and raw \tau < t expressions) using KaTeX.
  */
 function preprocessLatexInHtml(html: string): string {
   if (!html || typeof html !== "string") return html;
 
-  let processed = html;
+  // Unescape HTML entities in TeX expressions (&lt; -> <, &gt; -> >)
+  let processed = html.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 
   // 1. Replace <code> containing LaTeX math expressions
   processed = processed.replace(/<code>\s*([\s\S]*?)\s*<\/code>/g, (match, innerText) => {
-    const unescaped = innerText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
-    if (/\\(text|frac|sqrt|int|sum|prod|lim|Delta|gamma|alpha|beta|sigma|mu|theta|hat|vec|left|right|mathbb|mathbf|in|approx|le|ge|neq|times|cdot|partial)\b/.test(unescaped)) {
+    if (LATEX_COMMAND_RE.test(innerText)) {
       try {
-        const isBlock = unescaped.includes("\\int") || unescaped.includes("\\sum") || unescaped.includes("\\frac") || unescaped.length > 35;
-        return katex.renderToString(unescaped.trim(), {
+        const isBlock = innerText.includes("\\int") || innerText.includes("\\sum") || innerText.includes("\\frac") || innerText.length > 35;
+        return katex.renderToString(innerText.trim(), {
           displayMode: isBlock,
           throwOnError: false,
         });
@@ -57,6 +59,15 @@ function preprocessLatexInHtml(html: string): string {
         throwOnError: false,
       });
       return `${prefix}${rendered}`;
+    } catch {
+      return match;
+    }
+  });
+
+  // 4. Replace raw un-wrapped TeX math expressions like \tau < t or \theta_i outside HTML tags
+  processed = processed.replace(/(?<![="'>])\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|partial|nabla|infty)\b([^<\n]*?)(?=[,.;:\s<]|$)/g, (match) => {
+    try {
+      return katex.renderToString(match.trim(), { displayMode: false, throwOnError: false });
     } catch {
       return match;
     }
