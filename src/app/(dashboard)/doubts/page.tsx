@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState, useCallback } from "react";
 import { HelpCircle, Plus, CheckCircle2, Clock, Trash2, ShieldQuestion, Loader2, ArrowUpRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";

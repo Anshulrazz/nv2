@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState } from "react";
 import { Plus, BookOpen, Loader2, AlertCircle, Edit, Trash2, Eye, ArrowUpRight } from "lucide-react";
 import Link from "next/link";

@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState } from "react";
 import { BookOpen, Trophy, ArrowUpRight, Loader2, Coins, Gift, Sparkles, Plus, Compass, Send, Flame, ArrowRight } from "lucide-react";
 import Link from "next/link";

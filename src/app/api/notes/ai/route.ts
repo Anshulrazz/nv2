@@ -8,33 +8,204 @@ export const dynamic = "force-dynamic";
 
 function getTopicImages(topic: string) {
   const t = topic.toLowerCase();
-  if (t.includes("quantum") || t.includes("physics") || t.includes("qubit")) {
+
+  // ── Quantum Physics / Mechanics ──────────────────────────────────────────
+  if (t.includes("quantum") || t.includes("qubit") || t.includes("entanglement") || t.includes("superposition")) {
     return {
       hero: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80",
       architecture: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80",
-      lab: "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=80"
+      lab: "https://images.unsplash.com/photo-1518825710019-0631a09bfaea?auto=format&fit=crop&w=800&q=80",
     };
   }
-  if (t.includes("ai") || t.includes("learning") || t.includes("neural") || t.includes("data") || t.includes("model")) {
+
+  // ── General Physics / Relativity / Thermodynamics ────────────────────────
+  if (t.includes("physics") || t.includes("relativity") || t.includes("thermodynamic") || t.includes("electro") || t.includes("optics") || t.includes("particle")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1564325724739-bae0bd08762c?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Machine Learning / Deep Learning / AI ────────────────────────────────
+  if (t.includes("machine learning") || t.includes("deep learning") || t.includes("neural") || t.includes("transformer") || t.includes("large language") || t.includes("llm") || t.includes("gpt") || t.includes("diffusion")) {
     return {
       hero: "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=1200&q=80",
       architecture: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
-      lab: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
+      lab: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80",
     };
   }
-  if (t.includes("code") || t.includes("software") || t.includes("web") || t.includes("microservice") || t.includes("system")) {
+
+  // ── Data Science / Analytics / Statistics ────────────────────────────────
+  if (t.includes("data science") || t.includes("analytics") || t.includes("statistic") || t.includes("visualization") || t.includes("dataset") || t.includes("regression") || t.includes("clustering")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Software / Web / Microservices / Cloud ───────────────────────────────
+  if (t.includes("software") || t.includes("microservice") || t.includes("cloud") || t.includes("devops") || t.includes("kubernetes") || t.includes("docker") || t.includes("api") || t.includes("architecture")) {
     return {
       hero: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
       architecture: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
-      lab: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80"
+      lab: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80",
     };
   }
+
+  // ── Web Development / Frontend / React ───────────────────────────────────
+  if (t.includes("web") || t.includes("frontend") || t.includes("react") || t.includes("javascript") || t.includes("typescript") || t.includes("html") || t.includes("css") || t.includes("next.js")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1547658719-da2b51169166?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Cybersecurity / Cryptography / Network Security ──────────────────────
+  if (t.includes("security") || t.includes("cyber") || t.includes("cryptograph") || t.includes("hacking") || t.includes("blockchain") || t.includes("encryption") || t.includes("zero-day") || t.includes("vulnerability")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1563986768494-4dee2763ff3f?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Biology / Genetics / DNA / Genomics ──────────────────────────────────
+  if (t.includes("biology") || t.includes("genetic") || t.includes("dna") || t.includes("rna") || t.includes("genomic") || t.includes("crispr") || t.includes("cell") || t.includes("protein") || t.includes("evolution")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1530026405186-ed1f139313f8?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Chemistry / Molecular / Materials Science ─────────────────────────────
+  if (t.includes("chemistry") || t.includes("molecule") || t.includes("chemical") || t.includes("polymer") || t.includes("catalyst") || t.includes("reaction") || t.includes("organic") || t.includes("spectroscopy")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Neuroscience / Brain / Cognitive Science ──────────────────────────────
+  if (t.includes("neuro") || t.includes("brain") || t.includes("cognitive") || t.includes("consciousness") || t.includes("synapse") || t.includes("cortex") || t.includes("fmri") || t.includes("mental")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1582719471384-894fbb16e074?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Space / Astronomy / Astrophysics / Cosmology ─────────────────────────
+  if (t.includes("space") || t.includes("astro") || t.includes("galaxy") || t.includes("cosmos") || t.includes("telescope") || t.includes("black hole") || t.includes("satellite") || t.includes("mars") || t.includes("orbit")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1484600899469-230e8d1d59c0?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1462331940025-496dfbfc7564?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Robotics / Automation / Mechatronics ─────────────────────────────────
+  if (t.includes("robot") || t.includes("automati") || t.includes("mechatron") || t.includes("servo") || t.includes("autonomous") || t.includes("drone") || t.includes("actuator") || t.includes("manipulator")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1531746790731-6c087fecd65a?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1518314916381-77a37c2a49ae?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Medicine / Healthcare / Biomedical ────────────────────────────────────
+  if (t.includes("medicine") || t.includes("medical") || t.includes("health") || t.includes("clinical") || t.includes("drug") || t.includes("vaccine") || t.includes("disease") || t.includes("biomedical") || t.includes("surgery")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Mathematics / Number Theory / Topology ────────────────────────────────
+  if (t.includes("math") || t.includes("algebra") || t.includes("topology") || t.includes("calculus") || t.includes("theorem") || t.includes("proof") || t.includes("prime") || t.includes("graph theory") || t.includes("combinatoric")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1635070041409-b21abeb63a23?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1596495578065-6e0763fa1178?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Economics / Finance / Markets ─────────────────────────────────────────
+  if (t.includes("econom") || t.includes("financ") || t.includes("market") || t.includes("trading") || t.includes("invest") || t.includes("gdp") || t.includes("inflation") || t.includes("monetary") || t.includes("fiscal")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1468254095679-bbcba94a7066?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Climate / Environment / Sustainability ────────────────────────────────
+  if (t.includes("climate") || t.includes("environment") || t.includes("carbon") || t.includes("renewable") || t.includes("solar") || t.includes("ecology") || t.includes("sustainability") || t.includes("green") || t.includes("emission")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1508193638397-1c4234db14d8?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Psychology / Behavioral Science ──────────────────────────────────────
+  if (t.includes("psycholog") || t.includes("behavior") || t.includes("emotion") || t.includes("motivation") || t.includes("perception") || t.includes("cogniti") || t.includes("learning theory") || t.includes("social psychology")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1474631245212-32dc3c8310c6?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── History / Archaeology / Civilization ─────────────────────────────────
+  if (t.includes("history") || t.includes("archaeolog") || t.includes("civilization") || t.includes("ancient") || t.includes("empire") || t.includes("medieval") || t.includes("war") || t.includes("revolution")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1552728089-57bdde30beb3?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1565615833231-e8c91a38ad68?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1503819452578-a3c4fe2e5a31?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Philosophy / Ethics / Logic ───────────────────────────────────────────
+  if (t.includes("philosoph") || t.includes("ethics") || t.includes("moral") || t.includes("logic") || t.includes("epistemolog") || t.includes("ontolog") || t.includes("metaphysic") || t.includes("existential")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1519791883288-dc8bd696e667?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Education / Pedagogy / E-Learning ────────────────────────────────────
+  if (t.includes("education") || t.includes("pedagog") || t.includes("e-learning") || t.includes("teaching") || t.includes("curriculum") || t.includes("student") || t.includes("classroom") || t.includes("adaptive learning")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Electrical / Electronics / VLSI / Signal Processing ──────────────────
+  if (t.includes("electrical") || t.includes("circuit") || t.includes("semiconductor") || t.includes("signal") || t.includes("vlsi") || t.includes("embedded") || t.includes("microcontroller") || t.includes("fpga")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1592659762303-90081d34b277?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1543966888-7c1dc482a810?auto=format&fit=crop&w=800&q=80",
+    };
+  }
+
+  // ── Default / General Research ────────────────────────────────────────────
   return {
     hero: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
     architecture: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=800&q=80",
-    lab: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+    lab: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80",
   };
 }
+
 
 export const POST = auth(async function POST(req) {
   try {

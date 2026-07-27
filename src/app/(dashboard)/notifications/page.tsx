@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState, useCallback } from "react";
 import { Bell, Heart, MessageSquare, UserPlus, Share2, Loader2, CheckSquare, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";

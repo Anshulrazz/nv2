@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState } from "react";
 import { Trophy, Medal, Target, Loader2, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";

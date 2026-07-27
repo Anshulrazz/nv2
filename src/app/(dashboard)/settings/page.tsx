@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import { Settings, User as UserIcon, Lock, Loader2, Check, Camera, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";

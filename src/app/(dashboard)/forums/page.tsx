@@ -1,6 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState, useCallback } from "react";
 import { MessageSquare, Plus, ThumbsUp, Send, FolderHeart, CornerDownRight, Loader2, Upload, ArrowUpRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";

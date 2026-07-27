@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React from "react";
 import { CourseForm } from "@/components/courses/CourseForm";
 import { BookOpen, ArrowLeft } from "lucide-react";

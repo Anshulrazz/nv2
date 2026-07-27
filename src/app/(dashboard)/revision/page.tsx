@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { toast } from "sonner";

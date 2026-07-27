@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { Sparkles, MessageSquare, Send, Plus, Trash2, Loader2, FileText, CheckCircle2, Edit3, Check, X } from "lucide-react";
