@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
 import { BlogSideChat } from "@/components/blog/BlogSideChat";
 import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
+import { buildArticleSchema, buildBreadcrumbSchema } from "@/lib/seo/jsonld";
 import { isValidObjectId } from "@/lib/validation";
 import { notFound } from "next/navigation";
 import { Calendar, Clock, ArrowLeft, BookOpen } from "lucide-react";
@@ -26,46 +27,85 @@ export async function generateMetadata({ params }: PageProps) {
   try {
     const { username, slug } = await params;
     await connectToDatabase();
-    const note = await Note.findOne({ slug, published: true, isTrashed: false });
-    if (!note) return { title: "Blog Not Found | Notexia", robots: { index: false } };
 
-    const title = note.seoTitle || note.title || "Untitled";
+    const cleanSlug = decodeURIComponent(slug);
+    const slugPattern = cleanSlug.replace(/[-_]/g, "[-_]");
+    const slugRegex = new RegExp(`^${slugPattern}$`, "i");
+
+    let note = await Note.findOne({
+      $or: [
+        { slug: cleanSlug },
+        { slug: slugPattern },
+        { slug: slugRegex },
+        ...(isValidObjectId(cleanSlug) ? [{ _id: cleanSlug }] : []),
+      ],
+      isTrashed: false,
+    });
+
+    if (!note) {
+      const blog = await Blog.findOne({
+        $or: [
+          { slug: cleanSlug },
+          { slug: slugPattern },
+          { slug: slugRegex },
+          ...(isValidObjectId(cleanSlug) ? [{ _id: cleanSlug }] : []),
+        ],
+        published: true,
+      });
+
+      if (blog) {
+        note = {
+          title: blog.title,
+          summary: blog.summary,
+          coverImage: blog.coverImage,
+          createdAt: blog.createdAt,
+          updatedAt: blog.updatedAt,
+        };
+      }
+    }
+
+    if (!note) return { title: "Article Not Found | Notexia", robots: { index: false } };
+
+    const title = note.seoTitle || note.title || "Untitled Article";
     const description =
       note.seoDescription ||
-      `Read "${title}" on Notexia — a smart study and publishing platform.`;
-    const url = `https://notexia.in/blog/${username}/${slug}`;
+      note.summary ||
+      `Read "${title}" on Notexia — smart research, notes & study community platform.`;
+    const canonicalUrl = `https://notexia.in/blog/${encodeURIComponent(username)}/${encodeURIComponent(slug)}`;
 
     return {
-      title,
+      title: `${title} | Notexia`,
       description,
-      alternates: { canonical: url },
+      alternates: { canonical: canonicalUrl },
       openGraph: {
         title: `${title} | Notexia`,
         description,
-        url,
+        url: canonicalUrl,
         type: "article",
         siteName: "Notexia",
         locale: "en_IN",
         publishedTime: note.createdAt ? new Date(note.createdAt).toISOString() : undefined,
         modifiedTime: note.updatedAt ? new Date(note.updatedAt).toISOString() : undefined,
-        images: [
-          {
-            url: "/opengraph-image",
-            width: 1200,
-            height: 630,
-            alt: title,
-          },
-        ],
+        images: note.coverImage
+          ? [{ url: note.coverImage, alt: title }]
+          : [
+              {
+                url: "/opengraph-image",
+                width: 1200,
+                height: 630,
+                alt: title,
+              },
+            ],
       },
       twitter: {
         card: "summary_large_image",
         title: `${title} | Notexia`,
         description,
-        images: ["/opengraph-image"],
+        images: note.coverImage ? [note.coverImage] : ["/opengraph-image"],
       },
     };
   } catch {
-    return { title: "Blog Post | Notexia" };
+    return { title: "Article | Notexia" };
   }
 }
 

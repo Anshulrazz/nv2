@@ -32,6 +32,8 @@ const kalam = Kalam({
   weight: ["400", "700"],
 });
 
+import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo/jsonld";
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://notexia.in"),
   title: {
@@ -125,6 +127,14 @@ export default function RootLayout({
           async
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClientId}`}
           crossOrigin="anonymous"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildOrganizationSchema()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSiteSchema()) }}
         />
       </head>
       <body

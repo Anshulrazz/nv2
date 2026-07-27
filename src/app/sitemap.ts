@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { Blog } from "@/models/Blog";
 import { User } from "@/models/User";
 
 export const dynamic = "force-dynamic";
@@ -18,35 +19,66 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/community`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
   ];
 
-  let blogRoutes: MetadataRoute.Sitemap = [];
+  let dynamicRoutes: MetadataRoute.Sitemap = [];
   try {
     await connectToDatabase();
+
+    // 1. Note articles
     const publishedNotes = await Note.find({ published: true, isTrashed: false })
-      .select("slug authorId updatedAt")
+      .select("slug authorId userId updatedAt")
       .lean();
 
-    const authorIds = [...new Set(publishedNotes.map((n) => String(n.authorId)))];
-    const authors = await User.find({ _id: { $in: authorIds } })
-      .select("_id email")
+    const noteAuthorIds = [...new Set(publishedNotes.map((n) => String(n.authorId || n.userId)))];
+    const authors = await User.find({ _id: { $in: noteAuthorIds } })
+      .select("_id name email")
       .lean();
 
     const authorMap: Record<string, string> = {};
     for (const a of authors) {
-      const username = (a.email as string).split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
+      const username = a.name
+        ? encodeURIComponent(a.name)
+        : (a.email as string).split("@")[0].toLowerCase().replace(/[^a-z0-9]/g, "");
       authorMap[String(a._id)] = username;
     }
 
-    blogRoutes = publishedNotes
-      .filter((n) => n.slug && authorMap[String(n.authorId)])
+    const noteEntries: MetadataRoute.Sitemap = publishedNotes
+      .filter((n) => (n.slug || n._id) && authorMap[String(n.authorId || n.userId)])
       .map((n) => ({
-        url: `${base}/blog/${authorMap[String(n.authorId)]}/${n.slug}`,
+        url: `${base}/blog/${authorMap[String(n.authorId || n.userId)]}/${n.slug || n._id}`,
         lastModified: n.updatedAt ? new Date(n.updatedAt as Date) : new Date(),
         changeFrequency: "weekly" as const,
-        priority: 0.6,
+        priority: 0.7,
       }));
+
+    // 2. Blog articles
+    const publishedBlogs = await Blog.find({ published: true })
+      .select("_id slug userName userId updatedAt")
+      .lean();
+
+    const blogEntries: MetadataRoute.Sitemap = publishedBlogs.map((b) => ({
+      url: `${base}/blog/${encodeURIComponent(b.userName || "author")}/${b.slug || b._id}`,
+      lastModified: b.updatedAt ? new Date(b.updatedAt as Date) : new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }));
+
+    // 3. User profile pages
+    const activeUsers = await User.find({ isSuspended: false })
+      .select("_id updatedAt")
+      .limit(500)
+      .lean();
+
+    const userEntries: MetadataRoute.Sitemap = activeUsers.map((u) => ({
+      url: `${base}/user/${u._id}`,
+      lastModified: u.updatedAt ? new Date(u.updatedAt as Date) : new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    }));
+
+    dynamicRoutes = [...noteEntries, ...blogEntries, ...userEntries];
   } catch {
     // DB errors must not break the sitemap
   }
 
-  return [...staticRoutes, ...blogRoutes];
+  return [...staticRoutes, ...dynamicRoutes];
 }

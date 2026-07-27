@@ -9,7 +9,7 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "*",
-        allow: ["/", "/blogs", "/blog/", "/forums", "/leaderboard", "/community", "/login", "/signup", "/ads.txt", "/sitemap.xml"],
+        allow: ["/", "/blogs", "/blog/", "/forums", "/leaderboard", "/community", "/user/", "/login", "/signup", "/ads.txt", "/sitemap.xml", "/llms.txt"],
         disallow: [
           "/dashboard",
           "/notes",
@@ -20,11 +20,9 @@ export default function robots(): MetadataRoute.Robots {
           "/notifications",
           "/bookmarks",
           "/prototype",
-          "/feed",
           "/research",
           "/doubts",
           "/chat",
-          "/user/",
         ],
       },
     ],

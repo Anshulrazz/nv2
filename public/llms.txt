@@ -1,0 +1,19 @@
+# Notexia (notexia.in)
+
+> Notexia is a modern academic research, note-taking, and knowledge-sharing platform for scholars, developers, and researchers.
+
+## Core Features
+- **Smart AI Notes & Research**: Exhaustive AI paper generation, markdown rendering, and LaTeX formula support (KaTeX).
+- **Public Feed & Articles**: Community-driven research papers, technical blogs, and peer-reviewed study notes.
+- **Smart Revision & Copilot**: AI-assisted study checklists, flashcards, and chat copilot.
+- **Community & Discussions**: Doubts resolution hub, forums, and developer projects.
+
+## Key Index & Structure
+- [Public Feed](https://notexia.in/feed): Latest research papers, articles, and public notes.
+- [Research Workspace](https://notexia.in/research): AI-powered academic paper generator and editor.
+- [Public Blogs](https://notexia.in/blogs): Published articles by researchers and educators.
+- [Community Hub](https://notexia.in/community): Scholar profiles, rankings, and collaboration.
+- [Leaderboard](https://notexia.in/leaderboard): Community contribution points and rankings.
+
+## Technology Stack
+- Next.js 15 App Router, TypeScript, Tailwind CSS, TipTap, KaTeX, MongoDB, Anthropic Claude & Google Gemini AI.
