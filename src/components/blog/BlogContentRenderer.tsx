@@ -9,19 +9,34 @@ interface BlogContentRendererProps {
   className?: string;
 }
 
-const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|mp|div|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
+const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|mathbf|mathbb|mathcal|mathrm|mathit|boldsymbol|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|mp|div|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow|leftarrow|leftrightarrow|langle|rangle|ket|bra|begin|end|left|right|quad|qquad|ldots|cdots|vdots|ddots)\b/;
 
 /**
- * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, <code>\text{...}</code>, and raw \Delta x \cdot \Delta p \ge \frac{\hbar}{2} expressions) using KaTeX.
+ * Remove stray bare $ signs that appear INSIDE an already-delimited or un-delimited LaTeX expression.
+ * e.g. |$\psi\rangle$ = $\alpha$ |0\rangle  →  |\psi\rangle = \alpha |0\rangle
+ * We do this by stripping $ that directly wrap a single LaTeX command word.
+ */
+function removeStrayDollars(s: string): string {
+  // Replace $\cmd$ or $\cmd{...}$ where the whole content is a single TeX token
+  return s.replace(/\$\\([a-zA-Z]+)(\{[^}]*\})?\$/g, (_m, cmd, arg) =>
+    arg ? `\\${cmd}${arg}` : `\\${cmd}`
+  );
+}
+
+/**
+ * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, <code>\text{...}</code>, and raw \Delta x ... expressions) using KaTeX.
  */
 function preprocessLatexInHtml(html: string): string {
   if (!html || typeof html !== "string") return html;
 
-  // Unescape HTML entities in TeX expressions (&lt; -> <, &gt; -> >)
+  // 0. Unescape HTML entities in TeX expressions (&lt; -> <, &gt; -> >)
   let processed = html.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 
-  // Fix broken/stray $ inside TeX expressions (e.g. \Delta x \cdot $\Delta$ p \ge \frac{\hbar}{2})
-  processed = processed.replace(/(\\[a-zA-Z]+[^$\n`]*?)\$([^\$\n`]+?)\$([^$\n`]*?\\[a-zA-Z]+[^$\n`]*)/g, (match, before, inside, after) => {
+  // 0b. Remove stray bare $\cmd$ wrappers scattered inside bigger LaTeX expressions
+  processed = removeStrayDollars(processed);
+
+  // 0c. Broader stray-$ fix: when a $ sign appears between two LaTeX tokens, strip it
+  processed = processed.replace(/(\\[a-zA-Z]+[^$\n`]*?)\$([^$\n`]+?)\$([^$\n`]*?\\[a-zA-Z]+[^$\n`]*)/g, (_match, before, inside, after) => {
     return `${before}${inside}${after}`;
   });
 
@@ -42,10 +57,20 @@ function preprocessLatexInHtml(html: string): string {
     return match;
   });
 
-  // 2. Replace $$...$$ block math
+  // 2. Replace \begin{...}...\end{...} display blocks (pmatrix, bmatrix, align, etc.)
+  processed = processed.replace(/\\begin\{([a-z*]+)\}([\s\S]*?)\\end\{\1\}/g, (match, _env, _inner) => {
+    try {
+      const cleanMatch = removeStrayDollars(match).replace(/\$/g, "");
+      return katex.renderToString(cleanMatch, { displayMode: true, throwOnError: false });
+    } catch {
+      return match;
+    }
+  });
+
+  // 3. Replace $$...$$ block math
   processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, mathContent) => {
     try {
-      const cleanContent = mathContent.replace(/\$/g, "").trim();
+      const cleanContent = removeStrayDollars(mathContent).replace(/\$/g, "").trim();
       return katex.renderToString(cleanContent, {
         displayMode: true,
         throwOnError: false,
@@ -55,8 +80,8 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 3. Replace $...$ inline math (ignoring plain currency numbers)
-  processed = processed.replace(/(^|[^\\])\$([^\$\n]+?)\$/g, (match, prefix, mathContent) => {
+  // 4. Replace $...$ inline math (ignoring plain currency numbers)
+  processed = processed.replace(/(^|[^\\])\$([^$\n]+?)\$/g, (match, prefix, mathContent) => {
     if (/^\d+(\.\d+)?$/.test(mathContent.trim())) {
       return match;
     }
@@ -71,10 +96,11 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 4. Replace raw un-wrapped TeX math expressions like \Delta x \cdot \Delta p \ge \frac{\hbar}{2} outside HTML tags
-  processed = processed.replace(/(?<![="'>])\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|partial|nabla|infty)\b([^<\n]*?)(?=[,.;:\s<]|$)/g, (match) => {
+  // 5. Detect and render raw un-wrapped TeX math expressions outside HTML tags
+  //    Covers: \mathbf{f}_{\text{keystroke}}, \Delta x \cdot \hbar, |\psi\rangle etc.
+  processed = processed.replace(/(?<![="'>\\])(\\(?:mathbf|mathbb|mathcal|mathrm|boldsymbol|text|frac|sqrt|int|sum|partial|nabla|infty|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|hbar|quad|langle|rangle|left|right)\b[^<\n]*?)(?=[,;:\s<]|$)/g, (match) => {
     try {
-      const cleanMatch = match.replace(/\$/g, "").trim();
+      const cleanMatch = removeStrayDollars(match).replace(/\$/g, "").trim();
       return katex.renderToString(cleanMatch, { displayMode: false, throwOnError: false });
     } catch {
       return match;
@@ -83,6 +109,7 @@ function preprocessLatexInHtml(html: string): string {
 
   return processed;
 }
+
 
 /**
  * Universal content renderer for blogs, notes and research papers.
