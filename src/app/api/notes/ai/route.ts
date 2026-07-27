@@ -6,6 +6,36 @@ import Anthropic from "@anthropic-ai/sdk";
 
 export const dynamic = "force-dynamic";
 
+function getTopicImages(topic: string) {
+  const t = topic.toLowerCase();
+  if (t.includes("quantum") || t.includes("physics") || t.includes("qubit")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1517976487492-5750f3195933?auto=format&fit=crop&w=800&q=80"
+    };
+  }
+  if (t.includes("ai") || t.includes("learning") || t.includes("neural") || t.includes("data") || t.includes("model")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1677442136019-21780efad99a?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80"
+    };
+  }
+  if (t.includes("code") || t.includes("software") || t.includes("web") || t.includes("microservice") || t.includes("system")) {
+    return {
+      hero: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=1200&q=80",
+      architecture: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+      lab: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?auto=format&fit=crop&w=800&q=80"
+    };
+  }
+  return {
+    hero: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80",
+    architecture: "https://images.unsplash.com/photo-1507668077129-56e32842fceb?auto=format&fit=crop&w=800&q=80",
+    lab: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=800&q=80"
+  };
+}
+
 export const POST = auth(async function POST(req) {
   try {
     const userId = req.auth?.user?.id;
@@ -42,13 +72,21 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Topic is required for generating a topic note." }, { status: 400 });
     }
 
+    const topicImages = getTopicImages(inputTopic);
     let systemPrompt = "You are Notexia's Smart AI Writing Assistant for academic and technical notes.";
     let userPrompt = "";
 
     switch (action) {
       case "generate_topic":
-        systemPrompt = "You are Notexia's World-Class Academic and Technical AI Author. Your task is to write an EXHAUSTIVE, DEEP-DIVE, HIGHLY DETAILED note on the requested topic. The resulting note MUST be EXTREMELY COMPREHENSIVE, containing AT LEAST 2,000 WORDS (spanning at least 2 full pages of dense academic material). Structure the content beautifully with HTML tags: <h2>, <h3>, <p>, <ul>, <ol>, <li>, blockquote, <code>, <table>, <strong>, and <em>. Include: 1) Executive Summary & Core Definitions, 2) Comprehensive Historical Context & Fundamentals, 3) Detailed Theoretical Framework & Mechanisms, 4) Real-World Applications & Step-by-Step Examples, 5) Deep Comparison / Trade-off Analysis, 6) Advanced Concepts & Future Horizons, 7) Key Formulas, Equations & Study Checklist. Write with academic depth, rich vocabulary, and maximal length.";
-        userPrompt = `Topic: "${inputTopic}"\n\nTask: Write an in-depth, masterclass academic/technical note on this topic with AT LEAST 2,000 words (2+ pages). Make it extremely rich, detailed, well-structured with clean HTML headings (h2, h3), code/formula blocks, bullet points, and exhaustive explanations.`;
+        systemPrompt = `You are Notexia's World-Class Academic and Technical AI Author. Your task is to write an EXHAUSTIVE, DEEP-DIVE, HIGHLY DETAILED paper/note on the requested topic. The resulting note MUST be EXTREMELY COMPREHENSIVE, containing AT LEAST 2,000 WORDS. You MUST embed 2-3 high-resolution visual figure images directly into the HTML using <img> tags with clear figure captions.
+
+Here are the high-resolution figure URLs to embed in appropriate sections:
+Figure 1 (Primary Visual): ${topicImages.hero}
+Figure 2 (Theoretical Architecture): ${topicImages.architecture}
+Figure 3 (Experimental Setup): ${topicImages.lab}
+
+Structure the content beautifully with HTML tags: <h2>, <h3>, <p>, <figure>, <img>, <figcaption>, <ul>, <ol>, <li>, blockquote, <code>, <table>, <strong>, and <em>. Include: 1) Executive Summary & Abstract, 2) Figure 1 Overview, 3) Fundamental Theoretical Framework, 4) Figure 2 Architecture Visual, 5) Real-World Applications & Step-by-Step Code Blueprint, 6) Figure 3 Experimental Metrics Analysis, 7) Deep Trade-off Analysis Table, 8) Master Study Checklist.`;
+        userPrompt = `Topic: "${inputTopic}"\n\nTask: Write an in-depth, masterclass research paper/note on this topic with AT LEAST 2,000 words and embedded related figure images. Make it extremely rich, detailed, well-structured with clean HTML headings, code/formula blocks, embedded images, and exhaustive explanations.`;
         break;
 
       case "continue":
@@ -110,8 +148,13 @@ export const POST = auth(async function POST(req) {
     // 3. Fallback smart completion (Dev Mode)
     let fallbackText = "";
     if (action === "generate_topic") {
-      fallbackText = `<h2>1. Executive Summary & Overview: ${inputTopic}</h2>
-<p>This comprehensive study note provides an in-depth analysis of <strong>${inputTopic}</strong>. It synthesizes core principles, theoretical foundations, architectural mechanics, real-world implementations, and key analytical frameworks necessary for mastery of the subject.</p>
+      fallbackText = `<h2>1. Executive Summary & Abstract: ${inputTopic}</h2>
+<p>This comprehensive research paper provides an in-depth analysis of <strong>${inputTopic}</strong>. It synthesizes core principles, theoretical foundations, architectural mechanics, real-world implementations, and key analytical frameworks necessary for mastery of the subject.</p>
+
+<figure style="margin: 24px 0;">
+  <img src="${topicImages.hero}" alt="${inputTopic} Visual Overview" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);" />
+  <figcaption style="font-size: 12px; color: #9FAEA1; margin-top: 8px; font-family: monospace;">Figure 1: High-level visual representation and contextual domain map of ${inputTopic}.</figcaption>
+</figure>
 
 <h2>2. Fundamental Theoretical Framework</h2>
 <p>Understanding <em>${inputTopic}</em> requires establishing its primary principles and underlying axioms. At its core, this field addresses key operational challenges through systematic methodology:</p>
@@ -120,6 +163,11 @@ export const POST = auth(async function POST(req) {
   <li><strong>Structural Decomposition:</strong> Breaking down multi-tiered mechanics into isolated modules.</li>
   <li><strong>State Synchronization & Efficiency:</strong> Ensuring continuous reliability across distributed nodes.</li>
 </ul>
+
+<figure style="margin: 24px 0;">
+  <img src="${topicImages.architecture}" alt="${inputTopic} System Architecture" style="width: 100%; max-height: 380px; object-fit: cover; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);" />
+  <figcaption style="font-size: 12px; color: #9FAEA1; margin-top: 8px; font-family: monospace;">Figure 2: Detailed architectural blueprint and component interaction pipeline for ${inputTopic}.</figcaption>
+</figure>
 
 <h2>3. In-Depth Operational Mechanics & Step-by-Step Dynamics</h2>
 <p>The practical execution of ${inputTopic} relies on a structured sequence of transformations. Below is the multi-stage pipeline governing system state changes:</p>
@@ -130,9 +178,9 @@ export const POST = auth(async function POST(req) {
 <h3>3.2 Phase 2: Dynamic Execution & Optimizations</h3>
 <p>In the runtime phase, workload execution is parallelized using hardware-accelerated vectors, ensuring minimal latency and maximal throughput.</p>
 
-<h2>4. Code & Practical Implementation Example</h2>
-<pre><code>// Comprehensive Implementation Blueprint for ${inputTopic}
-class ${inputTopic.replace(/[^a-zA-Z0-9]/g, "") || "System"}Engine {
+<h2>4. Code & Practical Implementation Blueprint</h2>
+<pre><code>// Comprehensive Research Implementation Blueprint for ${inputTopic}
+class ${inputTopic.replace(/[^a-zA-Z0-9]/g, "") || "Research"}Engine {
   private state: Map&lt;string, any&gt; = new Map();
 
   constructor(public config: Record&lt;string, unknown&gt;) {
@@ -140,29 +188,32 @@ class ${inputTopic.replace(/[^a-zA-Z0-9]/g, "") || "System"}Engine {
   }
 
   private initializeEngine(): void {
-    console.log("Initializing ${inputTopic} Core Subsystem...");
+    console.log("Initializing ${inputTopic} Subsystem...");
     this.state.set("status", "ACTIVE");
     this.state.set("timestamp", Date.now());
   }
 
   public executePipeline(payload: Record&lt;string, unknown&gt;): Record&lt;string, unknown&gt; {
-    // Process input vector
     const transformed = { ...payload, processedAt: Date.now() };
     return transformed;
   }
 }
 
-// Instantiate and verify pipeline
-const instance = new ${inputTopic.replace(/[^a-zA-Z0-9]/g, "") || "System"}Engine({ mode: "HIGH_PERFORMANCE" });
+const instance = new ${inputTopic.replace(/[^a-zA-Z0-9]/g, "") || "Research"}Engine({ mode: "HIGH_PERFORMANCE" });
 console.log("Execution Result:", instance.executePipeline({ data: "${inputTopic} Test Vector" }));
 </code></pre>
+
+<figure style="margin: 24px 0;">
+  <img src="${topicImages.lab}" alt="${inputTopic} Experimental Setup" style="width: 100%; max-height: 380px; object-fit: cover; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1);" />
+  <figcaption style="font-size: 12px; color: #9FAEA1; margin-top: 8px; font-family: monospace;">Figure 3: Experimental laboratory setup and telemetry measurement environment.</figcaption>
+</figure>
 
 <h2>5. Trade-Off Analysis & Performance Metrics</h2>
 <table>
   <thead>
     <tr>
       <th>Metric Dimension</th>
-      <th>Standard Approach</th>
+      <th>Standard Baseline</th>
       <th>Optimized ${inputTopic} Architecture</th>
     </tr>
   </thead>
@@ -193,7 +244,7 @@ console.log("Execution Result:", instance.executePipeline({ data: "${inputTopic}
   <li>✔ Monitor runtime telemetry and error budgets</li>
 </ul>
 
-<h2>7. Conclusion & Further Research Horizons</h2>
+<h2>7. Conclusion & Research Horizons</h2>
 <p>Mastery of <strong>${inputTopic}</strong> equips researchers and engineers with the capability to architect scalable, resilient systems. Continuous iteration and deep exploration of these core paradigms remain pivotal for cutting-edge development.</p>`;
     } else {
       fallbackText = `[AI Smart ${action.toUpperCase()}]\nKey Insights derived from "${title || "Note"}":\n- ${(text || "").substring(0, 150)}...\n- Deep dive into core concepts and structured formulas.\n- Review associated checklists and study items.`;

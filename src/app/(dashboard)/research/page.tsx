@@ -15,6 +15,8 @@ import {
   ExternalLink,
   ArrowUpRight,
   X,
+  Wand2,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +25,8 @@ import { useAlertStore } from "@/stores/alertStore";
 import { toast } from "sonner";
 import { SimpleEditor } from "@/components/editor/SimpleEditor";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { TopicGeneratorModal } from "@/components/notes/TopicGeneratorModal";
+import { NoteSideChat } from "@/components/notes/NoteSideChat";
 
 interface PaperData {
   _id: string;
@@ -57,6 +61,7 @@ export default function ResearchPage() {
   const [editAbstract, setEditAbstract] = useState("");
   const [editContent, setEditContent] = useState("");
   const [isSubmittingWrite, setIsSubmittingWrite] = useState(false);
+  const [showAiTopicModal, setShowAiTopicModal] = useState(false);
 
   // AI Assistant chat states
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -282,7 +287,15 @@ export default function ResearchPage() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button
+              onClick={() => setShowAiTopicModal(true)}
+              className="bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-cyan-500/20 hover:from-violet-500/30 hover:to-cyan-500/30 text-violet-300 border border-violet-500/30 font-bold text-xs h-11 px-5 rounded-full flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+            >
+              <Wand2 className="size-4 text-violet-400" />
+              <span>AI Paper Writer (with Figures)</span>
+            </Button>
+
             <Button
               onClick={() => {
                 setIsWriting(true);
@@ -309,59 +322,73 @@ export default function ResearchPage() {
       {/* Main Container */}
       <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-8 relative z-10">
         {isWriting ? (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl space-y-6">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                <button
-                  onClick={() => setIsWriting(false)}
-                  className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
-                >
-                  <ArrowLeft className="size-4" /> Cancel &amp; Back
-                </button>
-                <Button
-                  onClick={handlePublishWritten}
-                  disabled={isSubmittingWrite}
-                  className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6"
-                >
-                  {isSubmittingWrite ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper"}
-                </Button>
-              </div>
+          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl overflow-hidden">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-7 xl:col-span-4 rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-6 sm:p-8 space-y-6 lg:col-span-7">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <button
+                    onClick={() => setIsWriting(false)}
+                    className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
+                  >
+                    <ArrowLeft className="size-4" /> Cancel &amp; Back
+                  </button>
+                  <Button
+                    onClick={handlePublishWritten}
+                    disabled={isSubmittingWrite}
+                    className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6"
+                  >
+                    {isSubmittingWrite ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper"}
+                  </Button>
+                </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
+                    <Input
+                      value={editTitle}
+                      onChange={(e) => setEditTitle(e.target.value)}
+                      placeholder="Research Paper Title..."
+                      className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Authors</label>
+                    <Input
+                      value={editAuthors}
+                      onChange={(e) => setEditAuthors(e.target.value)}
+                      placeholder="e.g. Dr. A. Sharma, Prof. B. Roy"
+                      className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
-                  <Input
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                    placeholder="Research Paper Title..."
-                    className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Abstract</label>
+                  <textarea
+                    value={editAbstract}
+                    onChange={(e) => setEditAbstract(e.target.value)}
+                    placeholder="Summary of methodology, experimental setup, and primary findings..."
+                    rows={3}
+                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
                   />
                 </div>
+
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Authors</label>
-                  <Input
-                    value={editAuthors}
-                    onChange={(e) => setEditAuthors(e.target.value)}
-                    placeholder="e.g. Dr. A. Sharma, Prof. B. Roy"
-                    className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
-                  />
+                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Paper Content</label>
+                  <SimpleEditor value={editContent} onChange={setEditContent} placeholder="Write paper sections using Markdown..." />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Abstract</label>
-                <textarea
-                  value={editAbstract}
-                  onChange={(e) => setEditAbstract(e.target.value)}
-                  placeholder="Summary of methodology, experimental setup, and primary findings..."
-                  rows={3}
-                  className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
+              {/* Side AI Assistant Panel */}
+              <div className="lg:col-span-5 rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-[650px] lg:h-auto">
+                <NoteSideChat
+                  noteTitle={editTitle || "Research Paper Draft"}
+                  noteContentText={editContent}
+                  onInsertText={(insertedText) => {
+                    setEditContent((prev) => (prev ? `${prev}\n\n${insertedText}` : insertedText));
+                    toast.success("Inserted AI response into research paper editor!");
+                  }}
                 />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Paper Content</label>
-                <SimpleEditor value={editContent} onChange={setEditContent} placeholder="Write paper sections using Markdown..." />
               </div>
             </div>
           </div>
@@ -431,11 +458,29 @@ export default function ResearchPage() {
                       chatMessages.map((msg, idx) => (
                         <div
                           key={idx}
-                          className={`p-3.5 rounded-2xl text-xs max-w-[80%] ${
+                          className={`p-3.5 rounded-2xl text-xs max-w-[85%] space-y-2 ${
                             msg.role === "user" ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 ml-auto" : "bg-zinc-900 border border-white/10 text-zinc-200"
                           }`}
                         >
-                          {msg.content}
+                          <div>{msg.content}</div>
+                          {msg.role === "assistant" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditTitle(selectedPaper?.title || editTitle);
+                                setEditAuthors(selectedPaper?.authors || editAuthors);
+                                setEditAbstract(selectedPaper?.abstract || editAbstract);
+                                setEditContent((prev) => (prev ? `${prev}\n\n${msg.content}` : selectedPaper?.content ? `${selectedPaper.content}\n\n${msg.content}` : msg.content));
+                                setIsWriting(true);
+                                setSelectedPaper(null);
+                                toast.success("Added AI response into research paper editor!");
+                              }}
+                              className="mt-1 text-[10px] font-mono font-bold bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-1 rounded-md flex items-center gap-1 transition-colors select-none"
+                            >
+                              <Plus className="size-3 text-violet-400" />
+                              <span>Add to Article</span>
+                            </button>
+                          )}
                         </div>
                       ))
                     )}
@@ -593,6 +638,22 @@ export default function ResearchPage() {
             </form>
           </DialogContent>
         </Dialog>
+      )}
+
+      {showAiTopicModal && (
+        <TopicGeneratorModal
+          isOpen={showAiTopicModal}
+          onClose={() => setShowAiTopicModal(false)}
+          onGenerate={async (topic: string, contentHtml: string) => {
+            setEditTitle(topic);
+            setEditAuthors("AI Research Scholar");
+            setEditAbstract(`Comprehensive academic research paper on ${topic}, synthesizing theoretical mechanics, architectural figures, experimental telemetry, and performance metrics.`);
+            setEditContent(contentHtml);
+            setSelectedPaper(null);
+            setIsWriting(true);
+            toast.success("AI Research Paper with related figures generated successfully!");
+          }}
+        />
       )}
     </div>
   );
