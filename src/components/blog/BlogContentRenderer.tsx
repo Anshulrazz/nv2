@@ -17,7 +17,6 @@ const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|k
  * We do this by stripping $ that directly wrap a single LaTeX command word.
  */
 function removeStrayDollars(s: string): string {
-  // Replace $\cmd$ or $\cmd{...}$ where the whole content is a single TeX token
   return s.replace(/\$\\([a-zA-Z]+)(\{[^}]*\})?\$/g, (_m, cmd, arg) =>
     arg ? `\\${cmd}${arg}` : `\\${cmd}`
   );
@@ -29,18 +28,14 @@ function removeStrayDollars(s: string): string {
 function preprocessLatexInHtml(html: string): string {
   if (!html || typeof html !== "string") return html;
 
-  // 0. Unescape HTML entities in TeX expressions (&lt; -> <, &gt; -> >)
   let processed = html.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 
-  // 0b. Remove stray bare $\cmd$ wrappers scattered inside bigger LaTeX expressions
   processed = removeStrayDollars(processed);
 
-  // 0c. Broader stray-$ fix: when a $ sign appears between two LaTeX tokens, strip it
   processed = processed.replace(/(\\[a-zA-Z]+[^$\n`]*?)\$([^$\n`]+?)\$([^$\n`]*?\\[a-zA-Z]+[^$\n`]*)/g, (_match, before, inside, after) => {
     return `${before}${inside}${after}`;
   });
 
-  // 1. Replace <code> containing LaTeX math expressions
   processed = processed.replace(/<code>\s*([\s\S]*?)\s*<\/code>/g, (match, innerText) => {
     const cleanText = innerText.replace(/\$/g, "").trim();
     if (LATEX_COMMAND_RE.test(cleanText)) {
@@ -57,7 +52,6 @@ function preprocessLatexInHtml(html: string): string {
     return match;
   });
 
-  // 2. Replace \begin{...}...\end{...} display blocks (pmatrix, bmatrix, align, etc.)
   processed = processed.replace(/\\begin\{([a-z*]+)\}([\s\S]*?)\\end\{\1\}/g, (match, _env, _inner) => {
     try {
       const cleanMatch = removeStrayDollars(match).replace(/\$/g, "");
@@ -67,7 +61,6 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 3. Replace $$...$$ block math
   processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, mathContent) => {
     try {
       const cleanContent = removeStrayDollars(mathContent).replace(/\$/g, "").trim();
@@ -80,7 +73,6 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 4. Replace $...$ inline math (ignoring plain currency numbers)
   processed = processed.replace(/(^|[^\\])\$([^$\n]+?)\$/g, (match, prefix, mathContent) => {
     if (/^\d+(\.\d+)?$/.test(mathContent.trim())) {
       return match;
@@ -96,8 +88,6 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 5. Detect and render raw un-wrapped TeX math expressions outside HTML tags
-  //    Covers: \mathbf{f}_{\text{keystroke}}, \Delta x \cdot \hbar, |\psi\rangle etc.
   processed = processed.replace(/(?<![="'>\\])(\\(?:mathbf|mathbb|mathcal|mathrm|boldsymbol|text|frac|sqrt|int|sum|partial|nabla|infty|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|hbar|quad|langle|rangle|left|right)\b[^<\n]*?)(?=[,;:\s<]|$)/g, (match) => {
     try {
       const cleanMatch = removeStrayDollars(match).replace(/\$/g, "").trim();
@@ -110,12 +100,62 @@ function preprocessLatexInHtml(html: string): string {
   return processed;
 }
 
+/**
+ * GitHub-flavored "markdown-body" dark-theme class string.
+ * Mirrors GitHub's actual README rendering: 16px base, 1.5 line-height,
+ * bordered h1/h2, GitHub code/table/blockquote treatment.
+ */
+const GITHUB_MARKDOWN_BODY = `
+  max-w-none font-sans text-[16px] leading-[1.5] text-[#c9d1d9]
+
+  [&_h1]:text-[2em] [&_h1]:font-semibold [&_h1]:text-white [&_h1]:pb-[0.3em] [&_h1]:mt-6 [&_h1]:mb-4 [&_h1]:border-b [&_h1]:border-[#21262d] [&_h1]:leading-tight
+  [&_h2]:text-[1.5em] [&_h2]:font-semibold [&_h2]:text-white [&_h2]:pb-[0.3em] [&_h2]:mt-6 [&_h2]:mb-4 [&_h2]:border-b [&_h2]:border-[#21262d] [&_h2]:leading-tight
+  [&_h3]:text-[1.25em] [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-4
+  [&_h4]:text-[1em] [&_h4]:font-semibold [&_h4]:text-white [&_h4]:mt-6 [&_h4]:mb-4
+  [&_h5]:text-[0.875em] [&_h5]:font-semibold [&_h5]:text-white [&_h5]:mt-6 [&_h5]:mb-4
+  [&_h6]:text-[0.85em] [&_h6]:font-semibold [&_h6]:text-[#8b949e] [&_h6]:mt-6 [&_h6]:mb-4
+
+  [&_p]:mt-0 [&_p]:mb-4 [&_p]:text-[#c9d1d9] [&_p]:leading-[1.5]
+
+  [&_ul]:mt-0 [&_ul]:mb-4 [&_ul]:pl-8 [&_ul]:list-disc [&_ul]:text-[#c9d1d9]
+  [&_ol]:mt-0 [&_ol]:mb-4 [&_ol]:pl-8 [&_ol]:list-decimal [&_ol]:text-[#c9d1d9]
+  [&_li]:mt-1 [&_li]:leading-[1.5]
+  [&_li_ul]:mt-1 [&_li_ol]:mt-1
+
+  [&_strong]:font-semibold [&_strong]:text-white
+  [&_em]:italic
+
+  [&_a]:text-[#58a6ff] [&_a]:no-underline hover:[&_a]:underline
+
+  [&_blockquote]:pl-4 [&_blockquote]:pr-2 [&_blockquote]:py-0 [&_blockquote]:my-4 [&_blockquote]:border-l-[0.25em] [&_blockquote]:border-[#3b434b] [&_blockquote]:text-[#8b949e] [&_blockquote]:not-italic
+  [&_blockquote_p]:text-[#8b949e]
+
+  [&_hr]:h-[0.25em] [&_hr]:p-0 [&_hr]:my-6 [&_hr]:bg-[#21262d] [&_hr]:border-0 [&_hr]:rounded-full
+
+  [&_pre]:my-4 [&_pre]:bg-[#161b22] [&_pre]:border [&_pre]:border-[#30363d] [&_pre]:rounded-md [&_pre]:p-4 [&_pre]:overflow-x-auto [&_pre]:leading-[1.45] [&_pre]:text-[85%] [&_pre]:font-mono
+  [&_pre_code]:!bg-transparent [&_pre_code]:!border-0 [&_pre_code]:!p-0 [&_pre_code]:!m-0 [&_pre_code]:!text-[#c9d1d9] [&_pre_code]:!font-mono [&_pre_code]:!text-[85%] [&_pre_code]:!leading-[1.45] [&_pre_code]:!whitespace-pre [&_pre_code]:!block
+  [&_code]:text-[#c9d1d9] [&_code]:font-mono [&_code]:bg-[rgba(110,118,129,0.4)] [&_code]:px-[0.4em] [&_code]:py-[0.2em] [&_code]:rounded-md [&_code]:text-[85%]
+
+  [&_.katex]:text-[1.05em] [&_.katex]:text-[#c9d1d9]
+  [&_.katex-display]:my-4 [&_.katex-display]:py-3 [&_.katex-display]:px-4 [&_.katex-display]:bg-[#161b22] [&_.katex-display]:border [&_.katex-display]:border-[#30363d] [&_.katex-display]:rounded-md [&_.katex-display]:overflow-x-auto
+
+  [&_img]:max-w-full [&_img]:my-4 [&_img]:rounded-md [&_img]:box-border [&_img]:bg-[#0d1117]
+  [&_figure]:my-4
+  [&_figcaption]:text-[13px] [&_figcaption]:text-[#8b949e] [&_figcaption]:mt-2 [&_figcaption]:text-center
+
+  [&_table]:block [&_table]:w-max [&_table]:max-w-full [&_table]:overflow-x-auto [&_table]:my-4 [&_table]:border-collapse
+  [&_thead]:bg-[#161b22]
+  [&_th]:border [&_th]:border-[#30363d] [&_th]:px-[13px] [&_th]:py-[6px] [&_th]:font-semibold [&_th]:text-white [&_th]:text-left
+  [&_td]:border [&_td]:border-[#30363d] [&_td]:px-[13px] [&_td]:py-[6px] [&_td]:text-[#c9d1d9]
+  [&_tr]:bg-[#0d1117] [&_tr]:border-t [&_tr]:border-[#21262d]
+  [&_tr:nth-child(2n)]:bg-[#161b22]
+`;
 
 /**
  * Universal content renderer for blogs, notes and research papers.
  *
  * Routing logic:
- *   - HTML string  (starts with "<" or contains "</") → dangerouslySetInnerHTML with full prose styling & KaTeX preprocessor
+ *   - HTML string  (starts with "<" or contains "</") → dangerouslySetInnerHTML with GitHub-README prose styling & KaTeX preprocessor
  *   - Markdown / plain string                         → MarkdownRenderer (react-markdown + KaTeX pipeline)
  *   - TipTap JSON object                              → JSON→Markdown text → MarkdownRenderer
  */
@@ -123,8 +163,6 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
   if (!content) return null;
 
   if (typeof content === "string") {
-    // Only treat as HTML if it genuinely opens with a block-level HTML tag.
-    // Type hints like Dict[str, str] and markdown with < > chars are NOT HTML.
     const HTML_BLOCK_RE = /^\s*<(h[1-6]|p|div|section|article|figure|ul|ol|table|blockquote|pre|hr|br|img)\b/i;
     const isHtml = HTML_BLOCK_RE.test(content);
 
@@ -132,63 +170,26 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
       const processedHtml = preprocessLatexInHtml(content);
       return (
         <div
-          className={`
-            max-w-none leading-[1.85] font-sans text-zinc-200
-
-            [&_h1]:text-3xl [&_h1]:font-black [&_h1]:text-white [&_h1]:mt-10 [&_h1]:mb-5 [&_h1]:pb-3 [&_h1]:border-b [&_h1]:border-white/10 [&_h1]:tracking-tight [&_h1]:leading-tight
-            [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-8 [&_h2]:mb-4 [&_h2]:tracking-tight
-            [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-cyan-300 [&_h3]:mt-7 [&_h3]:mb-3
-            [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-zinc-200 [&_h4]:mt-5 [&_h4]:mb-2
-
-            [&_p]:text-[15px] [&_p]:text-zinc-300 [&_p]:leading-[1.85] [&_p]:my-4
-
-            [&_ul]:my-5 [&_ul]:pl-6 [&_ul]:space-y-2 [&_ul]:list-disc [&_ul]:text-zinc-300
-            [&_ol]:my-5 [&_ol]:pl-6 [&_ol]:space-y-2 [&_ol]:list-decimal [&_ol]:text-zinc-300
-            [&_li]:text-[15px] [&_li]:leading-[1.75] [&_li]:my-1 [&_li]:text-zinc-300
-
-            [&_strong]:font-extrabold [&_strong]:text-white
-            [&_em]:italic [&_em]:text-zinc-200
-
-            [&_a]:text-cyan-400 [&_a]:underline [&_a]:underline-offset-2 [&_a]:font-semibold [&_a:hover]:text-cyan-300
-
-            [&_blockquote]:border-l-4 [&_blockquote]:border-cyan-400 [&_blockquote]:bg-cyan-400/5 [&_blockquote]:pl-5 [&_blockquote]:pr-4 [&_blockquote]:py-3 [&_blockquote]:my-6 [&_blockquote]:rounded-r-xl [&_blockquote]:text-zinc-300 [&_blockquote]:not-italic
-
-            [&_hr]:my-8 [&_hr]:border-white/10
-
-            [&_pre]:my-6 [&_pre]:bg-[#0d0d12] [&_pre]:border [&_pre]:border-white/[0.12] [&_pre]:rounded-2xl [&_pre]:p-5 [&_pre]:overflow-x-auto [&_pre]:leading-[1.75] [&_pre]:text-[13px] [&_pre]:font-mono [&_pre]:shadow-[0_4px_32px_rgba(0,0,0,0.5)]
-            [&_pre_code]:!bg-transparent [&_pre_code]:!border-0 [&_pre_code]:!rounded-none [&_pre_code]:!p-0 [&_pre_code]:!px-0 [&_pre_code]:!py-0 [&_pre_code]:!m-0 [&_pre_code]:!text-emerald-300 [&_pre_code]:!font-mono [&_pre_code]:!text-[13px] [&_pre_code]:!leading-[1.75] [&_pre_code]:!whitespace-pre [&_pre_code]:!block [&_pre_code]:!shadow-none [&_pre_code]:!outline-none [&_pre_code]:!ring-0
-            [&_code]:text-cyan-300 [&_code]:font-mono [&_code]:bg-zinc-800/80 [&_code]:border [&_code]:border-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[12px] [&_code]:leading-none
-
-            [&_.katex]:text-base [&_.katex]:text-zinc-100
-            [&_.katex-display]:my-5 [&_.katex-display]:py-3.5 [&_.katex-display]:px-5 [&_.katex-display]:bg-[#0d0d12]/90 [&_.katex-display]:border [&_.katex-display]:border-cyan-500/30 [&_.katex-display]:rounded-xl [&_.katex-display]:shadow-lg [&_.katex-display_.katex]:text-cyan-300
-
-            [&_figure]:my-8 [&_figure]:rounded-2xl [&_figure]:overflow-hidden [&_figure]:border [&_figure]:border-white/10 [&_figure]:bg-zinc-950/80 [&_figure]:shadow-2xl
-            [&_figure_img]:w-full [&_figure_img]:max-h-[600px] [&_figure_img]:object-cover [&_figure_img]:block
-            [&_figcaption]:px-5 [&_figcaption]:py-3 [&_figcaption]:text-xs [&_figcaption]:font-mono [&_figcaption]:text-cyan-400 [&_figcaption]:border-t [&_figcaption]:border-white/10 [&_figcaption]:bg-zinc-900/60
-            [&_img]:max-h-[600px] [&_img]:w-full [&_img]:object-contain [&_img]:rounded-xl [&_img]:mx-auto [&_img]:my-6 [&_img]:border [&_img]:border-white/5
-
-            [&_table]:w-full [&_table]:my-6 [&_table]:border-collapse [&_table]:border [&_table]:border-white/10 [&_table]:rounded-xl [&_table]:overflow-hidden [&_table]:text-sm
-            [&_thead]:bg-zinc-900/80
-            [&_th]:px-4 [&_th]:py-3 [&_th]:text-left [&_th]:text-xs [&_th]:font-mono [&_th]:font-bold [&_th]:text-zinc-200 [&_th]:uppercase [&_th]:tracking-wider [&_th]:border-b [&_th]:border-white/10
-            [&_td]:px-4 [&_td]:py-3 [&_td]:text-zinc-300 [&_td]:border-b [&_td]:border-white/5 [&_td]:align-top
-            [&_tbody_tr:hover_td]:bg-white/[0.03]
-            [&_tbody_tr:last-child_td]:border-b-0
-
-            ${className}
-          `}
+          className={`${GITHUB_MARKDOWN_BODY} ${className}`}
           dangerouslySetInnerHTML={{ __html: processedHtml }}
         />
       );
     }
 
-    // Markdown / plain text
-    return <MarkdownRenderer content={content} className={className} />;
+    return (
+      <div className={`${GITHUB_MARKDOWN_BODY} ${className}`}>
+        <MarkdownRenderer content={content} className="" />
+      </div>
+    );
   }
 
-  // TipTap JSON object → extract to Markdown → render
   if (typeof content === "object" && content !== null) {
     const text = extractTextFromTipTap(content as TipTapNode);
-    return <MarkdownRenderer content={text} className={className} />;
+    return (
+      <div className={`${GITHUB_MARKDOWN_BODY} ${className}`}>
+        <MarkdownRenderer content={text} className="" />
+      </div>
+    );
   }
 
   return null;

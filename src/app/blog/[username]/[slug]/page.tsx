@@ -8,7 +8,7 @@ import { BlogSideChat } from "@/components/blog/BlogSideChat";
 import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
 import { isValidObjectId } from "@/lib/validation";
 import { notFound } from "next/navigation";
-import { Calendar, Clock, ArrowLeft } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, BookOpen } from "lucide-react";
 import Link from "next/link";
 
 // Dynamic routing config segment
@@ -335,10 +335,24 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Content body */}
-        <article className="w-full">
-          <BlogContentRenderer content={note.content} />
-        </article>
+        {/* Content body — GitHub README-style card */}
+        <div className="w-full rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden shadow-2xl">
+          {/* File header bar, mimics GitHub's README.md file box */}
+          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d] bg-[#161b22]">
+            <BookOpen className="h-4 w-4 text-[#8b949e]" />
+            <span
+              className="text-[13px] font-semibold text-[#c9d1d9]"
+              style={{ fontFamily: "var(--font-jetbrains-mono, monospace)" }}
+            >
+              README.md
+            </span>
+          </div>
+
+          {/* Rendered content */}
+          <article className="w-full px-6 md:px-10 py-8">
+            <BlogContentRenderer content={note.content} />
+          </article>
+        </div>
 
         {/* Public Blog Google Ad Placement */}
         <GoogleAdBanner adSlot="1003" className="mt-8" />

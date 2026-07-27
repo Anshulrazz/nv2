@@ -3,7 +3,33 @@
 export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState } from "react";
-import { BookOpen, Trophy, ArrowUpRight, Loader2, Coins, Gift, Sparkles, Plus, Compass, Send, Flame, ArrowRight } from "lucide-react";
+import {
+  BookOpen,
+  Trophy,
+  ArrowUpRight,
+  Loader2,
+  Coins,
+  Gift,
+  Sparkles,
+  Plus,
+  Compass,
+  Send,
+  Flame,
+  ArrowRight,
+  GraduationCap,
+  Rss,
+  Play,
+  Calendar,
+  Briefcase,
+  Newspaper,
+  HelpCircle,
+  MessageSquare,
+  Presentation,
+  Bookmark,
+  Settings,
+  Zap,
+  Grid,
+} from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
@@ -23,6 +49,25 @@ interface RecentStats {
   recentNotes: { _id: string; title: string; updatedAt: string }[];
   recentBlogs: { _id: string; title: string; summary: string; userName: string }[];
 }
+
+const quickLinks = [
+  { href: "/notes", label: "Notes", icon: BookOpen, accent: "text-[#8FC3DE]", bg: "bg-[#8FC3DE]/15 border-[#8FC3DE]/30" },
+  { href: "/research", label: "Research", icon: GraduationCap, accent: "text-[#C9A9E0]", bg: "bg-[#C9A9E0]/15 border-[#C9A9E0]/30", badge: "AI" },
+  { href: "/revision", label: "Revision", icon: Sparkles, accent: "text-[#F0C93B]", bg: "bg-[#F0C93B]/15 border-[#F0C93B]/30", badge: "AI" },
+  { href: "/feed", label: "Public Feed", icon: Rss, accent: "text-[#F28B6E]", bg: "bg-[#F28B6E]/15 border-[#F28B6E]/30" },
+  { href: "/messages", label: "Messages", icon: Send, accent: "text-[#8FC3DE]", bg: "bg-[#8FC3DE]/15 border-[#8FC3DE]/30" },
+  { href: "/youtube", label: "YouTube AI", icon: Play, accent: "text-[#F28B6E]", bg: "bg-[#F28B6E]/15 border-[#F28B6E]/30", badge: "AI" },
+  { href: "/planner", label: "Planner", icon: Calendar, accent: "text-[#C9A9E0]", bg: "bg-[#C9A9E0]/15 border-[#C9A9E0]/30" },
+  { href: "/projects", label: "Projects", icon: Briefcase, accent: "text-[#8FC3DE]", bg: "bg-[#8FC3DE]/15 border-[#8FC3DE]/30" },
+  { href: "/blogs", label: "Blogs", icon: Newspaper, accent: "text-[#C9A9E0]", bg: "bg-[#C9A9E0]/15 border-[#C9A9E0]/30" },
+  { href: "/doubts", label: "Doubts", icon: HelpCircle, accent: "text-[#F0C93B]", bg: "bg-[#F0C93B]/15 border-[#F0C93B]/30" },
+  { href: "/forums", label: "Forums", icon: MessageSquare, accent: "text-[#F28B6E]", bg: "bg-[#F28B6E]/15 border-[#F28B6E]/30" },
+  { href: "/courses", label: "Courses", icon: Presentation, accent: "text-[#8FC3DE]", bg: "bg-[#8FC3DE]/15 border-[#8FC3DE]/30" },
+  { href: "/bookmarks", label: "Bookmarks", icon: Bookmark, accent: "text-[#F0C93B]", bg: "bg-[#F0C93B]/15 border-[#F0C93B]/30" },
+  { href: "/leaderboard", label: "Leaderboard", icon: Trophy, accent: "text-[#F28B6E]", bg: "bg-[#F28B6E]/15 border-[#F28B6E]/30" },
+  { href: "/referrals", label: "Referrals", icon: Gift, accent: "text-[#C9A9E0]", bg: "bg-[#C9A9E0]/15 border-[#C9A9E0]/30" },
+  { href: "/settings", label: "Settings", icon: Settings, accent: "text-[#9FAEA1]", bg: "bg-[#9FAEA1]/15 border-[#9FAEA1]/30" },
+];
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -173,6 +218,44 @@ export default function DashboardOverviewPage() {
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Quick Links & Shortcuts Grid (Phone view app launcher style) */}
+        <motion.div variants={itemVariants} className="space-y-3 select-none">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <Zap className="size-4 text-[#F0C93B]" />
+              <h2 className="text-xs font-mono font-bold text-[#F3F0E4] uppercase tracking-widest">
+                Quick Links & Shortcuts
+              </h2>
+            </div>
+            <span className="text-[10px] font-mono text-[#9FAEA1]">16 Tools</span>
+          </div>
+
+          <div className="grid grid-cols-4 sm:grid-cols-6 lg:grid-cols-8 gap-2.5 sm:gap-3">
+            {quickLinks.map(({ href, label, icon: Icon, accent, bg, badge }) => (
+              <Link key={href} href={href}>
+                <motion.div
+                  whileHover={{ y: -3, scale: 1.04 }}
+                  whileTap={{ scale: 0.95 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 22 }}
+                  className="rounded-2xl bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 sm:p-2.5 text-center flex flex-col items-center justify-center gap-1.5 hover:border-[#F0C93B]/40 hover:bg-[#1F362A] transition-all cursor-pointer relative group h-20 sm:h-22 shadow-md"
+                >
+                  {badge && (
+                    <span className="absolute top-1 right-1 text-[8px] font-mono font-extrabold bg-[#F0C93B] text-[#2A2118] px-1 rounded-md leading-tight shadow-sm">
+                      {badge}
+                    </span>
+                  )}
+                  <div className={`size-8 sm:size-9 rounded-xl ${bg} flex items-center justify-center ${accent} group-hover:scale-110 transition-transform`}>
+                    <Icon className="size-4 sm:size-4.5" />
+                  </div>
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#F3F0E4] group-hover:text-[#F0C93B] tracking-tight truncate max-w-full font-heading transition-colors">
+                    {label}
+                  </span>
+                </motion.div>
+              </Link>
+            ))}
+          </div>
         </motion.div>
 
         {/* Asymmetric 2-Column Section */}
