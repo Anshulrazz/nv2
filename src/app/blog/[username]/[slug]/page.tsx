@@ -278,8 +278,36 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
 
   const plainTextContent = extractNotePlainText(note.content);
 
+  const articleSchema = buildArticleSchema({
+    title: note.title,
+    description: plainTextContent.substring(0, 160) || note.title,
+    url: `https://notexia.in/blog/${encodeURIComponent(username)}/${encodeURIComponent(slug)}`,
+    datePublished: note.createdAt ? new Date(note.createdAt).toISOString() : new Date().toISOString(),
+    dateModified: note.updatedAt ? new Date(note.updatedAt).toISOString() : (note.createdAt ? new Date(note.createdAt).toISOString() : new Date().toISOString()),
+    author: {
+      id: String(author._id),
+      name: author.name || username || "Notexia Author",
+      image: author.image || undefined,
+    },
+    imageUrl: note.coverImage || undefined,
+  });
+
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Feed", item: "/feed" },
+    { name: note.title, item: `/blog/${encodeURIComponent(username)}/${encodeURIComponent(slug)}` },
+  ]);
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 overflow-hidden flex flex-col">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
       {/* Dynamic gradients decoration background */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute inset-0 cyber-grid opacity-30 pointer-events-none" />

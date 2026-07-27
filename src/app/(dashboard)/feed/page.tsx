@@ -432,13 +432,13 @@ export default function FeedPage() {
               </div>
               <div>
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
-                  Public Feed
+                  Public Study Notes, Research Papers &amp; Academic Articles
                   <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
                     LIVE STREAM
                   </span>
                 </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-0.5 sm:mt-1">
-                  Explore research notes, peer discussions, and student publications across university batches.
+                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-0.5 sm:mt-1 max-w-2xl leading-relaxed">
+                  Discover free student study notes, research papers, and technical articles published on Notexia. Explore formula sheets, step-by-step code blueprints, and peer discussions.
                 </p>
               </div>
             </div>

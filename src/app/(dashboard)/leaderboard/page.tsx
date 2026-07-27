@@ -82,13 +82,13 @@ export default function LeaderboardPage() {
             </div>
             <div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
-                Batch Leaderboard
+                Student Batch Leaderboard &amp; Academic Ranks
                 <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
                   LIVE STANDINGS
                 </span>
               </h1>
-              <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
-                Climb ranks by writing notes, solving peer doubts, and contributing to community forums.
+              <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1 max-w-xl leading-relaxed">
+                Track top student contributors and academic activity points on Notexia. Earn rank points by publishing study notes, solving peer doubts, and sharing research blueprints.
               </p>
             </div>
           </div>

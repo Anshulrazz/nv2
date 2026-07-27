@@ -164,14 +164,14 @@ export default function DoubtsPage() {
               <HelpCircle className="size-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                Doubts &amp; Solution Q&amp;A
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex flex-wrap items-center gap-3">
+                Online Student Doubt Solver &amp; Academic Q&amp;A Hub
                 <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
                   TICKET RESOLUTION
                 </span>
               </h1>
-              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
-                Submit academic doubts, collaborate on solutions, and earn activity points for verified answers.
+              <p className="text-zinc-300 text-xs sm:text-sm font-normal mt-2 leading-relaxed max-w-2xl">
+                Notexia&apos;s Instant Academic Doubt Solver connects students with peer scholars and AI study assistants to solve Physics, Chemistry, Mathematics, and Coding questions. Submit any query to receive step-by-step verified solutions and formula breakdowns.
               </p>
             </div>
           </div>

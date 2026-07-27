@@ -15,10 +15,35 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FollowButton } from "@/app/(dashboard)/user/[id]/FollowButton";
 import { ProfileClient } from "@/app/(dashboard)/user/[id]/ProfileClient";
+import { buildPersonSchema, buildBreadcrumbSchema } from "@/lib/seo/jsonld";
 import mongoose from "mongoose";
 
 interface UserProfilePageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({ params }: UserProfilePageProps) {
+  try {
+    const { id } = await params;
+    await connectToDatabase();
+    const user = await User.findById(id).select("name email isPublic isSuspended").lean();
+    if (!user || user.isSuspended) return { title: "Profile Not Found | Notexia" };
+
+    const name = (user.name as string) || "Scholar";
+    const title = `${name}'s Academic Profile & Research Notes | Notexia`;
+    const description = `Explore research notes, published blogs, and study contributions by ${name} on Notexia.`;
+    const url = `https://notexia.in/user/${id}`;
+
+    return {
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: { title, description, url, type: "profile" },
+      twitter: { card: "summary_large_image", title, description },
+    };
+  } catch {
+    return { title: "User Profile | Notexia" };
+  }
 }
 
 export default async function UserProfilePage({ params }: UserProfilePageProps) {
@@ -137,8 +162,29 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
     }).sort({ createdAt: -1 });
   }
 
+  const personSchema = buildPersonSchema({
+    id: String(targetUser._id),
+    name: targetUser.name || "Scholar",
+    image: targetUser.image || undefined,
+    bio: targetUser.bio || undefined,
+  });
+
+  const breadcrumbs = buildBreadcrumbSchema([
+    { name: "Home", item: "/" },
+    { name: "Community", item: "/community" },
+    { name: targetUser.name || "Scholar Profile", item: `/user/${targetUserId}` },
+  ]);
+
   return (
     <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
+      />
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
