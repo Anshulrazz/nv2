@@ -80,100 +80,106 @@ export const POST = auth(async function POST(req) {
 
     // ─── 1. Google Gemini API Stream ───
     if (geminiApiKey && geminiApiKey !== "placeholder" && geminiApiKey !== "") {
-      const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "api-key": geminiApiKey,
-          "x-goog-api-key": geminiApiKey,
-          "Authorization": `Bearer ${geminiApiKey}`,
-        },
-        body: JSON.stringify({
-          model: geminiModel,
-          messages: formattedMessages,
-          max_tokens: 4096,
-          temperature: 1.00,
-          top_p: 0.95,
-          stream: true,
-        }),
-      });
+      try {
+        const response = await fetch("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "api-key": geminiApiKey,
+            "x-goog-api-key": geminiApiKey,
+            "Authorization": `Bearer ${geminiApiKey}`,
+          },
+          body: JSON.stringify({
+            model: geminiModel,
+            messages: formattedMessages,
+            max_tokens: 4096,
+            temperature: 1.00,
+            top_p: 0.95,
+            stream: true,
+          }),
+        });
 
-      if (!response.ok) {
-        const errText = await response.text();
-        throw new Error(`Gemini API Error: ${response.status} - ${errText}`);
-      }
+        if (!response.ok) {
+          const errText = await response.text();
+          throw new Error(`Gemini API Error: ${response.status} - ${errText}`);
+        }
 
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+        const reader = response.body?.getReader();
+        const decoder = new TextDecoder();
 
-      const readableStream = new ReadableStream({
-        async start(controller) {
-          let assistantReply = "";
-          let buffer = "";
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            let assistantReply = "";
+            let buffer = "";
 
-          try {
-            if (reader) {
-              while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+            try {
+              if (reader) {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || "";
+                  buffer += decoder.decode(value, { stream: true });
+                  const lines = buffer.split("\n");
+                  buffer = lines.pop() || "";
 
-                for (const line of lines) {
-                  const trimmed = line.trim();
-                  if (trimmed === "data: [DONE]") continue;
-                  if (trimmed.startsWith("data: ")) {
-                    try {
-                      const parsed = JSON.parse(trimmed.substring(6));
-                      const text = parsed.choices?.[0]?.delta?.content || "";
-                      if (text) {
-                        assistantReply += text;
-                        controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                  for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed === "data: [DONE]") continue;
+                    if (trimmed.startsWith("data: ")) {
+                      try {
+                        const parsed = JSON.parse(trimmed.substring(6));
+                        const text = parsed.choices?.[0]?.delta?.content || "";
+                        if (text) {
+                          assistantReply += text;
+                          controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                        }
+                      } catch {
+                        // Skip partial line parse errors
                       }
-                    } catch {
-                      // Skip partial line parse errors
                     }
                   }
                 }
+
+                // Flush final buffer line
+                if (buffer.startsWith("data: ")) {
+                  try {
+                    const parsed = JSON.parse(buffer.substring(6));
+                    const text = parsed.choices?.[0]?.delta?.content || "";
+                    if (text) {
+                      assistantReply += text;
+                      controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                    }
+                  } catch {}
+                }
               }
 
-              // Flush final buffer line
-              if (buffer.startsWith("data: ")) {
-                try {
-                  const parsed = JSON.parse(buffer.substring(6));
-                  const text = parsed.choices?.[0]?.delta?.content || "";
-                  if (text) {
-                    assistantReply += text;
-                    controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
-                  }
-                } catch {}
-              }
+              // Save conversation history and reward points
+              await saveChatHistory(chatId, userId, message, assistantReply);
+              await awardPoints(userId, 5);
+
+            } catch (err) {
+              console.error("Gemini Stream parse error:", err);
+              const errMsg = err instanceof Error ? err.message : String(err);
+              controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+            } finally {
+              controller.close();
             }
+          },
+        });
 
-            // Save conversation history and reward points
-            await saveChatHistory(chatId, userId, message, assistantReply);
-            await awardPoints(userId, 5);
-
-          } catch (err) {
-            console.error("Gemini Stream parse error:", err);
-            const errMsg = err instanceof Error ? err.message : String(err);
-            controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
-          } finally {
-            controller.close();
-          }
-        },
-      });
-
-      return new Response(readableStream, {
-        headers: {
-          "Content-Type": "text/event-stream",
-          "Cache-Control": "no-cache",
-          "Connection": "keep-alive",
-        },
-      });
+        return new Response(readableStream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+          },
+        });
+      } catch (geminiErr) {
+        console.warn("Gemini API failed, falling through to OpenRouter:", geminiErr);
+        // Fall through to OpenRouter
+      }
     }
+
 
     // ─── 2. OpenRouter API Stream (secondary fallback) ───
     if (openRouterApiKey && openRouterApiKey !== "placeholder" && openRouterApiKey !== "") {
