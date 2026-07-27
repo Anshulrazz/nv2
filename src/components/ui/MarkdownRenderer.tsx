@@ -143,27 +143,45 @@ function MarkdownRendererImpl({
   return (
     <div
       className={`
-        prose prose-invert max-w-none
-        prose-headings:text-white prose-headings:font-semibold
-        prose-p:text-zinc-300 prose-p:leading-relaxed
-        prose-strong:text-white
-        prose-em:text-zinc-200
-        prose-li:text-zinc-300
-        prose-code:text-cyan-300
-        prose-code:bg-zinc-800/70
-        prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+        prose prose-invert max-w-none leading-[1.85]
+
+        prose-headings:text-white prose-headings:font-bold prose-headings:leading-snug
+        prose-h1:text-3xl prose-h1:mt-10 prose-h1:mb-5 prose-h1:pb-3 prose-h1:border-b prose-h1:border-white/10
+        prose-h2:text-2xl prose-h2:mt-8 prose-h2:mb-4
+        prose-h3:text-xl prose-h3:mt-6 prose-h3:mb-3 prose-h3:text-cyan-300
+        prose-h4:text-lg prose-h4:mt-5 prose-h4:mb-2 prose-h4:text-zinc-200
+
+        prose-p:text-zinc-300 prose-p:leading-[1.85] prose-p:my-4 prose-p:text-[15px]
+
+        prose-strong:text-white prose-strong:font-extrabold
+        prose-em:text-zinc-200 prose-em:italic
+
+        prose-ul:my-5 prose-ul:pl-6 prose-ul:space-y-2 prose-ul:list-disc
+        prose-ol:my-5 prose-ol:pl-6 prose-ol:space-y-2 prose-ol:list-decimal
+        prose-li:text-zinc-300 prose-li:text-[15px] prose-li:leading-[1.75] prose-li:my-1
+
+        prose-code:text-cyan-300 prose-code:bg-zinc-800/70 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:text-[13px] prose-code:font-mono
         prose-code:before:content-none prose-code:after:content-none
-        prose-pre:bg-transparent prose-pre:border-0 prose-pre:p-0
-        prose-blockquote:border-l-cyan-400 prose-blockquote:border-l-4
-        prose-blockquote:bg-cyan-400/5 prose-blockquote:py-1
-        prose-blockquote:not-italic prose-blockquote:text-zinc-300
-        prose-a:text-cyan-400 prose-a:no-underline
-        hover:prose-a:text-cyan-300
-        prose-img:rounded-xl prose-img:border prose-img:border-white/10
-        prose-hr:border-white/10
-        prose-table:w-full
-        prose-th:bg-zinc-900 prose-th:text-white
-        prose-td:border-white/10
+
+        prose-pre:bg-transparent prose-pre:border-0 prose-pre:p-0 prose-pre:my-6
+
+        prose-blockquote:border-l-4 prose-blockquote:border-cyan-400 prose-blockquote:bg-cyan-400/5
+        prose-blockquote:pl-5 prose-blockquote:py-3 prose-blockquote:my-6
+        prose-blockquote:not-italic prose-blockquote:text-zinc-300 prose-blockquote:rounded-r-xl
+
+        prose-a:text-cyan-400 prose-a:no-underline hover:prose-a:text-cyan-300
+
+        prose-img:rounded-xl prose-img:border prose-img:border-white/10 prose-img:my-6 prose-img:mx-auto
+
+        prose-hr:border-white/10 prose-hr:my-8
+
+        prose-table:w-full prose-table:my-6
+        prose-th:bg-zinc-900 prose-th:text-white prose-th:px-4 prose-th:py-3 prose-th:text-sm
+        prose-td:border-white/10 prose-td:px-4 prose-td:py-3 prose-td:text-zinc-300 prose-td:text-sm
+
+        [&_figure]:my-8 [&_figure]:p-4 [&_figure]:bg-zinc-950/80 [&_figure]:border [&_figure]:border-white/10 [&_figure]:rounded-2xl [&_figure]:text-center
+        [&_figcaption]:mt-3 [&_figcaption]:text-xs [&_figcaption]:font-mono [&_figcaption]:text-cyan-400
+
         ${className}
       `}
     >
