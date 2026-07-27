@@ -726,25 +726,30 @@ export default function MessagesPage() {
         background: activeWallpaper,
       };
     } else {
-      wallpaperStyle = {
+    wallpaperStyle = {
         backgroundColor: activeWallpaper,
       };
     }
   }
 
   return (
-    <div className="flex-1 flex h-full bg-neutral-950 overflow-hidden relative">
+    <div className="flex-1 flex h-full bg-[#16261D] text-[#F3F0E4] overflow-hidden relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+      {/* Background Ambient Mesh Glow */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+      </div>
+
       {/* 1. Conversations Column (Left Pane) */}
-      <aside className={`w-full md:w-80 lg:w-96 border-r border-white/[0.08] bg-white/[0.02] flex flex-col shrink-0 h-full overflow-hidden ${
+      <aside className={`w-full md:w-80 lg:w-96 border-r border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-xl flex flex-col shrink-0 h-full overflow-hidden relative z-10 ${
         activeUser ? "hidden md:flex" : "flex"
       }`}>
         {/* Header */}
-        <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-white/[0.08] flex items-center justify-between shrink-0 select-none">
+        <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-[#F3F0E4]/15 flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-cyan-400" />
+            <MessageSquare className="h-4 w-4 text-[#F0C93B]" />
             <h1
-              className="text-sm font-bold text-neutral-100 uppercase tracking-widest"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
+              className="text-xs sm:text-sm font-black text-[#F3F0E4] uppercase tracking-widest font-heading"
             >
               Direct Messages
             </h1>
@@ -752,27 +757,33 @@ export default function MessagesPage() {
         </div>
 
         {/* User Search Bar */}
-        <div className="p-3 sm:p-4 border-b border-white/[0.06] relative">
+        <div className="p-3 sm:p-4 border-b border-[#F3F0E4]/10 relative">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-neutral-500" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9FAEA1]" />
             <Input
+              type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-lpignore="true"
               placeholder="Search users to message..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-neutral-950/60 border-neutral-850 pl-9 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-9 text-xs"
+              className="bg-[#1A2D23]/80 border-[#F3F0E4]/15 pl-9 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-9 text-xs rounded-xl"
             />
           </div>
 
           {/* Search Dropdown Panel */}
           {searchQuery && (
-            <div className="absolute left-3 right-3 sm:left-4 sm:right-4 mt-1 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5">
+            <div className="absolute left-3 right-3 sm:left-4 sm:right-4 mt-1 bg-[#121F18] border border-[#F3F0E4]/20 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5 backdrop-blur-2xl">
               {isSearching ? (
-                <div className="flex items-center justify-center py-4 text-neutral-550 gap-2 text-xs">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                <div className="flex items-center justify-center py-4 text-[#9FAEA1] gap-2 text-xs">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F0C93B]" />
                   Searching...
                 </div>
               ) : searchResults.length === 0 ? (
-                <div className="text-center py-4 text-neutral-600 text-xs italic">
+                <div className="text-center py-4 text-[#9FAEA1] text-xs italic">
                   No users found
                 </div>
               ) : (
@@ -784,19 +795,19 @@ export default function MessagesPage() {
                       setSearchQuery("");
                       router.replace("/messages?chat=open");
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.05] transition-all text-left text-xs"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#1F362A] transition-all text-left text-xs text-[#F3F0E4]"
                   >
                     {usr.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={usr.image} alt={usr.name} className="h-7 w-7 rounded-full object-cover border border-neutral-800" />
+                      <img src={usr.image} alt={usr.name} className="h-7 w-7 rounded-full object-cover border border-[#F3F0E4]/20" />
                     ) : (
-                      <div className="h-7 w-7 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-450 border border-neutral-700">
-                        <UserIcon className="h-3.5 w-3.5" />
+                      <div className="h-7 w-7 rounded-full bg-[#1F362A] flex items-center justify-center text-[#9FAEA1] border border-[#F3F0E4]/20 font-bold uppercase text-[10px]">
+                        <UserIcon className="h-3.5 w-3.5 text-[#F0C93B]" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-semibold text-neutral-200 truncate">{usr.name}</p>
-                      <p className="text-[10px] text-neutral-500 truncate">{usr.email}</p>
+                      <p className="font-bold text-[#F3F0E4] truncate">{usr.name}</p>
+                      <p className="text-[10px] text-[#9FAEA1] truncate">{usr.email}</p>
                     </div>
                   </button>
                 ))
@@ -806,14 +817,14 @@ export default function MessagesPage() {
         </div>
 
         {/* Conversations list */}
-        <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 space-y-1">
+        <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 space-y-1.5">
           {isConversationsLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-neutral-600 gap-2 select-none">
-              <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
+            <div className="flex flex-col items-center justify-center h-40 text-[#9FAEA1] gap-2 select-none">
+              <Loader2 className="h-5 w-5 animate-spin text-[#F0C93B]" />
               <span className="text-[10px] uppercase font-bold tracking-wider">Loading chats...</span>
             </div>
           ) : conversations.length === 0 ? (
-            <div className="text-center py-12 text-neutral-600 text-xs select-none">
+            <div className="text-center py-12 text-[#9FAEA1] text-xs select-none">
               No conversations active.<br />Search users to start chatting!
             </div>
           ) : (
@@ -825,16 +836,17 @@ export default function MessagesPage() {
                 : conv.lastMessage.content;
 
               return (
-                <button
+                <motion.button
                   key={conv.otherUser._id}
+                  whileHover={{ x: 2 }}
                   onClick={() => {
                     setActiveUser(conv.otherUser);
                     router.replace("/messages?chat=open");
                   }}
-                  className={`w-full flex items-center gap-3 sm:gap-3.5 p-2.5 sm:p-3 rounded-xl border transition-all text-left group ${
+                  className={`w-full flex items-center gap-3 sm:gap-3.5 p-3 rounded-2xl border transition-all text-left group ${
                     isSelected
-                      ? "bg-cyan-500/10 border-cyan-500/25 hover:bg-cyan-500/12 shadow-[0_0_15px_rgba(6,182,212,0.04)]"
-                      : "bg-transparent border-transparent hover:bg-white/[0.04] hover:border-white/5"
+                      ? "bg-[#1A2D23] border-[#F0C93B]/40 shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
+                      : "bg-[#16261D]/50 border-[#F3F0E4]/10 hover:bg-[#1F362A]/60 hover:border-[#F3F0E4]/20"
                   }`}
                 >
                   {/* User Avatar */}
@@ -844,16 +856,16 @@ export default function MessagesPage() {
                       <img
                         src={conv.otherUser.image}
                         alt={conv.otherUser.name}
-                        className={`h-12 w-12 sm:h-13 sm:w-13 rounded-full object-cover border-2 ${hasUnread ? "border-cyan-400/60" : "border-neutral-800"}`}
+                        className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full object-cover border-2 ${hasUnread ? "border-[#F0C93B]" : "border-[#F3F0E4]/20"}`}
                       />
                     ) : (
-                      <div className={`h-12 w-12 sm:h-13 sm:w-13 rounded-full bg-neutral-850 flex items-center justify-center text-neutral-500 border-2 font-bold uppercase text-xs ${hasUnread ? "border-cyan-400/60" : "border-neutral-750"}`}>
+                      <div className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-[#1F362A] flex items-center justify-center text-[#F3F0E4] border-2 font-bold uppercase text-xs ${hasUnread ? "border-[#F0C93B]" : "border-[#F3F0E4]/20"}`}>
                         {conv.otherUser.name.substring(0, 2)}
                       </div>
                     )}
                     {/* Active/Unread glow indicator */}
                     {hasUnread && (
-                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-cyan-400 border-2 border-neutral-950 rounded-full shadow-[0_0_10px_rgba(34,211,238,0.8)] animate-pulse" />
+                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-[#F0C93B] border-2 border-[#121F18] rounded-full shadow-[0_0_10px_#F0C93B] animate-pulse" />
                     )}
                   </div>
 
@@ -861,12 +873,11 @@ export default function MessagesPage() {
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex justify-between items-baseline select-none gap-2">
                       <span
-                        className="text-xs sm:text-[13px] font-bold text-neutral-200 truncate group-hover:text-neutral-100"
-                        style={{ fontFamily: "var(--font-space-grotesk)" }}
+                        className="text-xs sm:text-[13px] font-bold text-[#F3F0E4] truncate group-hover:text-[#F0C93B] font-heading transition-colors"
                       >
                         {conv.otherUser.name}
                       </span>
-                      <span className="text-[9px] text-neutral-600 font-mono shrink-0">
+                      <span className="text-[9px] text-[#9FAEA1] font-mono shrink-0">
                         {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -876,19 +887,19 @@ export default function MessagesPage() {
                     <div className="flex items-center justify-between gap-2">
                       <p
                         className={`text-[11px] truncate flex-1 ${
-                          hasUnread ? "text-cyan-300 font-semibold" : "text-neutral-500"
+                          hasUnread ? "text-[#F0C93B] font-bold" : "text-[#9FAEA1]"
                         }`}
                       >
                         {lastMsgSnippet}
                       </p>
                       {conv.unreadCount > 0 && (
-                        <span className="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-[8px] font-bold px-1.5 py-0.5 rounded-full select-none font-mono">
+                        <span className="bg-[#F0C93B] text-[#2A2118] text-[9px] font-bold px-1.5 py-0.5 rounded-full select-none font-mono">
                           {conv.unreadCount}
                         </span>
                       )}
                     </div>
                   </div>
-                </button>
+                </motion.button>
               );
             })
           )}
@@ -1091,20 +1102,20 @@ export default function MessagesPage() {
                       >
                         {/* Message Bubble */}
                         <div
-                          className={`rounded-[20px] px-3.5 py-2.5 sm:px-4 text-[13px] sm:text-xs leading-relaxed shadow-sm transition-all break-words w-full ${
+                          className={`rounded-[20px] px-4 py-2.5 sm:px-4.5 text-[13px] sm:text-xs leading-relaxed transition-all break-words w-full ${
                             isSentByMe
-                              ? "bg-cyan-500 text-neutral-950 rounded-tr-md font-medium"
-                              : "bg-neutral-850 border border-neutral-800 text-neutral-200 rounded-tl-md"
+                              ? "bg-[#F0C93B] text-[#2A2118] rounded-tr-xs font-medium shadow-[3px_3px_0_0_#F28B6E]"
+                              : "bg-[#1A2D23] border border-[#F3F0E4]/15 text-[#F3F0E4] rounded-tl-xs shadow-[0_4px_15px_rgba(0,0,0,0.25)]"
                           }`}
                         >
                           {/* Replied Message Preview Header */}
                           {repliedToMsg && repliedToMsg.messageId && (
-                            <div className={`mb-2 p-2 rounded text-[10px] leading-normal flex flex-col gap-0.5 select-none border-l-2 ${
+                            <div className={`mb-2 p-2 rounded-xl text-[10px] leading-normal flex flex-col gap-0.5 select-none border-l-3 ${
                               isSentByMe
-                                ? "bg-neutral-950/15 border-neutral-950/50 text-neutral-950/80"
-                                : "bg-neutral-950/40 border-cyan-400 text-neutral-400"
+                                ? "bg-[#2A2118]/10 border-[#2A2118] text-[#2A2118]"
+                                : "bg-[#121F18]/80 border-[#F0C93B] text-[#9FAEA1]"
                             }`}>
-                              <span className={`font-bold font-mono ${isSentByMe ? "text-neutral-950" : "text-cyan-400"}`}>{repliedToMsg.senderName}</span>
+                              <span className={`font-bold font-mono ${isSentByMe ? "text-[#2A2118]" : "text-[#F0C93B]"}`}>{repliedToMsg.senderName}</span>
                               <span className="truncate max-w-[200px]">{repliedToMsg.content}</span>
                             </div>
                           )}
@@ -1263,18 +1274,18 @@ export default function MessagesPage() {
             </div>
 
             {/* Bottom Text/Media Inputs Panel — sticky above the safe area */}
-            <div className="sticky bottom-0 z-10 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-white/[0.08] bg-neutral-950/90 backdrop-blur-md shrink-0">
+            <div className="sticky bottom-0 z-10 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#F3F0E4]/15 bg-[#121F18]/95 backdrop-blur-xl shrink-0">
               <form onSubmit={handleSendMessage} className="space-y-2.5 sm:space-y-3">
                 {/* Replying message preview banner */}
                 {replyingMessage && (
-                  <div className="flex items-center justify-between p-3 bg-neutral-900 border border-neutral-805 rounded-xl animate-fade-in relative select-none">
+                  <div className="flex items-center justify-between p-3 bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-xl animate-fade-in relative select-none">
                     <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                      <div className="shrink-0 h-4 border-l-2 border-cyan-400 self-stretch" />
+                      <div className="shrink-0 h-4 border-l-2 border-[#F0C93B] self-stretch" />
                       <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-[10px] font-bold text-cyan-400 font-mono">
+                        <span className="text-[10px] font-bold text-[#F0C93B] font-mono">
                           Replying to {replyingMessage.senderId === currentUserId ? "yourself" : activeUser?.name}
                         </span>
-                        <span className="text-[10px] text-neutral-450 truncate max-w-[220px] sm:max-w-md">
+                        <span className="text-[10px] text-[#9FAEA1] truncate max-w-[220px] sm:max-w-md">
                           {replyingMessage.content || (replyingMessage.attachments && replyingMessage.attachments.length > 0 ? "📷 Media Attachment" : "")}
                         </span>
                       </div>
@@ -1283,7 +1294,7 @@ export default function MessagesPage() {
                       type="button"
                       variant="ghost"
                       onClick={() => setReplyingMessage(null)}
-                      className="h-6 w-6 p-0 hover:bg-neutral-800 text-neutral-500 hover:text-neutral-200 rounded-lg shrink-0 flex items-center justify-center cursor-pointer transition-all"
+                      className="h-6 w-6 p-0 hover:bg-[#1F362A] text-[#9FAEA1] hover:text-[#F3F0E4] rounded-lg shrink-0 flex items-center justify-center cursor-pointer transition-all"
                     >
                       <X className="h-3.5 w-3.5" />
                     </Button>
@@ -1293,19 +1304,19 @@ export default function MessagesPage() {
                 {attachments.length > 0 && (
                   <div className="flex flex-wrap gap-2 animate-[slideIn_0.2s_ease-out]">
                     {attachments.map((att, i) => (
-                      <div key={i} className="relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-neutral-800 bg-neutral-900 select-none group">
+                      <div key={i} className="relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-[#F3F0E4]/20 bg-[#16261D] select-none group">
                         {att.type === "image" ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={att.url} alt="Preview" className="object-cover h-full w-full" />
                         ) : att.type === "video" ? (
-                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-neutral-950/60">
-                            <Film className="h-5 w-5 text-cyan-400" />
-                            <span className="text-[7px] text-neutral-500 uppercase font-bold tracking-wide">Video</span>
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#121F18]/80">
+                            <Film className="h-5 w-5 text-[#8FC3DE]" />
+                            <span className="text-[7px] text-[#9FAEA1] uppercase font-bold tracking-wide">Video</span>
                           </div>
                         ) : (
-                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-neutral-950/60 px-1.5">
-                            <FileText className="h-5 w-5 text-cyan-400" />
-                            <span className="text-[7px] text-neutral-500 truncate max-w-full font-mono">{att.name}</span>
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#121F18]/80 px-1.5">
+                            <FileText className="h-5 w-5 text-[#8FC3DE]" />
+                            <span className="text-[7px] text-[#9FAEA1] truncate max-w-full font-mono">{att.name}</span>
                           </div>
                         )}
                         <button
@@ -1313,7 +1324,7 @@ export default function MessagesPage() {
                           onClick={() => {
                             setAttachments(prev => prev.filter((_, index) => index !== i));
                           }}
-                          className="absolute top-1 right-1 p-0.5 rounded-full bg-neutral-950/90 border border-neutral-700 text-neutral-300 hover:text-red-400 transition-colors opacity-90"
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-[#121F18]/90 border border-[#F3F0E4]/30 text-[#F3F0E4] hover:text-[#F28B6E] transition-colors opacity-90"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -1322,7 +1333,7 @@ export default function MessagesPage() {
                   </div>
                 )}
 
-                {/* Input Fields Row — pill-shaped, Instagram-like */}
+                {/* Input Fields Row — pill-shaped */}
                 <div className="flex items-center gap-2">
                   <input
                     type="file"
@@ -1351,45 +1362,48 @@ export default function MessagesPage() {
                           variant="ghost"
                           size="icon"
                           disabled={isUploading}
-                          className="h-10 w-10 shrink-0 text-neutral-450 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-full"
+                          className="h-10 w-10 shrink-0 text-[#9FAEA1] hover:text-[#F0C93B] hover:bg-[#F0C93B]/10 border border-[#F3F0E4]/20 hover:border-[#F0C93B]/40 transition-all rounded-xl"
                         />
                       }
                     >
                       {isUploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
+                        <Loader2 className="h-4 w-4 animate-spin text-[#F0C93B]" />
                       ) : (
                         <Paperclip className="h-4 w-4" />
                       )}
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="top" className="w-56 bg-neutral-900 border-neutral-800 text-neutral-300">
-                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100 gap-2">
-                        <Images className="h-3.5 w-3.5 text-cyan-400" />
+                    <DropdownMenuContent align="start" side="top" className="w-56 bg-[#121F18] border-[#F3F0E4]/20 text-[#F3F0E4]">
+                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:bg-[#1F362A] hover:text-[#F0C93B] gap-2">
+                        <Images className="h-3.5 w-3.5 text-[#8FC3DE]" />
                         <span>Photo or Video</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => docInputRef.current?.click()} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100 gap-2">
-                        <FileIcon className="h-3.5 w-3.5 text-cyan-400" />
+                      <DropdownMenuItem onClick={() => docInputRef.current?.click()} className="cursor-pointer hover:bg-[#1F362A] hover:text-[#F0C93B] gap-2">
+                        <FileIcon className="h-3.5 w-3.5 text-[#8FC3DE]" />
                         <span>Document</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {/* Text Input Box */}
                   <Input
-                    placeholder="Message..."
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
+                    placeholder={`Message ${activeUser.name}...`}
                     value={inputText}
                     onChange={(e) => {
                       setInputText(e.target.value);
                       handleTypingNotification();
                     }}
-                    className="bg-neutral-900 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-xs sm:text-[13px] flex-1 rounded-full px-4"
+                    className="flex-1 bg-[#1A2D23]/80 border-[#F3F0E4]/20 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs sm:text-sm rounded-xl px-4 font-sans"
                   />
 
-                  {/* Send Button */}
                   <Button
                     type="submit"
-                    size="icon"
-                    disabled={!inputText.trim() && attachments.length === 0}
-                    className="h-10 w-10 shrink-0 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-40 disabled:hover:bg-cyan-500 text-neutral-950 transition-all rounded-full shadow-[0_0_12px_rgba(6,182,212,0.25)] hover:shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+                    disabled={(!inputText.trim() && attachments.length === 0) || isUploading}
+                    className="h-10 w-10 shrink-0 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0_0_#F28B6E]"
                   >
                     <Send className="h-4 w-4" />
                   </Button>

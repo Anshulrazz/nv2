@@ -30,6 +30,15 @@ export const GET = auth(async function GET(req) {
   }
 });
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export const POST = auth(async function POST(req) {
   try {
     const userId = req.auth?.user?.id;
@@ -40,34 +49,28 @@ export const POST = auth(async function POST(req) {
     const body = await req.json();
     const { title, content, summary, coverImage, published } = body;
 
-    if (
-      typeof title !== "string" ||
-      typeof content !== "string" ||
-      typeof summary !== "string" ||
-      title.trim() === "" ||
-      content.trim() === "" ||
-      summary.trim() === ""
-    ) {
-      return NextResponse.json({ error: "Title, content, and summary are required and must be strings." }, { status: 400 });
-    }
-
-    if (coverImage !== undefined && coverImage !== null && typeof coverImage !== "string") {
-      return NextResponse.json({ error: "coverImage must be a string." }, { status: 400 });
-    }
-
-    if (published !== undefined && typeof published !== "boolean") {
-      return NextResponse.json({ error: "published must be a boolean." }, { status: 400 });
-    }
+    const safeTitle = (title || "Untitled Blog").toString().trim();
+    const safeContent = (content || "Start writing markdown content here...").toString();
+    const safeSummary = (summary || "A brief summary of your blog post.").toString();
 
     await connectToDatabase();
 
     const dbUser = await User.findById(userId);
     const userName = dbUser?.name || "Anonymous";
 
+    const baseSlug = slugify(safeTitle) || "untitled-blog";
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+    while (await Blog.findOne({ slug: uniqueSlug })) {
+      uniqueSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
     const blog = await Blog.create({
-      title: title.trim(),
-      content: content.trim(),
-      summary: summary.trim(),
+      title: safeTitle,
+      slug: uniqueSlug,
+      content: safeContent,
+      summary: safeSummary,
       coverImage: coverImage || null,
       published: published || false,
       userId,

@@ -19,8 +19,9 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   let isOrderedList = false;
   let listItems: string[] = [];
 
-  const flushList = (key: string) => {
+  const flushList = (keyPrefix: string) => {
     if (listItems.length === 0) return;
+    const listKey = `${keyPrefix}-list-${elements.length}`;
     const items = listItems.map((item, idx) => (
       <li key={idx} className="text-sm text-neutral-300 leading-relaxed">
         {parseInlineMarkdown(item)}
@@ -28,11 +29,11 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
     ));
     elements.push(
       isOrderedList ? (
-        <ol key={key} className="list-decimal pl-5 space-y-1.5 my-3 text-neutral-350">
+        <ol key={listKey} className="list-decimal pl-5 space-y-1.5 my-3 text-neutral-350">
           {items}
         </ol>
       ) : (
-        <ul key={key} className="list-disc pl-5 space-y-1.5 my-3 text-neutral-350">
+        <ul key={listKey} className="list-disc pl-5 space-y-1.5 my-3 text-neutral-350">
           {items}
         </ul>
       )
@@ -43,7 +44,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const key = `md-block-${i}`;
+    const key = `md-block-${i}-${elements.length}`;
 
     // 1. Code Blocks
     if (line.startsWith("```")) {

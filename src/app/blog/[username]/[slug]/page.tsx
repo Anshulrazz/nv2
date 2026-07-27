@@ -1,8 +1,11 @@
 import React from "react";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { Blog } from "@/models/Blog";
 import { User } from "@/models/User";
 import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
+import { BlogSideChat } from "@/components/blog/BlogSideChat";
+import { isValidObjectId } from "@/lib/validation";
 import { notFound } from "next/navigation";
 import { Calendar, Clock, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -143,31 +146,126 @@ function renderTipTapJSON(node: TipTapNode | null | undefined): React.ReactNode 
   }
 }
 
+function extractNotePlainText(content: unknown): string {
+  if (!content) return "";
+  if (typeof content === "string") {
+    return content.replace(/<[^>]*>?/gm, " ").replace(/\s+/g, " ").trim();
+  }
+  if (typeof content === "object" && content !== null) {
+    const obj = content as Record<string, unknown>;
+    if (obj.text && typeof obj.text === "string") return obj.text;
+    if (Array.isArray(obj.content)) return obj.content.map(extractNotePlainText).join("\n");
+  }
+  if (Array.isArray(content)) return content.map(extractNotePlainText).join(" ");
+  return "";
+}
+
+function renderNoteContent(content: unknown) {
+  if (!content) return null;
+
+  if (typeof content === "string") {
+    if (content.trim().startsWith("<") || content.includes("</")) {
+      return (
+        <div
+          className="space-y-4 text-neutral-300 text-sm leading-relaxed prose prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    return <div className="whitespace-pre-wrap text-sm text-neutral-300 leading-relaxed">{content}</div>;
+  }
+
+  if (typeof content === "object") {
+    return renderTipTapJSON(content as TipTapNode);
+  }
+
+  return null;
+}
+
 export default async function PublicBlogPostPage({ params }: PageProps) {
-  const { slug } = await params;
+  const { username, slug } = await params;
 
   await connectToDatabase();
 
-  const note = await Note.findOne({ slug, published: true, isTrashed: false });
+  const cleanSlug = slug ? decodeURIComponent(slug).trim() : "";
+  const slugPattern = cleanSlug.toLowerCase().replace(/\s+/g, "-");
+  const slugRegex = new RegExp(`^${cleanSlug.replace(/[-_]/g, "[-_ ]?")}$`, "i");
+
+  // Query note flexibly by slug, slug regex, or _id
+  let note = await Note.findOne({
+    $or: [
+      { slug: cleanSlug },
+      { slug: slugPattern },
+      { slug: slugRegex },
+      ...(isValidObjectId(cleanSlug) ? [{ _id: cleanSlug }] : []),
+    ],
+    isTrashed: false,
+  });
+
+  // If not found in Note, query Blog collection
+  if (!note) {
+    note = await Note.findOne({
+      title: { $regex: new RegExp(cleanSlug.replace(/-/g, " "), "i") },
+      isTrashed: false,
+    });
+  }
+
+  if (!note) {
+    const blog = await Blog.findOne({
+      $or: [
+        { slug: cleanSlug },
+        { slug: slugPattern },
+        { slug: slugRegex },
+        { title: { $regex: new RegExp(cleanSlug.replace(/-/g, " "), "i") } },
+        ...(isValidObjectId(cleanSlug) ? [{ _id: cleanSlug }] : []),
+      ],
+      published: true,
+    });
+
+    if (blog) {
+      const words = (blog.content || "").split(/\s+/).filter(Boolean).length;
+      note = {
+        _id: blog._id,
+        title: blog.title,
+        content: blog.content,
+        coverImage: blog.coverImage || "",
+        category: "Scholar Article",
+        tags: ["blog"],
+        readingTime: `${Math.max(1, Math.ceil(words / 200))} min read`,
+        wordCount: words,
+        createdAt: blog.createdAt,
+        userId: blog.userId,
+      };
+    }
+  }
+
   if (!note) {
     notFound();
   }
 
-  // Check author account permissions status
-  const author = await User.findById(note.userId);
-  if (!author || author.isSuspended) {
+  // Find author or provide graceful fallback
+  const authorDoc = await User.findById(note.userId);
+  if (authorDoc && authorDoc.isSuspended) {
     notFound();
   }
 
+  const author = authorDoc || {
+    _id: note.userId,
+    name: username || "Notexia Author",
+    image: "",
+  };
+
+  const plainTextContent = extractNotePlainText(note.content);
+
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 relative overflow-hidden flex flex-col justify-between">
+    <div className="min-h-screen bg-neutral-950 text-neutral-100 selection:bg-cyan-500/30 overflow-hidden flex flex-col">
       {/* Dynamic gradients decoration background */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute inset-0 cyber-grid opacity-30 pointer-events-none" />
 
       {/* Top Header */}
       <header className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+        <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between">
           <Link href="/feed" className="text-neutral-400 hover:text-white flex items-center gap-2 text-xs font-semibold select-none transition-colors">
             <ArrowLeft className="h-4 w-4 text-cyan-400" /> Back to Feed
           </Link>
@@ -180,14 +278,14 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-12 space-y-8 relative z-10 flex-1 w-full">
+      <main className="w-full px-6 md:px-12 lg:px-16 py-12 space-y-8 relative z-10 flex-1">
         {/* Cover image banner */}
         {note.coverImage && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={note.coverImage}
             alt={note.title}
-            className="w-full h-64 md:h-80 object-cover rounded-2xl border border-neutral-900 shadow-xl"
+            className="w-full h-72 md:h-96 lg:h-[450px] object-cover rounded-3xl border border-neutral-900 shadow-2xl"
           />
         )}
 
@@ -214,7 +312,7 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
           </div>
 
           <h1
-            className="text-3xl md:text-4xl font-extrabold text-neutral-100 tracking-tight leading-tight"
+            className="text-3xl md:text-5xl font-extrabold text-neutral-100 tracking-tight leading-tight"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             {note.title}
@@ -250,20 +348,23 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
             <div className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5 text-neutral-600" />
               <span style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                {note.readingTime || "1 min read"} ({note.wordCount} words)
+                {note.readingTime || "1 min read"} ({note.wordCount || 0} words)
               </span>
             </div>
           </div>
         </div>
 
         {/* Content body */}
-        <article className="prose prose-invert max-w-none prose-sm leading-relaxed">
-          {renderTipTapJSON(note.content as unknown as TipTapNode)}
+        <article className="prose prose-invert max-w-none w-full text-base leading-relaxed">
+          {renderNoteContent(note.content)}
         </article>
 
         {/* Public Blog Google Ad Placement */}
         <GoogleAdBanner adSlot="1003" className="mt-8" />
       </main>
+
+      {/* Floating AI Chat Assistant for Public Blog Post */}
+      <BlogSideChat blogTitle={note.title} blogContentText={plainTextContent} />
     </div>
   );
 }

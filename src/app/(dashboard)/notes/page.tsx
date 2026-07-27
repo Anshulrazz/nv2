@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { Editor } from "@/components/editor/Editor";
 import { PDFViewer } from "@/components/PDFViewer";
+import { TopicGeneratorModal } from "@/components/notes/TopicGeneratorModal";
+import { NoteSideChat } from "@/components/notes/NoteSideChat";
 import {
   BookOpen,
   Plus,
@@ -17,6 +19,8 @@ import {
   Trash2,
   X,
   ArrowUpRight,
+  Sparkles,
+  Wand2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,14 +33,27 @@ interface VersionHistoryItem {
   updatedAt: string;
 }
 
+function extractNoteText(content: unknown): string {
+  if (!content) return "";
+  if (typeof content === "string") return content;
+  if (typeof content === "object" && content !== null) {
+    const obj = content as Record<string, unknown>;
+    if (obj.text && typeof obj.text === "string") return obj.text;
+    if (Array.isArray(obj.content)) return obj.content.map(extractNoteText).join("\n");
+  }
+  if (Array.isArray(content)) return content.map(extractNoteText).join(" ");
+  return "";
+}
+
 export default function NotesPage() {
-  const { activeNoteId, notes, updateNote, createNote } = useWorkspaceStore();
+  const { activeNoteId, notes, updateNote, createNote, setActiveNoteId } = useWorkspaceStore();
   const activeNote = notes.find((n) => n._id === activeNoteId);
   const [isImporting, setIsImporting] = useState(false);
   const [isUploadingAsset, setIsUploadingAsset] = useState(false);
 
   const [showPanel, setShowPanel] = useState(false);
-  const [panelTab, setPanelTab] = useState<"publish" | "history">("publish");
+  const [panelTab, setPanelTab] = useState<"chat" | "publish" | "history">("chat");
+  const [showTopicModal, setShowTopicModal] = useState(false);
   const [history, setHistory] = useState<VersionHistoryItem[]>([]);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
 
@@ -322,9 +339,37 @@ export default function NotesPage() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowPanel(!showPanel)}
+                onClick={() => {
+                  if (showPanel && panelTab === "chat") {
+                    setShowPanel(false);
+                  } else {
+                    setPanelTab("chat");
+                    setShowPanel(true);
+                  }
+                }}
+                className={`h-8 text-[11px] font-mono gap-1.5 px-3 rounded-full transition-all ${
+                  showPanel && panelTab === "chat"
+                    ? "bg-cyan-500 text-zinc-950 font-bold border border-cyan-400 shadow-md shadow-cyan-500/20"
+                    : "bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20 border border-cyan-500/20"
+                }`}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                <span>AI Side Chat</span>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  if (showPanel && panelTab !== "chat") {
+                    setShowPanel(false);
+                  } else {
+                    setPanelTab("publish");
+                    setShowPanel(true);
+                  }
+                }}
                 className={`h-8 text-[11px] font-mono gap-1 px-3 rounded-full transition-all ${
-                  showPanel
+                  showPanel && panelTab !== "chat"
                     ? "bg-white/10 text-white border border-white/20"
                     : "text-zinc-400 hover:text-white hover:bg-white/5 border border-white/5"
                 }`}
@@ -364,9 +409,20 @@ export default function NotesPage() {
               onClick={() => setShowPanel(false)}
             />
 
-            <aside className="fixed inset-y-0 right-0 z-40 w-80 border-l border-white/10 bg-[#07070a] flex flex-col shrink-0 h-full overflow-hidden shadow-2xl md:relative md:inset-auto md:z-0">
+            <aside className="fixed inset-y-0 right-0 z-40 w-80 md:w-96 border-l border-white/10 bg-[#07070a] flex flex-col shrink-0 h-full overflow-hidden shadow-2xl md:sticky md:top-0 md:inset-auto md:z-0">
               {/* Tab switcher */}
               <div className="h-14 border-b border-white/5 flex items-center bg-zinc-950/60 p-1 shrink-0 select-none gap-1 pr-3">
+                <button
+                  onClick={() => setPanelTab("chat")}
+                  className={`flex-1 text-[10px] font-mono font-bold py-2 rounded-lg uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
+                    panelTab === "chat"
+                      ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                      : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  <Sparkles className="size-3 text-cyan-400" />
+                  AI Chat
+                </button>
                 <button
                   onClick={() => setPanelTab("publish")}
                   className={`flex-1 text-[10px] font-mono font-bold py-2 rounded-lg uppercase tracking-wider transition-all ${
@@ -375,7 +431,7 @@ export default function NotesPage() {
                       : "text-zinc-500 hover:text-zinc-300"
                   }`}
                 >
-                  Publish &amp; SEO
+                  Publish
                 </button>
                 <button
                   onClick={() => setPanelTab("history")}
@@ -392,16 +448,22 @@ export default function NotesPage() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setShowPanel(false)}
-                  className="md:hidden h-8 w-8 text-zinc-400 hover:text-white"
+                  className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg shrink-0 ml-1"
+                  title="Close Side Panel"
                 >
                   <X className="h-4 w-4" />
                 </Button>
               </div>
 
               {/* Panel content */}
-              <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scroll">
-                {panelTab === "publish" ? (
-                  <div className="space-y-5 text-xs">
+              <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+                {panelTab === "chat" ? (
+                  <NoteSideChat
+                    noteTitle={activeNote.title}
+                    noteContentText={extractNoteText(activeNote.content)}
+                  />
+                ) : panelTab === "publish" ? (
+                  <div className="p-5 space-y-5 text-xs">
                     {/* Asset Attachment */}
                     <div className="rounded-2xl bg-zinc-900/40 border border-white/10 p-4 space-y-3">
                       <div className="flex items-center gap-1.5 select-none">
@@ -618,7 +680,7 @@ export default function NotesPage() {
                   </div>
                 ) : (
                   /* History tab */
-                  <div className="space-y-3">
+                  <div className="p-5 space-y-3">
                     {isLoadingHistory ? (
                       <div className="flex items-center justify-center py-8 text-zinc-500 gap-2">
                         <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
@@ -657,6 +719,20 @@ export default function NotesPage() {
             </aside>
           </>
         )}
+
+        {/* Floating AI Side Chat Button in Notes (hides when side panel is open) */}
+        {!showPanel && (
+          <button
+            onClick={() => {
+              setPanelTab("chat");
+              setShowPanel(true);
+            }}
+            className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-zinc-950 font-bold px-4 py-3 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.4)] flex items-center gap-2 transition-all hover:scale-105 active:scale-95 text-xs select-none animate-in fade-in"
+          >
+            <Sparkles className="size-4 text-zinc-950" />
+            <span>Ask AI about this Note</span>
+          </button>
+        )}
       </div>
     );
   }
@@ -679,21 +755,29 @@ export default function NotesPage() {
               No note selected
             </h2>
             <p className="text-zinc-400 text-xs font-light leading-relaxed">
-              Select a note from the sidebar tree or create a new one to start writing.
+              Select a note from the sidebar tree or generate a 2,000+ word note from any topic.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 items-center w-full">
             <Button
-              onClick={() => createNote("Untitled Note", null)}
-              className="group w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(255,255,255,0.2)]"
+              onClick={() => setShowTopicModal(true)}
+              className="group w-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(6,182,212,0.3)]"
             >
-              <Plus className="size-4 text-zinc-950" />
-              <span>New Note</span>
+              <Wand2 className="size-4 text-zinc-950" />
+              <span>AI Generate Note (2,000+ Words)</span>
               <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
 
-            <label className="cursor-pointer text-zinc-400 hover:text-white text-xs flex items-center gap-1.5 transition-colors pt-2 font-mono">
+            <Button
+              onClick={() => createNote("Untitled Note", null)}
+              className="w-full rounded-full bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 font-bold text-xs h-10 flex items-center justify-center gap-2 transition-all"
+            >
+              <Plus className="size-4 text-zinc-400" />
+              <span>New Blank Note</span>
+            </Button>
+
+            <label className="cursor-pointer text-zinc-400 hover:text-white text-xs flex items-center gap-1.5 transition-colors pt-1 font-mono">
               <FileUp className="size-3.5 text-cyan-400" />
               <span>{isImporting ? "Importing..." : "Import .txt / .md file"}</span>
               <input
@@ -707,6 +791,32 @@ export default function NotesPage() {
           </div>
         </div>
       </div>
+
+      <TopicGeneratorModal
+        isOpen={showTopicModal}
+        onClose={() => setShowTopicModal(false)}
+        onGenerate={async (newTopic, contentHtml) => {
+          const paragraphs = contentHtml.split("</p>").map((p) => ({
+            type: "paragraph",
+            content: [{ type: "text", text: p.replace(/<[^>]*>?/gm, "").trim() }],
+          })).filter((p) => p.content[0].text);
+
+          const newNote = await createNote(newTopic, null);
+          if (newNote) {
+            await updateNote(newNote._id, {
+              title: newTopic,
+              content: {
+                type: "doc",
+                content: [
+                  { type: "heading", attrs: { level: 2 }, content: [{ type: "text", text: newTopic }] },
+                  ...paragraphs,
+                ],
+              },
+            });
+            setActiveNoteId(newNote._id);
+          }
+        }}
+      />
     </div>
   );
 }

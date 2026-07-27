@@ -10,7 +10,6 @@ import {
   Send,
   Loader2,
   Image as ImageIcon,
-  Sparkles,
   X,
   Trash2,
   Edit3,
@@ -21,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
 import { useAlertStore } from "@/stores/alertStore";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface CommentData {
   _id?: string;
@@ -250,100 +250,113 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
       </div>
 
       {/* Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
-              <Users className="size-7" />
+      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
+        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="size-14 rounded-2xl bg-[#F0C93B]/10 flex items-center justify-center border border-[#F0C93B]/30 text-[#F0C93B] shadow-[2px_2px_0_0_#F28B6E] shrink-0">
+                <Users className="size-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+                  Community Hub
+                  <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
+                    LIVE FEED
+                  </span>
+                </h1>
+                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
+                  Connect with student scholars, post updates, and earn activity points across university batches.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                Community Hub
-                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
-                  LIVE FEED
-                </span>
-              </h1>
-              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
-                Connect with student scholars, post updates, and earn activity points across university batches.
-              </p>
-            </div>
-          </div>
 
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-          >
-            <Plus className="size-4 text-zinc-950" />
-            <span>Create Post</span>
-            <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Button>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
+            >
+              <Plus className="size-4 text-[#2A2118]" />
+              <span>Create Post</span>
+              <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Posts Feed Container */}
-      <div className="p-6 sm:p-10 max-w-3xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-8 lg:p-10 max-w-3xl w-full mx-auto space-y-8 relative z-10">
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-cyan-400" />
-            <span className="font-mono text-zinc-400 tracking-widest">SYNCING COMMUNITY STREAM...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-[#F0C93B]" />
+            <span className="font-mono text-[#F0C93B] tracking-widest">SYNCING COMMUNITY STREAM...</span>
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
-              <Users className="size-10 text-zinc-600" />
-              <h3 className="text-lg font-bold text-white">Community feed empty</h3>
-              <p className="text-xs text-zinc-400 font-light max-w-xs">
+          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
+              <Users className="size-10 text-[#9FAEA1]" />
+              <h3 className="text-lg font-bold text-[#F3F0E4] font-heading">Community feed empty</h3>
+              <p className="text-xs text-[#9FAEA1] font-light max-w-xs">
                 Share the first post to start conversations with peer engineers!
               </p>
               <Button
                 onClick={() => setIsCreateOpen(true)}
-                className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-5 mt-2"
+                className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs font-bold h-9 px-5 mt-2 shadow-[2px_2px_0_0_#F28B6E]"
               >
                 Create First Post
               </Button>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.08 }}
+            className="space-y-6"
+          >
             {posts.map((post) => {
               const isLiked = post.likes?.includes(currentUserId || "");
               const isExpanded = !!expandedComments[post._id];
 
               return (
-                <div key={post._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-cyan-500/40 transition-all duration-300">
-                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-5">
+                <motion.div
+                  key={post._id}
+                  whileHover={{ y: -3 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl hover:border-[#F0C93B]/40 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                >
+                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-5">
                     {/* Post Header */}
                     <div className="flex items-center gap-3 select-none">
                       {post.userImage ? (
-                        <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-white/10 bg-zinc-900" />
+                        <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D]" />
                       ) : (
-                        <div className="size-9 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center text-zinc-400 text-xs font-bold">
+                        <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold">
                           {post.userName?.[0]?.toUpperCase()}
                         </div>
                       )}
                       <div>
                         <Link href={`/user/${post.userId}`}>
-                          <p className="text-xs font-bold text-white hover:text-cyan-400 transition-colors leading-tight">
+                          <p className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors leading-tight font-heading">
                             {post.userName}
                           </p>
                         </Link>
-                        <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                        <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
                           {new Date(post.createdAt).toLocaleString()}
                         </p>
                       </div>
                       {post.userId === currentUserId && (
                         <div className="ml-auto flex items-center gap-2">
-                          <button onClick={() => openEditModal(post)} className="text-zinc-500 hover:text-white transition-colors">
+                          <button onClick={() => openEditModal(post)} className="text-[#9FAEA1] hover:text-[#F3F0E4] transition-colors">
                             <Edit3 className="size-4" />
                           </button>
-                          <button onClick={() => handleDeletePost(post._id)} className="text-zinc-500 hover:text-rose-400 transition-colors">
+                          <button onClick={() => handleDeletePost(post._id)} className="text-[#9FAEA1] hover:text-[#F28B6E] transition-colors">
                             <Trash2 className="size-4" />
                           </button>
                         </div>
@@ -351,30 +364,30 @@ export default function CommunityPage() {
                     </div>
 
                     {/* Post Content */}
-                    <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
+                    <p className="text-[#F3F0E4] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
 
                     {/* Media Attachment */}
                     {post.mediaUrl && (
                       <div className="flex items-center justify-start w-full">
                         {post.mediaType === "image" ? (
-                          <img src={post.mediaUrl} alt="Post content" className="max-h-[300px] object-contain w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                          <img src={post.mediaUrl} alt="Post content" className="max-h-[300px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                         ) : (
-                          <video src={post.mediaUrl} controls className="max-h-[300px] object-contain w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                          <video src={post.mediaUrl} controls className="max-h-[300px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                         )}
                       </div>
                     )}
 
                     {/* Engagement Actions */}
-                    <div className="flex items-center gap-4 pt-3 border-t border-white/5 select-none">
+                    <div className="flex items-center gap-4 pt-3 border-t border-[#F3F0E4]/10 select-none">
                       <button
                         onClick={() => handleLikeToggle(post._id)}
                         className={`flex items-center gap-1.5 text-xs font-mono font-bold py-1 px-3 rounded-full border transition-all ${
                           isLiked
-                            ? "bg-cyan-500/10 border-cyan-500/20 text-cyan-400"
-                            : "bg-zinc-950 border-white/10 text-zinc-400 hover:text-white"
+                            ? "bg-[#F0C93B]/15 border-[#F0C93B]/30 text-[#F0C93B]"
+                            : "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1] hover:text-[#F3F0E4]"
                         }`}
                       >
-                        <Heart className={`size-3.5 ${isLiked ? "fill-cyan-400 text-cyan-400" : ""}`} />
+                        <Heart className={`size-3.5 ${isLiked ? "fill-[#F0C93B] text-[#F0C93B]" : ""}`} />
                         <span>{post.likes?.length || 0}</span>
                       </button>
 
@@ -382,93 +395,108 @@ export default function CommunityPage() {
                         onClick={() => setExpandedComments((prev) => ({ ...prev, [post._id]: !prev[post._id] }))}
                         className={`flex items-center gap-1.5 text-xs font-mono font-bold py-1 px-3 rounded-full border transition-all ${
                           isExpanded
-                            ? "bg-white/10 border-white/20 text-white"
-                            : "bg-zinc-950 border-white/10 text-zinc-400 hover:text-white"
+                            ? "bg-[#8FC3DE]/15 border-[#8FC3DE]/30 text-[#8FC3DE]"
+                            : "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1] hover:text-[#F3F0E4]"
                         }`}
                       >
-                        <MessageSquare className="size-3.5 text-zinc-500" />
+                        <MessageSquare className="size-3.5 text-[#9FAEA1]" />
                         <span>{post.comments?.length || 0} Comments</span>
                       </button>
                     </div>
 
                     {/* Comments section */}
                     {isExpanded && (
-                      <div className="space-y-3 pt-3 border-t border-white/5">
+                      <div className="space-y-3 pt-3 border-t border-[#F3F0E4]/10">
                         {post.comments?.map((comment, index) => (
-                          <div key={index} className="bg-zinc-950 border border-white/5 p-3.5 rounded-2xl flex gap-3 items-start">
-                            <div className="size-6 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 font-bold text-[9px] mt-0.5 shrink-0">
+                          <div key={index} className="bg-[#16261D] border border-[#F3F0E4]/10 p-3.5 rounded-2xl flex gap-3 items-start">
+                            <div className="size-6 rounded-full bg-[#121F18] border border-[#F3F0E4]/15 flex items-center justify-center text-[#F0C93B] font-bold text-[9px] mt-0.5 shrink-0">
                               {comment.userName?.[0]?.toUpperCase()}
                             </div>
                             <div className="space-y-0.5 min-w-0">
                               <div className="flex items-center gap-2 text-[10px] font-mono select-none">
-                                <span className="font-bold text-white">{comment.userName}</span>
-                                <span className="text-zinc-500">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                <span className="font-bold text-[#F3F0E4] font-heading">{comment.userName}</span>
+                                <span className="text-[#9FAEA1]">{new Date(comment.createdAt).toLocaleDateString()}</span>
                               </div>
-                              <p className="text-zinc-300 text-xs font-light leading-relaxed">{comment.content}</p>
+                              <p className="text-[#F3F0E4] text-xs font-light leading-relaxed">{comment.content}</p>
                             </div>
                           </div>
                         ))}
 
                         <div className="flex items-center gap-2">
                           <Input
+                            type="text"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            data-lpignore="true"
                             placeholder="Add a comment..."
                             value={commentInput[post._id] || ""}
                             onChange={(e) => setCommentInput((prev) => ({ ...prev, [post._id]: e.target.value }))}
                             onKeyDown={(e) => { if (e.key === "Enter") handleAddComment(post._id); }}
-                            className="flex-1 bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-10 text-xs rounded-xl"
+                            className="flex-1 bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl font-sans"
                           />
                           <Button
                             onClick={() => handleAddComment(post._id)}
                             disabled={!commentInput[post._id]?.trim()}
-                            className="rounded-full bg-white hover:bg-zinc-100 disabled:opacity-40 text-zinc-950 h-10 px-5 font-bold transition-all"
+                            className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 disabled:opacity-40 text-[#2A2118] h-10 px-5 font-bold transition-all shadow-[2px_2px_0_0_#F28B6E]"
                           >
-                            <Send className="size-4 text-zinc-950" />
+                            <Send className="size-4 text-[#2A2118]" />
                           </Button>
                         </div>
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* Create Post Modal Overlay */}
       {isCreateOpen && (
         <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setIsCreateOpen(false)} />
-          <div className="relative z-10 bg-zinc-950 border border-white/10 rounded-3xl w-full max-w-lg p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-white/5 pb-3">
-              <h2 className="text-base font-bold text-white">Create Community Post</h2>
-              <button onClick={() => setIsCreateOpen(false)} className="text-zinc-500 hover:text-white">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsCreateOpen(false)} />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative z-10 bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] w-full max-w-lg p-6 space-y-4 shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
+          >
+            <div className="flex items-center justify-between border-b border-[#F3F0E4]/15 pb-3">
+              <h2 className="text-base font-bold text-[#F3F0E4] font-heading">Create Community Post</h2>
+              <button onClick={() => setIsCreateOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4]">
                 <X className="size-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreatePost} className="space-y-4">
               <textarea
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                data-lpignore="true"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 placeholder="What's on your mind? Share knowledge, updates, or engineering insights..."
                 rows={4}
                 required
                 autoFocus
-                className="w-full rounded-2xl bg-zinc-900 border border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 p-3.5 text-xs outline-none resize-none transition-colors"
+                className="w-full rounded-2xl bg-[#121F18] border border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 p-3.5 text-xs outline-none resize-none transition-colors font-sans"
               />
 
               {mediaUrl && (
                 <div className="relative inline-flex items-center justify-start max-h-[200px]">
                   {mediaType === "image" ? (
-                    <img src={mediaUrl} alt="Attached upload" className="max-h-[200px] object-contain w-auto rounded-xl border border-white/10 bg-zinc-900" />
+                    <img src={mediaUrl} alt="Attached upload" className="max-h-[200px] object-contain w-auto rounded-xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                   ) : (
-                    <video src={mediaUrl} controls className="max-h-[200px] object-contain w-auto rounded-xl border border-white/10 bg-zinc-900" />
+                    <video src={mediaUrl} controls className="max-h-[200px] object-contain w-auto rounded-xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                   )}
                   <button
                     type="button"
                     onClick={() => { setMediaUrl(""); setMediaType(""); }}
-                    className="absolute top-2 right-2 bg-black/80 text-rose-400 p-1 rounded-lg border border-rose-500/20 z-10"
+                    className="absolute top-2 right-2 bg-black/80 text-[#F28B6E] p-1 rounded-lg border border-[#F28B6E]/30 z-10"
                   >
                     <X className="size-3.5" />
                   </button>
@@ -476,8 +504,8 @@ export default function CommunityPage() {
               )}
 
               <div className="flex items-center justify-between pt-2">
-                <label className="flex items-center gap-2 py-2 px-4 rounded-full border border-white/10 bg-zinc-900 hover:bg-zinc-800 text-xs font-mono font-bold text-zinc-300 hover:text-white cursor-pointer select-none transition-all">
-                  {isUploading ? <Loader2 className="size-4 text-cyan-400 animate-spin" /> : <ImageIcon className="size-4 text-cyan-400" />}
+                <label className="flex items-center gap-2 py-2 px-4 rounded-xl border border-[#F3F0E4]/15 bg-[#121F18] hover:bg-[#1F362A] text-xs font-mono font-bold text-[#9FAEA1] hover:text-[#F3F0E4] cursor-pointer select-none transition-all">
+                  {isUploading ? <Loader2 className="size-4 text-[#8FC3DE] animate-spin" /> : <ImageIcon className="size-4 text-[#8FC3DE]" />}
                   <span>{mediaUrl ? "Media Attached ✓" : "Add Photo / Video"}</span>
                   <input type="file" accept="image/*,video/*" onChange={handleMediaUpload} disabled={isUploading} className="hidden" />
                 </label>
@@ -485,13 +513,13 @@ export default function CommunityPage() {
                 <Button
                   type="submit"
                   disabled={isPosting}
-                  className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6 transition-all"
+                  className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 px-6 transition-all shadow-[2px_2px_0_0_#F28B6E] font-heading"
                 >
-                  {isPosting ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Post to Community"}
+                  {isPosting ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post to Community"}
                 </Button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>

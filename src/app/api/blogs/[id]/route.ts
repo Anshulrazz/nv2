@@ -35,6 +35,15 @@ export const GET = auth(async function GET(req, context) {
   }
 });
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 export const PATCH = auth(async function PATCH(req, context) {
   try {
     const userId = req.auth?.user?.id;
@@ -50,23 +59,6 @@ export const PATCH = auth(async function PATCH(req, context) {
     const body = await req.json();
     const { title, content, summary, coverImage, published } = body;
 
-    // Payload validation
-    if (title !== undefined && (typeof title !== "string" || title.trim() === "")) {
-      return NextResponse.json({ error: "Title cannot be empty and must be a string." }, { status: 400 });
-    }
-    if (content !== undefined && (typeof content !== "string" || content.trim() === "")) {
-      return NextResponse.json({ error: "Content cannot be empty and must be a string." }, { status: 400 });
-    }
-    if (summary !== undefined && (typeof summary !== "string" || summary.trim() === "")) {
-      return NextResponse.json({ error: "Summary cannot be empty and must be a string." }, { status: 400 });
-    }
-    if (coverImage !== undefined && coverImage !== null && typeof coverImage !== "string") {
-      return NextResponse.json({ error: "coverImage must be a string." }, { status: 400 });
-    }
-    if (published !== undefined && typeof published !== "boolean") {
-      return NextResponse.json({ error: "published must be a boolean." }, { status: 400 });
-    }
-
     await connectToDatabase();
 
     const blog = await Blog.findOne({ _id: id, userId });
@@ -74,11 +66,25 @@ export const PATCH = auth(async function PATCH(req, context) {
       return NextResponse.json({ error: "Blog not found or unauthorized." }, { status: 404 });
     }
 
-    if (title !== undefined) blog.title = title.trim();
-    if (content !== undefined) blog.content = content.trim();
-    if (summary !== undefined) blog.summary = summary.trim();
+    if (title !== undefined) {
+      const trimmedTitle = title.toString().trim() || "Untitled Blog";
+      blog.title = trimmedTitle;
+      if (!blog.slug || slugify(trimmedTitle) !== blog.slug) {
+        const baseSlug = slugify(trimmedTitle) || "untitled-blog";
+        let uniqueSlug = baseSlug;
+        let counter = 1;
+        while (await Blog.findOne({ slug: uniqueSlug, _id: { $ne: id } })) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        blog.slug = uniqueSlug;
+      }
+    }
+
+    if (content !== undefined) blog.content = content.toString();
+    if (summary !== undefined) blog.summary = summary.toString();
     if (coverImage !== undefined) blog.coverImage = coverImage || "";
-    if (published !== undefined) blog.published = published;
+    if (published !== undefined && typeof published === "boolean") blog.published = published;
 
     await blog.save();
     return NextResponse.json(blog);

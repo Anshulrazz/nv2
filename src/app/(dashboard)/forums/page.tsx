@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useAlertStore } from "@/stores/alertStore";
+import { motion } from "framer-motion";
 
 interface CommentData {
   _id?: string;
@@ -205,45 +206,48 @@ export default function ForumsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
       </div>
 
       {/* Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
-              <MessageSquare className="size-7" />
+      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
+        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="size-14 rounded-2xl bg-[#C9A9E0]/10 flex items-center justify-center border border-[#C9A9E0]/30 text-[#C9A9E0] shadow-[2px_2px_0_0_#F28B6E] shrink-0">
+                <MessageSquare className="size-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+                  Student Forums
+                  <span className="text-[10px] font-mono font-bold bg-[#C9A9E0]/15 text-[#C9A9E0] px-3 py-1 rounded-full border border-[#C9A9E0]/30 uppercase tracking-widest">
+                    DISCUSSION DISPATCH
+                  </span>
+                </h1>
+                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
+                  Ask questions, share tutorials, and join focused topic discussions with fellow engineers.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                Student Forums
-                <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
-                  DISCUSSION DISPATCH
-                </span>
-              </h1>
-              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
-                Ask questions, share tutorials, and join focused topic discussions with fellow engineers.
-              </p>
-            </div>
-          </div>
 
-          <Button
-            onClick={() => setIsOpen(true)}
-            className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-          >
-            <Plus className="size-4 text-zinc-950" />
-            <span>New Thread</span>
-            <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-          </Button>
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
+            >
+              <Plus className="size-4 text-[#2A2118]" />
+              <span>New Thread</span>
+              <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Button>
+          </div>
         </div>
       </div>
 
       {/* Category Pills & Main Feed Container */}
-      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
         {/* Category Pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none">
           {CATEGORIES.map((cat) => (
@@ -252,8 +256,8 @@ export default function ForumsPage() {
               onClick={() => setSelectedCategory(cat)}
               className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
                 selectedCategory === cat
-                  ? "bg-white/10 border border-white/20 text-white shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300 hover:bg-white/5 border border-transparent"
+                  ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
+                  : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-transparent"
               }`}
             >
               {cat}
@@ -263,53 +267,63 @@ export default function ForumsPage() {
 
         {/* Loading state */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-violet-400" />
-            <span className="font-mono text-zinc-400 tracking-widest">LOADING FORUM THREADS...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-[#C9A9E0]" />
+            <span className="font-mono text-[#C9A9E0] tracking-widest">LOADING FORUM THREADS...</span>
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
-              <FolderHeart className="size-10 text-zinc-600" />
-              <h3 className="text-lg font-bold text-white">No discussions found</h3>
-              <p className="text-xs text-zinc-400 font-light max-w-xs">
+          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
+              <FolderHeart className="size-10 text-[#9FAEA1]" />
+              <h3 className="text-lg font-bold text-[#F3F0E4] font-heading">No discussions found</h3>
+              <p className="text-xs text-[#9FAEA1] font-light max-w-xs">
                 Be the first scholar to start a topic thread in this category!
               </p>
             </div>
           </div>
         ) : (
-          <div className="space-y-6">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ staggerChildren: 0.08 }}
+            className="space-y-6"
+          >
             {posts.map((post) => {
               const isUpvoted = currentUserId ? post.upvotes?.includes(currentUserId) : false;
               const isExpanded = expandedPostId === post._id;
 
               return (
-                <div key={post._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl">
+                <motion.div
+                  key={post._id}
+                  whileHover={{ y: -3 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                >
                   <div
                     onClick={() => setExpandedPostId(isExpanded ? null : post._id)}
-                    className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-4 cursor-pointer hover:border-white/20 transition-all duration-300"
+                    className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-4 cursor-pointer hover:border-[#F0C93B]/40 transition-all duration-300"
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between select-none">
                       <div className="flex items-center gap-3">
-                        <span className="text-[9px] font-mono bg-violet-500/10 border border-violet-500/20 text-violet-400 font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                        <span className="text-[9px] font-mono bg-[#C9A9E0]/15 border border-[#C9A9E0]/30 text-[#C9A9E0] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
                           {post.category}
                         </span>
-                        <span className="text-xs font-bold text-zinc-400">
-                          By <Link href={`/user/${post.userId}`} onClick={(e) => e.stopPropagation()} className="text-white hover:text-cyan-400 transition-colors">{post.userName}</Link>
+                        <span className="text-xs font-bold text-[#9FAEA1]">
+                          By <Link href={`/user/${post.userId}`} onClick={(e) => e.stopPropagation()} className="text-[#F3F0E4] hover:text-[#F0C93B] transition-colors font-heading">{post.userName}</Link>
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-zinc-500">
+                      <span className="text-[10px] font-mono text-[#9FAEA1]">
                         {new Date(post.createdAt).toLocaleDateString()}
                       </span>
                     </div>
 
                     {/* Content */}
                     <div className="space-y-2">
-                      <h2 className="text-lg font-bold text-white hover:text-violet-400 transition-colors tracking-tight">
+                      <h2 className="text-lg font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors tracking-tight font-heading">
                         {post.title}
                       </h2>
-                      <p className={`text-xs text-zinc-300 font-light leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
+                      <p className={`text-xs text-[#F3F0E4]/90 font-light leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
                         {post.content}
                       </p>
                     </div>
@@ -318,11 +332,11 @@ export default function ForumsPage() {
                     {post.mediaUrl && isExpanded && (
                       <div className="pt-2">
                         {post.mediaType === "image" ? (
-                          <img src={post.mediaUrl} alt="Post attachment" className="max-h-80 w-auto rounded-2xl border border-white/10 bg-zinc-950 object-contain" />
+                          <img src={post.mediaUrl} alt="Post attachment" className="max-h-80 w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D] object-contain" />
                         ) : post.mediaType === "video" ? (
-                          <video src={post.mediaUrl} controls className="max-h-80 w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                          <video src={post.mediaUrl} controls className="max-h-80 w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                         ) : (
-                          <a href={post.mediaUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 underline">
+                          <a href={post.mediaUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-mono text-[#8FC3DE] underline">
                             View attached PDF document
                           </a>
                         )}
@@ -330,18 +344,18 @@ export default function ForumsPage() {
                     )}
 
                     {/* Engagement Actions */}
-                    <div className="flex items-center justify-between border-t border-white/5 pt-4 select-none">
+                    <div className="flex items-center justify-between border-t border-[#F3F0E4]/10 pt-4 select-none">
                       <div className="flex items-center gap-4 text-xs font-mono">
                         <button
                           onClick={(e) => handleUpvote(post._id, e)}
                           className={`flex items-center gap-1.5 font-bold transition-colors ${
-                            isUpvoted ? "text-violet-400" : "text-zinc-500 hover:text-white"
+                            isUpvoted ? "text-[#C9A9E0]" : "text-[#9FAEA1] hover:text-[#F3F0E4]"
                           }`}
                         >
                           <ThumbsUp className="size-4" />
                           <span>{post.upvotes?.length || 0}</span>
                         </button>
-                        <div className="flex items-center gap-1.5 text-zinc-500 font-bold">
+                        <div className="flex items-center gap-1.5 text-[#9FAEA1] font-bold">
                           <MessageSquare className="size-4" />
                           <span>{post.comments?.length || 0} replies</span>
                         </div>
@@ -350,7 +364,7 @@ export default function ForumsPage() {
                       {currentUserId === post.userId && (
                         <button
                           onClick={(e) => handleDelete(post._id, e)}
-                          className="text-[10px] font-mono text-zinc-500 hover:text-rose-400 transition-colors uppercase font-bold"
+                          className="text-[10px] font-mono text-[#9FAEA1] hover:text-[#F28B6E] transition-colors uppercase font-bold"
                         >
                           Delete
                         </button>
@@ -359,37 +373,43 @@ export default function ForumsPage() {
 
                     {/* Comment Thread Drawer */}
                     {isExpanded && (
-                      <div className="border-t border-white/5 pt-4 space-y-4 cursor-default" onClick={(e) => e.stopPropagation()}>
+                      <div className="border-t border-[#F3F0E4]/10 pt-4 space-y-4 cursor-default" onClick={(e) => e.stopPropagation()}>
                         <div className="flex gap-2">
                           <Input
+                            type="text"
+                            autoComplete="off"
+                            autoCorrect="off"
+                            autoCapitalize="none"
+                            spellCheck={false}
+                            data-lpignore="true"
                             placeholder="Write a response..."
                             value={commentText[post._id] || ""}
                             onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
                             onKeyDown={(e) => {
                               if (e.key === "Enter") handleAddComment(post._id);
                             }}
-                            className="bg-zinc-950 border-white/10 focus:border-violet-400 text-white placeholder-zinc-600 h-10 text-xs rounded-xl"
+                            className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl font-sans"
                           />
                           <Button
                             onClick={() => handleAddComment(post._id)}
                             disabled={isCommenting[post._id]}
-                            className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs h-10 px-5 font-bold cursor-pointer transition-all"
+                            className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs h-10 px-5 font-bold cursor-pointer transition-all shadow-[2px_2px_0_0_#F28B6E]"
                           >
-                            {isCommenting[post._id] ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : <Send className="size-4 text-zinc-950" />}
+                            {isCommenting[post._id] ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : <Send className="size-4 text-[#2A2118]" />}
                           </Button>
                         </div>
 
                         {/* List Comments */}
                         <div className="space-y-3">
                           {post.comments?.map((comment, index) => (
-                            <div key={index} className="flex gap-3 bg-zinc-950 p-3.5 rounded-2xl border border-white/5">
-                              <CornerDownRight className="size-4 text-zinc-600 shrink-0 mt-1" />
+                            <div key={index} className="flex gap-3 bg-[#16261D] p-3.5 rounded-2xl border border-[#F3F0E4]/10">
+                              <CornerDownRight className="size-4 text-[#9FAEA1] shrink-0 mt-1" />
                               <div className="space-y-1 min-w-0 flex-1">
-                                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 select-none">
-                                  <span className="font-bold text-white">{comment.userName}</span>
+                                <div className="flex items-center justify-between text-[10px] font-mono text-[#9FAEA1] select-none">
+                                  <span className="font-bold text-[#F3F0E4] font-heading">{comment.userName}</span>
                                   <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <p className="text-xs text-zinc-300 font-light leading-relaxed">{comment.content}</p>
+                                <p className="text-xs text-[#F3F0E4] font-light leading-relaxed">{comment.content}</p>
                               </div>
                             </div>
                           ))}
@@ -397,45 +417,51 @@ export default function ForumsPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 
       {/* New Post Dialog Modal */}
       {isOpen && (
         <Dialog open={true} onOpenChange={() => setIsOpen(false)}>
-          <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-lg rounded-3xl p-6">
+          <DialogContent className="bg-[#1A2D23] border border-[#F3F0E4]/20 text-[#F3F0E4] max-w-lg rounded-[2rem] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)]">
             <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-lg font-bold text-white">Create New Thread</DialogTitle>
-              <button onClick={() => setIsOpen(false)} className="text-zinc-500 hover:text-white">
+              <DialogTitle className="text-lg font-bold text-[#F3F0E4] font-heading">Create New Thread</DialogTitle>
+              <button onClick={() => setIsOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4]">
                 <X className="size-4" />
               </button>
             </DialogHeader>
 
             <form onSubmit={handleCreatePost} className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
+                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Title</label>
                 <Input
+                  type="text"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  data-lpignore="true"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="Thread topic title..."
                   required
-                  className="bg-zinc-900 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  className="bg-[#121F18] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-11 text-xs rounded-xl font-sans"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Category</label>
+                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Category</label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-xl h-11 px-3 text-xs text-white outline-none"
+                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl h-11 px-3 text-xs text-[#F3F0E4] outline-none"
                 >
                   {CATEGORIES.filter((c) => c !== "All").map((c) => (
-                    <option key={c} value={c} className="bg-zinc-950 text-white">
+                    <option key={c} value={c} className="bg-[#16261D] text-[#F3F0E4]">
                       {c}
                     </option>
                   ))}
@@ -443,28 +469,33 @@ export default function ForumsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Discussion Details</label>
+                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Discussion Details</label>
                 <textarea
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  data-lpignore="true"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="Elaborate your question, idea, or study topic..."
                   rows={5}
                   required
-                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-violet-400 resize-none transition-colors"
+                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 rounded-2xl p-3.5 text-xs text-[#F3F0E4] placeholder-[#9FAEA1]/60 focus:outline-none focus:border-[#F0C93B] resize-none transition-colors font-sans"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Media Attachment (Optional)</label>
-                <label className="flex items-center justify-center border border-dashed border-white/10 hover:border-violet-400 bg-zinc-900/60 rounded-2xl p-4 cursor-pointer transition-all gap-2 text-xs font-mono text-zinc-400 hover:text-white">
+                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Media Attachment (Optional)</label>
+                <label className="flex items-center justify-center border border-dashed border-[#F3F0E4]/15 hover:border-[#F0C93B] bg-[#121F18] rounded-2xl p-4 cursor-pointer transition-all gap-2 text-xs font-mono text-[#9FAEA1] hover:text-[#F3F0E4]">
                   {isUploadingMedia ? (
                     <>
-                      <Loader2 className="size-4 animate-spin text-violet-400" />
+                      <Loader2 className="size-4 animate-spin text-[#8FC3DE]" />
                       <span>Uploading...</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="size-4 text-violet-400" />
+                      <Upload className="size-4 text-[#8FC3DE]" />
                       <span>{mediaUrl ? "Media Attached ✓" : "Upload Image, Video, or PDF"}</span>
                     </>
                   )}
@@ -476,9 +507,9 @@ export default function ForumsPage() {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 transition-all"
+                  className="w-full rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 transition-all shadow-[2px_2px_0_0_#F28B6E] font-heading"
                 >
-                  {isSubmitting ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Post Discussion Thread"}
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post Discussion Thread"}
                 </Button>
               </DialogFooter>
             </form>

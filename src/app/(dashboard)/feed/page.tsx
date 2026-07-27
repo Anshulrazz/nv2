@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface Author {
   _id: string;
@@ -408,40 +409,49 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto overflow-x-hidden antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
       </div>
 
       {/* Responsive Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-5 sm:p-8 rounded-[1.5rem] sm:rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-4 sm:m-8 lg:m-10 mb-0">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="size-12 sm:size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400 shrink-0">
-              <Compass className="size-6 sm:size-7" />
+      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
+        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="size-12 sm:size-14 rounded-2xl bg-[#F0C93B]/10 flex items-center justify-center border border-[#F0C93B]/30 text-[#F0C93B] shrink-0 shadow-[2px_2px_0_0_#F28B6E]">
+                <Compass className="size-6 sm:size-7" />
+              </div>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+                  Public Feed
+                  <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
+                    LIVE STREAM
+                  </span>
+                </h1>
+                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-0.5 sm:mt-1">
+                  Explore research notes, peer discussions, and student publications across university batches.
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5 flex-wrap">
-                Public Feed
-                <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
-                  LIVE STREAM
-                </span>
-              </h1>
-              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-0.5 sm:mt-1">
-                Explore research notes, peer discussions, and student publications across university batches.
-              </p>
-            </div>
-          </div>
 
-          <div className="relative w-full md:w-72">
-            <Search className="absolute left-3.5 top-3 size-4 text-zinc-500" />
-            <Input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search feed topics..."
-              className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-10 text-xs pl-10 rounded-xl w-full"
-            />
+            <div className="relative w-full md:w-72">
+              <Search className="absolute left-3.5 top-3 size-4 text-[#9FAEA1]" />
+              <Input
+                type="text"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                data-lpignore="true"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search feed topics..."
+                className="bg-[#121F18] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs pl-10 rounded-xl w-full"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -453,16 +463,16 @@ export default function FeedPage() {
         <div className="col-span-1 lg:col-span-8 space-y-6 w-full min-w-0">
           
           {/* Responsive Sort Tabs */}
-          <div className="flex items-center gap-2 border-b border-white/5 pb-4 select-none overflow-x-auto scrollbar-none w-full">
-            <Filter className="size-4 text-zinc-500 shrink-0 mr-1 hidden sm:block" />
+          <div className="flex items-center gap-2 border-b border-[#F3F0E4]/10 pb-4 select-none overflow-x-auto scrollbar-none w-full">
+            <Filter className="size-4 text-[#9FAEA1] shrink-0 mr-1 hidden sm:block" />
             {(["new", "top", "trending", "following"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setSort(mode)}
                 className={`text-[10px] font-mono font-bold px-3.5 py-1.5 rounded-full uppercase tracking-widest transition-all whitespace-nowrap ${
                   sort === mode
-                    ? "bg-white/10 border border-white/20 text-white font-extrabold shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-300"
+                    ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
+                    : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18]"
                 }`}
               >
                 {mode}
@@ -471,54 +481,64 @@ export default function FeedPage() {
           </div>
 
           {posts.length === 0 && !isLoading ? (
-            <div className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-10 text-center text-zinc-500 italic select-none">
+            <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-10 text-center text-[#9FAEA1] italic select-none">
               No feed posts matching active filters found.
             </div>
           ) : (
-            <div className="space-y-6 w-full">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ staggerChildren: 0.08 }}
+              className="space-y-6 w-full"
+            >
               {posts.map((post) => {
                 if (post.type === "community") {
                   return (
-                    <div key={post._id} className="rounded-[1.75rem] sm:rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl w-full">
-                      <div className="rounded-[calc(1.75rem-0.5rem)] sm:rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-5 sm:p-6 space-y-4 sm:space-y-5">
+                    <motion.div
+                      key={post._id}
+                      whileHover={{ y: -3 }}
+                      transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                      className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl w-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                    >
+                      <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-5 sm:p-6 space-y-4 sm:space-y-5">
                         <div className="flex items-center gap-3 select-none">
                           {post.userImage ? (
-                            <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-white/10 bg-zinc-900 shrink-0" />
+                            <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
                           ) : (
-                            <div className="size-9 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center text-zinc-400 text-xs font-bold shrink-0">
+                            <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold shrink-0">
                               {post.userName?.[0]?.toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
                             <Link href={`/user/${post.userId}`}>
-                              <p className="text-xs font-bold text-white hover:text-cyan-400 transition-colors leading-tight truncate">
+                              <p className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors leading-tight truncate font-heading">
                                 {post.userName}
                               </p>
                             </Link>
-                            <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                            <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
                               {new Date(post.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="ml-auto shrink-0">
-                            <span className="text-[9px] font-mono bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 font-bold px-2.5 py-0.5 rounded-full uppercase">
+                            <span className="text-[9px] font-mono bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] font-bold px-2.5 py-0.5 rounded-full uppercase">
                               #Community
                             </span>
                           </div>
                         </div>
                         
-                        <p className="text-zinc-300 text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
+                        <p className="text-[#F3F0E4] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
 
                         {post.mediaUrl && (
                           <div className="flex items-center justify-start w-full overflow-hidden">
                             {post.mediaType === "image" ? (
-                              <img src={post.mediaUrl} alt="Post content" className="max-h-[320px] object-contain w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                              <img src={post.mediaUrl} alt="Post content" className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                             ) : (
-                              <video src={post.mediaUrl} controls className="max-h-[320px] object-contain w-auto rounded-2xl border border-white/10 bg-zinc-950" />
+                              <video src={post.mediaUrl} controls className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
                             )}
                           </div>
                         )}
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 }
 
@@ -530,23 +550,28 @@ export default function FeedPage() {
                 }
 
                 return (
-                  <div key={post._id} className="rounded-[1.75rem] sm:rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl w-full">
-                    <div className="rounded-[calc(1.75rem-0.5rem)] sm:rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-5 sm:p-6 space-y-4 sm:space-y-5">
+                  <motion.div
+                    key={post._id}
+                    whileHover={{ y: -3 }}
+                    transition={{ type: "spring", stiffness: 350, damping: 22 }}
+                    className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl w-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                  >
+                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-5 sm:p-6 space-y-4 sm:space-y-5">
                       {/* Card Header */}
                       <div className="flex items-center justify-between select-none">
                         <Link href={`/user/${post.author?._id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0">
                           {post.author?.image ? (
-                            <img src={post.author?.image} alt={post.author?.name} className="size-9 rounded-full object-cover border border-white/10 bg-zinc-900 shrink-0" />
+                            <img src={post.author?.image} alt={post.author?.name} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
                           ) : (
-                            <div className="size-9 rounded-full bg-zinc-950 border border-white/10 flex items-center justify-center text-zinc-400 text-xs font-bold shrink-0">
+                            <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold shrink-0">
                               {post.author?.name?.[0]?.toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-white leading-tight truncate">
+                            <p className="text-xs font-bold text-[#F3F0E4] leading-tight truncate font-heading">
                               {post.author?.name}
                             </p>
-                            <p className="text-[10px] font-mono text-zinc-500 mt-0.5">
+                            <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
                               {new Date(post.createdAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -557,8 +582,8 @@ export default function FeedPage() {
                             onClick={() => handleFollowToggle(post.author?._id || "")}
                             className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full transition-all border uppercase tracking-wider shrink-0 ml-2 ${
                               following
-                                ? "bg-zinc-950 border-white/10 text-zinc-500"
-                                : "bg-white border-white text-zinc-950 font-extrabold hover:bg-zinc-100"
+                                ? "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1]"
+                                : "bg-[#F0C93B] border-[#F0C93B] text-[#2A2118] font-extrabold hover:bg-[#F0C93B]/90 shadow-[2px_2px_0_0_#F28B6E]"
                             }`}
                           >
                             {following ? "Following" : "Follow"}
@@ -638,17 +663,23 @@ export default function FeedPage() {
 
                       {/* Expandable comments drawer */}
                       {activeCommentsPostId === post._id && (
-                        <div className="border-t border-white/5 pt-4 space-y-4">
+                        <div className="border-t border-[#F3F0E4]/10 pt-4 space-y-4">
                           <div className="flex gap-2">
                             <Input
+                              type="text"
+                              autoComplete="off"
+                              autoCorrect="off"
+                              autoCapitalize="none"
+                              spellCheck={false}
+                              data-lpignore="true"
                               value={newCommentText}
                               onChange={(e) => setNewCommentText(e.target.value)}
                               placeholder="Add your public comment..."
-                              className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-10 text-xs rounded-xl"
+                              className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl"
                             />
                             <Button
                               onClick={() => handleAddComment(null)}
-                              className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs h-10 px-5 font-bold cursor-pointer transition-all shrink-0"
+                              className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs h-10 px-5 font-bold cursor-pointer transition-all shrink-0 shadow-[2px_2px_0_0_#F28B6E]"
                             >
                               Comment
                             </Button>
@@ -656,7 +687,7 @@ export default function FeedPage() {
 
                           {isCommentsLoading ? (
                             <div className="py-6 flex justify-center select-none">
-                              <Loader2 className="size-5 animate-spin text-cyan-400" />
+                              <Loader2 className="size-5 animate-spin text-[#8FC3DE]" />
                             </div>
                           ) : (
                             renderCommentNodes(null)
@@ -664,28 +695,28 @@ export default function FeedPage() {
                         </div>
                       )}
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
+            </motion.div>
+          )}
 
-              {hasMore && (
-                <Button
-                  onClick={() => fetchPosts()}
-                  className="w-full rounded-full bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white font-mono text-xs h-11 uppercase tracking-widest cursor-pointer transition-all"
-                >
-                  {isLoading ? <Loader2 className="size-4 animate-spin text-cyan-400" /> : "LOAD MORE POSTS"}
-                </Button>
-              )}
-            </div>
+          {hasMore && (
+            <Button
+              onClick={() => fetchPosts()}
+              className="w-full rounded-2xl bg-[#1A2D23] hover:bg-[#1F362A] border border-[#F3F0E4]/15 text-[#F3F0E4] hover:text-[#F0C93B] font-mono text-xs h-11 uppercase tracking-widest cursor-pointer transition-all font-heading"
+            >
+              {isLoading ? <Loader2 className="size-4 animate-spin text-[#F0C93B]" /> : "LOAD MORE POSTS"}
+            </Button>
           )}
         </div>
 
         {/* Right Responsive Sidebar */}
         <div className="col-span-1 lg:col-span-4 space-y-6 select-none w-full">
-          <div className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl">
-            <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-4">
-              <h3 className="text-xs font-mono font-bold text-white uppercase tracking-widest flex items-center gap-2">
-                <TrendingUp className="size-4 text-cyan-400" /> Trending Topics
+          <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+            <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-4">
+              <h3 className="text-xs font-mono font-bold text-[#F3F0E4] uppercase tracking-widest flex items-center gap-2 font-heading">
+                <TrendingUp className="size-4 text-[#F0C93B]" /> Trending Topics
               </h3>
               <div className="flex flex-wrap lg:flex-col gap-2">
                 {["Forum", "Community", "Blog", "Note", "Education", "Technology"].map((tagItem) => (
@@ -694,8 +725,8 @@ export default function FeedPage() {
                     onClick={() => setCategory(category === tagItem ? "" : tagItem)}
                     className={`text-left text-xs font-semibold px-4 py-2.5 rounded-xl border transition-all ${
                       category === tagItem
-                        ? "bg-cyan-500/10 border-cyan-500/30 text-cyan-400"
-                        : "bg-zinc-950 border-white/5 text-zinc-400 hover:text-white"
+                        ? "bg-[#F0C93B]/15 border-[#F0C93B]/40 text-[#F0C93B]"
+                        : "bg-[#16261D] border-[#F3F0E4]/10 text-[#9FAEA1] hover:text-[#F3F0E4] hover:border-[#F3F0E4]/20"
                     }`}
                   >
                     {tagItem}

@@ -31,6 +31,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JSZip from "jszip";
+import { motion } from "framer-motion";
 
 interface ProjectOwner {
   id: string;
@@ -945,70 +946,73 @@ export default function ProjectsPage() {
   const fileLimit = isPremiumUser ? 250 : 50;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-neutral-950 overflow-y-auto custom-scroll relative">
+    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+      {/* Background Ambient Mesh Glow */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+      </div>
+
       {/* Header Banner */}
-      <div className="border-b border-neutral-900 bg-neutral-900/10 px-4 py-5 sm:px-8 sm:py-8 shrink-0 select-none relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[200px] bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-[300px] h-[150px] bg-violet-500/5 rounded-full blur-[80px] pointer-events-none" />
-
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
-          <div className="space-y-1.5 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="h-1 w-6 rounded-full bg-gradient-to-r from-cyan-400 to-violet-500 shrink-0" />
-              <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest" style={{ fontFamily: "var(--font-jetbrains-mono)" }}>
-                Project Terminal
-              </span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-neutral-100 tracking-tight" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-              Premium Projects
-            </h1>
-            <p className="text-neutral-500 text-xs max-w-md">
-              Publish structured repositories with file trees, or spend Coins to unlock premium project files.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            {/* Coins Balance */}
-            <div className="bg-neutral-900 border border-neutral-800 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg">
-              <Coins className="h-4 w-4 text-yellow-500 shrink-0" />
-              <div className="text-left">
-                <p className="text-[9px] text-neutral-500 uppercase font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>Your Coins</p>
-                <p className="text-sm font-extrabold text-neutral-100 font-mono">{coins} <span className="text-[10px] text-yellow-500">Coins</span></p>
+      <div className="p-4 sm:p-8 lg:p-10 pb-0 shrink-0 select-none relative z-10">
+        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
+            <div className="space-y-1.5 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="h-1.5 w-6 rounded-full bg-[#F0C93B] shrink-0 animate-pulse shadow-[0_0_8px_#F0C93B]" />
+                <span className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-widest font-mono">
+                  Project Terminal
+                </span>
               </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-[#F3F0E4] tracking-tight font-heading">
+                Premium Projects
+              </h1>
+              <p className="text-[#9FAEA1] text-xs sm:text-sm font-light max-w-md">
+                Publish structured repositories with file trees, or spend Coins to unlock premium project files.
+              </p>
             </div>
 
-            {/* Premium status indicator */}
-            {isPremiumUser ? (
-              <div className="bg-gradient-to-r from-violet-500/10 to-indigo-500/10 border border-violet-500/30 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg select-none">
-                <Shield className="h-4 w-4 text-violet-400 fill-violet-500/20 shrink-0" />
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              {/* Coins Balance */}
+              <div className="bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg">
+                <Coins className="h-4 w-4 text-[#F0C93B] shrink-0" />
                 <div className="text-left">
-                  <p className="text-[9px] text-violet-400 uppercase font-bold" style={{ fontFamily: "var(--font-space-grotesk)" }}>Plan Tier</p>
-                  <p className="text-xs font-bold text-neutral-100 uppercase tracking-wider whitespace-nowrap">Premium (250 Limit)</p>
+                  <p className="text-[9px] text-[#9FAEA1] uppercase font-bold font-heading">Your Coins</p>
+                  <p className="text-sm font-extrabold text-[#F3F0E4] font-mono">{coins} <span className="text-[10px] text-[#F0C93B]">Coins</span></p>
                 </div>
               </div>
-            ) : (
+
+              {/* Premium status indicator */}
+              {isPremiumUser ? (
+                <div className="bg-[#C9A9E0]/15 border border-[#C9A9E0]/30 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg select-none">
+                  <Shield className="h-4 w-4 text-[#C9A9E0] fill-[#C9A9E0]/20 shrink-0" />
+                  <div className="text-left">
+                    <p className="text-[9px] text-[#C9A9E0] uppercase font-bold font-heading">Plan Tier</p>
+                    <p className="text-xs font-bold text-[#F3F0E4] uppercase tracking-wider whitespace-nowrap">Premium (250 Limit)</p>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleUpgradePremium}
+                  disabled={isUpgrading}
+                  className="bg-[#121F18] border border-[#F3F0E4]/20 hover:border-[#C9A9E0]/50 text-[#F3F0E4] font-bold h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 transition-all duration-300 font-heading"
+                >
+                  <Shield className="h-4 w-4 text-[#C9A9E0] shrink-0" />
+                  <div className="text-left">
+                    <p className="text-[8px] text-[#9FAEA1] uppercase font-bold whitespace-nowrap">Go Premium (500 Coins)</p>
+                    <p className="text-[10px] font-bold text-[#C9A9E0] uppercase whitespace-nowrap">Unlock 250 file limit</p>
+                  </div>
+                </Button>
+              )}
+
               <Button
-                onClick={handleUpgradePremium}
-                disabled={isUpgrading}
-                className="bg-neutral-900 border border-neutral-800 hover:border-violet-500/30 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)] text-neutral-300 font-bold h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 transition-all duration-300"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
+                onClick={() => setIsModalOpen(true)}
+                className="bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold transition-all h-11 px-5 rounded-xl flex items-center gap-2 w-full sm:w-auto justify-center shadow-[4px_4px_0_0_#F28B6E] hover:translate-x-0.5 hover:translate-y-0.5 font-heading"
               >
-                <Shield className="h-4 w-4 text-violet-400 shrink-0" />
-                <div className="text-left">
-                  <p className="text-[8px] text-neutral-500 uppercase font-bold whitespace-nowrap">Go Premium (500 Coins)</p>
-                  <p className="text-[10px] font-bold text-violet-400 uppercase whitespace-nowrap">Unlock 250 file limit</p>
-                </div>
+                <Plus className="h-4 w-4 shrink-0 text-[#2A2118]" />
+                <span className="whitespace-nowrap">Create Project</span>
               </Button>
-            )}
-
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold shadow-[0_0_15px_rgba(6,182,212,0.25)] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-all h-11 px-4 sm:px-5 rounded-xl flex items-center gap-2 w-full sm:w-auto justify-center"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              <Plus className="h-4 w-4 shrink-0" />
-              <span className="whitespace-nowrap">Create Project</span>
-            </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -1037,79 +1041,86 @@ export default function ProjectsPage() {
               </Button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ staggerChildren: 0.08 }}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6"
+            >
               {projects.map((proj) => (
-                <div
+                <motion.div
                   key={proj.id}
-                  className={`glass border flex flex-col justify-between shadow-lg relative group transition-all duration-300 rounded-2xl overflow-hidden ${
+                  whileHover={{ y: -4, scale: 1.01 }}
+                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
+                  className={`bg-[#1A2D23]/80 border flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.25)] relative group transition-all duration-300 rounded-2xl overflow-hidden ${
                     proj.isLocked
-                      ? "border-neutral-900 hover:border-yellow-500/15"
-                      : "border-neutral-900 hover:border-cyan-500/15"
+                      ? "border-[#F3F0E4]/15 hover:border-[#F0C93B]/40"
+                      : "border-[#F3F0E4]/15 hover:border-[#8FC3DE]/40"
                   }`}
                 >
                   {/* Production Screenshot Banner or Gradient abstraction */}
                   {proj.productionImages && proj.productionImages.length > 0 ? (
-                    <div className="w-full h-32 sm:h-36 relative overflow-hidden border-b border-neutral-900 shrink-0">
+                    <div className="w-full h-32 sm:h-36 relative overflow-hidden border-b border-[#F3F0E4]/15 shrink-0">
                       <img src={proj.productionImages[0]} alt={proj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#1A2D23] via-transparent to-transparent" />
                     </div>
                   ) : (
-                    <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-neutral-900 via-neutral-950 to-cyan-950/20 border-b border-neutral-900 shrink-0 relative">
-                      <div className="absolute inset-0 opacity-40 mix-blend-color-dodge bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(120,119,198,0.2),rgba(255,255,255,0))]" />
+                    <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-[#121F18] via-[#1A2D23] to-[#1F362A] border-b border-[#F3F0E4]/15 shrink-0 relative">
+                      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(240,201,59,0.2),rgba(0,0,0,0))]" />
                     </div>
                   )}
 
-                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between">
+                  <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
                     <div className="space-y-3">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-wrap gap-1.5 min-w-0">
                           {proj.isPremium ? (
-                            <span className="text-[9px] font-bold bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Premium
                             </span>
                           ) : (
-                            <span className="text-[9px] font-bold bg-neutral-800 border border-neutral-750 text-neutral-400 px-2 py-0.5 rounded font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#121F18] border border-[#F3F0E4]/20 text-[#9FAEA1] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Free
                             </span>
                           )}
                           {proj.isOwner && (
-                            <span className="text-[9px] font-bold bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Creator
                             </span>
                           )}
                           {!proj.isPremium && (
-                            <span className="text-[9px] font-bold bg-green-500/10 border border-green-500/20 text-green-400 px-2 py-0.5 rounded font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Unlocked
                             </span>
                           )}
                           {proj.isPremium && !proj.isLocked && !proj.isOwner && (
-                            <span className="text-[9px] font-bold bg-green-500/10 border border-green-500/20 text-green-400 px-2 py-0.5 rounded font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Unlocked
                             </span>
                           )}
-                          <span className="text-[9px] font-bold bg-neutral-900 border border-neutral-850 text-neutral-500 px-2 py-0.5 rounded font-mono whitespace-nowrap">
+                          <span className="text-[9px] font-bold bg-[#121F18] border border-[#F3F0E4]/15 text-[#9FAEA1] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                             {proj.files?.length || 0} Files
                           </span>
                         </div>
 
-                        <span className="text-[9px] text-neutral-600 font-mono shrink-0 whitespace-nowrap">
+                        <span className="text-[9px] text-[#9FAEA1] font-mono shrink-0 whitespace-nowrap">
                           {new Date(proj.createdAt).toLocaleDateString()}
                         </span>
                       </div>
 
                       <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-neutral-100 group-hover:text-cyan-400 transition-colors break-words" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                        <h3 className="text-sm font-bold text-[#F3F0E4] group-hover:text-[#F0C93B] transition-colors break-words font-heading">
                           {proj.title}
                         </h3>
-                        <p className="text-xs text-neutral-500 line-clamp-2">
+                        <p className="text-xs text-[#9FAEA1] line-clamp-2 leading-relaxed font-light">
                           {proj.description}
                         </p>
                       </div>
                     </div>
 
-                    <div className="border-t border-neutral-900/60 mt-4 pt-4 flex flex-wrap items-center justify-between gap-2.5">
-                      <span className="text-[10px] text-neutral-600 truncate min-w-0">
-                        By <span className="font-semibold text-neutral-400">{proj.owner.name}</span>
+                    <div className="border-t border-[#F3F0E4]/10 pt-3.5 flex flex-wrap items-center justify-between gap-2.5">
+                      <span className="text-[10px] text-[#9FAEA1] truncate min-w-0">
+                        By <span className="font-semibold text-[#F3F0E4]">{proj.owner.name}</span>
                       </span>
 
                       <div className="flex items-center gap-2 shrink-0">
@@ -1117,7 +1128,7 @@ export default function ProjectsPage() {
                           <Button
                             onClick={() => handleOpenEditModal(proj)}
                             variant="ghost"
-                            className="h-8 w-8 p-0 text-neutral-500 hover:text-neutral-200 hover:bg-neutral-900 border border-neutral-850 rounded-lg shrink-0"
+                            className="h-8 w-8 p-0 text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl shrink-0"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </Button>
@@ -1127,13 +1138,12 @@ export default function ProjectsPage() {
                           <Button
                             onClick={() => handleUnlockProject(proj.id, proj.title, proj.cost)}
                             disabled={unlockingId === proj.id}
-                            className="bg-yellow-500 hover:bg-yellow-400 text-neutral-950 font-bold h-8 text-[11px] px-3.5 rounded-lg flex items-center gap-1.5 transition-all shadow-[0_0_10px_rgba(234,179,8,0.15)] disabled:opacity-40"
-                            style={{ fontFamily: "var(--font-space-grotesk)" }}
+                            className="bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all shadow-[2px_2px_0_0_#F28B6E] disabled:opacity-40 font-heading"
                           >
                             {unlockingId === proj.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin" />
+                              <Loader2 className="h-3 w-3 animate-spin text-[#2A2118]" />
                             ) : (
-                              <Lock className="h-3 w-3" />
+                              <Lock className="h-3 w-3 text-[#2A2118]" />
                             )}
                             <span className="whitespace-nowrap">Unlock ({proj.cost} Coins)</span>
                           </Button>
@@ -1143,18 +1153,17 @@ export default function ProjectsPage() {
                               onClick={() => downloadAsZip(proj)}
                               disabled={downloadingZipId === proj.id}
                               variant="ghost"
-                              className="h-8 w-8 p-0 text-neutral-500 hover:text-cyan-400 hover:bg-neutral-900 border border-neutral-855 rounded-lg shrink-0 flex items-center justify-center transition-all"
+                              className="h-8 w-8 p-0 text-[#9FAEA1] hover:text-[#8FC3DE] hover:bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl shrink-0 flex items-center justify-center transition-all"
                             >
                               {downloadingZipId === proj.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#8FC3DE]" />
                               ) : (
                                 <Download className="h-3.5 w-3.5" />
                               )}
                             </Button>
                             <Button
                               onClick={() => handleOpenProjectViewer(proj)}
-                              className="bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-300 font-semibold h-8 text-[11px] px-3.5 rounded-lg flex items-center gap-1.5 transition-all"
-                              style={{ fontFamily: "var(--font-space-grotesk)" }}
+                              className="bg-[#121F18] border border-[#F3F0E4]/20 hover:bg-[#1F362A] text-[#F3F0E4] hover:text-[#F0C93B] font-semibold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all font-heading"
                             >
                               <Eye className="h-3.5 w-3.5" />
                               <span className="whitespace-nowrap">Browse Files</span>
@@ -1164,31 +1173,38 @@ export default function ProjectsPage() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       ) : null}
 
       {/* CREATE DIALOG MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 lg:left-64 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm select-none">
-          <div className="w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden relative max-h-[95vh] flex flex-col">
-            <div className="h-px bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-500 w-full shrink-0" />
+        <div className="fixed inset-0 lg:left-64 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md select-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden relative max-h-[95vh] flex flex-col"
+          >
+            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
 
-            <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-neutral-855 bg-neutral-900 shrink-0">
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-200 uppercase tracking-wider truncate" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                Publish Structured Project
-              </h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-neutral-500 hover:text-neutral-200 p-1 rounded-lg transition-colors shrink-0">
+            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#F3F0E4]/15 bg-[#121F18] shrink-0">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-[#F0C93B]" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] uppercase tracking-wider truncate font-heading">
+                  Publish Structured Project
+                </h3>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl hover:bg-[#1A2D23] transition-colors shrink-0">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateProject} className="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scroll flex-1 min-h-0">
               {formError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-lg flex items-center gap-2">
+                <div className="p-3 bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-semibold rounded-xl flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span className="break-words">{formError}</span>
                 </div>
@@ -1196,57 +1212,74 @@ export default function ProjectsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                     Project Title
                   </label>
                   <Input
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Portfolio Template Node Repo"
-                    className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-10 placeholder-neutral-700 w-full"
+                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 placeholder-[#9FAEA1]/50 w-full focus:border-[#F0C93B] rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                     Short Description
                   </label>
                   <Input
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Explain the purpose of this project."
-                    className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-10 placeholder-neutral-700 w-full"
+                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 placeholder-[#9FAEA1]/50 w-full focus:border-[#F0C93B] rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                   Repository Summary / Introduction
                 </label>
                 <textarea
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  data-lpignore="true"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   rows={2}
                   placeholder="General project summary, requirements, or readme highlights."
-                  className="w-full bg-neutral-950 border border-neutral-850 text-neutral-100 text-xs p-3 rounded-xl focus:outline-none focus:border-cyan-500 placeholder-neutral-700 custom-scroll resize-none transition-all"
+                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 text-[#F3F0E4] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F0C93B] placeholder-[#9FAEA1]/50 custom-scroll resize-none transition-all font-sans"
                 />
               </div>
 
               {/* Upload Screenshots (Production Images) */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider block font-heading">
                   Production screenshots / Demo Images
                 </label>
                 
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="border border-neutral-850 hover:border-neutral-750 bg-neutral-950 hover:bg-neutral-900 rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-neutral-400 hover:text-neutral-200">
+                  <label className="border border-[#F3F0E4]/15 hover:border-[#8FC3DE]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-[#9FAEA1] hover:text-[#F3F0E4]">
                     {uploadingImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-cyan-400 shrink-0" />
+                      <Loader2 className="h-4 w-4 animate-spin text-[#8FC3DE] shrink-0" />
                     ) : (
-                      <Camera className="h-4 w-4 text-cyan-500 shrink-0" />
+                      <Camera className="h-4 w-4 text-[#8FC3DE] shrink-0" />
                     )}
-                    <span className="text-[10px] font-bold font-space uppercase whitespace-nowrap">Add screenshots</span>
+                    <span className="text-[10px] font-bold uppercase whitespace-nowrap font-heading">Add screenshots</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -1257,12 +1290,12 @@ export default function ProjectsPage() {
                   </label>
 
                   {productionImages.map((img, idx) => (
-                    <div key={idx} className="relative group/img h-10 w-16 rounded-lg overflow-hidden border border-neutral-850 shrink-0">
+                    <div key={idx} className="relative group/img h-10 w-16 rounded-xl overflow-hidden border border-[#F3F0E4]/20 shrink-0">
                       <img src={img} alt="Production" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeProductionImage(img, false)}
-                        className="absolute inset-0 bg-red-650/80 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 active:opacity-100 transition-opacity duration-200"
+                        className="absolute inset-0 bg-[#F28B6E]/80 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 active:opacity-100 transition-opacity duration-200"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -1274,16 +1307,16 @@ export default function ProjectsPage() {
               {/* Upload Folder / Template Buttons */}
               <div className="space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider block font-heading">
                     Repository Files Structure ({uploadedFiles.length} / {fileLimit} Files Loaded)
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="border border-neutral-850 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-neutral-300 text-center">
-                    <Upload className="h-5 w-5 text-neutral-500 mb-0.5" />
-                    <span className="text-[10px] font-bold font-space uppercase">Upload Local Folder</span>
-                    <span className="text-[8px] text-neutral-600 font-mono">Processes .gitignore first</span>
+                  <label className="border border-[#F3F0E4]/15 hover:border-[#F0C93B]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#F3F0E4] text-center">
+                    <Upload className="h-5 w-5 text-[#8FC3DE] mb-0.5" />
+                    <span className="text-[10px] font-bold uppercase font-heading">Upload Local Folder</span>
+                    <span className="text-[8px] text-[#9FAEA1] font-mono">Processes .gitignore first</span>
                     <input
                       type="file"
                       id="folder-upload-input"
@@ -1299,23 +1332,23 @@ export default function ProjectsPage() {
                   <button
                     type="button"
                     onClick={() => loadTemplateFiles(false)}
-                    className="border border-neutral-850 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-neutral-300 text-center"
+                    className="border border-[#F3F0E4]/15 hover:border-[#F0C93B]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#F3F0E4] text-center"
                   >
-                    <Sparkles className="h-5 w-5 text-cyan-400 mb-0.5" />
-                    <span className="text-[10px] font-bold font-space uppercase">Preload Template</span>
-                    <span className="text-[8px] text-neutral-600 font-mono">Instant 4-file tree</span>
+                    <Sparkles className="h-5 w-5 text-[#F0C93B] mb-0.5" />
+                    <span className="text-[10px] font-bold uppercase font-heading">Preload Template</span>
+                    <span className="text-[8px] text-[#9FAEA1] font-mono">Instant 4-file tree</span>
                   </button>
                 </div>
 
                 {/* PREVIEW TREE */}
                 {uploadedFiles.length > 0 && (
-                  <div className="border border-neutral-850 rounded-xl bg-neutral-950 overflow-hidden">
-                    <div className="bg-neutral-900 px-3 sm:px-4 py-2 border-b border-neutral-855 select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-neutral-400 font-space font-semibold uppercase tracking-wider">
+                  <div className="border border-[#F3F0E4]/15 rounded-xl bg-[#121F18] overflow-hidden">
+                    <div className="bg-[#16261D] px-3 sm:px-4 py-2 border-b border-[#F3F0E4]/15 select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-[#9FAEA1] font-heading font-semibold uppercase tracking-wider">
                       <span>Repository Preview Tree</span>
                       <span className="hidden sm:inline">Click to preview content</span>
                     </div>
 
-                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-neutral-850">
+                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-[#F3F0E4]/15">
                       {/* Left: Tree */}
                       <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll select-none">
                         <div className="-ml-3.5">
@@ -1330,18 +1363,18 @@ export default function ProjectsPage() {
                       </div>
 
                       {/* Right: Code Preview */}
-                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-neutral-955 font-mono text-[10px] leading-normal text-neutral-400">
+                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-[#121F18] font-mono text-[10px] leading-normal text-[#F3F0E4]">
                         {createPreviewFile ? (
                           <div className="space-y-2 select-text">
-                            <div className="font-semibold text-neutral-350 border-b border-neutral-900 pb-1 select-none font-mono text-[9px] uppercase truncate">
+                            <div className="font-semibold text-[#8FC3DE] border-b border-[#F3F0E4]/10 pb-1 select-none font-mono text-[9px] uppercase truncate">
                               {"// "}{createPreviewFile.path}
                             </div>
-                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-neutral-400">
+                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-[#9FAEA1]">
                               {createPreviewFile.content || "// Empty file"}
                             </pre>
                           </div>
                         ) : (
-                          <div className="h-full flex items-center justify-center italic text-neutral-600 text-center px-2">
+                          <div className="h-full flex items-center justify-center italic text-[#9FAEA1] text-center px-2">
                             Select a file to preview
                           </div>
                         )}
@@ -1399,28 +1432,35 @@ export default function ProjectsPage() {
                 </Button>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* EDIT DIALOG MODAL */}
       {editingProject && (
-        <div className="fixed inset-0 lg:left-64 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/75 backdrop-blur-sm select-none">
-          <div className="w-full max-w-2xl bg-neutral-900 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden relative max-h-[95vh] flex flex-col">
-            <div className="h-px bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-500 w-full shrink-0" />
+        <div className="fixed inset-0 lg:left-64 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md select-none">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-2xl bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden relative max-h-[95vh] flex flex-col"
+          >
+            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
 
-            <div className="flex items-center justify-between gap-3 px-4 sm:px-6 py-4 border-b border-neutral-855 bg-neutral-900 shrink-0">
-              <h3 className="text-xs sm:text-sm font-bold text-neutral-200 uppercase tracking-wider truncate" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                Edit Repository Details
-              </h3>
-              <button onClick={() => setEditingProject(null)} className="text-neutral-500 hover:text-neutral-200 p-1 rounded-lg transition-colors shrink-0">
+            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#F3F0E4]/15 bg-[#121F18] shrink-0">
+              <div className="flex items-center gap-2">
+                <Edit3 className="h-4 w-4 text-[#8FC3DE]" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] uppercase tracking-wider truncate font-heading">
+                  Edit Repository Details
+                </h3>
+              </div>
+              <button onClick={() => setEditingProject(null)} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl hover:bg-[#1A2D23] transition-colors shrink-0">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleUpdateProject} className="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scroll flex-1 min-h-0">
               {editFormError && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-lg flex items-center gap-2">
+                <div className="p-3 bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-semibold rounded-xl flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span className="break-words">{editFormError}</span>
                 </div>
@@ -1428,40 +1468,57 @@ export default function ProjectsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                     Project Title
                   </label>
                   <Input
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     placeholder="e.g. Portfolio Template Node Repo"
-                    className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-10 w-full"
+                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 w-full focus:border-[#F0C93B] rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                     Short Description
                   </label>
                   <Input
+                    type="text"
+                    autoComplete="off"
+                    autoCorrect="off"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    data-lpignore="true"
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     placeholder="Explain the purpose of this project."
-                    className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-10 w-full"
+                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 w-full focus:border-[#F0C93B] rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
                   Repository Summary / Introduction
                 </label>
                 <textarea
+                  autoComplete="off"
+                  autoCorrect="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  data-lpignore="true"
                   value={editContent}
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={2}
                   placeholder="General project summary, requirements, or readme highlights."
-                  className="w-full bg-neutral-955 border border-neutral-850 text-neutral-100 text-xs p-3 rounded-xl focus:outline-none focus:border-cyan-500 resize-none transition-all"
+                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 text-[#F3F0E4] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F0C93B] resize-none transition-all font-sans"
                 />
               </div>
 
@@ -1640,57 +1697,57 @@ export default function ProjectsPage() {
                 </div>
               </div>
             </form>
-          </div>
+          </motion.div>
         </div>
       )}
 
       {/* INLINE GITHUB STYLE REPOSITORY IDE WORKSPACE */}
       {viewingProject && (
         <div className="p-4 sm:p-8 max-w-6xl w-full mx-auto flex-1 select-none z-20 relative">
-          <div className="w-full bg-[#07070a] border border-white/10 rounded-[2.5rem] p-2.5 backdrop-blur-3xl shadow-2xl overflow-hidden relative flex flex-col min-h-[700px] h-[80vh]">
-            <div className="h-px bg-gradient-to-r from-cyan-400 via-indigo-500 to-violet-500 w-full shrink-0" />
+          <div className="w-full bg-[#1A2D23]/95 border border-[#F3F0E4]/20 rounded-[2.5rem] p-2.5 backdrop-blur-3xl shadow-[0_25px_60px_rgba(0,0,0,0.6)] overflow-hidden relative flex flex-col min-h-[700px] h-[80vh]">
+            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
 
             {/* GitHub Header */}
-            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-white/5 shrink-0 bg-zinc-950/80">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-[#F3F0E4]/15 shrink-0 bg-[#121F18]/90">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <Button onClick={closeProjectViewer} variant="ghost" className="h-8 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold gap-1 px-3 rounded-full border border-cyan-500/20 bg-cyan-500/10">
+                <Button onClick={closeProjectViewer} variant="ghost" className="h-8 text-xs font-mono text-[#F0C93B] hover:text-[#F0C93B]/80 font-bold gap-1 px-3 rounded-full border border-[#F0C93B]/30 bg-[#F0C93B]/10">
                   <ChevronLeft className="size-4" /> Back
                 </Button>
-                <BookOpen className="h-4 w-4 text-cyan-400 shrink-0 ml-1" />
-                <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight truncate">
+                <BookOpen className="h-4 w-4 text-[#8FC3DE] shrink-0 ml-1" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] tracking-tight truncate font-heading">
                   {viewingProject.owner.name} / {viewingProject.title.toLowerCase().replace(/\s+/g, "-")}
                 </h3>
                 {viewingProject.isPremium ? (
-                  <span className="text-[8px] bg-amber-500/10 border border-amber-500/30 text-amber-400 px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Premium
                   </span>
                 ) : (
-                  <span className="text-[8px] bg-zinc-800 border border-white/10 text-zinc-400 px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-[#121F18] border border-[#F3F0E4]/20 text-[#9FAEA1] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Free
                   </span>
                 )}
               </div>
 
-              <button onClick={closeProjectViewer} className="text-zinc-500 hover:text-white p-1 rounded-lg transition-colors shrink-0 cursor-pointer">
+              <button onClick={closeProjectViewer} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* GitHub Description Panel */}
-            <div className="px-4 sm:px-6 py-3.5 bg-neutral-950/20 border-b border-neutral-850 shrink-0 text-xs text-neutral-400">
-              <p className="font-medium break-words">{viewingProject.description}</p>
-              <p className="text-[10px] text-neutral-600 mt-1 font-mono">
+            <div className="px-4 sm:px-6 py-3.5 bg-[#121F18]/50 border-b border-[#F3F0E4]/15 shrink-0 text-xs text-[#9FAEA1]">
+              <p className="font-medium break-words leading-relaxed text-[#F3F0E4]">{viewingProject.description}</p>
+              <p className="text-[10px] text-[#9FAEA1]/80 mt-1 font-mono">
                 Project deployed: {new Date(viewingProject.createdAt).toLocaleString()}
               </p>
             </div>
 
             {/* Git Explorer Layout - RESPONSIVE TABBING ON MOBILE */}
-            <div className="flex flex-1 min-h-0 divide-x divide-neutral-850 bg-neutral-950/40 relative">
+            <div className="flex flex-1 min-h-0 divide-x divide-[#F3F0E4]/15 bg-[#121F18]/60 relative">
               {/* Left Side: Folder Tree Explorer (Hidden on mobile if viewing code) */}
               <div className={`w-full md:w-64 shrink-0 overflow-y-auto p-4 custom-scroll space-y-3 select-none ${mobileTab === "files" ? "block" : "hidden md:block"}`}>
-                <div className="flex items-center justify-between border-b border-neutral-900 pb-2">
+                <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-2">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider font-space">
+                    <span className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-wider font-heading">
                       Files Explorer
                     </span>
                     {viewingProject.isOwner && (

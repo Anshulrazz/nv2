@@ -576,6 +576,12 @@ export default function ChatPage() {
         <div className="p-4 sm:p-6 border-t border-white/5 bg-zinc-950/60 backdrop-blur-2xl">
           <div className="max-w-3xl mx-auto flex items-center gap-3">
             <Input
+              type="text"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="none"
+              spellCheck={false}
+              data-lpignore="true"
               placeholder={activeChatId ? "Ask AI anything..." : "Create or select a chat first..."}
               disabled={!activeChatId || isLoading}
               value={inputValue}

@@ -19,6 +19,8 @@ import {
   GraduationCap,
   Check,
 } from "lucide-react";
+import { Hero3DShowcase } from "@/components/marketing/Hero3DShowcase";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* ────────────────────────────────────────────────────────────────
    Reveal-on-scroll and CountUp primitives with smooth easing
@@ -176,57 +178,57 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-[100dvh] bg-[#030305] text-zinc-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden antialiased flex flex-col">
+    <div className="min-h-[100dvh] bg-[#16261D] text-[#F3F0E4] font-sans selection:bg-[#F0C93B]/30 selection:text-[#F0C93B] overflow-x-hidden antialiased flex flex-col relative">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-cyan-500/15 via-violet-600/10 to-transparent blur-[140px] opacity-70" />
-        <div className="absolute top-[900px] -right-40 w-[700px] h-[500px] bg-cyan-500/10 blur-[160px]" />
-        <div className="absolute top-[1800px] -left-40 w-[600px] h-[500px] bg-violet-500/10 blur-[160px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-[#8FC3DE]/10 blur-[140px] animate-float-glow" />
+        <div className="absolute top-[900px] -right-40 w-[700px] h-[500px] bg-[#C9A9E0]/10 blur-[160px] animate-float-glow-reverse" />
+        <div className="absolute top-[1800px] -left-40 w-[600px] h-[500px] bg-[#F0C93B]/10 blur-[160px] animate-float-glow" />
       </div>
 
       {/* Floating Island Glass Navbar */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4 pointer-events-none">
-        <header className="pointer-events-auto rounded-full bg-zinc-950/80 border border-white/10 backdrop-blur-2xl px-6 py-2.5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        <header className="pointer-events-auto rounded-full bg-[#1A2D23]/90 border border-[#F3F0E4]/15 backdrop-blur-2xl px-6 py-2.5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
           <Link href="/" className="flex items-center gap-3 group">
             <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
-            <span className="font-bold tracking-tight text-sm text-white">
-              Notexia <span className="text-cyan-400 font-mono text-[10px] px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 ml-1">v2.4</span>
+            <span className="font-bold tracking-tight text-sm text-[#F3F0E4] font-heading">
+              Notexia <span className="text-[#F0C93B] font-mono text-[10px] px-2 py-0.5 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/30 ml-1">v2.4</span>
             </span>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-zinc-400 tracking-wide">
-            <a href="#features" className="hover:text-white transition-colors duration-200">Features</a>
-            <a href="#reviews" className="hover:text-white transition-colors duration-200">Reviews</a>
-            <a href="#pricing" className="hover:text-white transition-colors duration-200">Pricing (INR)</a>
-            <a href="#faq" className="hover:text-white transition-colors duration-200">FAQ</a>
+          <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-[#9FAEA1] tracking-wide">
+            <a href="#features" className="hover:text-[#F3F0E4] transition-colors duration-200">Features</a>
+            <a href="#reviews" className="hover:text-[#F3F0E4] transition-colors duration-200">Reviews</a>
+            <a href="#pricing" className="hover:text-[#F3F0E4] transition-colors duration-200">Pricing (INR)</a>
+            <a href="#faq" className="hover:text-[#F3F0E4] transition-colors duration-200">FAQ</a>
           </nav>
 
           <div className="flex items-center gap-3">
             {isLoggedIn ? (
               <Link
                 href="/dashboard"
-                className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs pl-4 pr-1.5 py-1.5 inline-flex items-center gap-2.5 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs pl-4 pr-1.5 py-1.5 inline-flex items-center gap-2.5 transition-all duration-300 active:scale-[0.97] shadow-[2px_2px_0_0_#F28B6E] font-heading"
               >
                 <span>Dashboard</span>
-                <div className="size-6 rounded-full bg-zinc-950 flex items-center justify-center text-white">
-                  <ArrowUpRight className="size-3.5 text-white" />
+                <div className="size-6 rounded-full bg-[#2A2118] flex items-center justify-center text-[#F0C93B]">
+                  <ArrowUpRight className="size-3.5 text-[#F0C93B]" />
                 </div>
               </Link>
             ) : (
               <>
                 <Link
                   href="/login"
-                  className="text-xs font-medium text-zinc-400 hover:text-white transition-colors px-2 py-1"
+                  className="text-xs font-medium text-[#9FAEA1] hover:text-[#F3F0E4] transition-colors px-2 py-1"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/signup"
-                  className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs pl-4 pr-1.5 py-1.5 inline-flex items-center gap-2.5 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.2)]"
+                  className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs pl-4 pr-1.5 py-1.5 inline-flex items-center gap-2.5 transition-all duration-300 active:scale-[0.97] shadow-[2px_2px_0_0_#F28B6E] font-heading"
                 >
                   <span>Get Started</span>
-                  <div className="size-6 rounded-full bg-zinc-950/10 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
-                    <ArrowUpRight className="size-3.5 text-zinc-950" />
+                  <div className="size-6 rounded-full bg-[#2A2118]/10 flex items-center justify-center group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
+                    <ArrowUpRight className="size-3.5 text-[#2A2118]" />
                   </div>
                 </Link>
               </>
@@ -240,23 +242,23 @@ export default function LandingPage() {
         {/* HERO SECTION */}
         <section className="max-w-[1400px] mx-auto px-6 pt-16 pb-24 text-center space-y-12">
           <Reveal>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 font-mono text-[10px] uppercase tracking-[0.25em] mx-auto">
-              <span className="size-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] font-mono text-[10px] uppercase tracking-[0.25em] mx-auto">
+              <span className="size-1.5 rounded-full bg-[#F0C93B] animate-pulse" />
               <span>MODERN LEARNING PLATFORM FOR INDIAN STUDENTS &amp; ENGINEERS</span>
             </div>
           </Reveal>
 
           <Reveal delay={80}>
-            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-[-0.03em] leading-[0.94] text-white max-w-5xl mx-auto">
+            <h1 className="text-5xl sm:text-7xl lg:text-8xl font-black tracking-[-0.03em] leading-[0.94] text-[#F3F0E4] max-w-5xl mx-auto font-heading">
               Learn Smarter. <br />
-              <span className="bg-gradient-to-r from-cyan-400 via-teal-300 to-violet-400 bg-clip-text text-transparent">
+              <span className="text-[#F0C93B]">
                 Grow Faster.
               </span>
             </h1>
           </Reveal>
 
           <Reveal delay={160}>
-            <p className="text-base sm:text-lg text-zinc-400 max-w-[54ch] mx-auto leading-relaxed font-light">
+            <p className="text-base sm:text-lg text-[#9FAEA1] max-w-[54ch] mx-auto leading-relaxed font-light">
               One place to share notes, solve doubts, and collaborate with peers. Designed for fast workflows, clean content, and measurable academic progress.
             </p>
           </Reveal>
@@ -266,27 +268,27 @@ export default function LandingPage() {
               {isLoggedIn ? (
                 <Link
                   href="/dashboard"
-                  className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-sm pl-6 pr-2 py-3.5 inline-flex items-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-[0_0_35px_rgba(255,255,255,0.25)]"
+                  className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-sm pl-6 pr-2 py-3.5 inline-flex items-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
                 >
                   <span>Open dashboard</span>
-                  <div className="size-8 rounded-full bg-zinc-950 flex items-center justify-center text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
-                    <ArrowUpRight className="size-4 text-white" />
+                  <div className="size-8 rounded-full bg-[#2A2118] flex items-center justify-center text-[#F0C93B] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
+                    <ArrowUpRight className="size-4 text-[#F0C93B]" />
                   </div>
                 </Link>
               ) : (
                 <>
                   <Link
                     href="/signup"
-                    className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-sm pl-6 pr-2 py-3.5 inline-flex items-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-[0_0_35px_rgba(255,255,255,0.25)]"
+                    className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-sm pl-6 pr-2 py-3.5 inline-flex items-center gap-3 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
                   >
                     <span>Get Started Free</span>
-                    <div className="size-8 rounded-full bg-zinc-950 flex items-center justify-center text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
-                      <ArrowUpRight className="size-4 text-white" />
+                    <div className="size-8 rounded-full bg-[#2A2118] flex items-center justify-center text-[#F0C93B] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200">
+                      <ArrowUpRight className="size-4 text-[#F0C93B]" />
                     </div>
                   </Link>
                   <Link
                     href="/login"
-                    className="rounded-full bg-zinc-900/90 hover:bg-zinc-850 border border-white/10 text-zinc-300 font-semibold text-xs px-6 py-3.5 transition-all duration-200 active:scale-[0.97] backdrop-blur-xl"
+                    className="rounded-xl bg-[#1A2D23] hover:bg-[#1F362A] border border-[#F3F0E4]/15 text-[#F3F0E4] font-semibold text-xs px-6 py-3.5 transition-all duration-200 active:scale-[0.97] backdrop-blur-xl"
                   >
                     Log in
                   </Link>
@@ -295,20 +297,25 @@ export default function LandingPage() {
             </div>
           </Reveal>
 
+          {/* Interactive 3D Model Tilt Showcase */}
+          <Reveal delay={280}>
+            <Hero3DShowcase />
+          </Reveal>
+
           {/* Doppelrand Quick Metrics */}
           <div className="pt-8 max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
             {[
-              { value: 248, label: "New Notes", accent: "text-cyan-400" },
-              { value: 931, label: "Doubts Answered", accent: "text-violet-400" },
-              { value: 118, label: "Forum Discussions", accent: "text-teal-400" },
+              { value: 248, label: "New Notes", accent: "text-[#F0C93B]" },
+              { value: 931, label: "Doubts Answered", accent: "text-[#8FC3DE]" },
+              { value: 118, label: "Forum Discussions", accent: "text-[#C9A9E0]" },
             ].map(({ value, label, accent }, i) => (
               <Reveal key={label} delay={i * 90}>
-                <div className="rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2">
-                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 text-center space-y-1">
+                <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 text-center space-y-1">
                     <div className={`font-mono text-3xl sm:text-4xl font-bold ${accent}`}>
                       <CountUp value={value} prefix="+" />
                     </div>
-                    <div className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">
+                    <div className="text-[10px] font-mono text-[#9FAEA1] uppercase tracking-widest">
                       {label}
                     </div>
                   </div>
@@ -321,43 +328,43 @@ export default function LandingPage() {
         {/* FEATURES MATRIX */}
         <section id="features" className="max-w-[1400px] mx-auto px-6 py-28 space-y-16">
           <Reveal className="text-center space-y-3 max-w-[600px] mx-auto">
-            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-white">
+            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-[#F3F0E4] font-heading">
               Built for speed, clarity, and depth
             </h2>
-            <p className="text-zinc-400 text-sm font-light">
+            <p className="text-[#9FAEA1] text-sm font-light">
               Everything you need to master your courses, collaborate with peers, and track progress.
             </p>
           </Reveal>
 
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             {/* Feature 1: Smart Notes */}
-            <div className="md:col-span-8 rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 backdrop-blur-2xl hover:border-cyan-500/30 transition-colors group">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-8 h-full flex flex-col justify-between space-y-8">
+            <div className="md:col-span-8 rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-2xl hover:border-[#F0C93B]/40 transition-colors group shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 h-full flex flex-col justify-between space-y-8">
                 <div className="space-y-4">
-                  <div className="size-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                  <div className="size-11 rounded-2xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shadow-[2px_2px_0_0_#F28B6E]">
                     <FileText className="size-5" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white tracking-tight">Smart Collaborative Notes</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed max-w-[52ch]">
+                  <h3 className="text-2xl font-bold text-[#F3F0E4] tracking-tight font-heading">Smart Collaborative Notes</h3>
+                  <p className="text-[#9FAEA1] text-sm leading-relaxed max-w-[52ch]">
                     Organize your semester with TipTap markdown editing, nested folders, live code block evaluation, inline math equations, and instant PDF exports.
                   </p>
                 </div>
-                <div className="p-4 rounded-xl bg-zinc-950 border border-white/5 font-mono text-xs text-zinc-300 space-y-2">
-                  <div className="text-zinc-500">{"// Real-time synchronization active..."}</div>
-                  <div className="text-emerald-400">✓ Over 50,000 notes synchronized across batches</div>
+                <div className="p-4 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 font-mono text-xs text-[#F3F0E4] space-y-2">
+                  <div className="text-[#9FAEA1]">{"// Real-time synchronization active..."}</div>
+                  <div className="text-[#8FC3DE]">✓ Over 50,000 notes synchronized across batches</div>
                 </div>
               </div>
             </div>
 
             {/* Feature 2: AI Study Copilot */}
-            <div className="md:col-span-4 rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 backdrop-blur-2xl hover:border-violet-500/30 transition-colors group">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-8 h-full flex flex-col justify-between space-y-8">
+            <div className="md:col-span-4 rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-2xl hover:border-[#C9A9E0]/40 transition-colors group shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 h-full flex flex-col justify-between space-y-8">
                 <div className="space-y-4">
-                  <div className="size-11 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
+                  <div className="size-11 rounded-2xl bg-[#C9A9E0]/10 border border-[#C9A9E0]/30 flex items-center justify-center text-[#C9A9E0] shadow-[2px_2px_0_0_#F28B6E]">
                     <Bot className="size-5" />
                   </div>
-                  <h3 className="text-2xl font-bold text-white tracking-tight">AI Assistant &amp; Research</h3>
-                  <p className="text-zinc-400 text-sm leading-relaxed">
+                  <h3 className="text-2xl font-bold text-[#F3F0E4] tracking-tight font-heading">AI Assistant &amp; Research</h3>
+                  <p className="text-[#9FAEA1] text-sm leading-relaxed">
                     Summarize long lecture notes, generate flashcards, and clear complex concepts instantly.
                   </p>
                 </div>
@@ -369,39 +376,39 @@ export default function LandingPage() {
             </div>
 
             {/* Feature 3: Forums & Doubts */}
-            <div className="md:col-span-4 rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 hover:border-teal-500/30 transition-colors">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-3 h-full">
-                <div className="size-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+            <div className="md:col-span-4 rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 hover:border-[#8FC3DE]/40 transition-colors shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-3 h-full">
+                <div className="size-10 rounded-xl bg-[#8FC3DE]/10 border border-[#8FC3DE]/30 flex items-center justify-center text-[#8FC3DE] shadow-[2px_2px_0_0_#F28B6E]">
                   <MessageSquare className="size-4" />
                 </div>
-                <h4 className="text-lg font-bold text-white tracking-tight">Peer Doubts &amp; Forums</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">
+                <h4 className="text-lg font-bold text-[#F3F0E4] tracking-tight font-heading">Peer Doubts &amp; Forums</h4>
+                <p className="text-[#9FAEA1] text-xs leading-relaxed font-light">
                   Ask questions, upvote quality answers, and join focused topic discussions.
                 </p>
               </div>
             </div>
 
             {/* Feature 4: Interactive Courses */}
-            <div className="md:col-span-4 rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 hover:border-amber-500/30 transition-colors">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-3 h-full">
-                <div className="size-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <div className="md:col-span-4 rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 hover:border-[#F0C93B]/40 transition-colors shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-3 h-full">
+                <div className="size-10 rounded-xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shadow-[2px_2px_0_0_#F28B6E]">
                   <BookOpen className="size-4" />
                 </div>
-                <h4 className="text-lg font-bold text-white tracking-tight">Interactive Courses</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">
+                <h4 className="text-lg font-bold text-[#F3F0E4] tracking-tight font-heading">Interactive Courses</h4>
+                <p className="text-[#9FAEA1] text-xs leading-relaxed font-light">
                   Master step-by-step learning tracks and earn digital completion certificates.
                 </p>
               </div>
             </div>
 
             {/* Feature 5: Gamified Leaderboard */}
-            <div className="md:col-span-4 rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 hover:border-rose-500/30 transition-colors">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-3 h-full">
-                <div className="size-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+            <div className="md:col-span-4 rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 hover:border-[#F28B6E]/40 transition-colors shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-3 h-full">
+                <div className="size-10 rounded-xl bg-[#F28B6E]/10 border border-[#F28B6E]/30 flex items-center justify-center text-[#F28B6E] shadow-[2px_2px_0_0_#F0C93B]">
                   <Trophy className="size-4" />
                 </div>
-                <h4 className="text-lg font-bold text-white tracking-tight">Gamified Progress</h4>
-                <p className="text-zinc-400 text-xs leading-relaxed">
+                <h4 className="text-lg font-bold text-[#F3F0E4] tracking-tight font-heading">Gamified Progress</h4>
+                <p className="text-[#9FAEA1] text-xs leading-relaxed font-light">
                   Earn points for note contributions and climb the batch leaderboard.
                 </p>
               </div>
@@ -409,18 +416,116 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* 4-STEP SCHOLAR WORKFLOW SECTION */}
+        <section className="max-w-[1400px] mx-auto px-6 py-28 border-t border-[#F3F0E4]/10 space-y-16 relative z-10">
+          <Reveal className="text-center space-y-3 max-w-[650px] mx-auto">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] font-mono text-[10px] uppercase tracking-widest mx-auto">
+              <span>HOW NOTEXIA WORKS</span>
+            </div>
+            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-[#F3F0E4] font-heading">
+              Four steps from lecture notes to exam mastery
+            </h2>
+            <p className="text-[#9FAEA1] text-sm font-light">
+              Streamlined study pipeline designed for computer science, engineering, and competitive entrance preparation.
+            </p>
+          </Reveal>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                step: "01",
+                title: "Draft & Capture",
+                desc: "Write clean TipTap notes with live code syntax highlighting, nested folder trees, and LaTeX math formulas.",
+                color: "text-[#F0C93B]",
+                bg: "bg-[#F0C93B]/10",
+                border: "border-[#F0C93B]/30",
+              },
+              {
+                step: "02",
+                title: "AI Synthesis",
+                desc: "Use Anthropic Claude 3.5 Copilot to extract 1-click study flashcards, generate revision summaries, and solve doubts.",
+                color: "text-[#C9A9E0]",
+                bg: "bg-[#C9A9E0]/10",
+                border: "border-[#C9A9E0]/30",
+              },
+              {
+                step: "03",
+                title: "Peer Doubt Forum",
+                desc: "Post tricky problems to student forums, receive verified answers, upvote quality code, and build study groups.",
+                color: "text-[#8FC3DE]",
+                bg: "bg-[#8FC3DE]/10",
+                border: "border-[#8FC3DE]/30",
+              },
+              {
+                step: "04",
+                title: "Certify & Rank",
+                desc: "Complete structured subject tracks, earn digital certificates, gain streak points, and top the campus leaderboard.",
+                color: "text-[#F28B6E]",
+                bg: "bg-[#F28B6E]/10",
+                border: "border-[#F28B6E]/30",
+              },
+            ].map(({ step, title, desc, color, bg, border }, i) => (
+              <Reveal key={step} delay={i * 80}>
+                <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 h-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 h-full flex flex-col justify-between space-y-6">
+                    <div className="space-y-4">
+                      <div className={`size-10 rounded-xl ${bg} border ${border} flex items-center justify-center font-mono font-bold text-sm ${color} shadow-[2px_2px_0_0_#F28B6E]`}>
+                        {step}
+                      </div>
+                      <h3 className="text-xl font-bold text-[#F3F0E4] font-heading">{title}</h3>
+                      <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">{desc}</p>
+                    </div>
+                  </div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
+        {/* SUPPORTED EXAMS & INSTITUTIONS DISPATCH */}
+        <section className="max-w-[1400px] mx-auto px-6 py-24 border-t border-[#F3F0E4]/10 space-y-12 relative z-10">
+          <Reveal className="text-center space-y-3 max-w-[600px] mx-auto">
+            <h2 className="text-3xl sm:text-4xl font-black text-[#F3F0E4] font-heading">
+              Curated for premier Indian entrance exams &amp; degrees
+            </h2>
+            <p className="text-xs sm:text-sm text-[#9FAEA1] font-light">
+              Structured note vaults and peer study groups tailored to key academic domains.
+            </p>
+          </Reveal>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+            {[
+              { name: "GATE CSE / ECE", badge: "5.4k Notes", accent: "border-[#F0C93B]/40 text-[#F0C93B]" },
+              { name: "JEE Advanced", badge: "8.2k Notes", accent: "border-[#8FC3DE]/40 text-[#8FC3DE]" },
+              { name: "B.Tech CS / IT", badge: "12k Notes", accent: "border-[#C9A9E0]/40 text-[#C9A9E0]" },
+              { name: "AI & Data Science", badge: "4.1k Notes", accent: "border-[#F28B6E]/40 text-[#F28B6E]" },
+              { name: "UPSC Tech Optional", badge: "2.8k Notes", accent: "border-[#F0C93B]/40 text-[#F0C93B]" },
+              { name: "NEET / Biology", badge: "6.9k Notes", accent: "border-[#8FC3DE]/40 text-[#8FC3DE]" },
+            ].map(({ name, badge, accent }, i) => (
+              <Reveal key={name} delay={i * 60}>
+                <div className="rounded-2xl bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-4 text-center space-y-2 shadow-md hover:scale-105 transition-transform duration-300">
+                  <div className={`text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-[#121F18] border ${accent} inline-block`}>
+                    {badge}
+                  </div>
+                  <div className="text-xs font-bold text-[#F3F0E4] font-heading">{name}</div>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
         {/* USER REVIEWS SECTION */}
-        <section id="reviews" className="border-t border-white/5 bg-[#050508] py-36">
+        <section id="reviews" className="border-t border-[#F3F0E4]/10 bg-[#16261D] py-36 relative z-10">
           <div className="max-w-[1400px] mx-auto px-6 space-y-16">
             <Reveal className="text-center space-y-4 max-w-[650px] mx-auto">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 font-mono text-[10px] uppercase tracking-widest mx-auto">
-                <Star className="size-3 fill-current text-amber-400" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] font-mono text-[10px] uppercase tracking-widest mx-auto">
+                <Star className="size-3 fill-current text-[#F0C93B]" />
                 <span>STUDENT TESTIMONIALS</span>
               </div>
-              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-white">
+              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-[#F3F0E4] font-heading">
                 Loved by 25,000+ students across India
               </h2>
-              <p className="text-zinc-400 text-sm font-light leading-relaxed">
+              <p className="text-[#9FAEA1] text-sm font-light leading-relaxed">
                 See how students from top engineering institutes and universities use Notexia to boost their academic scores.
               </p>
             </Reveal>
@@ -428,31 +533,31 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {reviews.map((rev, idx) => (
                 <Reveal key={rev.name} delay={idx * 80}>
-                  <div className="rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2 h-full hover:border-cyan-500/30 transition-colors">
-                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 h-full flex flex-col justify-between space-y-6">
+                  <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 h-full hover:border-[#F0C93B]/40 transition-colors shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 h-full flex flex-col justify-between space-y-6">
                       <div className="space-y-4">
                         <div className="flex items-center justify-between">
-                          <div className="flex gap-1 text-amber-400">
+                          <div className="flex gap-1 text-[#F0C93B]">
                             {[...Array(rev.rating)].map((_, i) => (
                               <Star key={i} className="size-3.5 fill-current" />
                             ))}
                           </div>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#8FC3DE]/15 text-[#8FC3DE] border border-[#8FC3DE]/30">
                             Verified Student
                           </span>
                         </div>
-                        <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light italic">
+                        <p className="text-xs sm:text-sm text-[#F3F0E4] leading-relaxed font-light italic">
                           &quot;{rev.review}&quot;
                         </p>
                       </div>
 
-                      <div className="pt-4 border-t border-white/5 flex items-center justify-between">
+                      <div className="pt-4 border-t border-[#F3F0E4]/10 flex items-center justify-between">
                         <div>
-                          <div className="text-sm font-bold text-white">{rev.name}</div>
-                          <div className="text-[11px] text-zinc-400">{rev.role}</div>
+                          <div className="text-sm font-bold text-[#F3F0E4] font-heading">{rev.name}</div>
+                          <div className="text-[11px] text-[#9FAEA1]">{rev.role}</div>
                         </div>
                         <div className="text-right">
-                          <div className="text-xs font-semibold text-cyan-400 flex items-center gap-1">
+                          <div className="text-xs font-semibold text-[#8FC3DE] flex items-center gap-1">
                             <GraduationCap className="size-3.5" />
                             <span>{rev.college}</span>
                           </div>
@@ -467,55 +572,55 @@ export default function LandingPage() {
         </section>
 
         {/* PRICING SECTION ACCORDING TO INDIA (INR) */}
-        <section id="pricing" className="max-w-[1400px] mx-auto px-6 py-36 space-y-16">
+        <section id="pricing" className="max-w-[1400px] mx-auto px-6 py-36 space-y-16 relative z-10">
           <div className="text-center space-y-4 max-w-[600px] mx-auto">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-mono text-[10px] uppercase tracking-widest mx-auto">
-              <ShieldCheck className="size-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] font-mono text-[10px] uppercase tracking-widest mx-auto">
+              <ShieldCheck className="size-3.5 text-[#8FC3DE]" />
               <span>AFFORDABLE INDIAN PRICING (INR)</span>
             </div>
-            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-white">
+            <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-[#F3F0E4] font-heading">
               Student-friendly plans for India
             </h2>
-            <p className="text-zinc-400 text-sm font-light">
+            <p className="text-[#9FAEA1] text-sm font-light">
               No expensive USD conversions. Pay seamlessly with UPI, Google Pay, PhonePe, Paytm, or NetBanking.
             </p>
 
-            <div className="pt-4 flex items-center justify-center gap-3 text-xs font-medium text-zinc-400">
+            <div className="pt-4 flex items-center justify-center gap-3 text-xs font-medium text-[#9FAEA1]">
               <span>Monthly</span>
               <button
                 onClick={() => setIsAnnual(!isAnnual)}
                 className={`w-11 h-6 rounded-full p-1 transition-colors ${
-                  isAnnual ? "bg-cyan-500" : "bg-zinc-800"
+                  isAnnual ? "bg-[#F0C93B]" : "bg-[#121F18]"
                 }`}
               >
                 <div
-                  className={`size-4 rounded-full bg-zinc-950 transition-transform ${
+                  className={`size-4 rounded-full bg-[#2A2118] transition-transform ${
                     isAnnual ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>
-              <span>Annual <span className="text-cyan-400 font-bold">(Save 37%)</span></span>
+              <span>Annual <span className="text-[#F0C93B] font-bold">(Save 37%)</span></span>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Free Starter Tier */}
-            <div className="rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-8 h-full flex flex-col justify-between space-y-8">
+            <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 h-full flex flex-col justify-between space-y-8">
                 <div className="space-y-5">
-                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-zinc-500">Free Starter</div>
-                  <div className="text-4xl font-extrabold text-white">₹0 <span className="text-xs font-normal text-zinc-500">/ forever</span></div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">Perfect for individual creators and students looking for clean note-taking &amp; doubt solving.</p>
-                  <ul className="space-y-3 text-xs text-zinc-300 pt-6 border-t border-white/5">
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Unlimited Local Notes &amp; Folders</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> 100 AI Queries / Month</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Peer Doubt Forum &amp; Feed</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-zinc-400 opacity-40" /><span className="opacity-40">Realtime Team Collaboration</span></li>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#9FAEA1]">Free Starter</div>
+                  <div className="text-4xl font-extrabold text-[#F3F0E4] font-heading">₹0 <span className="text-xs font-normal text-[#9FAEA1]">/ forever</span></div>
+                  <p className="text-xs text-[#9FAEA1] leading-relaxed font-light">Perfect for individual creators and students looking for clean note-taking &amp; doubt solving.</p>
+                  <ul className="space-y-3 text-xs text-[#F3F0E4] pt-6 border-t border-[#F3F0E4]/10">
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Unlimited Local Notes &amp; Folders</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> 100 AI Queries / Month</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Peer Doubt Forum &amp; Feed</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#9FAEA1] opacity-40" /><span className="opacity-40">Realtime Team Collaboration</span></li>
                   </ul>
                 </div>
                 <Link
                   href="/signup"
-                  className="w-full h-11 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center transition-all duration-200 active:scale-[0.97]"
+                  className="w-full h-11 rounded-xl bg-[#16261D] hover:bg-[#1F362A] text-[#F3F0E4] font-bold text-xs flex items-center justify-center transition-all duration-200 active:scale-[0.97] border border-[#F3F0E4]/15"
                 >
                   Get Started Free
                 </Link>
@@ -523,59 +628,59 @@ export default function LandingPage() {
             </div>
 
             {/* Scholar Pro Tier (INR Most Popular) */}
-            <div className="rounded-[2rem] bg-cyan-500/10 border border-cyan-500/40 p-2 shadow-[0_0_60px_rgba(6,182,212,0.15)] relative">
-              <div className="absolute -top-3.5 right-8 px-3.5 py-1 rounded-full bg-cyan-500 text-zinc-950 font-bold text-[10px] uppercase tracking-widest shadow-lg">
+            <div className="rounded-[2rem] bg-[#1A2D23] border border-[#F0C93B]/50 p-2 shadow-[0_15px_40px_rgba(0,0,0,0.3)] relative">
+              <div className="absolute -top-3.5 right-8 px-3.5 py-1 rounded-full bg-[#F0C93B] text-[#2A2118] font-bold text-[10px] uppercase tracking-widest shadow-[2px_2px_0_0_#F28B6E]">
                 Most Popular
               </div>
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-8 h-full flex flex-col justify-between space-y-8">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 h-full flex flex-col justify-between space-y-8">
                 <div className="space-y-5">
-                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-cyan-400 font-bold">Scholar Pro</div>
-                  <div className="text-4xl font-extrabold text-white">
-                    {isAnnual ? "₹124" : "₹199"} <span className="text-xs font-normal text-zinc-500">/ month</span>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#F0C93B] font-bold">Scholar Pro</div>
+                  <div className="text-4xl font-extrabold text-[#F3F0E4] font-heading">
+                    {isAnnual ? "₹124" : "₹199"} <span className="text-xs font-normal text-[#9FAEA1]">/ month</span>
                   </div>
-                  <div className="text-[11px] text-cyan-400 font-mono">
+                  <div className="text-[11px] text-[#F0C93B] font-mono">
                     {isAnnual ? "Billed ₹1,499 annually" : "Billed monthly"}
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">For serious students needing unlimited AI research, flashcards, and realtime collaboration.</p>
-                  <ul className="space-y-3 text-xs text-zinc-300 pt-6 border-t border-white/5">
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Everything in Free Starter</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Unlimited AI Research &amp; Flashcards</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Realtime CRDT Collaborative Sync</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Verified Course Completion Certificates</li>
+                  <p className="text-xs text-[#9FAEA1] leading-relaxed font-light">For serious students needing unlimited AI research, flashcards, and realtime collaboration.</p>
+                  <ul className="space-y-3 text-xs text-[#F3F0E4] pt-6 border-t border-[#F3F0E4]/10">
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Everything in Free Starter</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Unlimited AI Research &amp; Flashcards</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Realtime CRDT Collaborative Sync</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Verified Course Completion Certificates</li>
                   </ul>
                 </div>
                 <Link
                   href="/signup?plan=pro"
-                  className="group w-full h-11 rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(255,255,255,0.2)]"
+                  className="group w-full h-11 rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[2px_2px_0_0_#F28B6E] font-heading"
                 >
                   <span>Upgrade to Pro</span>
-                  <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                 </Link>
               </div>
             </div>
 
             {/* Campus / Team Tier */}
-            <div className="rounded-[2rem] bg-zinc-900/30 border border-white/10 p-2">
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-8 h-full flex flex-col justify-between space-y-8">
+            <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+              <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 h-full flex flex-col justify-between space-y-8">
                 <div className="space-y-5">
-                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-violet-400 font-bold">Campus / Team</div>
-                  <div className="text-4xl font-extrabold text-white">
-                    {isAnnual ? "₹333" : "₹499"} <span className="text-xs font-normal text-zinc-500">/ user / mo</span>
+                  <div className="text-[10px] font-mono uppercase tracking-[0.2em] text-[#C9A9E0] font-bold">Campus / Team</div>
+                  <div className="text-4xl font-extrabold text-[#F3F0E4] font-heading">
+                    {isAnnual ? "₹333" : "₹499"} <span className="text-xs font-normal text-[#9FAEA1]">/ user / mo</span>
                   </div>
-                  <div className="text-[11px] text-violet-400 font-mono">
+                  <div className="text-[11px] text-[#C9A9E0] font-mono">
                     {isAnnual ? "Billed ₹3,999 annually" : "Billed monthly"}
                   </div>
-                  <p className="text-xs text-zinc-400 leading-relaxed">For study groups, college clubs, and campus labs needing priority AI &amp; admin controls.</p>
-                  <ul className="space-y-3 text-xs text-zinc-300 pt-6 border-t border-white/5">
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Everything in Scholar Pro</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Priority Claude 3.5 Sonnet Synthesis</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Zero-Knowledge Client Encryption Keys</li>
-                    <li className="flex items-center gap-2.5"><Check className="size-4 text-cyan-400" /> Group Shared Workspace &amp; Analytics</li>
+                  <p className="text-xs text-[#9FAEA1] leading-relaxed font-light">For study groups, college clubs, and campus labs needing priority AI &amp; admin controls.</p>
+                  <ul className="space-y-3 text-xs text-[#F3F0E4] pt-6 border-t border-[#F3F0E4]/10">
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Everything in Scholar Pro</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Priority Claude 3.5 Sonnet Synthesis</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Zero-Knowledge Client Encryption Keys</li>
+                    <li className="flex items-center gap-2.5"><Check className="size-4 text-[#F0C93B]" /> Group Shared Workspace &amp; Analytics</li>
                   </ul>
                 </div>
                 <Link
                   href="/signup?plan=team"
-                  className="w-full h-11 rounded-full bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs flex items-center justify-center transition-all duration-200 active:scale-[0.97]"
+                  className="w-full h-11 rounded-xl bg-[#16261D] hover:bg-[#1F362A] text-[#F3F0E4] font-bold text-xs flex items-center justify-center transition-all duration-200 active:scale-[0.97] border border-[#F3F0E4]/15"
                 >
                   Get Campus Pass
                 </Link>
@@ -584,29 +689,29 @@ export default function LandingPage() {
           </div>
 
           {/* Payment Gateways Bar */}
-          <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-zinc-950/60 border border-white/5 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-zinc-400">
+          <div className="max-w-4xl mx-auto p-4 rounded-2xl bg-[#121F18] border border-[#F3F0E4]/15 flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-[#9FAEA1]">
             <div className="flex items-center gap-2">
-              <CreditCard className="size-4 text-cyan-400" />
+              <CreditCard className="size-4 text-[#8FC3DE]" />
               <span>Accepted Payments in India:</span>
             </div>
-            <div className="flex flex-wrap items-center gap-4 text-white font-bold">
-              <span className="px-2.5 py-1 rounded bg-zinc-900 border border-white/10 text-[11px]">UPI</span>
-              <span className="px-2.5 py-1 rounded bg-zinc-900 border border-white/10 text-[11px]">Google Pay</span>
-              <span className="px-2.5 py-1 rounded bg-zinc-900 border border-white/10 text-[11px]">PhonePe</span>
-              <span className="px-2.5 py-1 rounded bg-zinc-900 border border-white/10 text-[11px]">Paytm</span>
-              <span className="px-2.5 py-1 rounded bg-zinc-900 border border-white/10 text-[11px]">Net Banking</span>
+            <div className="flex flex-wrap items-center gap-4 text-[#F3F0E4] font-bold">
+              <span className="px-2.5 py-1 rounded-lg bg-[#16261D] border border-[#F3F0E4]/10 text-[11px]">UPI</span>
+              <span className="px-2.5 py-1 rounded-lg bg-[#16261D] border border-[#F3F0E4]/10 text-[11px]">Google Pay</span>
+              <span className="px-2.5 py-1 rounded-lg bg-[#16261D] border border-[#F3F0E4]/10 text-[11px]">PhonePe</span>
+              <span className="px-2.5 py-1 rounded-lg bg-[#16261D] border border-[#F3F0E4]/10 text-[11px]">Paytm</span>
+              <span className="px-2.5 py-1 rounded-lg bg-[#16261D] border border-[#F3F0E4]/10 text-[11px]">Net Banking</span>
             </div>
           </div>
         </section>
 
         {/* FAQ SECTION */}
-        <section id="faq" className="border-t border-white/5 bg-[#050508] py-28">
+        <section id="faq" className="border-t border-[#F3F0E4]/10 bg-[#16261D] py-28 relative z-10">
           <div className="max-w-4xl mx-auto px-6 space-y-12">
             <Reveal className="text-center space-y-3">
-              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-white">
+              <h2 className="text-4xl sm:text-5xl font-extrabold tracking-[-0.02em] text-[#F3F0E4] font-heading">
                 Frequently asked questions
               </h2>
-              <p className="text-zinc-400 text-sm font-light">
+              <p className="text-[#9FAEA1] text-sm font-light">
                 Everything you need to know about Notexia.
               </p>
             </Reveal>
@@ -636,20 +741,30 @@ export default function LandingPage() {
               ].map(({ q, a }, index) => (
                 <div
                   key={q}
-                  className="rounded-2xl bg-zinc-900/30 border border-white/10 p-2"
+                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 shadow-[0_10px_30px_rgba(0,0,0,0.25)] overflow-hidden"
                 >
                   <button
                     onClick={() => toggleFaq(index)}
-                    className="w-full text-left rounded-xl bg-[#07070a] border border-white/5 p-6 flex items-center justify-between gap-4 text-white font-bold text-base hover:bg-zinc-900/50 transition-colors"
+                    className="w-full text-left rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 flex items-center justify-between gap-4 text-[#F3F0E4] font-bold text-base hover:bg-[#16261D] transition-colors font-heading"
                   >
                     <span>{q}</span>
-                    <Plus className={`size-5 text-cyan-400 transition-transform duration-300 ${openFaq === index ? "rotate-45" : ""}`} />
+                    <Plus className={`size-5 text-[#F0C93B] transition-transform duration-300 ${openFaq === index ? "rotate-45" : ""}`} />
                   </button>
-                  {openFaq === index && (
-                    <div className="px-6 pb-6 pt-2 text-xs sm:text-sm text-zinc-400 leading-relaxed">
-                      {a}
-                    </div>
-                  )}
+                  <AnimatePresence>
+                    {openFaq === index && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                        className="overflow-hidden"
+                      >
+                        <div className="px-6 pb-6 pt-3 text-xs sm:text-sm text-[#9FAEA1] leading-relaxed font-light">
+                          {a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               ))}
             </div>
@@ -658,19 +773,19 @@ export default function LandingPage() {
       </main>
 
       {/* FOOTER */}
-      <footer className="border-t border-white/5 bg-zinc-950 py-16 text-xs text-zinc-500">
+      <footer className="border-t border-[#F3F0E4]/10 bg-[#121F18] py-16 text-xs text-[#9FAEA1] relative z-10">
         <div className="max-w-[1400px] mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-2.5">
-            <div className="size-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-mono text-zinc-400">All systems operational</span>
+            <div className="size-2 rounded-full bg-[#8FC3DE] animate-pulse" />
+            <span className="font-mono text-[#8FC3DE]">All systems operational</span>
           </div>
-          <div className="text-zinc-500">
+          <div className="text-[#9FAEA1]">
             &copy; {new Date().getFullYear()} Notexia Inc. All rights reserved. Made for Indian Students &amp; Engineers.
           </div>
           <div className="flex items-center gap-8">
-            <a href="#features" className="hover:text-white transition-colors">Privacy</a>
-            <a href="#features" className="hover:text-white transition-colors">Terms</a>
-            <a href="#features" className="hover:text-white transition-colors">Security</a>
+            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Privacy</a>
+            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Terms</a>
+            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Security</a>
           </div>
         </div>
       </footer>
