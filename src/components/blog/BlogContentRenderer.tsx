@@ -1,6 +1,8 @@
 "use client";
 
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 interface BlogContentRendererProps {
   content: unknown;
@@ -8,11 +10,67 @@ interface BlogContentRendererProps {
 }
 
 /**
+ * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, and <code>\text{...}</code>) using KaTeX.
+ */
+function preprocessLatexInHtml(html: string): string {
+  if (!html || typeof html !== "string") return html;
+
+  let processed = html;
+
+  // 1. Replace <code> containing LaTeX math expressions
+  processed = processed.replace(/<code>\s*([\s\S]*?)\s*<\/code>/g, (match, innerText) => {
+    const unescaped = innerText.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&");
+    if (/\\(text|frac|sqrt|int|sum|prod|lim|Delta|gamma|alpha|beta|sigma|mu|theta|hat|vec|left|right|mathbb|mathbf|in|approx|le|ge|neq|times|cdot|partial)\b/.test(unescaped)) {
+      try {
+        const isBlock = unescaped.includes("\\int") || unescaped.includes("\\sum") || unescaped.includes("\\frac") || unescaped.length > 35;
+        return katex.renderToString(unescaped.trim(), {
+          displayMode: isBlock,
+          throwOnError: false,
+        });
+      } catch {
+        return match;
+      }
+    }
+    return match;
+  });
+
+  // 2. Replace $$...$$ block math
+  processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, mathContent) => {
+    try {
+      return katex.renderToString(mathContent.trim(), {
+        displayMode: true,
+        throwOnError: false,
+      });
+    } catch {
+      return match;
+    }
+  });
+
+  // 3. Replace $...$ inline math (ignoring plain currency numbers)
+  processed = processed.replace(/(^|[^\\])\$([^\$\n]+?)\$/g, (match, prefix, mathContent) => {
+    if (/^\d+(\.\d+)?$/.test(mathContent.trim())) {
+      return match;
+    }
+    try {
+      const rendered = katex.renderToString(mathContent.trim(), {
+        displayMode: false,
+        throwOnError: false,
+      });
+      return `${prefix}${rendered}`;
+    } catch {
+      return match;
+    }
+  });
+
+  return processed;
+}
+
+/**
  * Universal content renderer for blogs, notes and research papers.
  *
  * Routing logic:
- *   - HTML string  (starts with "<" or contains "</") → dangerouslySetInnerHTML with full prose styling
- *   - Markdown / plain string                         → MarkdownRenderer (react-markdown pipeline)
+ *   - HTML string  (starts with "<" or contains "</") → dangerouslySetInnerHTML with full prose styling & KaTeX preprocessor
+ *   - Markdown / plain string                         → MarkdownRenderer (react-markdown + KaTeX pipeline)
  *   - TipTap JSON object                              → JSON→Markdown text → MarkdownRenderer
  */
 export function BlogContentRenderer({ content, className = "" }: BlogContentRendererProps) {
@@ -25,6 +83,7 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
     const isHtml = HTML_BLOCK_RE.test(content);
 
     if (isHtml) {
+      const processedHtml = preprocessLatexInHtml(content);
       return (
         <div
           className={`
@@ -54,6 +113,9 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
             [&_pre_code]:!bg-transparent [&_pre_code]:!border-0 [&_pre_code]:!rounded-none [&_pre_code]:!p-0 [&_pre_code]:!px-0 [&_pre_code]:!py-0 [&_pre_code]:!m-0 [&_pre_code]:!text-emerald-300 [&_pre_code]:!font-mono [&_pre_code]:!text-[13px] [&_pre_code]:!leading-[1.75] [&_pre_code]:!whitespace-pre [&_pre_code]:!block [&_pre_code]:!shadow-none [&_pre_code]:!outline-none [&_pre_code]:!ring-0
             [&_code]:text-cyan-300 [&_code]:font-mono [&_code]:bg-zinc-800/80 [&_code]:border [&_code]:border-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[12px] [&_code]:leading-none
 
+            [&_.katex]:text-base [&_.katex]:text-zinc-100
+            [&_.katex-display]:my-5 [&_.katex-display]:py-3.5 [&_.katex-display]:px-5 [&_.katex-display]:bg-[#0d0d12]/90 [&_.katex-display]:border [&_.katex-display]:border-cyan-500/30 [&_.katex-display]:rounded-xl [&_.katex-display]:shadow-lg [&_.katex-display_.katex]:text-cyan-300
+
             [&_figure]:my-8 [&_figure]:rounded-2xl [&_figure]:overflow-hidden [&_figure]:border [&_figure]:border-white/10 [&_figure]:bg-zinc-950/80 [&_figure]:shadow-2xl
             [&_figure_img]:w-full [&_figure_img]:max-h-[600px] [&_figure_img]:object-cover [&_figure_img]:block
             [&_figcaption]:px-5 [&_figcaption]:py-3 [&_figcaption]:text-xs [&_figcaption]:font-mono [&_figcaption]:text-cyan-400 [&_figcaption]:border-t [&_figcaption]:border-white/10 [&_figcaption]:bg-zinc-900/60
@@ -68,7 +130,7 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
 
             ${className}
           `}
-          dangerouslySetInnerHTML={{ __html: content }}
+          dangerouslySetInnerHTML={{ __html: processedHtml }}
         />
       );
     }

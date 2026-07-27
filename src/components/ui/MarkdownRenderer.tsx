@@ -3,7 +3,11 @@
 import React, { useState, useCallback, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 import rehypeSlug from "rehype-slug";
+import rehypeKatex from "rehype-katex";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import { Check, Copy, ExternalLink } from "lucide-react";
 
 /* ─────────────────────────────────────────────────────────────
@@ -85,6 +89,12 @@ const PROSE_CSS = `
 .md-body figure { margin: 2rem 0; border: 1px solid rgba(255,255,255,0.1); border-radius: 1rem; overflow: hidden; background: rgba(9,9,11,0.8); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
 .md-body figure img { margin: 0; border: none; border-radius: 0; max-height: 600px; object-fit: cover; }
 .md-body figcaption { padding: 0.625rem 1.25rem; font-size: 0.75rem; font-family: monospace; color: #22d3ee; border-top: 1px solid rgba(255,255,255,0.1); background: rgba(24,24,27,0.6); }
+
+/* KaTeX Math Styling */
+.md-body .katex { font-size: 1.05em; color: #f4f4f5; }
+.md-body .katex-display { margin: 1.25rem 0; padding: 0.875rem 1.25rem; background: rgba(13, 13, 18, 0.9); border: 1px solid rgba(34, 211, 238, 0.25); border-radius: 0.75rem; overflow-x: auto; overflow-y: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.4); text-align: center; }
+.md-body .katex-display .katex { font-size: 1.15em; color: #67e8f9; }
+.md-body code .katex { color: #a5f3fc; }
 `;
 
 let cssInjected = false;
@@ -162,13 +172,34 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
   return (
     <div className={`md-body ${className}`}>
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeSlug]}
+        remarkPlugins={[remarkGfm, remarkMath]}
+        rehypePlugins={[rehypeSlug, rehypeKatex]}
         components={{
           code({ className: cls, children, ...props }) {
+            const childrenStr = Array.isArray(children) ? children.join("") : String(children ?? "");
             const isBlock = /language-\w+/.test(cls || "");
             if (isBlock) return <CodeBlock className={cls}>{children}</CodeBlock>;
-            // inline code
+
+            // Check if inline code string contains LaTeX formula notation
+            if (/\\(text|frac|sqrt|int|sum|prod|lim|Delta|gamma|alpha|beta|sigma|mu|theta|hat|vec|left|right|mathbb|mathbf|in|approx|le|ge|neq|times|cdot|partial)\b/.test(childrenStr)) {
+              try {
+                const isDisplayMode = childrenStr.includes("\\int") || childrenStr.includes("\\sum") || childrenStr.includes("\\frac") || childrenStr.length > 35;
+                const html = katex.renderToString(childrenStr.trim(), {
+                  displayMode: isDisplayMode,
+                  throwOnError: false,
+                });
+                return (
+                  <span
+                    className={isDisplayMode ? "katex-display-wrapper block my-4 text-center" : "inline-block px-1"}
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                );
+              } catch {
+                // fallback to regular code
+              }
+            }
+
+            // regular inline code
             return (
               <code style={{ fontFamily: "'JetBrains Mono','Fira Code',monospace", fontSize: "0.8125rem", color: "#67e8f9", background: "rgba(39,39,42,0.8)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "0.25rem", padding: "0.125rem 0.375rem", lineHeight: 1 }} {...props}>
                 {children}
@@ -176,7 +207,7 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
             );
           },
           pre({ children }) {
-            // Unwrap — CodeBlock provides its own <pre>
+            // Unwrap — CodeBlock handles its own <pre>
             return <>{children}</>;
           },
           img({ ...props }) {
