@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
+import { Blog } from "@/models/Blog";
 import { Follow } from "@/models/Follow";
 import { PipelineStage } from "mongoose";
 import { escapeRegex } from "@/lib/validation";
@@ -14,36 +15,47 @@ export const GET = auth(async function GET(req) {
     const search = searchParams.get("search") || "";
     const tag = searchParams.get("tag") || "";
     const category = searchParams.get("category") || "";
-    
+
     const parsedPage = parseInt(searchParams.get("page") || "1", 10);
     const parsedLimit = parseInt(searchParams.get("limit") || "10", 10);
-    
+
     const page = (isNaN(parsedPage) || parsedPage < 1) ? 1 : parsedPage;
     const limit = (isNaN(parsedLimit) || parsedLimit < 1) ? 10 : (parsedLimit > 100 ? 100 : parsedLimit);
     const skip = (page - 1) * limit;
 
     await connectToDatabase();
 
-    // Base match criteria
-    const matchCriteria: Record<string, unknown> = {
+    // Match criteria for Notes
+    const noteMatchCriteria: Record<string, unknown> = {
       published: true,
       isTrashed: false,
     };
 
+    // Match criteria for Blogs
+    const blogMatchCriteria: Record<string, unknown> = {
+      published: true,
+    };
+
     if (search && typeof search === "string") {
       const escapedSearch = escapeRegex(search.trim());
-      matchCriteria.$or = [
+      noteMatchCriteria.$or = [
         { title: { $regex: escapedSearch, $options: "i" } },
         { tags: { $regex: escapedSearch, $options: "i" } },
+      ];
+      blogMatchCriteria.$or = [
+        { title: { $regex: escapedSearch, $options: "i" } },
+        { summary: { $regex: escapedSearch, $options: "i" } },
       ];
     }
 
     if (tag) {
-      matchCriteria.tags = tag;
+      noteMatchCriteria.tags = tag;
     }
 
     if (category) {
-      matchCriteria.category = category;
+      if (category.toLowerCase() !== "blog") {
+        noteMatchCriteria.category = category;
+      }
     }
 
     if (sort === "following") {
@@ -52,12 +64,13 @@ export const GET = auth(async function GET(req) {
       }
       const follows = await Follow.find({ followerId: userId }).select("followingId");
       const followingIds = follows.map((f) => f.followingId);
-      matchCriteria.userId = { $in: followingIds };
+      noteMatchCriteria.userId = { $in: followingIds };
+      blogMatchCriteria.userId = { $in: followingIds };
     }
 
-    // Build aggregation pipeline to populate user and compute counts
-    const pipeline: PipelineStage[] = [
-      { $match: matchCriteria },
+    // Build aggregation pipeline for Notes
+    const notePipeline: PipelineStage[] = [
+      { $match: noteMatchCriteria },
       {
         $lookup: {
           from: "users",
@@ -66,7 +79,7 @@ export const GET = auth(async function GET(req) {
           as: "author",
         },
       },
-      { $unwind: "$author" },
+      { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
       {
         $lookup: {
           from: "comments",
@@ -79,9 +92,9 @@ export const GET = auth(async function GET(req) {
         $addFields: {
           upvotesCount: { $size: { $ifNull: ["$upvotes", []] } },
           commentsCount: { $size: "$comments" },
+          itemType: "note",
         },
       },
-      // Project fields
       {
         $project: {
           title: 1,
@@ -97,6 +110,7 @@ export const GET = auth(async function GET(req) {
           updatedAt: 1,
           upvotesCount: 1,
           commentsCount: 1,
+          itemType: 1,
           "author._id": 1,
           "author.name": 1,
           "author.image": 1,
@@ -104,28 +118,92 @@ export const GET = auth(async function GET(req) {
       },
     ];
 
-    // Handle dynamic sorting modes
-    if (sort === "top") {
-      pipeline.push({ $sort: { upvotesCount: -1, createdAt: -1 } });
-    } else if (sort === "trending") {
-      pipeline.push({
-        $addFields: {
-          trendingScore: { $add: ["$upvotesCount", "$commentsCount"] },
+    // Build aggregation pipeline for Blogs
+    const blogPipeline: PipelineStage[] = [
+      { $match: blogMatchCriteria },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "author",
         },
-      });
-      pipeline.push({ $sort: { trendingScore: -1, createdAt: -1 } });
+      },
+      { $unwind: { path: "$author", preserveNullAndEmptyArrays: true } },
+      {
+        $lookup: {
+          from: "comments",
+          localField: "_id",
+          foreignField: "noteId",
+          as: "comments",
+        },
+      },
+      {
+        $addFields: {
+          upvotesCount: { $size: { $ifNull: ["$upvotes", []] } },
+          commentsCount: { $size: "$comments" },
+          itemType: "blog",
+          category: "Blog",
+          tags: ["blog"],
+        },
+      },
+      {
+        $project: {
+          title: 1,
+          slug: 1,
+          summary: 1,
+          category: 1,
+          tags: 1,
+          coverImage: 1,
+          upvotes: 1,
+          createdAt: 1,
+          updatedAt: 1,
+          upvotesCount: 1,
+          commentsCount: 1,
+          itemType: 1,
+          userId: 1,
+          userName: 1,
+          "author._id": 1,
+          "author.name": 1,
+          "author.image": 1,
+        },
+      },
+    ];
+
+    const [notePosts, blogPosts] = await Promise.all([
+      Note.aggregate(notePipeline),
+      Blog.aggregate(blogPipeline),
+    ]);
+
+    // Normalize blog posts author fallback if user doc wasn't unwound
+    const normalizedBlogPosts = blogPosts.map((b) => ({
+      ...b,
+      author: b.author?._id
+        ? b.author
+        : { _id: b.userId, name: b.userName || "Blog Author", image: "" },
+    }));
+
+    // Merge notes & blogs
+    let combined = [...notePosts, ...normalizedBlogPosts];
+
+    // Sort combined feed
+    if (sort === "top") {
+      combined.sort((a, b) => (b.upvotesCount || 0) - (a.upvotesCount || 0));
+    } else if (sort === "trending") {
+      combined.sort(
+        (a, b) =>
+          ((b.upvotesCount || 0) + (b.commentsCount || 0)) -
+          ((a.upvotesCount || 0) + (a.commentsCount || 0))
+      );
     } else {
       // Default: new
-      pipeline.push({ $sort: { createdAt: -1 } });
+      combined.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
 
-    // Pagination stages
-    pipeline.push({ $skip: skip });
-    pipeline.push({ $limit: limit });
+    // Paginate
+    const paginated = combined.slice(skip, skip + limit);
 
-    const posts = await Note.aggregate(pipeline);
-
-    return NextResponse.json(posts);
+    return NextResponse.json(paginated);
   } catch (error) {
     console.error("Feed error:", error);
     return NextResponse.json({ error: "Failed to load feed." }, { status: 500 });

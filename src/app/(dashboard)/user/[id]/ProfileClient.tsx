@@ -280,7 +280,7 @@ export function ProfileClient({
                           <span className="text-[9px] text-cyan-400 bg-cyan-400/5 border border-cyan-400/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
                             {note.category || "General"}
                           </span>
-                          <Link href={`/blog/${targetUser.name}/${note.slug}`}>
+                          <Link href={`/blog/${encodeURIComponent(targetUser.name || "user")}/${encodeURIComponent(note.slug || note._id)}`}>
                             <h3
                               className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors pt-1.5 cursor-pointer line-clamp-2"
                               style={{ fontFamily: "var(--font-space-grotesk)" }}

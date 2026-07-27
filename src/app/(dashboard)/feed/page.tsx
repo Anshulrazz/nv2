@@ -167,14 +167,18 @@ export default function FeedPage() {
   };
 
   const handleShare = (post: PostData) => {
-    const permalink = `${window.location.origin}/blog/${post.author?.name || "user"}/${post.slug}`;
+    const postSlug = post.slug || post._id;
+    const authorName = encodeURIComponent(post.author?.name || post.userName || "user");
+    const permalink = `${window.location.origin}/blog/${authorName}/${encodeURIComponent(postSlug)}`;
     navigator.clipboard.writeText(permalink);
     showAlert("Link Copied", "Post permalink copied to clipboard!");
   };
 
   const handleBookmark = async (post: PostData) => {
     try {
-      const permalink = `${window.location.origin}/blog/${post.author?.name || "user"}/${post.slug}`;
+      const postSlug = post.slug || post._id;
+      const authorName = encodeURIComponent(post.author?.name || post.userName || "user");
+      const permalink = `${window.location.origin}/blog/${authorName}/${encodeURIComponent(postSlug)}`;
       const res = await fetch("/api/bookmarks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -549,6 +553,10 @@ export default function FeedPage() {
                   checkFollowStatus(post.author?._id);
                 }
 
+                const postSlug = post.slug || post._id;
+                const authorName = encodeURIComponent(post.author?.name || post.userName || "user");
+                const viewUrl = `/blog/${authorName}/${encodeURIComponent(postSlug)}`;
+
                 return (
                   <motion.div
                     key={post._id}
@@ -559,17 +567,17 @@ export default function FeedPage() {
                     <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-5 sm:p-6 space-y-4 sm:space-y-5">
                       {/* Card Header */}
                       <div className="flex items-center justify-between select-none">
-                        <Link href={`/user/${post.author?._id}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0">
-                          {post.author?.image ? (
-                            <img src={post.author?.image} alt={post.author?.name} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
+                        <Link href={`/user/${post.author?._id || post.userId}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0">
+                          {post.author?.image || post.userImage ? (
+                            <img src={post.author?.image || post.userImage} alt={post.author?.name || post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
                           ) : (
                             <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold shrink-0">
-                              {post.author?.name?.[0]?.toUpperCase()}
+                              {(post.author?.name || post.userName || "U")?.[0]?.toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-[#F3F0E4] leading-tight truncate font-heading">
-                              {post.author?.name}
+                              {post.author?.name || post.userName}
                             </p>
                             <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
                               {new Date(post.createdAt).toLocaleDateString()}
@@ -579,7 +587,7 @@ export default function FeedPage() {
 
                         {post.author?._id !== currentUserId && (
                           <button
-                            onClick={() => handleFollowToggle(post.author?._id || "")}
+                            onClick={() => handleFollowToggle(post.author?._id || post.userId || "")}
                             className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full transition-all border uppercase tracking-wider shrink-0 ml-2 ${
                               following
                                 ? "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1]"
@@ -593,13 +601,15 @@ export default function FeedPage() {
 
                       {/* Card Body */}
                       <div className="space-y-3">
-                        <Link href={`/blog/${post.author?.name || "user"}/${post.slug}`}>
+                        <Link href={viewUrl}>
                           <h2 className="text-base sm:text-lg font-bold text-white hover:text-cyan-400 tracking-tight leading-snug cursor-pointer transition-colors">
                             {post.title}
                           </h2>
                         </Link>
                         {post.coverImage && (
-                          <img src={post.coverImage} alt={post.title} className="w-full h-44 sm:h-52 object-cover rounded-2xl border border-white/10 shadow-md" />
+                          <Link href={viewUrl}>
+                            <img src={post.coverImage} alt={post.title} className="w-full h-44 sm:h-52 object-cover rounded-2xl border border-white/10 shadow-md hover:opacity-90 transition-opacity cursor-pointer" />
+                          </Link>
                         )}
                         <div className="flex flex-wrap gap-1.5 select-none pt-1">
                           {(post.tags || []).map((t) => (
