@@ -498,7 +498,45 @@ export default function ResearchPage() {
                     <Download className="size-4" /> Download PDF Research File
                   </a>
                 ) : selectedPaper.content ? (
-                  <div className="w-full pt-2">
+                  <div className="w-full pt-2" id="research-paper-body">
+                    <style>{`
+                      #research-paper-body pre {
+                        margin: 1.5rem 0;
+                        background: #0d0d12;
+                        border: 1px solid rgba(255,255,255,0.12);
+                        border-radius: 1rem;
+                        padding: 1.25rem;
+                        overflow-x: auto;
+                        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                        font-size: 13px;
+                        line-height: 1.75;
+                        box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+                      }
+                      #research-paper-body pre code {
+                        background: transparent !important;
+                        border: none !important;
+                        border-radius: 0 !important;
+                        padding: 0 !important;
+                        margin: 0 !important;
+                        color: #6ee7b7 !important;
+                        font-family: inherit !important;
+                        font-size: inherit !important;
+                        line-height: inherit !important;
+                        white-space: pre !important;
+                        display: block !important;
+                        box-shadow: none !important;
+                      }
+                      #research-paper-body code {
+                        color: #67e8f9;
+                        background: rgba(39,39,42,0.8);
+                        border: 1px solid rgba(255,255,255,0.1);
+                        border-radius: 0.25rem;
+                        padding: 0.125rem 0.375rem;
+                        font-family: 'JetBrains Mono', 'Fira Code', monospace;
+                        font-size: 12px;
+                        line-height: 1;
+                      }
+                    `}</style>
                     <BlogContentRenderer content={selectedPaper.content} />
                   </div>
                 ) : null}

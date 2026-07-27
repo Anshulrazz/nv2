@@ -47,8 +47,8 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
 
             [&_hr]:my-8 [&_hr]:border-white/10
 
-            [&_pre]:my-6 [&_pre]:bg-[#0d0d12] [&_pre]:border [&_pre]:border-white/[0.12] [&_pre]:rounded-2xl [&_pre]:p-5 [&_pre]:overflow-x-auto [&_pre]:leading-[1.75] [&_pre]:text-[13px] [&_pre]:font-mono
-            [&_pre_code]:!bg-transparent [&_pre_code]:!p-0 [&_pre_code]:!border-0 [&_pre_code]:!rounded-none [&_pre_code]:text-emerald-300 [&_pre_code]:font-mono [&_pre_code]:text-[13px] [&_pre_code]:leading-[1.75] [&_pre_code]:whitespace-pre [&_pre_code]:block
+            [&_pre]:my-6 [&_pre]:bg-[#0d0d12] [&_pre]:border [&_pre]:border-white/[0.12] [&_pre]:rounded-2xl [&_pre]:p-5 [&_pre]:overflow-x-auto [&_pre]:leading-[1.75] [&_pre]:text-[13px] [&_pre]:font-mono [&_pre]:shadow-[0_4px_32px_rgba(0,0,0,0.5)]
+            [&_pre_code]:!bg-transparent [&_pre_code]:!border-0 [&_pre_code]:!rounded-none [&_pre_code]:!p-0 [&_pre_code]:!px-0 [&_pre_code]:!py-0 [&_pre_code]:!m-0 [&_pre_code]:!text-emerald-300 [&_pre_code]:!font-mono [&_pre_code]:!text-[13px] [&_pre_code]:!leading-[1.75] [&_pre_code]:!whitespace-pre [&_pre_code]:!block [&_pre_code]:!shadow-none [&_pre_code]:!outline-none [&_pre_code]:!ring-0
             [&_code]:text-cyan-300 [&_code]:font-mono [&_code]:bg-zinc-800/80 [&_code]:border [&_code]:border-white/10 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[12px] [&_code]:leading-none
 
             [&_figure]:my-8 [&_figure]:rounded-2xl [&_figure]:overflow-hidden [&_figure]:border [&_figure]:border-white/10 [&_figure]:bg-zinc-950/80 [&_figure]:shadow-2xl
