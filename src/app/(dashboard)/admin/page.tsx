@@ -5,9 +5,9 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download } from "lucide-react";
+import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download, Search, Send, Mail, MessageCircle } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
 interface ChartItem {
@@ -57,11 +57,14 @@ interface AuditLogRecord {
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"analytics" | "users" | "moderation" | "settings" | "audit" | "export">("analytics");
   const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "user" | "teacher" | "admin">("all");
   const [flaggedNotes, setFlaggedNotes] = useState<FlaggedItem[]>([]);
   const [flaggedComments, setFlaggedComments] = useState<FlaggedItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<Record<string, boolean>>({
@@ -260,7 +263,7 @@ export default function AdminPage() {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none">
           {[
             { id: "analytics", label: "Analytics & Telemetry" },
-            { id: "users", label: "User Management" },
+            { id: "users", label: "Users & Direct Messages" },
             { id: "moderation", label: "Content Moderation" },
             { id: "settings", label: "System Settings" },
             { id: "audit", label: "Audit Log Records" },
@@ -347,79 +350,159 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* Tab 2: User Management */}
+        {/* Tab 2: User Management & Direct Messaging */}
         {activeTab === "users" && (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="bg-zinc-950/80 text-zinc-400 font-mono text-[10px] uppercase tracking-widest border-b border-white/5">
-                    <tr>
-                      <th className="px-6 py-4 font-bold">User</th>
-                      <th className="px-6 py-4 font-bold">Role</th>
-                      <th className="px-6 py-4 font-bold">Points</th>
-                      <th className="px-6 py-4 font-bold">Status</th>
-                      <th className="px-6 py-4 font-bold text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {users.map((u) => (
-                      <tr key={u._id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-bold text-white">
-                          <p className="truncate max-w-[180px]">{u.name}</p>
-                          <p className="text-[10px] font-mono text-zinc-500 font-normal">{u.email}</p>
-                        </td>
-                        <td className="px-6 py-4">
-                          <select
-                            value={u.role}
-                            onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
-                            className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${
-                              u.role === "admin"
-                                ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
-                                : u.role === "teacher"
-                                ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                                : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
-                            }`}
-                          >
-                            <option value="user" className="bg-zinc-950 text-cyan-400 font-mono">User (Student)</option>
-                            <option value="teacher" className="bg-zinc-950 text-amber-400 font-mono">Teacher (Instructor)</option>
-                            <option value="admin" className="bg-zinc-950 text-rose-400 font-mono">Admin</option>
-                          </select>
-                        </td>
-                        <td className="px-6 py-4 font-mono font-bold text-amber-400">{u.points} pts</td>
-                        <td className="px-6 py-4">
-                          {u.isSuspended ? (
-                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase">
-                              Suspended
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
-                              Active
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUserModify(u._id, u.isSuspended ? "unsuspend" : "suspend")}
-                            className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-xs text-zinc-300"
-                          >
-                            <Ban className="size-3.5 mr-1" /> {u.isSuspended ? "Unsuspend" : "Suspend"}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleUserDelete(u._id)}
-                            className="bg-zinc-900 border-white/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs"
-                          >
-                            <Trash2 className="size-3.5" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="space-y-6">
+            {/* User Search & Role Filter Header */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-zinc-950/60 p-4 rounded-3xl border border-white/10">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
+                <input
+                  type="text"
+                  value={userSearchQuery}
+                  onChange={(e) => setUserSearchQuery(e.target.value)}
+                  placeholder="Search user by name or email..."
+                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl pl-11 pr-4 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                />
+                {userSearchQuery && (
+                  <button
+                    onClick={() => setUserSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-mono text-zinc-500 hover:text-white px-2 py-1"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+                {(["all", "user", "teacher", "admin"] as const).map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setRoleFilter(r)}
+                    className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider transition-all whitespace-nowrap ${
+                      roleFilter === r
+                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40"
+                        : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/5"
+                    }`}
+                  >
+                    {r === "all" ? "All Roles" : r === "user" ? "Students" : r}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Users Table */}
+            <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
+              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden">
+                {(() => {
+                  const filteredUsers = users.filter((u) => {
+                    const matchesSearch =
+                      !userSearchQuery ||
+                      (u.name || "").toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+                      (u.email || "").toLowerCase().includes(userSearchQuery.toLowerCase());
+                    const matchesRole = roleFilter === "all" || u.role === roleFilter;
+                    return matchesSearch && matchesRole;
+                  });
+
+                  if (filteredUsers.length === 0) {
+                    return (
+                      <div className="p-12 text-center space-y-3">
+                        <Users className="size-10 text-zinc-600 mx-auto" />
+                        <p className="text-xs text-zinc-400 font-mono">
+                          {userSearchQuery || roleFilter !== "all"
+                            ? `No users found matching "${userSearchQuery}" ${roleFilter !== "all" ? `with role "${roleFilter}"` : ""}`
+                            : "No registered users found."}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="overflow-x-auto">
+                      <div className="px-6 py-3 border-b border-white/5 flex items-center justify-between text-[11px] font-mono text-zinc-400 bg-zinc-950/40">
+                        <span>Showing {filteredUsers.length} of {users.length} Users</span>
+                        <span>Click Direct Message to chat instantly</span>
+                      </div>
+                      <table className="w-full text-left text-xs whitespace-nowrap">
+                        <thead className="bg-zinc-950/80 text-zinc-400 font-mono text-[10px] uppercase tracking-widest border-b border-white/5">
+                          <tr>
+                            <th className="px-6 py-4 font-bold">User</th>
+                            <th className="px-6 py-4 font-bold">Role</th>
+                            <th className="px-6 py-4 font-bold">Points</th>
+                            <th className="px-6 py-4 font-bold">Status</th>
+                            <th className="px-6 py-4 font-bold text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                          {filteredUsers.map((u) => (
+                            <tr key={u._id} className="hover:bg-white/5 transition-colors">
+                              <td className="px-6 py-4 font-bold text-white">
+                                <p className="truncate max-w-[180px]">{u.name || "User"}</p>
+                                <p className="text-[10px] font-mono text-zinc-500 font-normal">{u.email}</p>
+                              </td>
+                              <td className="px-6 py-4">
+                                <select
+                                  value={u.role}
+                                  onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
+                                  className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${
+                                    u.role === "admin"
+                                      ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
+                                      : u.role === "teacher"
+                                      ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                                      : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
+                                  }`}
+                                >
+                                  <option value="user" className="bg-zinc-950 text-cyan-400 font-mono">User (Student)</option>
+                                  <option value="teacher" className="bg-zinc-950 text-amber-400 font-mono">Teacher (Instructor)</option>
+                                  <option value="admin" className="bg-zinc-950 text-rose-400 font-mono">Admin</option>
+                                </select>
+                              </td>
+                              <td className="px-6 py-4 font-mono font-bold text-amber-400">{u.points} pts</td>
+                              <td className="px-6 py-4">
+                                {u.isSuspended ? (
+                                  <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase">
+                                    Suspended
+                                  </span>
+                                ) : (
+                                  <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                                    Active
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4 text-right space-x-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => router.push(`/messages?userId=${u._id}`)}
+                                  className="bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold font-mono"
+                                  title={`Direct Message ${u.name}`}
+                                >
+                                  <Send className="size-3.5 mr-1 text-cyan-400" /> Direct Message
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleUserModify(u._id, u.isSuspended ? "unsuspend" : "suspend")}
+                                  className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-xs text-zinc-300"
+                                >
+                                  <Ban className="size-3.5 mr-1" /> {u.isSuspended ? "Unsuspend" : "Suspend"}
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleUserDelete(u._id)}
+                                  className="bg-zinc-900 border-white/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })()}
               </div>
             </div>
           </div>
