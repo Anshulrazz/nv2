@@ -75,6 +75,7 @@ export const POST = auth(async function POST(req) {
     const geminiApiKey = process.env.GEMINI_API_KEY;
     const geminiModel = process.env.GEMINI_MODEL || "gemini-flash-latest";
     const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+    const openRouterApiKey = process.env.OPENROUTER_API_KEY;
     const textEncoder = new TextEncoder();
 
     // ─── 1. Google Gemini API Stream ───
@@ -174,7 +175,106 @@ export const POST = auth(async function POST(req) {
       });
     }
 
-    // ─── 2. Claude Anthropic API Stream ───
+    // ─── 2. OpenRouter API Stream (secondary fallback) ───
+    if (openRouterApiKey && openRouterApiKey !== "placeholder" && openRouterApiKey !== "") {
+      const orResponse = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openRouterApiKey}`,
+          "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://notexia.in",
+          "X-Title": process.env.OPENROUTER_SITE_NAME || "Notexia",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "openai/gpt-4o-mini",
+          messages: [
+            {
+              role: "system",
+              content: "You are Notexia's built-in AI assistant. Help users structure notes, analyze content, resolve doubts, and write blogs.",
+            },
+            ...formattedMessages,
+          ],
+          max_tokens: 4096,
+          temperature: 0.85,
+          stream: true,
+        }),
+      });
+
+      if (orResponse.ok) {
+        const reader = orResponse.body?.getReader();
+        const decoder = new TextDecoder();
+
+        const readableStream = new ReadableStream({
+          async start(controller) {
+            let assistantReply = "";
+            let buffer = "";
+
+            try {
+              if (reader) {
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if (done) break;
+
+                  buffer += decoder.decode(value, { stream: true });
+                  const lines = buffer.split("\n");
+                  buffer = lines.pop() || "";
+
+                  for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (trimmed === "data: [DONE]") continue;
+                    if (trimmed.startsWith("data: ")) {
+                      try {
+                        const parsed = JSON.parse(trimmed.substring(6));
+                        const text = parsed.choices?.[0]?.delta?.content || "";
+                        if (text) {
+                          assistantReply += text;
+                          controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                        }
+                      } catch {
+                        // Skip partial line parse errors
+                      }
+                    }
+                  }
+                }
+
+                if (buffer.startsWith("data: ")) {
+                  try {
+                    const parsed = JSON.parse(buffer.substring(6));
+                    const text = parsed.choices?.[0]?.delta?.content || "";
+                    if (text) {
+                      assistantReply += text;
+                      controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ text })}\n\n`));
+                    }
+                  } catch {}
+                }
+              }
+
+              await saveChatHistory(chatId, userId, message, assistantReply);
+              await awardPoints(userId, 5);
+
+            } catch (err) {
+              console.error("OpenRouter stream error:", err);
+              const errMsg = err instanceof Error ? err.message : String(err);
+              controller.enqueue(textEncoder.encode(`data: ${JSON.stringify({ error: errMsg })}\n\n`));
+            } finally {
+              controller.close();
+            }
+          },
+        });
+
+        return new Response(readableStream, {
+          headers: {
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+          },
+        });
+      } else {
+        console.warn("OpenRouter API error, falling back to Anthropic:", await orResponse.text());
+      }
+    }
+
+    // ─── 3. Claude Anthropic API Stream ───
     if (anthropicApiKey && anthropicApiKey !== "placeholder" && anthropicApiKey !== "") {
       const anthropic = new Anthropic({ apiKey: anthropicApiKey });
       const stream = await anthropic.messages.create({

@@ -137,11 +137,49 @@ Structure: 1) ## Executive Summary & Abstract, 2) Figure 1 image, 3) ## Fundamen
 
         return NextResponse.json({ result: aiOutput, engine: "gemini" });
       } catch (geminiError) {
-        console.warn("Gemini API failed, attempting Anthropic fallback:", geminiError);
+        console.warn("Gemini API failed, attempting OpenRouter fallback:", geminiError);
       }
     }
 
-    // 2. Try Anthropic API fallback
+    // 2. Try OpenRouter API (secondary fallback — openai/gpt-4o-mini)
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    if (openRouterKey && openRouterKey !== "placeholder" && openRouterKey.trim() !== "") {
+      try {
+        const orRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://notexia.in",
+            "X-Title": process.env.OPENROUTER_SITE_NAME || "Notexia",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "openai/gpt-4o-mini",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            max_tokens: 4000,
+            temperature: 0.7,
+          }),
+        });
+
+        if (!orRes.ok) {
+          const errText = await orRes.text();
+          throw new Error(`OpenRouter error ${orRes.status}: ${errText}`);
+        }
+
+        const orData = await orRes.json();
+        const orOutput: string = orData.choices?.[0]?.message?.content ?? "";
+        if (orOutput) {
+          return NextResponse.json({ result: orOutput, engine: "openrouter" });
+        }
+      } catch (orError) {
+        console.warn("OpenRouter API failed, attempting Anthropic fallback:", orError);
+      }
+    }
+
+    // 3. Try Anthropic API fallback
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
     if (anthropicKey && anthropicKey !== "placeholder" && anthropicKey.trim() !== "") {
       const anthropic = new Anthropic({ apiKey: anthropicKey });
