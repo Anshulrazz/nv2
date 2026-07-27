@@ -57,7 +57,7 @@ export default function ResearchPage() {
   // Split-screen detailed view & editor states
   const [selectedPaper, setSelectedPaper] = useState<PaperData | null>(null);
   const [isWriting, setIsWriting] = useState(false);
-  const [workspaceTab, setWorkspaceTab] = useState<"content" | "assistant">("content");
+  const [showAiSideChat, setShowAiSideChat] = useState(true);
 
   // Editor states
   const [editingPaperId, setEditingPaperId] = useState<string | null>(null);
@@ -464,26 +464,20 @@ export default function ResearchPage() {
                   </>
                 )}
                 <button
-                  onClick={() => setWorkspaceTab("content")}
-                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
-                    workspaceTab === "content" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                  onClick={() => setShowAiSideChat((prev) => !prev)}
+                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all flex items-center gap-1.5 ${
+                    showAiSideChat ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-zinc-900 text-zinc-400 border border-white/10 hover:text-white"
                   }`}
                 >
-                  Document
-                </button>
-                <button
-                  onClick={() => setWorkspaceTab("assistant")}
-                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
-                    workspaceTab === "assistant" ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-zinc-500 hover:text-zinc-300"
-                  }`}
-                >
-                  AI Copilot Q&amp;A
+                  <Wand2 className="size-3.5 text-violet-400" />
+                  <span>{showAiSideChat ? "Hide AI Side Chat" : "✨ AI Side Chat"}</span>
                 </button>
               </div>
             </div>
 
-            {workspaceTab === "content" ? (
-              <div className="space-y-6 w-full">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Paper Content - ALWAYS VISIBLE */}
+              <div className={showAiSideChat ? "lg:col-span-8 space-y-6" : "lg:col-span-12 space-y-6"}>
                 <div className="space-y-2 border-b border-white/10 pb-6">
                   <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">{selectedPaper.title}</h2>
                   <p className="text-sm font-mono text-cyan-300">Authors: {selectedPaper.authors}</p>
@@ -521,66 +515,26 @@ export default function ResearchPage() {
                   </div>
                 ) : null}
               </div>
-            ) : (
-                <div className="space-y-4">
-                  <div className="h-80 overflow-y-auto space-y-3 bg-zinc-950 p-4 rounded-2xl border border-white/5">
-                    {chatMessages.length === 0 ? (
-                      <p className="text-xs text-zinc-500 italic text-center py-12">
-                        Ask AI Copilot anything about methodology, formulas, or conclusions in this research paper.
-                      </p>
-                    ) : (
-                      chatMessages.map((msg, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-3.5 rounded-2xl text-xs max-w-[85%] space-y-2 ${
-                            msg.role === "user" ? "bg-cyan-500/10 border border-cyan-500/20 text-cyan-200 ml-auto" : "bg-zinc-900 border border-white/10 text-zinc-200"
-                          }`}
-                        >
-                          <div>{msg.content}</div>
-                          {msg.role === "assistant" && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setEditTitle(selectedPaper?.title || editTitle);
-                                setEditAuthors(selectedPaper?.authors || editAuthors);
-                                setEditAbstract(selectedPaper?.abstract || editAbstract);
-                                setEditContent((prev) => (prev ? `${prev}\n\n${msg.content}` : selectedPaper?.content ? `${selectedPaper.content}\n\n${msg.content}` : msg.content));
-                                setIsWriting(true);
-                                setSelectedPaper(null);
-                                toast.success("Added AI response into research paper editor!");
-                              }}
-                              className="mt-1 text-[10px] font-mono font-bold bg-violet-500/10 hover:bg-violet-500/20 text-violet-300 border border-violet-500/30 px-2 py-1 rounded-md flex items-center gap-1 transition-colors select-none"
-                            >
-                              <Plus className="size-3 text-violet-400" />
-                              <span>Add to Article</span>
-                            </button>
-                          )}
-                        </div>
-                      ))
-                    )}
-                    <div ref={messagesEndRef} />
-                  </div>
 
-                  <div className="flex gap-2">
-                    <Input
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      placeholder="Ask AI Copilot about this paper..."
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") handleSendChatMessage();
-                      }}
-                      className="bg-zinc-950 border-white/10 focus:border-violet-400 text-white placeholder-zinc-600 h-10 text-xs rounded-xl"
-                    />
-                    <Button
-                      onClick={handleSendChatMessage}
-                      disabled={isSendingMessage}
-                      className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs h-10 px-5 font-bold cursor-pointer"
-                    >
-                      {isSendingMessage ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : <Send className="size-4 text-zinc-950" />}
-                    </Button>
-                  </div>
+              {/* AI Copilot Side Chat Sidebar */}
+              {showAiSideChat && (
+                <div className="lg:col-span-4 rounded-3xl bg-zinc-950/80 border border-white/10 overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6">
+                  <NoteSideChat
+                    noteTitle={selectedPaper.title}
+                    noteContentText={selectedPaper.content || selectedPaper.abstract}
+                    onInsertText={(insertedText) => {
+                      setEditTitle(selectedPaper.title);
+                      setEditAuthors(selectedPaper.authors);
+                      setEditAbstract(selectedPaper.abstract);
+                      setEditContent((prev) => (prev ? `${prev}\n\n${insertedText}` : selectedPaper.content ? `${selectedPaper.content}\n\n${insertedText}` : insertedText));
+                      setIsWriting(true);
+                      setSelectedPaper(null);
+                      toast.success("Added AI response into research paper editor!");
+                    }}
+                  />
                 </div>
               )}
+            </div>
           </div>
         ) : (
           <div className="space-y-6">
