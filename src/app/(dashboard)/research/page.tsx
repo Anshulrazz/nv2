@@ -17,12 +17,14 @@ import {
   X,
   Wand2,
   Plus,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useAlertStore } from "@/stores/alertStore";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 import { SimpleEditor } from "@/components/editor/SimpleEditor";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { TopicGeneratorModal } from "@/components/notes/TopicGeneratorModal";
@@ -46,6 +48,8 @@ interface ChatMessage {
 }
 
 export default function ResearchPage() {
+  const { data: session } = useSession();
+  const currentUserId = session?.user?.id;
   const [papers, setPapers] = useState<PaperData[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -56,6 +60,7 @@ export default function ResearchPage() {
   const [workspaceTab, setWorkspaceTab] = useState<"content" | "assistant">("content");
 
   // Editor states
+  const [editingPaperId, setEditingPaperId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState("");
   const [editAuthors, setEditAuthors] = useState("");
   const [editAbstract, setEditAbstract] = useState("");
@@ -187,8 +192,12 @@ export default function ResearchPage() {
 
     setIsSubmittingWrite(true);
     try {
-      const res = await fetch("/api/research", {
-        method: "POST",
+      const isUpdate = Boolean(editingPaperId);
+      const url = isUpdate ? `/api/research/${editingPaperId}` : "/api/research";
+      const method = isUpdate ? "PATCH" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editTitle.trim(),
@@ -203,9 +212,10 @@ export default function ResearchPage() {
         setEditAuthors("");
         setEditAbstract("");
         setEditContent("");
+        setEditingPaperId(null);
         setIsWriting(false);
         fetchPapers();
-        toast.success("Research paper published successfully! You gained +50 points.");
+        toast.success(isUpdate ? "Research paper updated successfully!" : "Research paper published successfully! You gained +50 points.");
       } else {
         const err = await res.json();
         showAlert("Publish Failed", err.error || "Could not publish paper.");
@@ -215,6 +225,39 @@ export default function ResearchPage() {
       showAlert("Publish Error", "An error occurred while saving written paper.");
     } finally {
       setIsSubmittingWrite(false);
+    }
+  };
+
+  const handleStartEditPaper = (paper: PaperData, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingPaperId(paper._id);
+    setEditTitle(paper.title);
+    setEditAuthors(paper.authors);
+    setEditAbstract(paper.abstract);
+    setEditContent(paper.content || "");
+    setSelectedPaper(null);
+    setIsWriting(true);
+  };
+
+  const handleDeletePaper = async (paperId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (!confirm("Are you sure you want to delete this research paper?")) return;
+
+    try {
+      const res = await fetch(`/api/research/${paperId}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Research paper deleted successfully!");
+        if (selectedPaper?._id === paperId) {
+          setSelectedPaper(null);
+        }
+        fetchPapers();
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to delete paper.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An error occurred while deleting the paper.");
     }
   };
 
@@ -403,6 +446,24 @@ export default function ResearchPage() {
                   <ArrowLeft className="size-4" /> Back to Archive
                 </button>
                 <div className="flex items-center gap-2">
+                  {(currentUserId === selectedPaper.userId || session?.user?.role === "admin") && (
+                    <>
+                      <button
+                        onClick={(e) => handleStartEditPaper(selectedPaper, e)}
+                        className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white flex items-center gap-1 transition-all"
+                        title="Edit Paper"
+                      >
+                        <Edit className="size-3.5" /> Edit
+                      </button>
+                      <button
+                        onClick={(e) => handleDeletePaper(selectedPaper._id, e)}
+                        className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 flex items-center gap-1 transition-all"
+                        title="Delete Paper"
+                      >
+                        <Trash2 className="size-3.5" /> Delete
+                      </button>
+                    </>
+                  )}
                   <button
                     onClick={() => setWorkspaceTab("content")}
                     className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
@@ -442,8 +503,20 @@ export default function ResearchPage() {
                       <Download className="size-4" /> Download PDF Research File
                     </a>
                   ) : selectedPaper.content ? (
-                    <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5">
-                      <MarkdownRenderer content={selectedPaper.content} />
+                    <div className="p-6 bg-zinc-950 rounded-2xl border border-white/5 space-y-4">
+                      {typeof selectedPaper.content === "string" &&
+                      (selectedPaper.content.includes("<h") ||
+                        selectedPaper.content.includes("<figure") ||
+                        selectedPaper.content.includes("<p>") ||
+                        selectedPaper.content.includes("<ul>") ||
+                        selectedPaper.content.includes("<table>")) ? (
+                        <div
+                          className="prose prose-invert max-w-none text-zinc-300 text-xs sm:text-sm leading-relaxed space-y-4 font-sans"
+                          dangerouslySetInnerHTML={{ __html: selectedPaper.content }}
+                        />
+                      ) : (
+                        <MarkdownRenderer content={selectedPaper.content} />
+                      )}
                     </div>
                   ) : null}
                 </div>
@@ -560,7 +633,27 @@ export default function ResearchPage() {
                         <span className="text-xs font-mono text-cyan-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                           Open Paper Workspace →
                         </span>
-                        {paper.fileUrl && <ExternalLink className="size-4 text-zinc-500" />}
+                        <div className="flex items-center gap-2">
+                          {(currentUserId === paper.userId || session?.user?.role === "admin") && (
+                            <>
+                              <button
+                                onClick={(e) => handleStartEditPaper(paper, e)}
+                                className="text-zinc-400 hover:text-white p-1 transition-colors"
+                                title="Edit Paper"
+                              >
+                                <Edit className="size-4" />
+                              </button>
+                              <button
+                                onClick={(e) => handleDeletePaper(paper._id, e)}
+                                className="text-zinc-400 hover:text-rose-400 p-1 transition-colors"
+                                title="Delete Paper"
+                              >
+                                <Trash2 className="size-4" />
+                              </button>
+                            </>
+                          )}
+                          {paper.fileUrl && <ExternalLink className="size-4 text-zinc-500" />}
+                        </div>
                       </div>
                     </div>
                   </div>
