@@ -541,15 +541,16 @@ function BlogsPageContent() {
           </div>
         </div>
 
-        <div className="p-4 sm:p-8 lg:p-10 max-w-4xl w-full mx-auto space-y-8 relative z-10">
+        <div className="p-4 sm:p-8 lg:p-10 w-full mx-auto max-w-5xl space-y-8 relative z-10">
           {selectedBlog.coverImage && (
             <img src={selectedBlog.coverImage} alt={selectedBlog.title} className="w-full max-h-96 object-cover rounded-[2rem] border border-[#F3F0E4]/15 shadow-[0_15px_40px_rgba(0,0,0,0.3)]" />
           )}
 
-          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-            <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 text-[#F3F0E4]">
-              <MarkdownRenderer content={selectedBlog.content} />
-            </div>
+          <div className="w-full">
+            <MarkdownRenderer
+              content={selectedBlog.content}
+              className="[&_h1]:text-3xl [&_h2]:text-2xl [&_h3]:text-xl [&_p]:text-base [&_li]:text-base [&_td]:text-base [&_th]:text-sm"
+            />
           </div>
         </div>
       </div>

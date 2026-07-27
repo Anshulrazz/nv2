@@ -164,15 +164,30 @@ function renderNoteContent(content: unknown) {
   if (!content) return null;
 
   if (typeof content === "string") {
-    if (content.trim().startsWith("<") || content.includes("</")) {
-      return (
-        <div
-          className="space-y-4 text-neutral-300 text-sm leading-relaxed prose prose-invert max-w-none"
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      );
-    }
-    return <div className="whitespace-pre-wrap text-sm text-neutral-300 leading-relaxed">{content}</div>;
+    return (
+      <div
+        className="prose prose-invert max-w-none text-zinc-200 text-sm sm:text-base leading-relaxed space-y-4 font-sans
+          [&_figure]:my-6 [&_figure]:p-4 [&_figure]:bg-zinc-950/90 [&_figure]:border [&_figure]:border-white/10 [&_figure]:rounded-2xl [&_figure]:text-center [&_figure]:shadow-2xl
+          [&_img]:max-h-[700px] [&_img]:w-full [&_img]:object-contain [&_img]:rounded-xl [&_img]:mx-auto [&_img]:border [&_img]:border-white/5
+          [&_figcaption]:mt-3 [&_figcaption]:text-xs [&_figcaption]:font-mono [&_figcaption]:text-cyan-400 [&_figcaption]:font-semibold
+          [&_table]:w-full [&_table]:my-6 [&_table]:border-collapse [&_table]:border [&_table]:border-white/10 [&_table]:rounded-xl [&_table]:overflow-hidden
+          [&_th]:bg-zinc-900 [&_th]:p-3 [&_th]:text-xs [&_th]:font-mono [&_th]:text-white [&_th]:text-left [&_th]:border-b [&_th]:border-white/10
+          [&_td]:p-3 [&_td]:text-sm [&_td]:text-zinc-300 [&_td]:border-b [&_td]:border-white/5 [&_tr:hover]:bg-white/5
+          [&_pre]:bg-[#0d0d12] [&_pre]:border [&_pre]:border-white/15 [&_pre]:p-4 [&_pre]:rounded-2xl [&_pre]:text-emerald-300 [&_pre]:font-mono [&_pre]:text-sm [&_pre]:overflow-x-auto [&_pre]:my-4
+          [&_code]:text-cyan-300 [&_code]:font-mono [&_code]:bg-zinc-900 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-sm
+          [&_blockquote]:border-l-4 [&_blockquote]:border-cyan-400 [&_blockquote]:pl-4 [&_blockquote]:py-2 [&_blockquote]:my-4 [&_blockquote]:italic [&_blockquote]:text-zinc-300 [&_blockquote]:bg-zinc-950/60 [&_blockquote]:rounded-r-xl
+          [&_h1]:text-3xl [&_h1]:font-black [&_h1]:text-white [&_h1]:mt-8 [&_h1]:mb-4 [&_h1]:tracking-tight [&_h1]:border-b [&_h1]:border-white/10 [&_h1]:pb-2
+          [&_h2]:text-2xl [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:tracking-tight
+          [&_h3]:text-xl [&_h3]:font-bold [&_h3]:text-cyan-300 [&_h3]:mt-5 [&_h3]:mb-2
+          [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-zinc-200 [&_h4]:mt-4 [&_h4]:mb-2
+          [&_p]:text-sm [&_p]:text-zinc-300 [&_p]:leading-relaxed [&_p]:my-2
+          [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_ul]:my-3 [&_ul]:text-zinc-300
+          [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:space-y-1.5 [&_ol]:my-3 [&_ol]:text-zinc-300
+          [&_li]:text-sm [&_li]:leading-relaxed
+          [&_a]:text-cyan-400 [&_a]:underline [&_a]:font-bold [&_a:hover]:text-cyan-300"
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
   }
 
   if (typeof content === "object") {
