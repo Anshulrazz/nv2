@@ -184,7 +184,7 @@ export const GET = auth(async function GET(req) {
     }));
 
     // Merge notes & blogs
-    let combined = [...notePosts, ...normalizedBlogPosts];
+    const combined = [...notePosts, ...normalizedBlogPosts];
 
     // Sort combined feed
     if (sort === "top") {
