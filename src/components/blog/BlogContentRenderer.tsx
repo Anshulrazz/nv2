@@ -9,10 +9,10 @@ interface BlogContentRendererProps {
   className?: string;
 }
 
-const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
+const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|mp|div|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
 
 /**
- * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, <code>\text{...}</code>, and raw \tau < t expressions) using KaTeX.
+ * Preprocesses HTML content to render LaTeX math formulas ($...$, $$...$$, <code>\text{...}</code>, and raw \Delta x \cdot \Delta p \ge \frac{\hbar}{2} expressions) using KaTeX.
  */
 function preprocessLatexInHtml(html: string): string {
   if (!html || typeof html !== "string") return html;
@@ -20,12 +20,18 @@ function preprocessLatexInHtml(html: string): string {
   // Unescape HTML entities in TeX expressions (&lt; -> <, &gt; -> >)
   let processed = html.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
 
+  // Fix broken/stray $ inside TeX expressions (e.g. \Delta x \cdot $\Delta$ p \ge \frac{\hbar}{2})
+  processed = processed.replace(/(\\[a-zA-Z]+[^$\n`]*?)\$([^\$\n`]+?)\$([^$\n`]*?\\[a-zA-Z]+[^$\n`]*)/g, (match, before, inside, after) => {
+    return `${before}${inside}${after}`;
+  });
+
   // 1. Replace <code> containing LaTeX math expressions
   processed = processed.replace(/<code>\s*([\s\S]*?)\s*<\/code>/g, (match, innerText) => {
-    if (LATEX_COMMAND_RE.test(innerText)) {
+    const cleanText = innerText.replace(/\$/g, "").trim();
+    if (LATEX_COMMAND_RE.test(cleanText)) {
       try {
-        const isBlock = innerText.includes("\\int") || innerText.includes("\\sum") || innerText.includes("\\frac") || innerText.length > 35;
-        return katex.renderToString(innerText.trim(), {
+        const isBlock = cleanText.includes("\\int") || cleanText.includes("\\sum") || cleanText.includes("\\frac") || cleanText.length > 35;
+        return katex.renderToString(cleanText, {
           displayMode: isBlock,
           throwOnError: false,
         });
@@ -39,7 +45,8 @@ function preprocessLatexInHtml(html: string): string {
   // 2. Replace $$...$$ block math
   processed = processed.replace(/\$\$([\s\S]*?)\$\$/g, (match, mathContent) => {
     try {
-      return katex.renderToString(mathContent.trim(), {
+      const cleanContent = mathContent.replace(/\$/g, "").trim();
+      return katex.renderToString(cleanContent, {
         displayMode: true,
         throwOnError: false,
       });
@@ -64,10 +71,11 @@ function preprocessLatexInHtml(html: string): string {
     }
   });
 
-  // 4. Replace raw un-wrapped TeX math expressions like \tau < t or \theta_i outside HTML tags
-  processed = processed.replace(/(?<![="'>])\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|partial|nabla|infty)\b([^<\n]*?)(?=[,.;:\s<]|$)/g, (match) => {
+  // 4. Replace raw un-wrapped TeX math expressions like \Delta x \cdot \Delta p \ge \frac{\hbar}{2} outside HTML tags
+  processed = processed.replace(/(?<![="'>])\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|partial|nabla|infty)\b([^<\n]*?)(?=[,.;:\s<]|$)/g, (match) => {
     try {
-      return katex.renderToString(match.trim(), { displayMode: false, throwOnError: false });
+      const cleanMatch = match.replace(/\$/g, "").trim();
+      return katex.renderToString(cleanMatch, { displayMode: false, throwOnError: false });
     } catch {
       return match;
     }

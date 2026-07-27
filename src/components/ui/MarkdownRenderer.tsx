@@ -97,7 +97,7 @@ const PROSE_CSS = `
 .md-body code .katex { color: #a5f3fc; }
 `;
 
-const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
+const LATEX_COMMAND_RE = /\\(tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|mp|div|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b/;
 
 let cssInjected = false;
 function injectCSS() {
@@ -171,13 +171,21 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
 
   if (!content) return null;
 
-  // Pre-process content: unescape &lt; and &gt;, and auto-wrap raw un-delimited TeX expressions like \tau < t or \theta < t
-  const sanitizedContent = (content || "")
+  // Pre-process content: unescape &lt; and &gt;
+  let sanitizedContent = (content || "")
     .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/(?<![\$`\\])(\\(?:tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|text|frac|sqrt|int|sum|partial|nabla|infty)\b(?:[^$\n`]*?))(?=[\s,.;:!?)]|$)/g, (match) => {
-      return `$${match.trim()}$`;
-    });
+    .replace(/&gt;/g, ">");
+
+  // Fix broken/stray $ inside TeX expressions (e.g. \Delta x \cdot $\Delta$ p \ge \frac{\hbar}{2})
+  sanitizedContent = sanitizedContent.replace(/(\\[a-zA-Z]+[^$\n`]*?)\$([^\$\n`]+?)\$([^$\n`]*?\\[a-zA-Z]+[^$\n`]*)/g, (match, before, inside, after) => {
+    return `${before}${inside}${after}`;
+  });
+
+  // Auto-wrap raw TeX math expressions in $...$
+  sanitizedContent = sanitizedContent.replace(/(?<![\$`\\])(\\(?:tau|theta|alpha|beta|gamma|delta|epsilon|zeta|eta|kappa|lambda|mu|nu|xi|pi|rho|sigma|phi|chi|psi|omega|Delta|Gamma|Lambda|Sigma|Phi|Psi|Omega|hbar|text|frac|sqrt|int|sum|prod|lim|hat|vec|bar|tilde|dot|partial|nabla|infty|approx|le|ge|neq|in|notin|subset|cup|cap|times|cdot|pm|mp|div|log|exp|sin|cos|tan|forall|exists|rightarrow|Rightarrow)\b(?:[^$\n`]*?))(?=[\s,.;:!?)]|$)/g, (match) => {
+    const cleanMath = match.replace(/\$/g, "").trim();
+    return `$${cleanMath}$`;
+  });
 
   return (
     <div className={`md-body ${className}`}>
@@ -195,8 +203,9 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
             // Check if inline code string contains LaTeX formula notation
             if (LATEX_COMMAND_RE.test(childrenStr)) {
               try {
-                const isDisplayMode = childrenStr.includes("\\int") || childrenStr.includes("\\sum") || childrenStr.includes("\\frac") || childrenStr.length > 35;
-                const html = katex.renderToString(childrenStr.trim(), {
+                const cleanCodeMath = childrenStr.replace(/\$/g, "").trim();
+                const isDisplayMode = cleanCodeMath.includes("\\int") || cleanCodeMath.includes("\\sum") || cleanCodeMath.includes("\\frac") || cleanCodeMath.length > 35;
+                const html = katex.renderToString(cleanCodeMath, {
                   displayMode: isDisplayMode,
                   throwOnError: false,
                 });
