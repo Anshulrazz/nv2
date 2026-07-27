@@ -60,8 +60,26 @@ function CodeBlock({
           )}
         </button>
       </div>
-      <pre className="!m-0 !rounded-none !border-0 overflow-x-auto p-4">
-        <code className={className}>{children}</code>
+      <pre className="!m-0 !rounded-none !border-0 overflow-x-auto p-4 bg-transparent" style={{background:'transparent'}}>
+        <code
+          className={className}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            borderRadius: 0,
+            padding: 0,
+            margin: 0,
+            color: '#6ee7b7',
+            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+            fontSize: 13,
+            lineHeight: 1.75,
+            whiteSpace: 'pre',
+            display: 'block',
+            boxShadow: 'none',
+          }}
+        >
+          {children}
+        </code>
       </pre>
     </div>
   );
@@ -181,6 +199,8 @@ function MarkdownRendererImpl({
 
         [&_figure]:my-8 [&_figure]:p-4 [&_figure]:bg-zinc-950/80 [&_figure]:border [&_figure]:border-white/10 [&_figure]:rounded-2xl [&_figure]:text-center
         [&_figcaption]:mt-3 [&_figcaption]:text-xs [&_figcaption]:font-mono [&_figcaption]:text-cyan-400
+
+        [&_pre_code]:!bg-transparent [&_pre_code]:!border-0 [&_pre_code]:!rounded-none [&_pre_code]:!p-0 [&_pre_code]:!px-0 [&_pre_code]:!py-0 [&_pre_code]:!m-0 [&_pre_code]:!text-emerald-300 [&_pre_code]:!font-mono [&_pre_code]:!text-[13px] [&_pre_code]:!leading-[1.75] [&_pre_code]:!whitespace-pre [&_pre_code]:!block [&_pre_code]:!shadow-none
 
         ${className}
       `}
