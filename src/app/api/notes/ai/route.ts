@@ -78,15 +78,27 @@ export const POST = auth(async function POST(req) {
 
     switch (action) {
       case "generate_topic":
-        systemPrompt = `You are Notexia's World-Class Academic and Technical AI Author. Your task is to write an EXHAUSTIVE, DEEP-DIVE, HIGHLY DETAILED paper/note on the requested topic. The resulting note MUST be EXTREMELY COMPREHENSIVE, containing AT LEAST 2,000 WORDS. You MUST embed 2-3 high-resolution visual figure images directly into the HTML using <img> tags with clear figure captions.
+        systemPrompt = `You are Notexia's World-Class Academic and Technical AI Author. Your task is to write an EXHAUSTIVE, DEEP-DIVE, HIGHLY DETAILED research paper on the requested topic. The resulting paper MUST be EXTREMELY COMPREHENSIVE, containing AT LEAST 2,000 WORDS.
 
-Here are the high-resolution figure URLs to embed in appropriate sections:
+You MUST embed 2-3 high-resolution figure images using standard Markdown image syntax directly in appropriate sections:
 Figure 1 (Primary Visual): ${topicImages.hero}
 Figure 2 (Theoretical Architecture): ${topicImages.architecture}
 Figure 3 (Experimental Setup): ${topicImages.lab}
 
-Structure the content beautifully with HTML tags: <h2>, <h3>, <p>, <figure>, <img>, <figcaption>, <ul>, <ol>, <li>, blockquote, <code>, <table>, <strong>, and <em>. Include: 1) Executive Summary & Abstract, 2) Figure 1 Overview, 3) Fundamental Theoretical Framework, 4) Figure 2 Architecture Visual, 5) Real-World Applications & Step-by-Step Code Blueprint, 6) Figure 3 Experimental Metrics Analysis, 7) Deep Trade-off Analysis Table, 8) Master Study Checklist.`;
-        userPrompt = `Topic: "${inputTopic}"\n\nTask: Write an in-depth, masterclass research paper/note on this topic with AT LEAST 2,000 words and embedded related figure images. Make it extremely rich, detailed, well-structured with clean HTML headings, code/formula blocks, embedded images, and exhaustive explanations.`;
+OUTPUT FORMAT: Use ONLY clean Markdown syntax:
+- Headings: ## Section Title, ### Subsection
+- Bold: **text**, Italic: *text*
+- Code blocks: triple backtick with language (e.g. \`\`\`python)
+- Images: ![Caption](url)
+- Tables: Markdown pipe tables
+- Lists: - item or 1. item
+- Blockquotes: > text
+- Horizontal rules: ---
+
+DO NOT use any HTML tags. Use ONLY Markdown.
+
+Structure: 1) ## Executive Summary & Abstract, 2) Figure 1 image, 3) ## Fundamental Theoretical Framework, 4) Figure 2 image, 5) ## Real-World Applications & Step-by-Step Code Blueprint (with actual runnable code blocks), 6) Figure 3 image, 7) ## Deep Trade-off Analysis (pipe table), 8) ## Master Study Checklist.`;
+        userPrompt = `Topic: "${inputTopic}"\n\nTask: Write an in-depth, masterclass research paper on this topic with AT LEAST 2,000 words. Use clean Markdown with proper headings, fenced code blocks (\`\`\`language), embedded Markdown images ![caption](url), pipe tables, and exhaustive explanations. DO NOT use HTML tags.`;
         break;
 
       case "continue":

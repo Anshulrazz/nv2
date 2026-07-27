@@ -19,7 +19,10 @@ export function BlogContentRenderer({ content, className = "" }: BlogContentRend
   if (!content) return null;
 
   if (typeof content === "string") {
-    const isHtml = content.trimStart().startsWith("<") || /<\/[a-z]/i.test(content);
+    // Only treat as HTML if it genuinely opens with a block-level HTML tag.
+    // Type hints like Dict[str, str] and markdown with < > chars are NOT HTML.
+    const HTML_BLOCK_RE = /^\s*<(h[1-6]|p|div|section|article|figure|ul|ol|table|blockquote|pre|hr|br|img)\b/i;
+    const isHtml = HTML_BLOCK_RE.test(content);
 
     if (isHtml) {
       return (
