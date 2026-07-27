@@ -363,27 +363,27 @@ export default function ResearchPage() {
       </div>
 
       {/* Main Container */}
-      <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-8 relative z-10">
         {isWriting ? (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl overflow-hidden">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-7 xl:col-span-4 rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-6 sm:p-8 space-y-6 lg:col-span-7">
-                <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                  <button
-                    onClick={() => setIsWriting(false)}
-                    className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
-                  >
-                    <ArrowLeft className="size-4" /> Cancel &amp; Back
-                  </button>
-                  <Button
-                    onClick={handlePublishWritten}
-                    disabled={isSubmittingWrite}
-                    className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6"
-                  >
-                    {isSubmittingWrite ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper"}
-                  </Button>
-                </div>
+          <div className="w-full space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <button
+                onClick={() => setIsWriting(false)}
+                className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
+              >
+                <ArrowLeft className="size-4" /> Cancel &amp; Back
+              </button>
+              <Button
+                onClick={handlePublishWritten}
+                disabled={isSubmittingWrite}
+                className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6"
+              >
+                {isSubmittingWrite ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper"}
+              </Button>
+            </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              <div className="lg:col-span-8 space-y-6">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
@@ -391,7 +391,7 @@ export default function ResearchPage() {
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       placeholder="Research Paper Title..."
-                      className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                      className="bg-zinc-950/80 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl focus:border-cyan-400"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -400,7 +400,7 @@ export default function ResearchPage() {
                       value={editAuthors}
                       onChange={(e) => setEditAuthors(e.target.value)}
                       placeholder="e.g. Dr. A. Sharma, Prof. B. Roy"
-                      className="bg-zinc-950 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                      className="bg-zinc-950/80 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl focus:border-cyan-400"
                     />
                   </div>
                 </div>
@@ -412,7 +412,7 @@ export default function ResearchPage() {
                     onChange={(e) => setEditAbstract(e.target.value)}
                     placeholder="Summary of methodology, experimental setup, and primary findings..."
                     rows={3}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
+                    className="w-full bg-zinc-950/80 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
                   />
                 </div>
 
@@ -423,7 +423,7 @@ export default function ResearchPage() {
               </div>
 
               {/* Side AI Assistant Panel */}
-              <div className="lg:col-span-5 rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-[650px] lg:h-auto">
+              <div className="lg:col-span-4 rounded-3xl bg-zinc-950/80 border border-white/10 overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6">
                 <NoteSideChat
                   noteTitle={editTitle || "Research Paper Draft"}
                   noteContentText={editContent}
@@ -436,91 +436,92 @@ export default function ResearchPage() {
             </div>
           </div>
         ) : selectedPaper ? (
-          <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl space-y-6">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
-              <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                <button
-                  onClick={() => setSelectedPaper(null)}
-                  className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
-                >
-                  <ArrowLeft className="size-4" /> Back to Archive
-                </button>
-                <div className="flex items-center gap-2">
-                  {(currentUserId === selectedPaper.userId || session?.user?.role === "admin") && (
-                    <>
-                      <button
-                        onClick={(e) => handleStartEditPaper(selectedPaper, e)}
-                        className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white flex items-center gap-1 transition-all"
-                        title="Edit Paper"
-                      >
-                        <Edit className="size-3.5" /> Edit
-                      </button>
-                      <button
-                        onClick={(e) => handleDeletePaper(selectedPaper._id, e)}
-                        className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 flex items-center gap-1 transition-all"
-                        title="Delete Paper"
-                      >
-                        <Trash2 className="size-3.5" /> Delete
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => setWorkspaceTab("content")}
-                    className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
-                      workspaceTab === "content" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    Document
-                  </button>
-                  <button
-                    onClick={() => setWorkspaceTab("assistant")}
-                    className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
-                      workspaceTab === "assistant" ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-zinc-500 hover:text-zinc-300"
-                    }`}
-                  >
-                    AI Copilot Q&amp;A
-                  </button>
-                </div>
-              </div>
-
-              {workspaceTab === "content" ? (
-                <div className="space-y-6">
-                  <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">{selectedPaper.title}</h2>
-                    <p className="text-xs font-mono text-zinc-400 mt-1">Authors: {selectedPaper.authors}</p>
-                  </div>
-                  <div className="p-4 bg-zinc-950 rounded-2xl border border-white/5 space-y-1">
-                    <span className="text-[10px] font-mono font-bold text-zinc-500 uppercase tracking-widest block">Abstract</span>
-                    <p className="text-xs text-zinc-300 leading-relaxed font-light">{selectedPaper.abstract}</p>
-                  </div>
-                  {selectedPaper.fileUrl ? (
-                    <a
-                      href={selectedPaper.fileUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 underline font-bold"
+          <div className="w-full space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <button
+                onClick={() => setSelectedPaper(null)}
+                className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
+              >
+                <ArrowLeft className="size-4" /> Back to Archive
+              </button>
+              <div className="flex items-center gap-2">
+                {(currentUserId === selectedPaper.userId || session?.user?.role === "admin") && (
+                  <>
+                    <button
+                      onClick={(e) => handleStartEditPaper(selectedPaper, e)}
+                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white flex items-center gap-1 transition-all"
+                      title="Edit Paper"
                     >
-                      <Download className="size-4" /> Download PDF Research File
-                    </a>
-                  ) : selectedPaper.content ? (
-                    <div className="p-6 bg-zinc-950 rounded-2xl border border-white/5 space-y-4">
-                      {typeof selectedPaper.content === "string" &&
-                      (selectedPaper.content.includes("<h") ||
-                        selectedPaper.content.includes("<figure") ||
-                        selectedPaper.content.includes("<p>") ||
-                        selectedPaper.content.includes("<ul>") ||
-                        selectedPaper.content.includes("<table>")) ? (
-                        <div
-                          className="prose prose-invert max-w-none text-zinc-300 text-xs sm:text-sm leading-relaxed space-y-4 font-sans"
-                          dangerouslySetInnerHTML={{ __html: selectedPaper.content }}
-                        />
-                      ) : (
-                        <MarkdownRenderer content={selectedPaper.content} />
-                      )}
-                    </div>
-                  ) : null}
+                      <Edit className="size-3.5" /> Edit
+                    </button>
+                    <button
+                      onClick={(e) => handleDeletePaper(selectedPaper._id, e)}
+                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 flex items-center gap-1 transition-all"
+                      title="Delete Paper"
+                    >
+                      <Trash2 className="size-3.5" /> Delete
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => setWorkspaceTab("content")}
+                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
+                    workspaceTab === "content" ? "bg-white/10 text-white" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  Document
+                </button>
+                <button
+                  onClick={() => setWorkspaceTab("assistant")}
+                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all ${
+                    workspaceTab === "assistant" ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
+                >
+                  AI Copilot Q&amp;A
+                </button>
+              </div>
+            </div>
+
+            {workspaceTab === "content" ? (
+              <div className="space-y-6 w-full">
+                <div className="space-y-2 border-b border-white/10 pb-6">
+                  <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">{selectedPaper.title}</h2>
+                  <p className="text-sm font-mono text-cyan-300">Authors: {selectedPaper.authors}</p>
                 </div>
-              ) : (
+
+                <div className="p-5 bg-zinc-950/60 rounded-2xl border-l-4 border-cyan-400 border-y border-r border-white/5 space-y-1.5">
+                  <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest block">ABSTRACT</span>
+                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light">{selectedPaper.abstract}</p>
+                </div>
+
+                {selectedPaper.fileUrl ? (
+                  <a
+                    href={selectedPaper.fileUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 underline font-bold"
+                  >
+                    <Download className="size-4" /> Download PDF Research File
+                  </a>
+                ) : selectedPaper.content ? (
+                  <div className="w-full pt-2">
+                    {typeof selectedPaper.content === "string" &&
+                    (selectedPaper.content.includes("<h") ||
+                      selectedPaper.content.includes("<figure") ||
+                      selectedPaper.content.includes("<p>") ||
+                      selectedPaper.content.includes("<ul>") ||
+                      selectedPaper.content.includes("<table>")) ? (
+                      <div
+                        className="prose prose-invert max-w-none text-zinc-200 text-sm sm:text-base leading-relaxed space-y-6 font-sans w-full"
+                        dangerouslySetInnerHTML={{ __html: selectedPaper.content }}
+                      />
+                    ) : (
+                      <MarkdownRenderer content={selectedPaper.content} />
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
                 <div className="space-y-4">
                   <div className="h-80 overflow-y-auto space-y-3 bg-zinc-950 p-4 rounded-2xl border border-white/5">
                     {chatMessages.length === 0 ? (
@@ -580,7 +581,6 @@ export default function ResearchPage() {
                   </div>
                 </div>
               )}
-            </div>
           </div>
         ) : (
           <div className="space-y-6">
