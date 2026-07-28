@@ -91,7 +91,7 @@ export default async function DashboardLayout({
           border-r border-sidebar-border bg-sidebar shadow-[0_20px_60px_rgba(0,0,0,0.35)]
           select-none
           -translate-x-full peer-checked:translate-x-0
-          lg:translate-x-0 lg:sticky lg:top-0 lg:h-screen lg:shrink-0
+          lg:translate-x-0 lg:relative lg:inset-auto lg:h-full lg:shrink-0 lg:z-30
           transition-transform duration-300 ease-in-out
         "
       >
