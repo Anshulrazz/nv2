@@ -253,12 +253,18 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         return;
       }
 
+      const wasPasswordSetBefore = hasWalletPassword;
       toast.success(json.message || "Wallet password saved successfully!");
       setHasWalletPassword(true);
       setIsPasswordModalOpen(false);
       setOldPasswordInput("");
       setNewPasswordInput("");
       setConfirmPasswordInput("");
+
+      // Automatically open Send Coins modal after first-time setup
+      if (!wasPasswordSetBefore) {
+        setIsSendModalOpen(true);
+      }
     } catch (err) {
       console.error(err);
       toast.error("An error occurred while saving wallet password.");
