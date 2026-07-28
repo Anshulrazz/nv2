@@ -64,8 +64,15 @@ export async function POST(req: Request) {
 
     const senderWallet = await getOrCreateUserWallet(senderUser._id);
 
+    // Read walletPasswordHash via .lean() to bypass Mongoose model cache
+    const rawSenderWallet = await Wallet.findById(senderWallet._id)
+      .select("walletPasswordHash")
+      .lean<{ walletPasswordHash?: string | null }>();
+
+    const senderPasswordHash = rawSenderWallet?.walletPasswordHash;
+
     // Verify wallet password setup
-    if (!senderWallet.walletPasswordHash) {
+    if (!senderPasswordHash) {
       return NextResponse.json(
         {
           error: "WALLET_PASSWORD_NOT_SET",
@@ -77,10 +84,7 @@ export async function POST(req: Request) {
     }
 
     // Verify wallet password correctness
-    const isPasswordValid = await bcrypt.compare(
-      passStr,
-      senderWallet.walletPasswordHash!
-    );
+    const isPasswordValid = await bcrypt.compare(passStr, senderPasswordHash);
 
     if (!isPasswordValid) {
       return NextResponse.json(

@@ -36,13 +36,18 @@ const WalletSchema = new Schema<IWallet>(
   },
   {
     timestamps: true,
+    // Ensure Mongoose doesn't strip unknown fields when reading
+    strict: false,
   }
 );
 
-if (mongoose.models.Wallet && !mongoose.models.Wallet.schema.path("walletPasswordHash")) {
-  mongoose.models.Wallet.schema.add({
-    walletPasswordHash: { type: String, default: null },
-  });
+// If the cached model was compiled without the walletPasswordHash path,
+// delete it so it gets re-compiled with the current schema.
+if (
+  mongoose.models.Wallet &&
+  !mongoose.models.Wallet.schema.path("walletPasswordHash")
+) {
+  mongoose.deleteModel("Wallet");
 }
 
 export const Wallet =

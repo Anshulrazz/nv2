@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { Wallet } from "@/models/Wallet";
 import { getOrCreateUserWallet } from "@/lib/wallet";
 
 export async function POST(req: Request) {
@@ -37,7 +38,13 @@ export async function POST(req: Request) {
 
     const wallet = await getOrCreateUserWallet(user._id);
 
-    const isFirstTimeSetup = !wallet.walletPasswordHash;
+    // Read the raw document to reliably check existing password hash
+    const rawWallet = await Wallet.findById(wallet._id)
+      .select("walletPasswordHash")
+      .lean<{ walletPasswordHash?: string | null }>();
+
+    const existingHash = rawWallet?.walletPasswordHash;
+    const isFirstTimeSetup = !existingHash;
 
     // If wallet password already set, require and verify old password
     if (!isFirstTimeSetup) {
@@ -45,16 +52,14 @@ export async function POST(req: Request) {
         return NextResponse.json(
           {
             error: "OLD_PASSWORD_REQUIRED",
-            message: "Current wallet password is required to update your wallet password.",
+            message:
+              "Current wallet password is required to update your wallet password.",
           },
           { status: 400 }
         );
       }
 
-      const isMatch = await bcrypt.compare(
-        oldPassStr,
-        wallet.walletPasswordHash!
-      );
+      const isMatch = await bcrypt.compare(oldPassStr, existingHash!);
       if (!isMatch) {
         return NextResponse.json(
           {
@@ -66,10 +71,12 @@ export async function POST(req: Request) {
       }
     }
 
-    // Hash and save new wallet password
+    // Hash and save new wallet password using $set to bypass Mongoose change tracking
     const hashedPassword = await bcrypt.hash(newPassStr, 10);
-    wallet.walletPasswordHash = hashedPassword;
-    await wallet.save();
+    await Wallet.updateOne(
+      { _id: wallet._id },
+      { $set: { walletPasswordHash: hashedPassword } }
+    );
 
     return NextResponse.json({
       message: isFirstTimeSetup
