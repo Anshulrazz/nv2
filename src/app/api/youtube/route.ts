@@ -201,6 +201,14 @@ export const POST = auth(async function POST(req) {
     
     Provide exactly 10 keyPoints and exactly 10 quiz questions. Ensure the JSON is clean and valid.`;
 
+    // Helper function for robust JSON extraction
+    const extractJson = (text: string) => {
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start === -1 || end === -1) throw new Error("No JSON object found in response");
+      return JSON.parse(text.substring(start, end + 1));
+    };
+
     // 1. Try Gemini API
     const geminiKey = process.env.GEMINI_API_KEY;
     if (geminiKey && geminiKey !== "placeholder" && geminiKey.trim() !== "") {
@@ -211,33 +219,47 @@ export const POST = auth(async function POST(req) {
           jsonMode: true,
         });
 
-        const cleaned = rawJson.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(cleaned);
+        const parsed = extractJson(rawJson);
         return NextResponse.json(parsed);
-      } catch (geminiErr) {
-        console.warn("Gemini YouTube digest failed, trying Anthropic fallback:", geminiErr);
+      } catch (geminiErr: any) {
+        console.warn("Gemini YouTube digest failed, trying OpenRouter fallback. Error:", geminiErr?.message || geminiErr);
       }
     }
 
-    // 2. Try Anthropic API
-    const apiKey = process.env.ANTHROPIC_API_KEY;
-    if (apiKey && apiKey !== "placeholder" && apiKey !== "") {
+    // 2. Try OpenRouter API
+    const openRouterKey = process.env.OPENROUTER_API_KEY;
+    if (openRouterKey && openRouterKey !== "placeholder" && openRouterKey !== "") {
       try {
-        const Anthropic = (await import("@anthropic-ai/sdk")).default;
-        const anthropic = new Anthropic({ apiKey });
-        const response = await anthropic.messages.create({
-          model: "claude-3-5-sonnet-20241022",
-          max_tokens: 4096,
-          system: systemPrompt,
-          messages: [{ role: "user", content: userPrompt }],
+        const siteUrl = process.env.OPENROUTER_SITE_URL || "https://notexia.in";
+        const siteName = process.env.OPENROUTER_SITE_NAME || "Notexia";
+        
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${openRouterKey}`,
+            "HTTP-Referer": siteUrl,
+            "X-Title": siteName,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model: "google/gemini-pro",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt }
+            ]
+          })
         });
 
-        let rawText = response.content[0].type === "text" ? response.content[0].text : "";
-        rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(rawText);
+        if (!response.ok) {
+          throw new Error(`OpenRouter API error: ${response.status} ${await response.text()}`);
+        }
+
+        const data = await response.json();
+        const rawText = data.choices?.[0]?.message?.content || "";
+        const parsed = extractJson(rawText);
         return NextResponse.json(parsed);
-      } catch (anthropicErr) {
-        console.warn("Anthropic YouTube digest failed:", anthropicErr);
+      } catch (openRouterErr: any) {
+        console.warn("OpenRouter YouTube digest failed:", openRouterErr?.message || openRouterErr);
       }
     }
 
