@@ -17,7 +17,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/forums`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
     { url: `${base}/leaderboard`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/community`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
-    { url: `${base}/tools/cgpa-converter`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/privacy`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/terms`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${base}/security`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
 
   let dynamicRoutes: MetadataRoute.Sitemap = [];

@@ -783,9 +783,9 @@ export default function LandingPage() {
             &copy; {new Date().getFullYear()} Notexia Inc. All rights reserved. Made for Indian Students &amp; Engineers.
           </div>
           <div className="flex items-center gap-8">
-            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Privacy</a>
-            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Terms</a>
-            <a href="#features" className="hover:text-[#F3F0E4] transition-colors">Security</a>
+            <Link href="/privacy" className="hover:text-[#F3F0E4] transition-colors">Privacy</Link>
+            <Link href="/terms" className="hover:text-[#F3F0E4] transition-colors">Terms</Link>
+            <Link href="/security" className="hover:text-[#F3F0E4] transition-colors">Security</Link>
           </div>
         </div>
       </footer>
