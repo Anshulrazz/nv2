@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const securityHeaders = [
-  { key: "X-Frame-Options", value: "DENY" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-XSS-Protection", value: "1; mode=block" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
@@ -17,12 +17,12 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://js.pusher.com https://static.cloudflareinsights.com https://*.zegocloud.com https://*.zego.im https://connect.facebook.net",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com https://pagead2.googlesyndication.com https://adservice.google.com https://www.googletagservices.com https://tpc.googlesyndication.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.googleadservices.com https://*.doubleclick.net https://*.google.com https://*.googleservices.com https://js.pusher.com https://static.cloudflareinsights.com https://*.zegocloud.com https://*.zego.im https://connect.facebook.net",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https:",
-      "connect-src 'self' https://api.anthropic.com https://accounts.google.com https://*.pusher.com wss://*.pusher.com https://cloudflareinsights.com https://*.zegocloud.com https://*.zego.im wss: https://www.facebook.com https://connect.facebook.net",
-      "frame-src 'self' https://accounts.google.com",
+      "connect-src 'self' https://api.anthropic.com https://accounts.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.doubleclick.net https://*.google.com https://*.googleadservices.com https://adservice.google.com https://*.pusher.com wss://*.pusher.com https://cloudflareinsights.com https://*.zegocloud.com https://*.zego.im wss: https://www.facebook.com https://connect.facebook.net",
+      "frame-src 'self' https://accounts.google.com https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://*.googlesyndication.com https://*.doubleclick.net https://tpc.googlesyndication.com https://www.google.com https://*.google.com https://*.googleadservices.com",
       "object-src 'self'",
       "media-src 'self' data: blob: https: mediastream:",
       "base-uri 'self'",
