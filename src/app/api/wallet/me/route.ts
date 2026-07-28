@@ -33,6 +33,7 @@ export async function GET() {
       address: wallet.address,
       balance: wallet.balance,
       coins: user.coins || 0,
+      hasWalletPassword: Boolean(wallet.walletPasswordHash),
     });
   } catch (error) {
     console.error("Get wallet info error:", error);

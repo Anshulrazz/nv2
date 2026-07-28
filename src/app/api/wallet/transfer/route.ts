@@ -19,12 +19,12 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { toAddress, amount, note, password } = body;
 
-    // Password presence check
+    // Wallet password presence check
     if (!password || typeof password !== "string" || !password.trim()) {
       return NextResponse.json(
         {
-          error: "ACCOUNT_PASSWORD_REQUIRED",
-          message: "Account password is required to authorize coin transfers.",
+          error: "WALLET_PASSWORD_REQUIRED",
+          message: "Wallet security password is required to authorize coin transfers.",
         },
         { status: 400 }
       );
@@ -60,30 +60,34 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Sender user not found." }, { status: 404 });
     }
 
-    // Password verification check
-    if (!senderUser.passwordHash) {
+    const senderWallet = await getOrCreateUserWallet(senderUser._id);
+
+    // Verify wallet password setup
+    if (!senderWallet.walletPasswordHash) {
       return NextResponse.json(
         {
-          error: "NO_PASSWORD_SET",
+          error: "WALLET_PASSWORD_NOT_SET",
           message:
-            "Your account does not have a password set (e.g. Google sign-in). Please set a password in Account Settings to authorize transfers.",
+            "You have not set up a Wallet Security Password yet. Please create a Wallet Password before sending coins.",
         },
         { status: 400 }
       );
     }
 
-    const isPasswordValid = await bcrypt.compare(password, senderUser.passwordHash);
+    // Verify wallet password correctness
+    const isPasswordValid = await bcrypt.compare(
+      password.trim(),
+      senderWallet.walletPasswordHash
+    );
     if (!isPasswordValid) {
       return NextResponse.json(
         {
-          error: "INVALID_PASSWORD",
-          message: "Incorrect account password. Coin transfer unauthorized.",
+          error: "INVALID_WALLET_PASSWORD",
+          message: "Incorrect Wallet Security Password. Coin transfer unauthorized.",
         },
         { status: 401 }
       );
     }
-
-    const senderWallet = await getOrCreateUserWallet(senderUser._id);
 
     // Self transfer check
     if (senderWallet.address === cleanToAddress) {
@@ -118,10 +122,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Try MongoDB transaction if replica set supported, else atomic session fallback
+    // Execute atomic transfer with MongoDB session transaction fallback
     const dbSession = await mongoose.startSession();
-    let transactionSuccess = false;
-
     try {
       await dbSession.withTransaction(async () => {
         // Decrement sender
@@ -155,7 +157,6 @@ export async function POST(req: Request) {
           { session: dbSession }
         );
       });
-      transactionSuccess = true;
     } catch (txError) {
       console.warn("MongoDB transaction fallback execution:", txError);
       // Fallback for standalone Mongo instances without replica set
@@ -181,7 +182,6 @@ export async function POST(req: Request) {
           recipientName: recipientUser.name || "Anonymous",
         },
       });
-      transactionSuccess = true;
     } finally {
       await dbSession.endSession();
     }

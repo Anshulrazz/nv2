@@ -4,6 +4,7 @@ export interface IWallet extends Document {
   userId: mongoose.Types.ObjectId;
   address: string;
   balance: number;
+  walletPasswordHash?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -27,6 +28,10 @@ const WalletSchema = new Schema<IWallet>(
       type: Number,
       default: 0,
       min: 0,
+    },
+    walletPasswordHash: {
+      type: String,
+      default: null,
     },
   },
   {
