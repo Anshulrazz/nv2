@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, memo } from "react";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -231,9 +232,21 @@ function MarkdownRendererImpl({ content, className = "" }: MarkdownRendererProps
             // Unwrap — CodeBlock handles its own <pre>
             return <>{children}</>;
           },
-          img({ ...props }) {
-            // eslint-disable-next-line @next/next/no-img-element
-            return <img {...props} loading="lazy" alt={props.alt ?? ""} />;
+          img({ src, alt }) {
+            if (!src) return null;
+            const imageSrc = typeof src === "string" ? src : URL.createObjectURL(src);
+            return (
+              <Image
+                src={imageSrc}
+                alt={alt ?? "Markdown image"}
+                width={800}
+                height={450}
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 75vw, 800px"
+                className="rounded-2xl border border-white/10 max-h-[450px] w-auto h-auto object-cover my-4"
+                loading="lazy"
+                unoptimized
+              />
+            );
           },
           table({ children, ...props }) {
             return <div style={{ overflowX: "auto", margin: "1.5rem 0" }}><table {...props}>{children}</table></div>;

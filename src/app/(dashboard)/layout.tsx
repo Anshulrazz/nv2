@@ -91,11 +91,11 @@ export default async function DashboardLayout({
           border-r border-sidebar-border bg-sidebar shadow-[0_20px_60px_rgba(0,0,0,0.35)]
           select-none
           -translate-x-full peer-checked:translate-x-0
-          lg:translate-x-0 lg:relative lg:inset-auto lg:h-full lg:shrink-0 lg:z-30
+          lg:translate-x-0 lg:fixed lg:inset-y-0 lg:left-0 lg:h-full lg:w-64 lg:shrink-0 lg:z-30
           transition-transform duration-300 ease-in-out
         "
       >
-        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
+        <div className="flex flex-col flex-1 min-h-0 overflow-y-auto custom-scroll">
           {/* Brand header */}
           <div className="h-16 px-6 border-b border-sidebar-border flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
@@ -198,7 +198,7 @@ export default async function DashboardLayout({
       </aside>
 
       {/* ── Main content ── */}
-      <div className="flex-1 flex flex-col min-w-0 h-full w-full overflow-hidden relative z-10">
+      <div className="flex-1 flex flex-col min-w-0 h-full w-full overflow-hidden relative z-10 lg:pl-64">
         {/* Top bar – mobile only */}
         <header className="lg:hidden sticky top-0 z-30 h-14 flex items-center justify-between px-4 border-b border-sidebar-border bg-sidebar shrink-0">
           <div className="flex items-center">
@@ -227,7 +227,7 @@ export default async function DashboardLayout({
           </Link>
         </header>
 
-        <main className="flex-1 flex flex-col h-full w-full overflow-hidden bg-transparent pb-16 lg:pb-0">
+        <main className="flex-1 flex flex-col h-full w-full overflow-y-auto bg-transparent pb-16 lg:pb-0 custom-scroll">
           {children}
         </main>
       </div>

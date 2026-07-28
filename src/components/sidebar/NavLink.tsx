@@ -20,7 +20,10 @@ export function NavLink({
   badge?: number;
 }) {
   const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/" && pathname?.startsWith(href));
+  const isActive =
+    pathname === href ||
+    (href !== "/" && pathname?.startsWith(href)) ||
+    (href === "/blogs" && pathname?.startsWith("/blog"));
 
   const accentMap: Record<Accent, string> = {
     cyan: "group-hover:text-cyan-400",
@@ -53,7 +56,7 @@ export function NavLink({
         </span>
         <span>{label}</span>
       </div>
-      {badge !== undefined && (
+      {badge !== undefined && badge > 0 && (
         <span className="text-[9px] font-mono bg-cyan-500/20 text-cyan-300 font-extrabold px-2 py-0.5 rounded-full border border-cyan-500/30">
           {badge}
         </span>
