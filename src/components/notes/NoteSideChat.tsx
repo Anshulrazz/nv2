@@ -276,10 +276,22 @@ export function NoteSideChat({ noteTitle, noteContentText, onInsertText }: NoteS
             e.preventDefault();
             handleSendMessage();
           }}
+          autoComplete="off"
           className="flex items-center gap-2 bg-zinc-900/90 border border-white/10 focus-within:border-cyan-400/50 rounded-xl p-1.5 transition-colors"
         >
+          <input type="text" name="username" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+          <input type="password" name="password" style={{ display: "none" }} tabIndex={-1} autoComplete="new-password" />
           <input
             type="text"
+            name="note_chat_message"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="sentences"
+            spellCheck={false}
+            data-lpignore="true"
+            data-1p-ignore="true"
+            data-bwignore="true"
+            data-form-type="other"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isStreaming}

@@ -11,11 +11,16 @@ import {
   Send,
   User as UserIcon,
   HelpCircle,
+  Wallet as WalletIcon,
+  Gift,
+  Crown,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { WalletSection } from "@/components/wallet/WalletSection";
+import { ReferAndEarnCard } from "@/components/referrals/ReferAndEarnCard";
 
 interface UserProfile {
   _id: string;
@@ -126,7 +131,10 @@ export function ProfileClient({
   const [isCommenting, setIsCommenting] = useState(false);
 
   // Active profile tab
-  const [activeTab, setActiveTab] = useState<"notes" | "blogs" | "social" | "forums">("notes");
+  const isOwnProfile = currentUserId === targetUser._id;
+  const [activeTab, setActiveTab] = useState<
+    "notes" | "blogs" | "social" | "forums" | "wallet" | "referrals"
+  >("notes");
 
   const openSocialPost = async (post: SocialPostNode) => {
     setSelectedSocialPost(post);
@@ -236,13 +244,23 @@ export function ProfileClient({
               { id: "blogs", label: "Blogs", count: blogs.length, icon: Rss },
               { id: "social", label: "Social", count: socialPosts.length, icon: UserIcon },
               { id: "forums", label: "Forums & Doubts", count: forums.length + doubts.length, icon: HelpCircle },
+              ...(isOwnProfile
+                ? [
+                    { id: "wallet", label: "Coin Wallet", count: null, icon: WalletIcon },
+                    { id: "referrals", label: "Refer & Earn", count: null, icon: Gift },
+                  ]
+                : []),
             ].map((tab) => {
               const isActive = activeTab === tab.id;
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id as "notes" | "blogs" | "social" | "forums")}
+                  onClick={() =>
+                    setActiveTab(
+                      tab.id as "notes" | "blogs" | "social" | "forums" | "wallet" | "referrals"
+                    )
+                  }
                   className={`flex items-center gap-2 py-3 px-4 border-b-2 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     isActive
                       ? "border-cyan-400 text-cyan-400 bg-cyan-500/[0.02]"
@@ -252,9 +270,11 @@ export function ProfileClient({
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
-                  <span className="text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-full font-mono">
-                    {tab.count}
-                  </span>
+                  {tab.count !== null && (
+                    <span className="text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-full font-mono">
+                      {tab.count}
+                    </span>
+                  )}
                 </button>
               );
             })}
@@ -453,6 +473,20 @@ export function ProfileClient({
                     ))
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* WALLET TAB */}
+            {activeTab === "wallet" && isOwnProfile && (
+              <div className="pt-2">
+                <WalletSection />
+              </div>
+            )}
+
+            {/* REFERRALS TAB */}
+            {activeTab === "referrals" && isOwnProfile && (
+              <div className="pt-2">
+                <ReferAndEarnCard />
               </div>
             )}
           </div>

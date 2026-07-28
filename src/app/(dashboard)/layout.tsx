@@ -227,7 +227,7 @@ export default async function DashboardLayout({
           </Link>
         </header>
 
-        <main className="flex-1 flex flex-col h-full w-full overflow-y-auto bg-transparent pb-16 lg:pb-0 custom-scroll">
+        <main className="flex-1 flex flex-col h-full w-full overflow-y-auto bg-transparent pb-16 lg:pb-0 custom-scroll [&:has(.messages-page-root)]:pb-0 [&:has(.messages-page-root)]:overflow-hidden">
           {children}
         </main>
       </div>

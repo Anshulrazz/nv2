@@ -29,6 +29,7 @@ import {
   Settings,
   Zap,
   Grid,
+  Crown,
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -36,6 +37,9 @@ import { useWorkspaceStore } from "@/stores/workspaceStore";
 import { useRouter } from "next/navigation";
 import { SimpleTodo } from "@/components/notes/SimpleTodo";
 import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
+import { ReferAndEarnCard } from "@/components/referrals/ReferAndEarnCard";
+import { WalletSection } from "@/components/wallet/WalletSection";
+import { PremiumUpgradeModal } from "@/components/premium/PremiumUpgradeModal";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -100,21 +104,44 @@ export default function DashboardOverviewPage() {
   const [stats, setStats] = useState<RecentStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      try {
-        const res = await fetch("/api/dashboard/stats");
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-        }
-      } catch (e) {
-        console.error("fetch dashboard stats error:", e);
-      } finally {
-        setIsLoading(false);
+  const [premiumInfo, setPremiumInfo] = useState<{
+    isPremium: boolean;
+    premiumPlan: string | null;
+    premiumExpiresAt: string | null;
+    coins: number;
+  } | null>(null);
+
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+
+  const fetchDashboardStats = async () => {
+    try {
+      const res = await fetch("/api/dashboard/stats");
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data);
       }
-    };
+    } catch (e) {
+      console.error("fetch dashboard stats error:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchPremiumStatus = async () => {
+    try {
+      const res = await fetch("/api/premium/status");
+      if (res.ok) {
+        const data = await res.json();
+        setPremiumInfo(data);
+      }
+    } catch (e) {
+      console.error("fetch premium status error:", e);
+    }
+  };
+
+  useEffect(() => {
     fetchDashboardStats();
+    fetchPremiumStatus();
   }, []);
 
   if (isLoading || !stats) {
@@ -154,6 +181,11 @@ export default function DashboardOverviewPage() {
                 <span className="text-[10px] font-mono font-bold text-[#F0C93B] uppercase tracking-[0.25em]">
                   COMMAND CENTER OVERVIEW
                 </span>
+                {premiumInfo?.isPremium ? (
+                  <span className="ml-2 px-2.5 py-0.5 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/40 text-[#F0C93B] text-[10px] font-bold uppercase font-mono flex items-center gap-1 shadow-sm">
+                    <Crown className="h-3 w-3" /> Premium ✨
+                  </span>
+                ) : null}
               </div>
               <h1 className="text-3xl sm:text-4xl font-black text-[#F3F0E4] tracking-tight font-heading">
                 Welcome back, {session?.user?.name || "Scholar"}!
@@ -164,22 +196,24 @@ export default function DashboardOverviewPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+              {!premiumInfo?.isPremium ? (
+                <Button
+                  onClick={() => setIsUpgradeModalOpen(true)}
+                  className="flex-1 lg:flex-none rounded-xl bg-gradient-to-r from-[#F0C93B] to-[#F28B6E] text-[#2A2118] font-black text-xs h-11 px-5 flex items-center justify-center gap-2 transition-all active:scale-[0.97] shadow-[0_0_20px_rgba(240,201,59,0.3)] hover:shadow-[0_0_25px_rgba(240,201,59,0.5)]"
+                >
+                  <Crown className="size-4" />
+                  <span>Upgrade to Premium</span>
+                </Button>
+              ) : (
+                <div className="px-3.5 py-2 rounded-xl bg-[#121F18] border border-[#F0C93B]/30 text-xs text-[#F0C93B] font-mono font-bold flex items-center gap-2">
+                  <Crown className="size-4" />
+                  <span>{premiumInfo.premiumPlan === "yearly" ? "Annual" : "Monthly"} Pass Active</span>
+                </div>
+              )}
               <Link href="/notes?action=new" className="flex-1 lg:flex-none">
                 <Button className="w-full lg:w-auto rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-5 flex items-center justify-center gap-2 transition-all active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] hover:translate-x-0.5 hover:translate-y-0.5">
                   <Plus className="size-4" />
                   <span>New Note</span>
-                </Button>
-              </Link>
-              <Link href="/feed" className="flex-1 lg:flex-none">
-                <Button variant="outline" className="w-full lg:w-auto rounded-xl bg-[#121F18] border-[#F3F0E4]/20 hover:border-[#8FC3DE]/50 text-[#F3F0E4] hover:bg-[#1F362A] font-bold text-xs h-11 px-5 flex items-center justify-center gap-2 transition-all">
-                  <Compass className="size-4 text-[#8FC3DE]" />
-                  <span>Public Feed</span>
-                </Button>
-              </Link>
-              <Link href="/messages" className="flex-1 lg:flex-none">
-                <Button variant="outline" className="w-full lg:w-auto rounded-xl bg-[#C9A9E0]/15 border-[#C9A9E0]/30 text-[#C9A9E0] hover:bg-[#C9A9E0]/25 font-bold text-xs h-11 px-5 flex items-center justify-center gap-2 transition-all">
-                  <Send className="size-4 text-[#C9A9E0]" />
-                  <span>Messages</span>
                 </Button>
               </Link>
             </div>
@@ -194,7 +228,7 @@ export default function DashboardOverviewPage() {
           {[
             { label: "My Notes", value: stats.notesCount, icon: BookOpen, accent: "text-[#8FC3DE]", bg: "bg-[#8FC3DE]/15", border: "border-[#8FC3DE]/30" },
             { label: "Activity Points", value: stats.points, icon: Trophy, accent: "text-[#F28B6E]", bg: "bg-[#F28B6E]/15", border: "border-[#F28B6E]/30", highlight: true },
-            { label: "Coins Balance", value: stats.coins ?? 0, icon: Coins, accent: "text-[#F0C93B]", bg: "bg-[#F0C93B]/15", border: "border-[#F0C93B]/30" },
+            { label: "Coins Balance", value: premiumInfo?.coins ?? stats.coins ?? 0, icon: Coins, accent: "text-[#F0C93B]", bg: "bg-[#F0C93B]/15", border: "border-[#F0C93B]/30" },
             { label: "Referred Friends", value: stats.referralsCount ?? 0, icon: Gift, accent: "text-[#C9A9E0]", bg: "bg-[#C9A9E0]/15", border: "border-[#C9A9E0]/30" },
           ].map(({ label, value, icon: Icon, accent, bg, border, highlight }) => (
             <motion.div
@@ -218,6 +252,26 @@ export default function DashboardOverviewPage() {
               </div>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* Coin Wallet & Referral Section */}
+        <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-7">
+            <WalletSection
+              onCoinsUpdated={() => {
+                fetchDashboardStats();
+                fetchPremiumStatus();
+              }}
+            />
+          </div>
+          <div className="lg:col-span-5">
+            <ReferAndEarnCard
+              onCoinsUpdated={() => {
+                fetchDashboardStats();
+                fetchPremiumStatus();
+              }}
+            />
+          </div>
         </motion.div>
 
         {/* Quick Links & Shortcuts Grid (Phone view app launcher style) */}
@@ -308,7 +362,7 @@ export default function DashboardOverviewPage() {
                         No notes created yet.
                       </p>
                     ) : (
-                      stats.recentNotes.map((note) => (
+                      stats.recentNotes.map((note: { _id: string; title: string; updatedAt: string }) => (
                         <motion.div
                           key={note._id}
                           whileHover={{ x: 3, backgroundColor: "rgba(243, 240, 228, 0.05)" }}
@@ -353,7 +407,7 @@ export default function DashboardOverviewPage() {
                         No published blogs found.
                       </p>
                     ) : (
-                      stats.recentBlogs.map((blog) => (
+                      stats.recentBlogs.map((blog: { _id: string; title: string; summary: string; userName: string }) => (
                         <motion.div
                           key={blog._id}
                           whileHover={{ x: 3, backgroundColor: "rgba(243, 240, 228, 0.05)" }}
@@ -388,6 +442,17 @@ export default function DashboardOverviewPage() {
           </motion.div>
         </div>
       </div>
+
+      {/* Premium Upgrade Modal */}
+      <PremiumUpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        currentBalance={premiumInfo?.coins ?? 0}
+        onSuccess={() => {
+          fetchDashboardStats();
+          fetchPremiumStatus();
+        }}
+      />
     </motion.div>
   );
 }

@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { CoinTransaction } from "@/models/CoinTransaction";
+import { getOrCreateUserWallet, generateReferralCode } from "@/lib/wallet";
 import { z } from "zod";
 
 const signupSchema = z.object({
@@ -47,40 +49,78 @@ export async function POST(req: Request) {
     if (referralCode && referralCode.trim() !== "") {
       const searchCode = referralCode.trim().toUpperCase();
       referrer = await User.findOne({ referralCode: searchCode });
-      if (!referrer) {
-        return NextResponse.json(
-          { error: "The provided referral code is invalid." },
-          { status: 400 }
-        );
-      }
     }
 
     // Generate unique referral code for the new user
-    let newReferralCode = "";
+    let newReferralCode = generateReferralCode();
     let isUnique = false;
     let attempts = 0;
     while (!isUnique && attempts < 10) {
-      newReferralCode = `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
       const codeExists = await User.findOne({ referralCode: newReferralCode });
       if (!codeExists) {
         isUnique = true;
+      } else {
+        newReferralCode = generateReferralCode();
       }
       attempts++;
     }
 
-    // Create user
+    const initialCoins = referrer ? 50 : 0; // Referee gets 50 coins
+
+    // Create new user
     const newUser = await User.create({
       name,
       email: normalizedEmail,
       passwordHash: hashedPassword,
       referralCode: newReferralCode,
       referredBy: referrer ? referrer._id : undefined,
-      coins: referrer ? 100 : 0, // Welcome bonus of 100 coins if referred, otherwise 0
+      coins: initialCoins,
     });
 
-    // Award coins to referrer if exists
+    // Create wallet for new user
+    const newUserWallet = await getOrCreateUserWallet(newUser._id);
+    if (initialCoins > 0) {
+      newUserWallet.balance = initialCoins;
+      await newUserWallet.save();
+
+      // Write ledger entry for referee
+      await CoinTransaction.create({
+        fromWalletAddress: null,
+        toWalletAddress: newUserWallet.address,
+        amount: 50,
+        type: "referral_bonus",
+        status: "completed",
+        metadata: {
+          referralCode: referrer?.referralCode,
+          relatedUserId: referrer ? referrer._id.toString() : null,
+          note: "Welcome referral bonus",
+        },
+      });
+    }
+
+    // Award referrer 100 coins if exists & write ledger
     if (referrer) {
-      await User.updateOne({ _id: referrer._id }, { $inc: { coins: 200 } });
+      referrer.coins = (referrer.coins || 0) + 100;
+      referrer.referralCount = (referrer.referralCount || 0) + 1;
+      referrer.referralRewardsEarned = (referrer.referralRewardsEarned || 0) + 100;
+      await referrer.save();
+
+      const referrerWallet = await getOrCreateUserWallet(referrer._id);
+      referrerWallet.balance = referrer.coins;
+      await referrerWallet.save();
+
+      await CoinTransaction.create({
+        fromWalletAddress: null,
+        toWalletAddress: referrerWallet.address,
+        amount: 100,
+        type: "referral_bonus",
+        status: "completed",
+        metadata: {
+          referralCode: referrer.referralCode,
+          relatedUserId: newUser._id.toString(),
+          note: `Referral reward for inviting ${newUser.name || newUser.email}`,
+        },
+      });
     }
 
     return NextResponse.json(
@@ -92,6 +132,7 @@ export async function POST(req: Request) {
           email: newUser.email,
           referralCode: newUser.referralCode,
           coins: newUser.coins,
+          walletAddress: newUserWallet.address,
         },
       },
       { status: 201 }
@@ -104,4 +145,3 @@ export async function POST(req: Request) {
     );
   }
 }
-

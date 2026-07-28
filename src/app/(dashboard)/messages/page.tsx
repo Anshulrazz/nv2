@@ -472,22 +472,32 @@ export default function MessagesPage() {
     const isInitialLoad = lastMessagesLengthRef.current === 0;
     const hasNewMessage = lastMsgId !== lastMessageIdRef.current || messagesLength !== lastMessagesLengthRef.current;
 
+    const scrollToBottomNow = (smooth = false) => {
+      if (!scrollContainerRef.current) return;
+      const el = scrollContainerRef.current;
+      if (smooth) {
+        el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+      } else {
+        el.scrollTop = el.scrollHeight;
+      }
+    };
+
     if (isInitialLoad || activeUserChanged) {
       lastMessageIdRef.current = lastMsgId;
       lastMessagesLengthRef.current = messagesLength;
-      scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      requestAnimationFrame(() => scrollToBottomNow(false));
     } else if (hasNewMessage) {
       lastMessageIdRef.current = lastMsgId;
       lastMessagesLengthRef.current = messagesLength;
 
-      // Only scroll down if the user was already near the bottom
-      const threshold = 150; // px
+      const threshold = 200; // px
       const isNearBottom = scrollContainerRef.current.scrollHeight - scrollContainerRef.current.scrollTop - scrollContainerRef.current.clientHeight < threshold;
-      if (isNearBottom) {
-        scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight;
+      const isSentByMe = lastMsg?.senderId === currentUserId;
+      if (isNearBottom || isSentByMe) {
+        requestAnimationFrame(() => scrollToBottomNow(true));
       }
     }
-  }, [messages, activeUser]);
+  }, [messages, activeUser, currentUserId]);
 
   // Polling for new messages and typing status every 1.5 seconds
   useEffect(() => {
@@ -735,7 +745,7 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="flex-1 flex h-full bg-[#16261D] text-[#F3F0E4] overflow-hidden relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+    <div className="messages-page-root flex-1 flex h-full bg-[#16261D] text-[#F3F0E4] overflow-hidden relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
       {/* Background Ambient Mesh Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 right-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
@@ -764,11 +774,15 @@ export default function MessagesPage() {
             <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9FAEA1]" />
             <Input
               type="text"
+              name="chat_user_search_query"
               autoComplete="off"
               autoCorrect="off"
               autoCapitalize="none"
               spellCheck={false}
               data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               placeholder="Search users to message..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -819,7 +833,7 @@ export default function MessagesPage() {
         </div>
 
         {/* Conversations list */}
-        <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 space-y-1.5">
+        <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 pb-20 md:pb-3 space-y-1.5">
           {isConversationsLoading ? (
             <div className="flex flex-col items-center justify-center h-40 text-[#9FAEA1] gap-2 select-none">
               <Loader2 className="h-5 w-5 animate-spin text-[#F0C93B]" />
@@ -909,7 +923,7 @@ export default function MessagesPage() {
       </aside>
 
       {/* 2. Message Thread (Right Pane) */}
-      <main className={`flex-1 flex flex-col h-full bg-transparent overflow-hidden ${
+      <section className={`flex-1 flex flex-col h-full bg-transparent overflow-hidden ${
         activeUser ? "flex" : "hidden md:flex"
       }`}>
         {activeUser ? (
@@ -1179,6 +1193,12 @@ export default function MessagesPage() {
                               {isDMEditing ? (
                                 <div className="space-y-2 mt-2 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
                                   <textarea
+                                    name="edit_message_content"
+                                    autoComplete="off"
+                                    data-1p-ignore="true"
+                                    data-bwignore="true"
+                                    data-lpignore="true"
+                                    data-form-type="other"
                                     value={editingMessageText}
                                     onChange={(e) => setEditingMessageText(e.target.value)}
                                     className="w-full min-h-[50px] p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-200 focus:outline-none focus:border-cyan-500 font-sans resize-none leading-relaxed"
@@ -1275,9 +1295,12 @@ export default function MessagesPage() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Bottom Text/Media Inputs Panel — sticky above the safe area */}
-            <div className="sticky bottom-0 z-10 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#F3F0E4]/15 bg-[#121F18]/95 backdrop-blur-xl shrink-0">
-              <form onSubmit={handleSendMessage} className="space-y-2.5 sm:space-y-3">
+            {/* Bottom Text/Media Inputs Panel — shrink-0 relative container */}
+            <div className="shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#F3F0E4]/15 bg-[#121F18]/95 backdrop-blur-xl relative z-10">
+              <form onSubmit={handleSendMessage} autoComplete="off" className="space-y-2.5 sm:space-y-3">
+                {/* Hidden fields to prevent browser/extension password manager popups */}
+                <input type="text" name="username" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
+                <input type="password" name="password" style={{ display: "none" }} tabIndex={-1} autoComplete="new-password" />
                 {/* Replying message preview banner */}
                 {replyingMessage && (
                   <div className="flex items-center justify-between p-3 bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-xl animate-fade-in relative select-none">
@@ -1388,18 +1411,22 @@ export default function MessagesPage() {
 
                   <Input
                     type="text"
+                    name="chat_message_content"
                     autoComplete="off"
                     autoCorrect="off"
-                    autoCapitalize="none"
+                    autoCapitalize="sentences"
                     spellCheck={false}
                     data-lpignore="true"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    data-form-type="other"
                     placeholder={`Message ${activeUser.name}...`}
                     value={inputText}
                     onChange={(e) => {
                       setInputText(e.target.value);
                       handleTypingNotification();
                     }}
-                    className="flex-1 bg-[#1A2D23]/80 border-[#F3F0E4]/20 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs sm:text-sm rounded-xl px-4 font-sans"
+                    className="flex-1 bg-[#1A2D23]/80 border-[#F3F0E4]/20 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs sm:text-sm rounded-xl px-4 font-sans min-w-0"
                   />
 
                   <Button
@@ -1435,7 +1462,7 @@ export default function MessagesPage() {
             </div>
           </div>
         )}
-      </main>
+      </section>
 
       {/* WhatsApp Media Viewer Lightbox */}
       {mediaGalleryIndex !== -1 && (() => {

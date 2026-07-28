@@ -49,7 +49,7 @@ export function MobileBottomNav({
     return null;
   }
   
-  if (pathname === "/messages" && (searchParams.get("chat") === "open" || searchParams.has("userId"))) {
+  if (pathname === "/messages" && (searchParams.get("chat") === "open" || searchParams.has("userId") || searchParams.has("chat"))) {
     return null;
   }
 

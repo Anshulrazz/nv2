@@ -6,9 +6,10 @@ import { getOrCreateUserWallet, ensureUserReferralCode } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
 
-export const GET = auth(async function GET(req) {
+export async function GET() {
   try {
-    const userId = req.auth?.user?.id;
+    const session = await auth();
+    const userId = session?.user?.id;
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -27,11 +28,15 @@ export const GET = auth(async function GET(req) {
       .select("name email createdAt")
       .sort({ createdAt: -1 });
 
+    const baseUrl = process.env.NEXTAUTH_URL || "https://nottexia.in";
+    const referralLink = `${baseUrl}/register?ref=${referralCode}`;
+
     return NextResponse.json({
       referralCode,
-      coins: user.coins || 0,
+      referralLink,
       referralCount: user.referralCount || referredUsers.length,
       referralRewardsEarned: user.referralRewardsEarned || referredUsers.length * 100,
+      coins: user.coins || 0,
       walletAddress: wallet.address,
       referredUsers: referredUsers.map((u) => ({
         id: u._id.toString(),
@@ -42,7 +47,10 @@ export const GET = auth(async function GET(req) {
       })),
     });
   } catch (error) {
-    console.error("Get referrals error:", error);
-    return NextResponse.json({ error: "Failed to fetch referral data." }, { status: 500 });
+    console.error("Get referral info error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch referral details." },
+      { status: 500 }
+    );
   }
-});
+}

@@ -579,11 +579,15 @@ export default function ChatPage() {
           <div className="max-w-3xl mx-auto flex items-center gap-3">
             <Input
               type="text"
+              name="ai_chat_message"
               autoComplete="off"
               autoCorrect="off"
-              autoCapitalize="none"
+              autoCapitalize="sentences"
               spellCheck={false}
               data-lpignore="true"
+              data-1p-ignore="true"
+              data-bwignore="true"
+              data-form-type="other"
               placeholder={activeChatId ? "Ask AI anything..." : "Create or select a chat first..."}
               disabled={!activeChatId || isLoading}
               value={inputValue}

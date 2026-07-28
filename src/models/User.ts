@@ -10,7 +10,13 @@ export interface IUser extends Document {
   coins: number;
   referralCode?: string;
   referredBy?: mongoose.Types.ObjectId;
+  referralCount: number;
+  referralRewardsEarned: number;
+  isPremium: boolean;
   isPremiumUser: boolean;
+  premiumSince?: Date | null;
+  premiumPlan?: "monthly" | "yearly" | null;
+  premiumExpiresAt?: Date | null;
   bio?: string;
   bannerImage?: string;
   isSuspended: boolean;
@@ -40,7 +46,13 @@ const UserSchema = new Schema<IUser>(
       default: () => `REF-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
     },
     referredBy: { type: Schema.Types.ObjectId, ref: "User" },
+    referralCount: { type: Number, default: 0 },
+    referralRewardsEarned: { type: Number, default: 0 },
+    isPremium: { type: Boolean, default: false },
     isPremiumUser: { type: Boolean, default: false },
+    premiumSince: { type: Date, default: null },
+    premiumPlan: { type: String, enum: ["monthly", "yearly", null], default: null },
+    premiumExpiresAt: { type: Date, default: null },
     bio: { type: String, default: "" },
     bannerImage: { type: String, default: "" },
     isSuspended: { type: Boolean, default: false },
