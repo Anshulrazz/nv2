@@ -39,5 +39,11 @@ const WalletSchema = new Schema<IWallet>(
   }
 );
 
+if (mongoose.models.Wallet && !mongoose.models.Wallet.schema.path("walletPasswordHash")) {
+  mongoose.models.Wallet.schema.add({
+    walletPasswordHash: { type: String, default: null },
+  });
+}
+
 export const Wallet =
   mongoose.models.Wallet || mongoose.model<IWallet>("Wallet", WalletSchema);

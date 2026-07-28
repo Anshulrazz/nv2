@@ -15,11 +15,10 @@ export async function POST(req: Request) {
 
     const { newWalletPassword, oldWalletPassword } = await req.json();
 
-    if (
-      !newWalletPassword ||
-      typeof newWalletPassword !== "string" ||
-      newWalletPassword.trim().length < 4
-    ) {
+    const newPassStr = String(newWalletPassword ?? "").trim();
+    const oldPassStr = String(oldWalletPassword ?? "").trim();
+
+    if (!newPassStr || newPassStr.length < 4) {
       return NextResponse.json(
         {
           error: "INVALID_NEW_PASSWORD",
@@ -38,21 +37,23 @@ export async function POST(req: Request) {
 
     const wallet = await getOrCreateUserWallet(user._id);
 
+    const isFirstTimeSetup = !wallet.walletPasswordHash;
+
     // If wallet password already set, require and verify old password
-    if (wallet.walletPasswordHash) {
-      if (!oldWalletPassword || typeof oldWalletPassword !== "string") {
+    if (!isFirstTimeSetup) {
+      if (!oldPassStr) {
         return NextResponse.json(
           {
             error: "OLD_PASSWORD_REQUIRED",
-            message: "Current wallet password is required to change to a new one.",
+            message: "Current wallet password is required to update your wallet password.",
           },
           { status: 400 }
         );
       }
 
       const isMatch = await bcrypt.compare(
-        oldWalletPassword,
-        wallet.walletPasswordHash
+        oldPassStr,
+        wallet.walletPasswordHash!
       );
       if (!isMatch) {
         return NextResponse.json(
@@ -66,14 +67,14 @@ export async function POST(req: Request) {
     }
 
     // Hash and save new wallet password
-    const hashedPassword = await bcrypt.hash(newWalletPassword.trim(), 10);
+    const hashedPassword = await bcrypt.hash(newPassStr, 10);
     wallet.walletPasswordHash = hashedPassword;
     await wallet.save();
 
     return NextResponse.json({
-      message: wallet.walletPasswordHash
-        ? "Wallet security password updated successfully!"
-        : "Wallet security password set up successfully!",
+      message: isFirstTimeSetup
+        ? "Wallet security password set up successfully!"
+        : "Wallet security password updated successfully!",
       hasWalletPassword: true,
     });
   } catch (error) {

@@ -19,8 +19,10 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { toAddress, amount, note, password } = body;
 
+    const passStr = String(password ?? "").trim();
+
     // Wallet password presence check
-    if (!password || typeof password !== "string" || !password.trim()) {
+    if (!passStr) {
       return NextResponse.json(
         {
           error: "WALLET_PASSWORD_REQUIRED",
@@ -76,9 +78,10 @@ export async function POST(req: Request) {
 
     // Verify wallet password correctness
     const isPasswordValid = await bcrypt.compare(
-      password.trim(),
-      senderWallet.walletPasswordHash
+      passStr,
+      senderWallet.walletPasswordHash!
     );
+
     if (!isPasswordValid) {
       return NextResponse.json(
         {
@@ -148,7 +151,7 @@ export async function POST(req: Request) {
               type: "transfer",
               status: "completed",
               metadata: {
-                note: note ? note.trim() : "Peer-to-peer coin transfer",
+                note: note ? String(note).trim() : "Peer-to-peer coin transfer",
                 senderName: senderUser.name || "Anonymous",
                 recipientName: recipientUser.name || "Anonymous",
               },
@@ -177,7 +180,7 @@ export async function POST(req: Request) {
         type: "transfer",
         status: "completed",
         metadata: {
-          note: note ? note.trim() : "Peer-to-peer coin transfer",
+          note: note ? String(note).trim() : "Peer-to-peer coin transfer",
           senderName: senderUser.name || "Anonymous",
           recipientName: recipientUser.name || "Anonymous",
         },
