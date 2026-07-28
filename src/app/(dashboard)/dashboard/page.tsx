@@ -12,7 +12,6 @@ import {
   Gift,
   Sparkles,
   Plus,
-  Compass,
   Send,
   Flame,
   ArrowRight,
@@ -28,7 +27,6 @@ import {
   Bookmark,
   Settings,
   Zap,
-  Grid,
   Crown,
 } from "lucide-react";
 import Link from "next/link";

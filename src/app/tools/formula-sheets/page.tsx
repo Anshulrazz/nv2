@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { BookOpen, ArrowLeft, Zap, Code, Copy, Sparkles, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BookOpen, ArrowLeft, Zap, Code } from "lucide-react";
+
 
 export default function FormulaSheetsPage() {
   const formulas = [

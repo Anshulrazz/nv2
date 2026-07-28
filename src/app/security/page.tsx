@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ShieldCheck, ArrowLeft, Lock, Server, Key, AlertOctagon, CheckCircle2, Cpu } from "lucide-react";
+import { ShieldCheck, ArrowLeft, Lock, Server, Key, AlertOctagon, Cpu } from "lucide-react";
 
 export default function SecurityPage() {
   return (

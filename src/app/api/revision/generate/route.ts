@@ -48,7 +48,7 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
   const summary = sentences.slice(0, 3).join(". ") + (sentences.length > 3 ? "." : "");
 
   if (mode === "cheatsheet") {
-    const concepts = defaultKeywords.map((kw, idx) => {
+    const concepts = defaultKeywords.map((kw, _idx) => {
       // Find a sentence containing this keyword, or fallback
       const matchingSentence = sentences.find(s => s.toLowerCase().includes(kw.toLowerCase()));
       return {
@@ -99,7 +99,7 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
   }
 
   // mode === "quiz"
-  const quiz = defaultKeywords.map((kw, idx) => {
+  const quiz = defaultKeywords.map((kw, _idx) => {
     const incorrectChoices = defaultKeywords.filter(k => k !== kw).slice(0, 3);
     while (incorrectChoices.length < 3) {
       incorrectChoices.push(`Mock Alternative ${incorrectChoices.length + 1}`);

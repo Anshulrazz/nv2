@@ -1,11 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download, Search, Send, Mail, MessageCircle } from "lucide-react";
+import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download, Search, Send } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -66,7 +65,7 @@ export default function AdminPage() {
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "teacher" | "admin">("all");
   const [flaggedNotes, setFlaggedNotes] = useState<FlaggedItem[]>([]);
-  const [flaggedComments, setFlaggedComments] = useState<FlaggedItem[]>([]);
+  const [, setFlaggedComments] = useState<FlaggedItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<Record<string, boolean>>({
     maintenanceMode: false,
     enableComments: true,
@@ -74,7 +73,7 @@ export default function AdminPage() {
   });
   const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {

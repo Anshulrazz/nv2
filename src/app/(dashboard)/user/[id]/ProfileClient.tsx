@@ -14,7 +14,6 @@ import {
   HelpCircle,
   Wallet as WalletIcon,
   Gift,
-  Crown,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";

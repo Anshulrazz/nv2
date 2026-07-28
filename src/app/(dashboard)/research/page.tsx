@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +9,6 @@ import {
   Download,
   Search,
   FileText,
-  Send,
   Edit,
   ArrowLeft,
   Upload,
@@ -18,7 +16,6 @@ import {
   ArrowUpRight,
   X,
   Wand2,
-  Plus,
   Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -263,6 +260,7 @@ export default function ResearchPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleSendChatMessage = async () => {
     if (!inputMessage.trim() || !selectedPaper || isSendingMessage) return;
 

@@ -124,6 +124,7 @@ interface TipTapMark {
 }
 
 // Custom TipTap JSON to React compilation helper
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function renderTipTapJSON(node: TipTapNode | null | undefined): React.ReactNode {
   if (!node) return null;
 

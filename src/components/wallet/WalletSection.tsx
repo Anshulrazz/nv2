@@ -14,7 +14,6 @@ import {
   Crown,
   History,
   ShieldCheck,
-  User as UserIcon,
   X,
   AlertCircle,
   Lock,

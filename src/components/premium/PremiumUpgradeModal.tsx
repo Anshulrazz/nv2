@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Crown, Check, Sparkles, Loader2, X, AlertCircle, Coins, ShieldCheck } from "lucide-react";
+import { Crown, Check, Sparkles, Loader2, X, AlertCircle, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 

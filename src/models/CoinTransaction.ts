@@ -15,7 +15,7 @@ export interface ICoinTransaction extends Document {
   amount: number;
   type: TransactionType;
   status: TransactionStatus;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
 }
 

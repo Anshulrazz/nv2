@@ -15,6 +15,7 @@ export const pusherServer = (appId && key && secret && cluster)
       useTLS: true,
     })
   : {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       trigger: async (channel: string, event: string, _data: unknown) => {
         console.warn(`[Pusher] Missing credentials. Attempted to trigger '${event}' on '${channel}'`);
       }

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, ArrowLeft, Lock, Eye, FileText, Database, UserCheck } from "lucide-react";
+import { Shield, ArrowLeft, Lock, Eye, Database, UserCheck } from "lucide-react";
 
 export default function PrivacyPage() {
   return (

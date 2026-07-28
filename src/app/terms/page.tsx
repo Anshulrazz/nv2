@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { FileText, ArrowLeft, Scale, AlertTriangle, BookOpen, UserCheck, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Scale, AlertTriangle, BookOpen, UserCheck, ShieldCheck } from "lucide-react";
 
 export default function TermsPage() {
   return (

@@ -62,7 +62,7 @@ export default function CommunityPage() {
   const [isPosting, setIsPosting] = useState(false);
 
   // Edit Post modal states
-  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [_isEditOpen, setIsEditOpen] = useState(false);
   const [editPostId, setEditPostId] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editMediaUrl, setEditMediaUrl] = useState("");
@@ -159,6 +159,7 @@ export default function CommunityPage() {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUpdatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editContent.trim() || isUpdating) return;

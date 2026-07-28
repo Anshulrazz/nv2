@@ -26,8 +26,6 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
   const [data, setData] = useState<ReferralData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedCode, setCopiedCode] = useState(false);
-
   const [manualCode, setManualCode] = useState("");
   const [isApplying, setIsApplying] = useState(false);
 
@@ -56,14 +54,6 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
     setCopiedLink(true);
     toast.success("Referral link copied to clipboard!");
     setTimeout(() => setCopiedLink(false), 2000);
-  };
-
-  const handleCopyCode = () => {
-    if (!data?.referralCode) return;
-    navigator.clipboard.writeText(data.referralCode);
-    setCopiedCode(true);
-    toast.success("Referral code copied!");
-    setTimeout(() => setCopiedCode(false), 2000);
   };
 
   const handleApplyCode = async (e: React.FormEvent) => {

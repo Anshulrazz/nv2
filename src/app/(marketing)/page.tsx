@@ -9,12 +9,8 @@ import {
   FileText,
   Trophy,
   BookOpen,
-  Star,
-  ShieldCheck,
-  GraduationCap,
   Calculator,
   CheckCircle2,
-  HelpCircle,
   Zap,
 } from "lucide-react";
 import { Hero3DShowcase } from "@/components/marketing/Hero3DShowcase";
