@@ -17,6 +17,7 @@ import {
   User as UserIcon,
   X,
   AlertCircle,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +60,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
   const [transferAmount, setTransferAmount] = useState<string>("");
   const [transferNote, setTransferNote] = useState<string>("");
+  const [accountPassword, setAccountPassword] = useState<string>("");
   const [isTransferring, setIsTransferring] = useState(false);
   const [showConfirmStep, setShowConfirmStep] = useState(false);
 
@@ -154,6 +156,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
     const amt = parseInt(transferAmount, 10);
     if (!resolvedRecipient || isNaN(amt) || amt <= 0) return;
 
+    if (!accountPassword.trim()) {
+      toast.error("Please enter your account password to authorize transfer.");
+      return;
+    }
+
     try {
       setIsTransferring(true);
       const res = await fetch("/api/wallet/transfer", {
@@ -163,6 +170,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
           toAddress: resolvedRecipient.address,
           amount: amt,
           note: transferNote,
+          password: accountPassword.trim(),
         }),
       });
 
@@ -179,6 +187,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
       setResolvedRecipient(null);
       setTransferAmount("");
       setTransferNote("");
+      setAccountPassword("");
 
       fetchWalletInfo();
       fetchTransactions(1);
@@ -557,6 +566,26 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                   </div>
                 </div>
 
+                {/* Account Password Authorization */}
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-wider font-mono flex items-center gap-1">
+                    <Lock className="h-3 w-3" /> Account Password Required
+                  </label>
+                  <Input
+                    type="password"
+                    name="wallet_transfer_security_pass"
+                    autoComplete="new-password"
+                    data-1p-ignore="true"
+                    data-bwignore="true"
+                    data-lpignore="true"
+                    data-form-type="other"
+                    placeholder="Enter account password to authorize"
+                    value={accountPassword}
+                    onChange={(e) => setAccountPassword(e.target.value)}
+                    className="bg-[#1A2D23] border-[#F0C93B]/40 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono focus:border-[#F0C93B]"
+                  />
+                </div>
+
                 <div className="flex gap-2 pt-1">
                   <Button
                     type="button"
@@ -569,9 +598,9 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                   </Button>
                   <Button
                     type="button"
-                    disabled={isTransferring}
+                    disabled={isTransferring || !accountPassword.trim()}
                     onClick={handleExecuteTransfer}
-                    className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2"
+                    className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40"
                   >
                     {isTransferring ? (
                       <>

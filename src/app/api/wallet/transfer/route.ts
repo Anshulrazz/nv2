@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Wallet } from "@/models/Wallet";
@@ -16,7 +17,18 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { toAddress, amount, note } = body;
+    const { toAddress, amount, note, password } = body;
+
+    // Password presence check
+    if (!password || typeof password !== "string" || !password.trim()) {
+      return NextResponse.json(
+        {
+          error: "ACCOUNT_PASSWORD_REQUIRED",
+          message: "Account password is required to authorize coin transfers.",
+        },
+        { status: 400 }
+      );
+    }
 
     // Validate inputs
     if (!toAddress || typeof toAddress !== "string" || !toAddress.trim()) {
@@ -46,6 +58,29 @@ export async function POST(req: Request) {
     const senderUser = await User.findById(senderUserId);
     if (!senderUser) {
       return NextResponse.json({ error: "Sender user not found." }, { status: 404 });
+    }
+
+    // Password verification check
+    if (!senderUser.passwordHash) {
+      return NextResponse.json(
+        {
+          error: "NO_PASSWORD_SET",
+          message:
+            "Your account does not have a password set (e.g. Google sign-in). Please set a password in Account Settings to authorize transfers.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, senderUser.passwordHash);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        {
+          error: "INVALID_PASSWORD",
+          message: "Incorrect account password. Coin transfer unauthorized.",
+        },
+        { status: 401 }
+      );
     }
 
     const senderWallet = await getOrCreateUserWallet(senderUser._id);
