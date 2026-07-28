@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { Wallet } from "@/models/Wallet";
 import { getOrCreateUserWallet } from "@/lib/wallet";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +22,14 @@ export async function GET() {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
+    // Ensure wallet exists
     const wallet = await getOrCreateUserWallet(user._id);
+
+    // Re-fetch with explicit field selection to guarantee walletPasswordHash
+    // is included (avoids Mongoose model cache issues in serverless runtimes)
+    const freshWallet = await Wallet.findById(wallet._id).select(
+      "address balance walletPasswordHash"
+    ).lean();
 
     // Sync wallet balance with user.coins if mismatched
     if (wallet.balance !== user.coins) {
@@ -29,11 +37,13 @@ export async function GET() {
       await wallet.save();
     }
 
+    const hasPassword = !!(freshWallet && freshWallet.walletPasswordHash);
+
     return NextResponse.json({
       address: wallet.address,
       balance: wallet.balance,
       coins: user.coins || 0,
-      hasWalletPassword: Boolean(wallet.walletPasswordHash),
+      hasWalletPassword: hasPassword,
     });
   } catch (error) {
     console.error("Get wallet info error:", error);

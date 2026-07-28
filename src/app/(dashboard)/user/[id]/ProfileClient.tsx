@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { formatDate } from "@/lib/format-date";
 import {
   BookOpen,
   Rss,
@@ -311,7 +312,7 @@ export function ProfileClient({
                         </div>
                         <div className="flex items-center justify-between text-[10px] text-neutral-500 font-mono">
                           <span>{note.wordCount || 0} words</span>
-                          <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+                          <span>{formatDate(note.createdAt)}</span>
                         </div>
                       </div>
                     ))}
@@ -348,7 +349,7 @@ export function ProfileClient({
                           </p>
                         </div>
                         <div className="text-[10px] text-neutral-550 font-mono mt-2">
-                          {new Date(blog.createdAt).toLocaleDateString()}
+                          {formatDate(blog.createdAt)}
                         </div>
                       </div>
                     ))}
@@ -432,7 +433,7 @@ export function ProfileClient({
                         </Link>
                         <div className="flex items-center justify-between text-[10px] text-neutral-500 font-mono mt-1">
                           <span>{forum.commentsCount || 0} comments</span>
-                          <span>{new Date(forum.createdAt).toLocaleDateString()}</span>
+                          <span>{formatDate(forum.createdAt)}</span>
                         </div>
                       </div>
                     ))
@@ -467,7 +468,7 @@ export function ProfileClient({
                           </h5>
                         </Link>
                         <div className="text-[10px] text-neutral-500 font-mono mt-1">
-                          {new Date(doubt.createdAt).toLocaleDateString()}
+                          {formatDate(doubt.createdAt)}
                         </div>
                       </div>
                     ))
@@ -589,7 +590,7 @@ export function ProfileClient({
                       {selectedSocialPost.userName}
                     </h4>
                     <span className="text-[8px] text-neutral-550 font-mono">
-                      {new Date(selectedSocialPost.createdAt).toLocaleDateString()}
+                      {formatDate(selectedSocialPost.createdAt)}
                     </span>
                   </div>
                 </div>
@@ -617,7 +618,7 @@ export function ProfileClient({
                         <div className="flex items-baseline gap-2">
                           <span className="font-semibold text-neutral-200 font-mono text-[11px]">{c.userName}</span>
                           <span className="text-[8px] text-neutral-600 font-mono">
-                            {new Date(c.createdAt).toLocaleDateString()}
+                            {formatDate(c.createdAt)}
                           </span>
                         </div>
                         <p className="text-neutral-400 select-text leading-relaxed">{c.content}</p>
