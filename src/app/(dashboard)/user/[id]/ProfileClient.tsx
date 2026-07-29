@@ -290,7 +290,7 @@ export function ProfileClient({
                     No public notes published.
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {notes.map((note) => (
                       <div
                         key={note._id}
@@ -328,7 +328,7 @@ export function ProfileClient({
                     No blogs published.
                   </div>
                 ) : (
-                  <div className="grid sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {blogs.map((blog) => (
                       <div
                         key={blog._id}

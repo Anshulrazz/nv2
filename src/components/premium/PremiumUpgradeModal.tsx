@@ -93,7 +93,7 @@ export function PremiumUpgradeModal({
         </div>
 
         {/* Plan Selector Cards */}
-        <div className="grid grid-cols-2 gap-3 relative z-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
           {/* Monthly */}
           <button
             type="button"

@@ -29,7 +29,7 @@ export async function GET() {
       .sort({ createdAt: -1 });
 
     const baseUrl = process.env.NEXTAUTH_URL || "https://nottexia.in";
-    const referralLink = `${baseUrl}/auth/signup?ref=${referralCode}`;
+    const referralLink = `${baseUrl}/signup?ref=${referralCode}`;
 
     return NextResponse.json({
       referralCode,

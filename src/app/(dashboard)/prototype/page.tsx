@@ -324,7 +324,7 @@ export default function DesignPrototypePage() {
 
                 <div>
                   <h4 className="font-semibold text-neutral-300 mb-2 font-space uppercase tracking-wider text-[11px]">Primary Color Accent Switcher</h4>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => setAccentTheme("cyan")}
                       className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border bg-neutral-900/50 hover:bg-neutral-900 transition-all ${
@@ -417,7 +417,7 @@ export default function DesignPrototypePage() {
 
                 <div>
                   <h4 className="font-semibold text-neutral-300 mb-2 font-space uppercase tracking-wider text-[11px]">Accessibility Standards</h4>
-                  <div className="grid grid-cols-2 gap-2 text-center text-[10px] font-bold">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-center text-[10px] font-bold">
                     <div className="p-2 border border-emerald-500/20 bg-emerald-500/5 text-emerald-400 rounded-lg">
                       Contrast Ratio<br />7.2:1 (AAA)
                     </div>
@@ -434,7 +434,7 @@ export default function DesignPrototypePage() {
         {/* Prototype Navigation controls */}
         <div className="p-4 border-t border-neutral-900 bg-neutral-950">
           <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest block mb-3 font-space">ACTIVE SCREEN VIEW</span>
-          <div className="grid grid-cols-2 gap-1.5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             <button
               onClick={() => {
                 setActiveScreen("onboarding");
@@ -592,7 +592,7 @@ export default function DesignPrototypePage() {
 
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-bold text-neutral-400 uppercase font-space tracking-wider">Workspace focus preference</label>
-                        <div className="grid grid-cols-2 gap-3 font-jakarta">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-jakarta">
                           <button
                             onClick={() => setProductivityGoal("speed")}
                             className={`p-3 text-left rounded-xl border transition-all ${
@@ -1034,7 +1034,7 @@ export default function DesignPrototypePage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1">
                         <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-widest font-space">Workspace Category</span>
                         <select className="w-full bg-neutral-950 border border-neutral-855 rounded-lg px-3 py-1.5 text-neutral-300 font-jakarta outline-none">
@@ -1233,7 +1233,7 @@ noteSchema.pre("deleteOne", { document: true, query: false }, async function(nex
                       <span>Input & Keyboard preferences</span>
                     </h3>
 
-                    <div className="grid grid-cols-3 gap-3 select-none">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 select-none">
                       <button
                         onClick={() => setKbdShortcutMap("qwerty")}
                         className={`p-3 text-left rounded-xl border transition-all ${

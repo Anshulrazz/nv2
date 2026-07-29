@@ -175,7 +175,7 @@ export default function ShowcaseLandingPage() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="p-3.5 rounded-xl bg-zinc-950/50 border border-white/5 text-zinc-400 space-y-1">
                       <div className="text-[9px] uppercase tracking-wider text-zinc-500">Sync Latency</div>
                       <div className="text-base font-bold text-white">1.4ms</div>

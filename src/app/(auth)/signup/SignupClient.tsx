@@ -82,7 +82,7 @@ function SignupForm() {
     <div className="w-full max-w-md relative z-10">
       {/* Doppelrand (Double-Bezel) Hardware Shell */}
       <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)]">
-        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 space-y-6">
+        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-5 sm:p-8 space-y-6">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2.5 mb-2">

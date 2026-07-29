@@ -110,7 +110,7 @@ export default function LeaderboardPage() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-              className="grid sm:grid-cols-3 gap-6 select-none"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 select-none"
             >
               {board.slice(0, 3).map((user, idx) => {
                 const borderStyles = [

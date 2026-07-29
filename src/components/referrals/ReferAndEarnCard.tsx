@@ -123,7 +123,7 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-2 gap-3 relative z-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
         <div className="p-3.5 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono">
             Friends Invited

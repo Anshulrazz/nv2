@@ -221,8 +221,9 @@ export const POST = auth(async function POST(req) {
 
         const parsed = extractJson(rawJson);
         return NextResponse.json(parsed);
-      } catch (geminiErr: any) {
-        console.warn("Gemini YouTube digest failed, trying OpenRouter fallback. Error:", geminiErr?.message || geminiErr);
+      } catch (geminiErr: unknown) {
+        const msg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
+        console.warn("Gemini YouTube digest failed, trying OpenRouter fallback. Error:", msg);
       }
     }
 
@@ -258,8 +259,9 @@ export const POST = auth(async function POST(req) {
         const rawText = data.choices?.[0]?.message?.content || "";
         const parsed = extractJson(rawText);
         return NextResponse.json(parsed);
-      } catch (openRouterErr: any) {
-        console.warn("OpenRouter YouTube digest failed:", openRouterErr?.message || openRouterErr);
+      } catch (openRouterErr: unknown) {
+        const msg = openRouterErr instanceof Error ? openRouterErr.message : String(openRouterErr);
+        console.warn("OpenRouter YouTube digest failed:", msg);
       }
     }
 

@@ -1649,7 +1649,7 @@ export default function MessagesPage() {
               <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                 Solid Colors
               </h4>
-              <div className="grid grid-cols-6 gap-2.5">
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
                 {[
                   { name: "Charcoal", value: "#0b141a" },
                   { name: "Olive", value: "#1c2826" },
@@ -1674,7 +1674,7 @@ export default function MessagesPage() {
               <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                 Cyber Gradients
               </h4>
-              <div className="grid grid-cols-4 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
                   { name: "Neon", value: "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))" },
                   { name: "Cosmic", value: "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15))" },
