@@ -4,19 +4,27 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { getOrCreateUserWallet, ensureUserReferralCode } from "@/lib/wallet";
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
     const session = await auth();
     const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    
+    // Check secret header fallback for CLI/curl callers
+    const secretHeader = req.headers.get("x-admin-secret");
+    const validSecret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET;
+    const isSecretAuthorized = secretHeader && validSecret && secretHeader === validSecret;
 
     await connectToDatabase();
 
-    const currentUser = await User.findById(userId);
-    if (currentUser?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
+    if (!isSecretAuthorized) {
+      if (!userId) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      const currentUser = await User.findById(userId);
+      if (currentUser?.role !== "admin") {
+        return NextResponse.json({ error: "Forbidden. Admin access required." }, { status: 403 });
+      }
     }
 
     const allUsers = await User.find({});

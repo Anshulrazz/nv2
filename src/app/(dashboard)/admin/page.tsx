@@ -4,10 +4,11 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download, Search, Send } from "lucide-react";
+import { ShieldAlert, Users, BookOpen, MessageSquare, HelpCircle, Loader2, Ban, Trash2, Download, Search, Send, Wallet, RefreshCw } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface ChartItem {
   label: string;
@@ -72,9 +73,31 @@ export default function AdminPage() {
     enableRegistrations: true,
   });
   const [auditLogs, setAuditLogs] = useState<AuditLogRecord[]>([]);
+  const [isBackfillingWallets, setIsBackfillingWallets] = useState(false);
 
   const [, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+
+  const handleBackfillWallets = async () => {
+    setIsBackfillingWallets(true);
+    try {
+      const res = await fetch("/api/admin/backfill-wallets", {
+        method: "POST",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        toast.success(`Backfill complete! Processed ${data.processedUsers} users, backfilled ${data.backfilledWallets} wallets.`);
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Backfill migration failed.");
+      }
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to execute wallet backfill.");
+    } finally {
+      setIsBackfillingWallets(false);
+    }
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -254,6 +277,24 @@ export default function AdminPage() {
               </p>
             </div>
           </div>
+
+          <Button
+            onClick={handleBackfillWallets}
+            disabled={isBackfillingWallets}
+            className="rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 text-zinc-950 font-black text-xs h-11 px-5 flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.25)] transition-all active:scale-[0.98] shrink-0"
+          >
+            {isBackfillingWallets ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Backfilling Wallets...</span>
+              </>
+            ) : (
+              <>
+                <Wallet className="size-4" />
+                <span>Backfill All User Wallets</span>
+              </>
+            )}
+          </Button>
         </div>
       </div>
 
@@ -566,6 +607,37 @@ export default function AdminPage() {
                   </button>
                 </div>
               ))}
+
+              <div className="pt-4 border-t border-white/10">
+                <div className="p-5 rounded-2xl bg-zinc-950 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Wallet className="size-4 text-amber-400" />
+                      <h4 className="text-xs font-bold text-white uppercase tracking-wider">Backfill User Wallets & Referral Codes</h4>
+                    </div>
+                    <p className="text-[11px] font-mono text-zinc-400">
+                      Scan database and generate wallet addresses &amp; referral codes for all legacy or existing users.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleBackfillWallets}
+                    disabled={isBackfillingWallets}
+                    className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-10 px-4 flex items-center gap-2 transition-all active:scale-[0.98] shrink-0"
+                  >
+                    {isBackfillingWallets ? (
+                      <>
+                        <Loader2 className="size-4 animate-spin" />
+                        <span>Processing...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RefreshCw className="size-3.5" />
+                        <span>Run Migration Backfill</span>
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         )}
