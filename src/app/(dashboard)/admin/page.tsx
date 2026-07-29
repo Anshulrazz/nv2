@@ -269,13 +269,18 @@ export default function AdminPage() {
       const res = await fetch("/api/admin/settings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [key]: nextVal }),
+        body: JSON.stringify({ key, value: nextVal }),
       });
       if (res.ok) {
         setSiteSettings((prev) => ({ ...prev, [key]: nextVal }));
+        toast.success(`Updated ${key} to ${nextVal ? "ON" : "OFF"}`);
+      } else {
+        const err = await res.json();
+        toast.error(err.error || "Failed to update site configuration.");
       }
     } catch (e) {
       console.error(e);
+      toast.error("Failed to update site configuration.");
     }
   };
 

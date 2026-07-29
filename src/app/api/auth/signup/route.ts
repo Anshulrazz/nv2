@@ -6,6 +6,8 @@ import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet, generateReferralCode } from "@/lib/wallet";
 import { z } from "zod";
 
+import { SiteSetting } from "@/models/SiteSetting";
+
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters long." }),
   email: z.string().email({ message: "Please provide a valid email address." }),
@@ -31,6 +33,15 @@ export async function POST(req: Request) {
 
     // Connect to database
     await connectToDatabase();
+
+    // Check if new registrations are disabled by admin
+    const registrationSetting = await SiteSetting.findOne({ key: "enableRegistrations" });
+    if (registrationSetting && registrationSetting.value === false) {
+      return NextResponse.json(
+        { error: "New scholar registrations are currently disabled by platform administrators." },
+        { status: 403 }
+      );
+    }
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: normalizedEmail });

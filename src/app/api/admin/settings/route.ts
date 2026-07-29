@@ -36,7 +36,17 @@ export const PATCH = auth(async function PATCH(req) {
       return NextResponse.json({ error: "Access denied. Admin required." }, { status: 403 });
     }
 
-    const { key, value } = await req.json();
+    const body = await req.json();
+    let key: string | undefined = body.key;
+    let value: boolean | undefined = body.value;
+
+    if (!key && typeof body === "object" && body !== null) {
+      const keys = Object.keys(body);
+      if (keys.length > 0) {
+        key = keys[0];
+        value = body[key];
+      }
+    }
 
     if (!key || value === undefined) {
       return NextResponse.json({ error: "Key and value are required." }, { status: 400 });
