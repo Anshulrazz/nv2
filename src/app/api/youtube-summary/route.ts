@@ -36,11 +36,11 @@ async function fetchTranscriptFallback(
     const html = await res.text();
 
     // Flexible regex for player response JSON
-    let playerResponse: Record<string, any> | null = null;
+    let playerResponse: Record<string, unknown> | null = null;
     const matchJson =
-      html.match(/ytInitialPlayerResponse\s*=\s*({.+?});/s) ||
-      html.match(/ytInitialPlayerResponse\s*=\s*({.+?});?\s*(?:var\s+|window|HTML)/s) ||
-      html.match(/var\s+ytInitialPlayerResponse\s*=\s*({.+?});/s);
+      html.match(/ytInitialPlayerResponse\s*=\s*({[\s\S]+?});/) ||
+      html.match(/ytInitialPlayerResponse\s*=\s*({[\s\S]+?});?\s*(?:var\s+|window|HTML)/) ||
+      html.match(/var\s+ytInitialPlayerResponse\s*=\s*({[\s\S]+?});/);
 
     if (matchJson && matchJson[1]) {
       try {
@@ -50,7 +50,16 @@ async function fetchTranscriptFallback(
       }
     }
 
-    const captionTracks = playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    const captionsObj = (
+      playerResponse as {
+        captions?: {
+          playerCaptionsTracklistRenderer?: {
+            captionTracks?: Array<Record<string, unknown>>;
+          };
+        };
+      }
+    )?.captions;
+    const captionTracks = captionsObj?.playerCaptionsTracklistRenderer?.captionTracks;
 
     if (!captionTracks || !Array.isArray(captionTracks) || captionTracks.length === 0) return null;
 

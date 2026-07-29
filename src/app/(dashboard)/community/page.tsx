@@ -62,7 +62,7 @@ export default function CommunityPage() {
   const [isPosting, setIsPosting] = useState(false);
 
   // Edit Post modal states
-  const [_isEditOpen, setIsEditOpen] = useState(false);
+  const [, setIsEditOpen] = useState(false);
   const [editPostId, setEditPostId] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editMediaUrl, setEditMediaUrl] = useState("");

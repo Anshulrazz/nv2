@@ -52,7 +52,7 @@ function preprocessLatexInHtml(html: string): string {
     return match;
   });
 
-  processed = processed.replace(/\\begin\{([a-z*]+)\}([\s\S]*?)\\end\{\1\}/g, (match, _env: string, _inner: string) => {
+  processed = processed.replace(/\\begin\{([a-z*]+)\}([\s\S]*?)\\end\{\1\}/g, (match) => {
     try {
       const cleanMatch = removeStrayDollars(match).replace(/\$/g, "");
       return katex.renderToString(cleanMatch, { displayMode: true, throwOnError: false });
