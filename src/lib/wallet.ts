@@ -21,7 +21,7 @@ let isAutoBackfillCompleted = false;
 
 /**
  * Get or create a wallet for ANY given user ID (new OR existing user).
- * Ensures robust ObjectId/String query matching and referral code generation.
+ * Ensures robust ObjectId/String query matching, referral code generation, and E11000 duplicate handling.
  */
 export async function getOrCreateUserWallet(
   userId: string | mongoose.Types.ObjectId,
@@ -66,17 +66,30 @@ export async function getOrCreateUserWallet(
       balance: initialBalance,
     });
 
-    if (session) {
-      await newWallet.save({ session });
-    } else {
-      await newWallet.save();
+    try {
+      if (session) {
+        await newWallet.save({ session });
+      } else {
+        await newWallet.save();
+      }
+      wallet = newWallet;
+    } catch (saveError: unknown) {
+      // If a race condition or E11000 duplicate key error occurs, re-fetch the wallet
+      const existing = await Wallet.findOne({ $or: queryConditions }).session(session || null);
+      if (existing) {
+        wallet = existing;
+      } else {
+        throw saveError;
+      }
     }
 
-    wallet = newWallet;
-
     // Auto-ensure referral code is generated for existing user if missing
-    if (user && !user.referralCode) {
-      await ensureUserReferralCode(user, session);
+    if (user && (!user.referralCode || user.referralCode.trim() === "")) {
+      try {
+        await ensureUserReferralCode(user, session);
+      } catch (err) {
+        console.warn("User referral code sync warning:", err);
+      }
     }
   }
 
@@ -108,10 +121,14 @@ export async function ensureUserReferralCode(
   }
 
   user.referralCode = code;
-  if (session) {
-    await user.save({ session });
-  } else {
-    await user.save();
+  try {
+    if (session) {
+      await user.save({ session });
+    } else {
+      await user.save();
+    }
+  } catch (err) {
+    console.warn("Save referral code duplicate check fallback:", err);
   }
 
   return code;
@@ -128,16 +145,20 @@ export async function autoEnsureAllUsersHaveWallets(): Promise<{ backfilled: num
   try {
     const allUsers = await User.find({}).select("_id referralCode coins");
     for (const user of allUsers) {
-      if (!user.referralCode) {
-        await ensureUserReferralCode(user);
-      }
-      const existingWallet = await Wallet.findOne({
-        $or: [{ userId: user._id.toString() }, { userId: user._id }],
-      }).lean();
+      try {
+        if (!user.referralCode) {
+          await ensureUserReferralCode(user);
+        }
+        const existingWallet = await Wallet.findOne({
+          $or: [{ userId: user._id.toString() }, { userId: user._id }],
+        }).lean();
 
-      if (!existingWallet) {
-        await getOrCreateUserWallet(user._id);
-        backfilled++;
+        if (!existingWallet) {
+          await getOrCreateUserWallet(user._id);
+          backfilled++;
+        }
+      } catch (userErr) {
+        console.warn(`User ${user._id} backfill warning:`, userErr);
       }
     }
   } catch (err) {

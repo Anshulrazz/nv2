@@ -32,16 +32,20 @@ export async function POST(req: Request) {
     let backfilledCodes = 0;
 
     for (const user of allUsers) {
-      if (!user.referralCode) {
-        await ensureUserReferralCode(user);
-        backfilledCodes++;
-      }
+      try {
+        if (!user.referralCode) {
+          await ensureUserReferralCode(user);
+          backfilledCodes++;
+        }
 
-      const wallet = await getOrCreateUserWallet(user._id);
-      if (wallet.balance !== (user.coins || 0)) {
-        wallet.balance = user.coins || 0;
-        await wallet.save();
-        backfilledWallets++;
+        const wallet = await getOrCreateUserWallet(user._id);
+        if (wallet && wallet.balance !== (user.coins || 0)) {
+          wallet.balance = user.coins || 0;
+          await wallet.save();
+          backfilledWallets++;
+        }
+      } catch (userError) {
+        console.warn(`User ${user._id} backfill loop item skipped:`, userError);
       }
     }
 
@@ -53,8 +57,9 @@ export async function POST(req: Request) {
     });
   } catch (error) {
     console.error("Backfill wallets error:", error);
+    const details = error instanceof Error ? error.message : String(error);
     return NextResponse.json(
-      { error: "Migration backfill failed." },
+      { error: "Migration backfill failed.", details },
       { status: 500 }
     );
   }
