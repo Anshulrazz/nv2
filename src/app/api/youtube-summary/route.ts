@@ -6,6 +6,7 @@ import { User } from "@/models/User";
 import { generateGeminiContent } from "@/lib/gemini";
 import Anthropic from "@anthropic-ai/sdk";
 import { YoutubeTranscript } from "youtube-transcript";
+import { memoryCache, getCacheHeaders } from "@/lib/cache";
 
 export const dynamic = "force-dynamic";
 
@@ -351,19 +352,25 @@ export const GET = auth(async function GET(req) {
     const summaries = await VideoSummary.find({ userId })
       .sort({ createdAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
 
     const total = await VideoSummary.countDocuments({ userId });
 
-    return NextResponse.json({
-      summaries,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+    return NextResponse.json(
+      {
+        summaries,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
-    });
+      {
+        headers: getCacheHeaders({ public: false, maxAge: 10, staleWhileRevalidate: 30 }),
+      }
+    );
   } catch (error) {
     console.error("GET /api/youtube-summary error:", error);
     return NextResponse.json({ error: "Failed to fetch summaries." }, { status: 500 });

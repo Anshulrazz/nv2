@@ -3,6 +3,9 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Folder } from "@/models/Folder";
 import { isValidObjectId } from "@/lib/validation";
+import { getCacheHeaders } from "@/lib/cache";
+
+export const dynamic = "force-dynamic";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -12,9 +15,11 @@ export const GET = auth(async function GET(req) {
     }
 
     await connectToDatabase();
-    const folders = await Folder.find({ userId }).sort({ createdAt: 1 });
+    const folders = await Folder.find({ userId }).sort({ createdAt: 1 }).lean();
 
-    return NextResponse.json(folders);
+    return NextResponse.json(folders, {
+      headers: getCacheHeaders({ public: false, maxAge: 15, staleWhileRevalidate: 45 }),
+    });
   } catch (error) {
     console.error("Fetch folders error:", error);
     return NextResponse.json({ error: "Failed to fetch folders." }, { status: 500 });
@@ -45,7 +50,7 @@ export const POST = auth(async function POST(req) {
       if (!isValidObjectId(parentId)) {
         return NextResponse.json({ error: "Invalid parent folder ID format." }, { status: 400 });
       }
-      const parentFolder = await Folder.findOne({ _id: parentId, userId });
+      const parentFolder = await Folder.findOne({ _id: parentId, userId }).lean();
       if (!parentFolder) {
         return NextResponse.json({ error: "Parent folder not found or unauthorized." }, { status: 404 });
       }

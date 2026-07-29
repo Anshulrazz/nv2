@@ -4,6 +4,9 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Note } from "@/models/Note";
 import { Folder } from "@/models/Folder";
 import { isValidObjectId } from "@/lib/validation";
+import { getCacheHeaders } from "@/lib/cache";
+
+export const dynamic = "force-dynamic";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -38,8 +41,11 @@ export const GET = auth(async function GET(req) {
       query.isTrashed = false;
     }
 
-    const notes = await Note.find(query).sort({ updatedAt: -1 });
-    return NextResponse.json(notes);
+    const notes = await Note.find(query).sort({ updatedAt: -1 }).lean();
+
+    return NextResponse.json(notes, {
+      headers: getCacheHeaders({ public: false, maxAge: 10, staleWhileRevalidate: 30 }),
+    });
   } catch (error) {
     console.error("Fetch notes error:", error);
     return NextResponse.json({ error: "Failed to fetch notes." }, { status: 500 });
@@ -66,7 +72,7 @@ export const POST = auth(async function POST(req) {
       if (!isValidObjectId(folderId)) {
         return NextResponse.json({ error: "Invalid folder ID format." }, { status: 400 });
       }
-      const folder = await Folder.findOne({ _id: folderId, userId });
+      const folder = await Folder.findOne({ _id: folderId, userId }).lean();
       if (!folder) {
         return NextResponse.json({ error: "Folder not found or unauthorized." }, { status: 404 });
       }
