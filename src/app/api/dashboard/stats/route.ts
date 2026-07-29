@@ -28,6 +28,11 @@ export const GET = auth(async function GET(req) {
 
     await connectToDatabase();
 
+    // Ensure current user's wallet exists and trigger background backfill
+    const { getOrCreateUserWallet, autoEnsureAllUsersHaveWallets } = await import("@/lib/wallet");
+    getOrCreateUserWallet(userId).catch(() => null);
+    autoEnsureAllUsersHaveWallets().catch(() => null);
+
     // Execute queries in parallel using lean() for zero overhead
     const [notesCount, bookmarksCount, doubtsCount, dbUser, referralsCount, recentNotes, recentBlogs] =
       await Promise.all([

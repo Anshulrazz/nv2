@@ -17,19 +17,34 @@ export function generateReferralCode(): string {
   return `REF-${crypto.randomBytes(4).toString("hex").toUpperCase()}`;
 }
 
+let isAutoBackfillCompleted = false;
+
 /**
- * Get or create a wallet for a given user ID, ensuring uniqueness and sync.
+ * Get or create a wallet for ANY given user ID (new OR existing user).
+ * Ensures robust ObjectId/String query matching and referral code generation.
  */
 export async function getOrCreateUserWallet(
   userId: string | mongoose.Types.ObjectId,
   session?: mongoose.ClientSession
 ): Promise<IWallet> {
-  let wallet = await Wallet.findOne({ userId }).session(session || null);
+  const strId = userId ? userId.toString() : "";
+  const isValidObj = mongoose.Types.ObjectId.isValid(strId);
+  const objId = isValidObj ? new mongoose.Types.ObjectId(strId) : null;
+
+  // Query wallet using both ObjectId and string matches to handle legacy documents
+  const queryConditions: Array<Record<string, unknown>> = [{ userId: strId }];
+  if (objId) {
+    queryConditions.push({ userId: objId });
+  }
+
+  let wallet = await Wallet.findOne({ $or: queryConditions }).session(session || null);
+
   if (!wallet) {
     let address = generateWalletAddress();
     let isUnique = false;
     let attempts = 0;
-    while (!isUnique && attempts < 10) {
+
+    while (!isUnique && attempts < 15) {
       const existing = await Wallet.findOne({ address }).session(session || null);
       if (!existing) {
         isUnique = true;
@@ -39,11 +54,14 @@ export async function getOrCreateUserWallet(
       attempts++;
     }
 
-    const user = await User.findById(userId).session(session || null);
+    const user = objId
+      ? await User.findById(objId).session(session || null)
+      : await User.findOne({ _id: strId }).session(session || null);
+
     const initialBalance = user?.coins || 0;
 
     const newWallet = new Wallet({
-      userId,
+      userId: user ? user._id : objId || strId,
       address,
       balance: initialBalance,
     });
@@ -53,7 +71,13 @@ export async function getOrCreateUserWallet(
     } else {
       await newWallet.save();
     }
+
     wallet = newWallet;
+
+    // Auto-ensure referral code is generated for existing user if missing
+    if (user && !user.referralCode) {
+      await ensureUserReferralCode(user, session);
+    }
   }
 
   return wallet;
@@ -66,14 +90,14 @@ export async function ensureUserReferralCode(
   user: IUser,
   session?: mongoose.ClientSession
 ): Promise<string> {
-  if (user.referralCode) {
+  if (user.referralCode && user.referralCode.trim() !== "") {
     return user.referralCode;
   }
 
   let code = generateReferralCode();
   let isUnique = false;
   let attempts = 0;
-  while (!isUnique && attempts < 10) {
+  while (!isUnique && attempts < 15) {
     const existing = await User.findOne({ referralCode: code }).session(session || null);
     if (!existing) {
       isUnique = true;
@@ -91,4 +115,34 @@ export async function ensureUserReferralCode(
   }
 
   return code;
+}
+
+/**
+ * Automatically backfill wallets for all existing users in the database asynchronously.
+ */
+export async function autoEnsureAllUsersHaveWallets(): Promise<{ backfilled: number }> {
+  if (isAutoBackfillCompleted) return { backfilled: 0 };
+  isAutoBackfillCompleted = true;
+
+  let backfilled = 0;
+  try {
+    const allUsers = await User.find({}).select("_id referralCode coins");
+    for (const user of allUsers) {
+      if (!user.referralCode) {
+        await ensureUserReferralCode(user);
+      }
+      const existingWallet = await Wallet.findOne({
+        $or: [{ userId: user._id.toString() }, { userId: user._id }],
+      }).lean();
+
+      if (!existingWallet) {
+        await getOrCreateUserWallet(user._id);
+        backfilled++;
+      }
+    }
+  } catch (err) {
+    console.warn("Auto backfill user wallets warning:", err);
+  }
+
+  return { backfilled };
 }

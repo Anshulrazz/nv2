@@ -58,11 +58,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.role = user.role;
       }
 
-      if (!token.role && token.email) {
-        await connectToDatabase();
-        const dbUser = await User.findOne({ email: token.email });
-        if (dbUser) {
-          token.role = dbUser.role || "user";
+      if (token.email) {
+        try {
+          await connectToDatabase();
+          const dbUser = await User.findOne({ email: token.email });
+          if (dbUser) {
+            token.role = dbUser.role || "user";
+            token.id = dbUser._id.toString();
+            // Ensure wallet exists for legacy / existing users
+            const { getOrCreateUserWallet } = await import("@/lib/wallet");
+            await getOrCreateUserWallet(dbUser._id);
+          }
+        } catch (err) {
+          console.warn("Auth token wallet sync error:", err);
         }
       }
       return token;
