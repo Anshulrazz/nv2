@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
 import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
-import { FB_PIXEL_ID } from "@/components/MetaPixel";
+import { FB_PIXEL_ID } from "@/lib/metaPixel";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
