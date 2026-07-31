@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useAlertStore } from "@/stores/alertStore";
-import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter, Coins, Plus, Menu, Bell, User as UserIcon, ChevronLeft } from "lucide-react";
+import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter, Coins, Plus, Bell, User as UserIcon, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";

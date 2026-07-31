@@ -45,6 +45,7 @@ export async function GET() {
       coins: user.coins || 0,
       creatorEarnings: user.creatorEarnings || 0,
       payoutDetails: user.payoutDetails || {},
+      userRole: user.role || "user",
       hasWalletPassword: hasPassword,
     });
   } catch (error) {

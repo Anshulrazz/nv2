@@ -233,8 +233,8 @@ export function ProfileClient({
           </span>
         </div>
 
-        {/* Creator Earnings Stat Card */}
-        {isOwnProfile && (
+        {/* Creator Earnings Stat Card (Teacher/Admin) OR Become Teacher CTA */}
+        {isOwnProfile && (targetUser.role === "teacher" || targetUser.role === "admin") ? (
           <button
             onClick={() => setActiveTab("wallet")}
             className="bg-emerald-950/20 backdrop-blur-md border border-emerald-500/30 hover:border-emerald-500/50 transition-all p-4 rounded-xl text-center group cursor-pointer"
@@ -246,7 +246,19 @@ export function ProfileClient({
               ₹{(targetUser as unknown as { creatorEarnings?: number }).creatorEarnings || 0}
             </span>
           </button>
-        )}
+        ) : isOwnProfile ? (
+          <button
+            onClick={() => setActiveTab("wallet")}
+            className="bg-[#F0C93B]/10 backdrop-blur-md border border-[#F0C93B]/30 hover:border-[#F0C93B]/60 transition-all p-4 rounded-xl text-center group cursor-pointer"
+          >
+            <span className="text-[9px] text-[#F0C93B] uppercase tracking-widest font-mono block">
+              Become Educator
+            </span>
+            <span className="text-xs font-bold text-[#F0C93B] mt-1 block font-heading">
+              Apply to Teach 🎓
+            </span>
+          </button>
+        ) : null}
       </div>
 
       {/* 2. Interactive Contributions Section */}

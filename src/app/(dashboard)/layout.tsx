@@ -10,7 +10,6 @@ import {
   Bell,
   Menu,
   Coins,
-  Plus,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
 import { PusherListener } from "@/components/PusherListener";

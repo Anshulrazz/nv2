@@ -1,8 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Wallet as WalletIcon,
-  Copy,
-  Check,
   Send,
   ArrowUpRight,
   ArrowDownLeft,
@@ -18,6 +16,7 @@ import {
   KeyRound,
   ShieldAlert,
   Plus,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +24,7 @@ import { toast } from "sonner";
 
 import { WithdrawEarningsModal } from "./WithdrawEarningsModal";
 import { CoinConverterModal } from "./CoinConverterModal";
+import { BecomeTeacherModal } from "@/components/teacher/BecomeTeacherModal";
 
 interface TransactionItem {
   id: string;
@@ -54,13 +54,14 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
     ifscCode?: string;
     accountHolderName?: string;
   }>({});
+  const [userRole, setUserRole] = useState<"user" | "teacher" | "admin">("user");
   const [hasWalletPassword, setHasWalletPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [copiedAddress, setCopiedAddress] = useState(false);
 
   // Withdraw Modal State
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [showCoinConverter, setShowCoinConverter] = useState(false);
+  const [showBecomeTeacherModal, setShowBecomeTeacherModal] = useState(false);
 
   // Send Coins Modal State
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
@@ -102,6 +103,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         setBalance(data.balance ?? 0);
         setCreatorEarnings(data.creatorEarnings ?? 0);
         setPayoutDetails(data.payoutDetails || {});
+        setUserRole(data.userRole || "user");
         setHasWalletPassword(Boolean(data.hasWalletPassword));
       }
     } catch (e) {
@@ -132,14 +134,6 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
     fetchWalletInfo();
     fetchTransactions(1);
   }, [fetchWalletInfo, fetchTransactions]);
-
-  const handleCopyAddress = () => {
-    if (!address) return;
-    navigator.clipboard.writeText(address);
-    setCopiedAddress(true);
-    toast.success("Wallet address copied to clipboard!");
-    setTimeout(() => setCopiedAddress(false), 2000);
-  };
 
   const handleOpenSendModal = () => {
     if (!hasWalletPassword) {
@@ -294,50 +288,92 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
     <div className="space-y-6">
       {/* TWO SEPARATE BALANCE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS */}
-        <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-emerald-500/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (TEACHER / ADMIN ONLY) OR BECOME TEACHER CTA */}
+        {userRole === "teacher" || userRole === "admin" ? (
+          <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-emerald-500/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-          <div className="space-y-3 relative z-10">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">
-                  ₹
+            <div className="space-y-3 relative z-10">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                    ₹
+                  </div>
+                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
+                    Withdrawable Creator Earnings
+                  </span>
                 </div>
-                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
-                  Withdrawable Creator Earnings
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
+                  WITHDRAWABLE CASH
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
-                WITHDRAWABLE CASH
+
+              <div>
+                <span className="text-xs text-[#9FAEA1]">70% Course Sales &amp; Project Revenue</span>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <h2 className="text-3xl font-black text-emerald-400 font-heading tracking-tight">
+                    {isLoading ? "..." : creatorEarnings.toLocaleString()}
+                  </h2>
+                  <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
+                    Coins (₹{creatorEarnings})
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[11px] text-[#9FAEA1] font-light">
+                Only Creator Earnings can be withdrawn to bank/UPI.
               </span>
+              <Button
+                onClick={() => setIsWithdrawModalOpen(true)}
+                className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
+              >
+                Withdraw Cash
+              </Button>
             </div>
+          </div>
+        ) : (
+          <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-[#F0C93B]/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div>
-              <span className="text-xs text-[#9FAEA1]">70% Course Sales &amp; Project Revenue</span>
-              <div className="flex items-baseline gap-2 mt-1">
-                <h2 className="text-3xl font-black text-emerald-400 font-heading tracking-tight">
-                  {isLoading ? "..." : creatorEarnings.toLocaleString()}
-                </h2>
-                <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
-                  Coins (₹{creatorEarnings})
+            <div className="space-y-3 relative z-10">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
+                    <GraduationCap className="h-4 w-4" />
+                  </div>
+                  <span className="text-xs font-bold text-[#F0C93B] uppercase tracking-wider font-mono">
+                    Become a Notexia Teacher
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30 shrink-0">
+                  70% REVENUE SHARE
                 </span>
               </div>
+
+              <div>
+                <h3 className="text-base font-bold text-white font-heading">Publish Courses &amp; Earn Money</h3>
+                <p className="text-xs text-[#9FAEA1] mt-1 leading-relaxed">
+                  Earn 70% direct cash payout on every course &amp; research project sold. Apply as an educator in 2 simple steps!
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[11px] text-[#9FAEA1] font-light">
+                Requires academic qualification or domain expertise.
+              </span>
+              <Button
+                onClick={() => setShowBecomeTeacherModal(true)}
+                className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all shrink-0 font-heading flex items-center justify-center gap-1.5"
+              >
+                <GraduationCap className="size-4" />
+                <span>Become a Teacher</span>
+              </Button>
             </div>
           </div>
-
-          <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <span className="text-[11px] text-[#9FAEA1] font-light">
-              Only Creator Earnings can be withdrawn to bank/UPI.
-            </span>
-            <Button
-              onClick={() => setIsWithdrawModalOpen(true)}
-              className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
-            >
-              Withdraw Cash
-            </Button>
-          </div>
-        </div>
+        )}
 
         {/* CARD 2: NOTEXIA ACTIVITY COINS (NON-WITHDRAWABLE) */}
         <div className="rounded-2xl bg-gradient-to-br from-[#121F18] via-[#16261D] to-[#1A2D23] border border-[#F3F0E4]/15 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
@@ -887,6 +923,15 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         onSuccess={() => {
           fetchWalletInfo();
           if (onCoinsUpdated) onCoinsUpdated();
+        }}
+      />
+
+      {/* BECOME TEACHER MODAL */}
+      <BecomeTeacherModal
+        isOpen={showBecomeTeacherModal}
+        onClose={() => setShowBecomeTeacherModal(false)}
+        onSuccess={() => {
+          fetchWalletInfo();
         }}
       />
     </div>

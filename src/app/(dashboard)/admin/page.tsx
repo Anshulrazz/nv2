@@ -35,6 +35,8 @@ import {
   Activity,
   Sparkles,
   Tag,
+  GraduationCap,
+  XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
@@ -91,12 +93,31 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    "analytics" | "users" | "coupons" | "moderation" | "settings" | "audit" | "export"
+    "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export"
   >("analytics");
   const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
+
+  // Teacher Applications state
+  const [teacherApplications, setTeacherApplications] = useState<Array<{
+    _id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    qualification: string;
+    subjectExpertise: string;
+    experienceYears: number;
+    bio: string;
+    portfolioUrl?: string;
+    payoutUpi?: string;
+    status: "pending" | "approved" | "rejected";
+    adminNote?: string;
+    createdAt: string;
+  }>>([]);
+  const [pendingTeacherAppsCount, setPendingTeacherAppsCount] = useState(0);
+  const [isTeacherAppsLoading, setIsTeacherAppsLoading] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "teacher" | "admin">("all");
   const [flaggedNotes, setFlaggedNotes] = useState<FlaggedItem[]>([]);
@@ -316,22 +337,58 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadTeacherApplications = useCallback(async () => {
+    try {
+      setIsTeacherAppsLoading(true);
+      const res = await fetch("/api/admin/teacher-applications");
+      if (res.ok) {
+        const data = await res.json();
+        setTeacherApplications(data.applications || []);
+        setPendingTeacherAppsCount(data.pendingCount || 0);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsTeacherAppsLoading(false);
+    }
+  }, []);
+
+  const handleTeacherApplicationAction = async (appId: string, action: "approve" | "reject") => {
+    try {
+      const res = await fetch(`/api/admin/teacher-applications/${appId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Action failed.");
+      toast.success(data.message);
+      loadTeacherApplications();
+      loadUsersList();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to update teacher application.";
+      toast.error(message);
+    }
+  };
+
   const fetchTabDetails = useCallback(async () => {
     setIsLoading(true);
     if (activeTab === "analytics") await loadAnalytics();
     else if (activeTab === "users") await loadUsersList();
+    else if (activeTab === "teacher_applications") await loadTeacherApplications();
     else if (activeTab === "coupons") await loadCoupons();
     else if (activeTab === "moderation") await loadModerationQueue();
     else if (activeTab === "settings") await loadSiteSettings();
     else if (activeTab === "audit") await loadAuditLogsList();
     setIsLoading(false);
-  }, [activeTab, loadAnalytics, loadUsersList, loadCoupons, loadModerationQueue, loadSiteSettings, loadAuditLogsList]);
+  }, [activeTab, loadAnalytics, loadUsersList, loadTeacherApplications, loadCoupons, loadModerationQueue, loadSiteSettings, loadAuditLogsList]);
 
   useEffect(() => {
     if (session?.user?.role === "admin" && isMounted) {
       fetchTabDetails();
+      loadTeacherApplications();
     }
-  }, [activeTab, interval, session, isMounted, fetchTabDetails]);
+  }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications]);
 
   const handleUserModify = async (targetUserId: string, action: string, role?: string) => {
     try {
@@ -424,13 +481,14 @@ export default function AdminPage() {
   };
 
   const navTabs: Array<{
-    id: "analytics" | "users" | "coupons" | "moderation" | "settings" | "audit" | "export";
+    id: "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export";
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
   }> = [
     { id: "analytics", label: "Telemetry & Growth", icon: BarChart3 },
     { id: "users", label: "Scholars & Messages", icon: Users },
+    { id: "teacher_applications", label: "Teacher Applications", icon: GraduationCap, badge: pendingTeacherAppsCount },
     { id: "coupons", label: "Coupons & Offers", icon: Tag },
     { id: "moderation", label: "Content Queue", icon: ShieldAlert, badge: flaggedNotes.length },
     { id: "settings", label: "System Control", icon: SettingsIcon },
@@ -829,6 +887,120 @@ export default function AdminPage() {
                       </div>
                     );
                   })()}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tab: Teacher Applications */}
+          {activeTab === "teacher_applications" && (
+            <motion.div
+              key="teacher_applications"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
+                    <GraduationCap className="size-5 text-[#F0C93B]" /> Teacher Applications
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-light mt-0.5">
+                    Review student applications for Educator credentials and 70% revenue share access.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono">
+                  <span className="px-3 py-1 rounded-full bg-[#F0C93B]/10 border border-[#F0C93B]/30 text-[#F0C93B] font-bold">
+                    {pendingTeacherAppsCount} Pending Review
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
+                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 overflow-hidden">
+                  {isTeacherAppsLoading ? (
+                    <div className="p-16 text-center space-y-3">
+                      <Loader2 className="size-8 animate-spin text-[#F0C93B] mx-auto" />
+                      <p className="text-xs text-zinc-400 font-mono">Loading teacher applications...</p>
+                    </div>
+                  ) : teacherApplications.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                      <GraduationCap className="size-10 text-zinc-600 mx-auto" />
+                      <p className="text-xs text-zinc-400 font-mono">No teacher applications found.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {teacherApplications.map((app) => (
+                        <div key={app._id} className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-sm font-bold text-white font-heading">{app.userName}</h4>
+                                <span className="text-[11px] text-zinc-400 font-mono">({app.userEmail})</span>
+                                {app.status === "pending" && (
+                                  <span className="text-[9px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
+                                    PENDING
+                                  </span>
+                                )}
+                                {app.status === "approved" && (
+                                  <span className="text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                                    APPROVED
+                                  </span>
+                                )}
+                                {app.status === "rejected" && (
+                                  <span className="text-[9px] font-mono font-bold bg-rose-500/15 text-rose-400 px-2.5 py-0.5 rounded-full border border-rose-500/30">
+                                    REJECTED
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-[#F0C93B] font-mono">
+                                🎓 Qualification: <strong>{app.qualification}</strong> | Subject: <strong>{app.subjectExpertise}</strong> | Exp: <strong>{app.experienceYears} Years</strong>
+                              </p>
+                            </div>
+
+                            {app.status === "pending" && (
+                              <div className="flex items-center gap-2 shrink-0">
+                                <Button
+                                  onClick={() => handleTeacherApplicationAction(app._id, "approve")}
+                                  className="h-8 px-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl font-heading flex items-center gap-1"
+                                >
+                                  <CheckCircle2 className="size-3.5" /> Approve Teacher
+                                </Button>
+                                <Button
+                                  onClick={() => handleTeacherApplicationAction(app._id, "reject")}
+                                  variant="outline"
+                                  className="h-8 px-3 bg-zinc-900 border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs rounded-xl flex items-center gap-1"
+                                >
+                                  <XCircle className="size-3.5" /> Reject
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1.5">
+                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Bio &amp; Teaching Philosophy:</span>
+                            <p className="text-xs text-zinc-300 leading-relaxed font-light">{app.bio}</p>
+                            {app.portfolioUrl && (
+                              <div className="pt-1 flex items-center gap-2 text-xs font-mono">
+                                <span className="text-zinc-500">Demo/Portfolio Link:</span>
+                                <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300 truncate max-w-md">
+                                  {app.portfolioUrl}
+                                </a>
+                              </div>
+                            )}
+                            {app.payoutUpi && (
+                              <div className="pt-0.5 flex items-center gap-2 text-xs font-mono text-emerald-400">
+                                <span className="text-zinc-500">Payout UPI ID:</span>
+                                <span>{app.payoutUpi}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.div>
