@@ -463,57 +463,57 @@ export default function PublicFeedPage() {
       {/* Top Bar Header Navigation */}
       {session?.user ? (
         <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
+          <div className="max-w-7xl mx-auto px-3 sm:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="/dashboard"
-                className="p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors"
+                className="p-1.5 sm:p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors"
                 title="Back to Dashboard"
               >
                 <ChevronLeft className="size-4" />
               </Link>
-              <Link href="/feed" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
-                <span className="size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+              <Link href="/feed" className="flex items-center gap-1.5 sm:gap-2 font-bold text-white tracking-wider text-xs sm:text-sm">
+                <span className="size-6 sm:size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-[10px] sm:text-xs">
                   N
                 </span>
-                <span className="font-heading text-[#F3F0E4]">PUBLIC FEED</span>
+                <span className="font-heading text-[#F3F0E4] truncate">PUBLIC FEED</span>
               </Link>
             </div>
 
             {/* Right: Coins balance widget with Convert button */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {userCoins !== null && (
-                <div className="flex items-center gap-2 bg-[#16261D] border border-[#F0C93B]/30 rounded-full pl-3 pr-1.5 py-1 text-xs font-mono">
-                  <div className="flex items-center gap-1.5 text-[#F0C93B] font-bold">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-[#16261D] border border-[#F0C93B]/30 rounded-full pl-2.5 pr-1 py-0.5 sm:py-1 text-xs font-mono">
+                  <div className="flex items-center gap-1 text-[#F0C93B] font-bold text-[11px] sm:text-xs">
                     <Coins className="size-3.5" />
                     <span>{userCoins.toLocaleString()}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowCoinConverter(true)}
-                    className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-[10px] px-2.5 py-1 inline-flex items-center gap-1 transition-all font-heading"
+                    className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-[10px] px-2 sm:px-2.5 py-0.5 sm:py-1 inline-flex items-center gap-0.5 transition-all font-heading"
                   >
                     <Plus className="size-3" />
-                    <span>Convert</span>
+                    <span className="hidden sm:inline">Convert</span>
                   </button>
                 </div>
               )}
 
               <Link
                 href="/notifications"
-                className="p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors relative"
+                className="p-1.5 sm:p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors relative"
               >
                 <Bell className="size-4" />
               </Link>
 
               <Link
                 href={`/user/${session.user.id}`}
-                className="size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 overflow-hidden flex items-center justify-center text-[#F0C93B]"
+                className="size-7 sm:size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 overflow-hidden flex items-center justify-center text-[#F0C93B] shrink-0"
               >
                 {session.user.image ? (
                   <img src={session.user.image} alt="User" className="size-full object-cover" />
                 ) : (
-                  <UserIcon className="size-4" />
+                  <UserIcon className="size-3.5 sm:size-4" />
                 )}
               </Link>
             </div>
@@ -913,7 +913,7 @@ export default function PublicFeedPage() {
       {/* Reshare Dialog */}
       {resharePost && (
         <Dialog open={!!resharePost} onOpenChange={() => setResharePost(null)}>
-          <DialogContent className="sm:max-w-lg bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-6 space-y-4">
+          <DialogContent className="sm:max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-5 sm:p-6 space-y-4">
             <DialogHeader>
               <DialogTitle className="text-lg font-bold text-white font-heading">Reshare to Public Feed</DialogTitle>
             </DialogHeader>
@@ -957,7 +957,7 @@ export default function PublicFeedPage() {
 
       {/* Auth Prompt Modal for Unauthenticated Guests */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="sm:max-w-md bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-6 space-y-6">
+        <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-5 sm:p-6 space-y-5">
           <DialogHeader className="space-y-3 text-center sm:text-left">
             <div className="size-12 rounded-2xl bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] mx-auto sm:mx-0">
               <Compass className="size-6" />
