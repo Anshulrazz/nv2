@@ -24,9 +24,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
+import { WithdrawEarningsModal } from "./WithdrawEarningsModal";
+
 interface TransactionItem {
   id: string;
-  type: "referral_bonus" | "signup_bonus" | "transfer" | "premium_purchase" | "admin_adjustment";
+  type: "referral_bonus" | "signup_bonus" | "transfer" | "premium_purchase" | "admin_adjustment" | "creator_withdrawal";
   amount: number;
   isDebit: boolean;
   fromWalletAddress: string | null;
@@ -45,9 +47,19 @@ interface TransactionItem {
 export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void }) {
   const [address, setAddress] = useState<string>("");
   const [balance, setBalance] = useState<number>(0);
+  const [creatorEarnings, setCreatorEarnings] = useState<number>(0);
+  const [payoutDetails, setPayoutDetails] = useState<{
+    upiId?: string;
+    bankAccount?: string;
+    ifscCode?: string;
+    accountHolderName?: string;
+  }>({});
   const [hasWalletPassword, setHasWalletPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedAddress, setCopiedAddress] = useState(false);
+
+  // Withdraw Modal State
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
 
   // Send Coins Modal State
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
@@ -87,6 +99,8 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         const data = await res.json();
         setAddress(data.address || "");
         setBalance(data.balance ?? 0);
+        setCreatorEarnings(data.creatorEarnings ?? 0);
+        setPayoutDetails(data.payoutDetails || {});
         setHasWalletPassword(Boolean(data.hasWalletPassword));
       }
     } catch (e) {
@@ -277,26 +291,76 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
   return (
     <div className="space-y-6">
-      {/* Wallet Balance Card */}
-      <div className="rounded-2xl bg-gradient-to-br from-[#121F18] via-[#16261D] to-[#1A2D23] border border-[#F3F0E4]/15 p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-        {/* Glow accent */}
-        <div className="absolute top-0 right-0 w-72 h-72 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
+      {/* TWO SEPARATE BALANCE CARDS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS */}
+        <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-emerald-500/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B]">
-                <WalletIcon className="h-4 w-4" />
+          <div className="space-y-3 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+                  ₹
+                </div>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
+                  Withdrawable Creator Earnings
+                </span>
               </div>
-              <span className="text-xs font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
-                Notexia Coin Wallet
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                WITHDRAWABLE CASH
               </span>
             </div>
 
             <div>
-              <span className="text-xs text-[#9FAEA1]">Available Balance</span>
-              <div className="flex items-baseline gap-2">
-                <h2 className="text-3xl sm:text-4xl font-black text-[#F0C93B] font-heading tracking-tight">
+              <span className="text-xs text-[#9FAEA1]">70% Course Sales &amp; Project Revenue</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <h2 className="text-3xl font-black text-emerald-400 font-heading tracking-tight">
+                  {isLoading ? "..." : creatorEarnings.toLocaleString()}
+                </h2>
+                <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
+                  Coins (₹{creatorEarnings})
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-[#F3F0E4]/10 relative z-10 flex items-center justify-between">
+            <span className="text-[11px] text-[#9FAEA1] font-light">
+              Only Creator Earnings can be withdrawn to bank/UPI.
+            </span>
+            <Button
+              onClick={() => setIsWithdrawModalOpen(true)}
+              className="h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
+            >
+              Withdraw Cash
+            </Button>
+          </div>
+        </div>
+
+        {/* CARD 2: NOTEXIA ACTIVITY COINS (NON-WITHDRAWABLE) */}
+        <div className="rounded-2xl bg-gradient-to-br from-[#121F18] via-[#16261D] to-[#1A2D23] border border-[#F3F0E4]/15 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="space-y-3 relative z-10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B]">
+                  <WalletIcon className="h-4 w-4" />
+                </div>
+                <span className="text-xs font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                  Activity Coins (Non-Withdrawable)
+                </span>
+              </div>
+              <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
+                PLATFORM TOKENS
+              </span>
+            </div>
+
+            <div>
+              <span className="text-xs text-[#9FAEA1]">Referrals, Signups &amp; Activity Tokens</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <h2 className="text-3xl font-black text-[#F0C93B] font-heading tracking-tight">
                   {isLoading ? "..." : balance.toLocaleString()}
                 </h2>
                 <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
@@ -306,46 +370,23 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             </div>
           </div>
 
-          <div className="flex flex-col sm:items-end gap-3 shrink-0">
-            {/* Address Display */}
-            <div className="bg-[#121F18]/90 border border-[#F3F0E4]/15 rounded-xl p-2.5 flex items-center gap-2 max-w-full">
-              <div className="min-w-0 flex-1">
-                <p className="text-[9px] text-[#9FAEA1] uppercase font-mono font-bold">
-                  Wallet Address
-                </p>
-                <p className="text-xs text-[#F3F0E4] font-mono font-bold truncate max-w-[200px] sm:max-w-[240px]">
-                  {isLoading ? "NTX-..." : address}
-                </p>
-              </div>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={handleCopyAddress}
-                className="h-8 w-8 text-[#9FAEA1] hover:text-[#F0C93B] hover:bg-[#1F362A] rounded-lg shrink-0"
-              >
-                {copiedAddress ? <Check className="h-4 w-4 text-[#F0C93B]" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
+          <div className="pt-2 border-t border-[#F3F0E4]/10 relative z-10 flex items-center justify-between gap-2">
+            <Button
+              onClick={() => setIsPasswordModalOpen(true)}
+              variant="outline"
+              className="h-9 px-3 bg-[#121F18] hover:bg-[#1F362A] border-[#F3F0E4]/20 text-[#F3F0E4] hover:text-[#F0C93B] font-bold text-xs rounded-xl transition-all"
+            >
+              <KeyRound className="h-3.5 w-3.5 text-[#F0C93B] mr-1" />
+              <span>{hasWalletPassword ? "PIN" : "Set PIN"}</span>
+            </Button>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
-                onClick={() => setIsPasswordModalOpen(true)}
-                variant="outline"
-                className="h-10 px-3.5 bg-[#121F18] hover:bg-[#1F362A] border-[#F3F0E4]/20 text-[#F3F0E4] hover:text-[#F0C93B] font-bold text-xs rounded-xl flex items-center gap-1.5 transition-all"
-              >
-                <KeyRound className="h-3.5 w-3.5 text-[#F0C93B]" />
-                <span>{hasWalletPassword ? "Change PIN" : "Set Wallet PIN"}</span>
-              </Button>
-
-              <Button
-                onClick={handleOpenSendModal}
-                className="flex-1 sm:flex-initial h-10 px-5 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_20px_rgba(240,201,59,0.25)] hover:shadow-[0_0_25px_rgba(240,201,59,0.4)] transition-all flex items-center justify-center gap-2 active:scale-95"
-              >
-                <Send className="h-3.5 w-3.5" />
-                <span>Send Coins</span>
-              </Button>
-            </div>
+            <Button
+              onClick={handleOpenSendModal}
+              className="h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all flex items-center gap-1.5 font-heading"
+            >
+              <Send className="h-3.5 w-3.5" />
+              <span>Send Coins</span>
+            </Button>
           </div>
         </div>
       </div>
@@ -815,6 +856,18 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
           </div>
         </div>
       )}
+
+      {/* WITHDRAW EARNINGS MODAL */}
+      <WithdrawEarningsModal
+        isOpen={isWithdrawModalOpen}
+        onClose={() => setIsWithdrawModalOpen(false)}
+        creatorEarnings={creatorEarnings}
+        existingPayoutDetails={payoutDetails}
+        onSuccess={() => {
+          fetchWalletInfo();
+          if (onCoinsUpdated) onCoinsUpdated();
+        }}
+      />
     </div>
   );
 }

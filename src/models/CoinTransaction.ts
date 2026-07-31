@@ -9,7 +9,8 @@ export type TransactionType =
   | "course_purchase"
   | "course_creator_payout"
   | "course_platform_fee"
-  | "buy_coins";
+  | "buy_coins"
+  | "creator_withdrawal";
 
 export type TransactionStatus = "completed" | "failed" | "pending";
 
@@ -52,6 +53,7 @@ const CoinTransactionSchema = new Schema<ICoinTransaction>(
         "course_creator_payout",
         "course_platform_fee",
         "buy_coins",
+        "creator_withdrawal",
       ],
       required: true,
       index: true,

@@ -78,7 +78,7 @@ export const PATCH = auth(async function PATCH(req) {
       userId,
       { $set: updates },
       { new: true }
-    ).select("name email image role points coins referralCode isPremiumUser isPublic");
+    ).select("name email image role points coins creatorEarnings referralCode isPremiumUser isPublic");
 
     return NextResponse.json(updatedUser);
   } catch (error) {

@@ -235,20 +235,33 @@ export default function CourseViewerPage() {
     setSubmittingProgress(true);
     try {
       const lessonKey = `${activeModuleIdx}-${activeLessonIdx}`;
+      const currentMod = course.modules[activeModuleIdx];
+      const isLastLesson =
+        activeModuleIdx === course.modules.length - 1 &&
+        activeLessonIdx === currentMod.lessons.length - 1;
+
       const res = await fetch(`/api/courses/${id}/progress`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "completeLesson",
           lessonId: lessonKey,
+          completedLesson: lessonKey,
+          completeCourse: isLastLesson,
         }),
       });
+
       if (res.ok) {
         const data = await res.json();
         setProgress(data);
 
-        // Advance to next lesson
-        const currentMod = course.modules[activeModuleIdx];
+        if (data.isCompleted) {
+          toast.success("🎉 Course Completed! Certificate generated successfully.");
+        } else {
+          toast.success("Lesson marked as complete! ✓");
+        }
+
+        // Advance to next lesson if available
         if (activeLessonIdx < currentMod.lessons.length - 1) {
           setActiveLessonIdx((prev) => prev + 1);
         } else if (activeModuleIdx < course.modules.length - 1) {
@@ -258,6 +271,7 @@ export default function CourseViewerPage() {
       }
     } catch (e) {
       console.error(e);
+      toast.error("Failed to save progress.");
     } finally {
       setSubmittingProgress(false);
     }
@@ -568,16 +582,28 @@ export default function CourseViewerPage() {
                 )}
 
                 {/* Complete Lesson Action */}
-                <div className="pt-8 border-t border-white/10 flex justify-end">
+                <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {progress?.isCompleted && (
+                    <Link
+                      href={`/certificates/${progress.certificateId}`}
+                      className="inline-flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
+                    >
+                      <Sparkles className="size-3.5" /> View Verified Certificate 🎓
+                    </Link>
+                  )}
+
                   <Button
                     onClick={handleCompleteLesson}
                     disabled={submittingProgress}
-                    className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-8 shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                    className="w-full sm:w-auto rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-12 sm:h-11 px-8 shadow-[0_0_25px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2 transition-all font-heading"
                   >
                     {submittingProgress ? (
                       <Loader2 className="size-4 animate-spin text-zinc-950" />
+                    ) : activeModuleIdx === (course.modules?.length || 1) - 1 &&
+                      activeLessonIdx === (activeModule?.lessons?.length || 1) - 1 ? (
+                      "Complete & Finish Course 🎓"
                     ) : (
-                      "Complete & Next Lesson"
+                      "Complete & Next Lesson ➔"
                     )}
                   </Button>
                 </div>

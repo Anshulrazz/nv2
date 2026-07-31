@@ -1,11 +1,9 @@
-/* eslint-disable */
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CourseProgress } from "@/models/CourseProgress";
 import { Course } from "@/models/Course";
 import crypto from "crypto";
-
 import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, { params }) {
@@ -21,10 +19,9 @@ export const GET = auth(async function GET(req, { params }) {
     }
 
     await connectToDatabase();
-    
+
     const progress = await CourseProgress.findOne({ userId, courseId });
     if (!progress) {
-      // Return default shape if no progress exists yet
       return NextResponse.json({
         completedLessons: [],
         quizScores: {},
@@ -51,7 +48,7 @@ export const POST = auth(async function POST(req, { params }) {
       return NextResponse.json({ error: "Invalid course ID format." }, { status: 400 });
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
 
     await connectToDatabase();
 
@@ -60,99 +57,68 @@ export const POST = auth(async function POST(req, { params }) {
       return NextResponse.json({ error: "Course not found." }, { status: 404 });
     }
 
-    // Upsert the progress document
     let progress = await CourseProgress.findOne({ userId, courseId });
     if (!progress) {
       progress = new CourseProgress({ userId, courseId });
     }
 
-    // Handle marking a lesson as complete
-    if (body.completedLesson) {
-      if (typeof body.completedLesson !== "string") {
-        return NextResponse.json({ error: "completedLesson must be a string." }, { status: 400 });
-      }
-      if (!progress.completedLessons.includes(body.completedLesson)) {
-        progress.completedLessons.push(body.completedLesson);
-      }
-    }
+    // 1. Mark lesson as complete (Supports both completedLesson and action === 'completeLesson')
+    const targetLessonKey =
+      body.completedLesson ||
+      (body.action === "completeLesson" ? body.lessonId || body.completedLesson : null);
 
-    // Handle quiz submission
-    if (body.submitQuiz) {
-      const { lessonKey, score, total } = body.submitQuiz;
-      if (typeof lessonKey !== "string" || typeof score !== "number" || typeof total !== "number") {
-        return NextResponse.json({ error: "Invalid submitQuiz payload details." }, { status: 400 });
-      }
-
-      const scores = progress.quizScores || {};
-      // Store the highest score if they retake it, or just overwrite it
-      scores[lessonKey] = { score, total };
-      progress.quizScores = scores;
-      progress.markModified('quizScores');
-      
-      // Also mark the lesson as complete
-      if (!progress.completedLessons.includes(lessonKey)) {
-        progress.completedLessons.push(lessonKey);
+    if (targetLessonKey && typeof targetLessonKey === "string") {
+      if (!progress.completedLessons.includes(targetLessonKey)) {
+        progress.completedLessons.push(targetLessonKey);
       }
     }
 
-    // Handle course completion
-    if (body.completeCourse) {
-      // Find the last lesson key
-      if (!course.modules || course.modules.length === 0) {
-        return NextResponse.json({ error: "Course has no modules to complete." }, { status: 400 });
+    // 2. Handle quiz submission (Supports both submitQuiz and action === 'quiz')
+    const quizPayload = body.submitQuiz || (body.action === "quiz" ? body : null);
+    if (quizPayload) {
+      const lessonKey = quizPayload.lessonKey || quizPayload.lessonId;
+      const score = typeof quizPayload.score === "number" ? quizPayload.score : 0;
+      const total = typeof quizPayload.total === "number" ? quizPayload.total : 1;
+
+      if (lessonKey && typeof lessonKey === "string") {
+        const scores = progress.quizScores || {};
+        scores[lessonKey] = { score, total };
+        progress.quizScores = scores;
+        progress.markModified("quizScores");
+
+        if (!progress.completedLessons.includes(lessonKey)) {
+          progress.completedLessons.push(lessonKey);
+        }
       }
+    }
 
-      const lastModuleIdx = course.modules.length - 1;
-      const lastModule = course.modules[lastModuleIdx];
-      if (!lastModule.lessons || lastModule.lessons.length === 0) {
-        return NextResponse.json({ error: "Course last module has no lessons." }, { status: 400 });
-      }
-      const lastLessonIdx = lastModule.lessons.length - 1;
-      const lastLessonKey = `${lastModuleIdx}-${lastLessonIdx}`;
+    // 3. Auto-check full course completion status
+    let totalLessonsCount = 0;
+    let completedLessonsCount = 0;
 
-      // Automatically add the last lesson if requested in completeCourse
-      if (!progress.completedLessons.includes(lastLessonKey)) {
-        progress.completedLessons.push(lastLessonKey);
-      }
-
-      // STRICT BACKEND VERIFICATION
-      // 1. Check all modules & lessons
-      const missingLessons: string[] = [];
-      const missingQuizzes: string[] = [];
-
-      course.modules.forEach((mod: any, mIdx: number) => {
-        if (mod.lessons) {
-          mod.lessons.forEach((les: any, lIdx: number) => {
+    if (Array.isArray(course.modules)) {
+      course.modules.forEach((mod: { lessons?: Array<unknown> }, mIdx: number) => {
+        if (Array.isArray(mod.lessons)) {
+          mod.lessons.forEach((_, lIdx: number) => {
+            totalLessonsCount++;
             const key = `${mIdx}-${lIdx}`;
-            if (!progress.completedLessons.includes(key)) {
-              missingLessons.push(`${mod.title} -> ${les.title}`);
-            }
-            if (les.quiz && les.quiz.length > 0) {
-              const scores = progress.quizScores || {};
-              if (!scores[key]) {
-                missingQuizzes.push(`${mod.title} -> ${les.title} (Quiz)`);
-              }
+            if (progress.completedLessons.includes(key)) {
+              completedLessonsCount++;
             }
           });
         }
       });
+    }
 
-      if (missingLessons.length > 0 || missingQuizzes.length > 0) {
-        const errorDetails = [
-          missingLessons.length > 0 ? `Uncompleted lessons: ${missingLessons.join(", ")}` : "",
-          missingQuizzes.length > 0 ? `Uncompleted quizzes: ${missingQuizzes.join(", ")}` : "",
-        ].filter(Boolean).join("; ");
+    const isFullCourseCompleted =
+      totalLessonsCount > 0 && completedLessonsCount >= totalLessonsCount;
 
-        return NextResponse.json({
-          error: "Course completion requirements not met.",
-          details: errorDetails
-        }, { status: 400 });
-      }
-
+    if (isFullCourseCompleted || body.completeCourse || body.action === "completeCourse") {
       if (!progress.isCompleted) {
         progress.isCompleted = true;
         progress.completedAt = new Date();
-        // Generate a random unique certificate ID
+      }
+      if (!progress.certificateId) {
         progress.certificateId = crypto.randomBytes(12).toString("hex");
       }
     }

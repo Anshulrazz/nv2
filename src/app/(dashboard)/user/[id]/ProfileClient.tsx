@@ -232,6 +232,21 @@ export function ProfileClient({
             {targetUser.points}
           </span>
         </div>
+
+        {/* Creator Earnings Stat Card */}
+        {isOwnProfile && (
+          <button
+            onClick={() => setActiveTab("wallet")}
+            className="bg-emerald-950/20 backdrop-blur-md border border-emerald-500/30 hover:border-emerald-500/50 transition-all p-4 rounded-xl text-center group cursor-pointer"
+          >
+            <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-mono block">
+              Creator Earnings (₹)
+            </span>
+            <span className="text-lg font-bold text-emerald-400 mt-1 block font-mono">
+              ₹{(targetUser as unknown as { creatorEarnings?: number }).creatorEarnings || 0}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* 2. Interactive Contributions Section */}

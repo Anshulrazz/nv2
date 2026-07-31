@@ -43,6 +43,8 @@ export async function GET() {
       address: wallet.address,
       balance: wallet.balance,
       coins: user.coins || 0,
+      creatorEarnings: user.creatorEarnings || 0,
+      payoutDetails: user.payoutDetails || {},
       hasWalletPassword: hasPassword,
     });
   } catch (error) {

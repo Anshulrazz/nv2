@@ -131,6 +131,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
         // Credit 70% to instructor
         if (instructor && instructorWallet) {
           instructor.coins = (instructor.coins || 0) + creatorEarnings;
+          instructor.creatorEarnings = (instructor.creatorEarnings || 0) + creatorEarnings;
           await instructor.save({ session: dbSession });
 
           instructorWallet.balance += creatorEarnings;
@@ -198,6 +199,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
       if (instructor && instructorWallet) {
         instructor.coins = (instructor.coins || 0) + creatorEarnings;
+        instructor.creatorEarnings = (instructor.creatorEarnings || 0) + creatorEarnings;
         await instructor.save();
         instructorWallet.balance += creatorEarnings;
         await instructorWallet.save();

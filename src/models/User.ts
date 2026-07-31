@@ -8,6 +8,13 @@ export interface IUser extends Document {
   role: "user" | "teacher" | "admin";
   points: number;
   coins: number;
+  creatorEarnings: number;
+  payoutDetails?: {
+    upiId?: string;
+    bankAccount?: string;
+    ifscCode?: string;
+    accountHolderName?: string;
+  };
   referralCode?: string;
   referredBy?: mongoose.Types.ObjectId;
   referralCount: number;
@@ -39,6 +46,11 @@ const UserSchema = new Schema<IUser>(
     role: { type: String, enum: ["user", "teacher", "admin"], default: "user" },
     points: { type: Number, default: 0 },
     coins: { type: Number, default: 0 },
+    creatorEarnings: { type: Number, default: 0, min: 0 },
+    payoutDetails: {
+      type: Schema.Types.Mixed,
+      default: {},
+    },
     referralCode: {
       type: String,
       unique: true,
