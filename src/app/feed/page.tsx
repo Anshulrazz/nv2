@@ -5,13 +5,14 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAlertStore } from "@/stores/alertStore";
-import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter } from "lucide-react";
+import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter, Coins, Plus, Menu, Bell, User as UserIcon, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { CoinConverterModal } from "@/components/wallet/CoinConverterModal";
 
 interface Author {
   _id: string;
@@ -91,6 +92,27 @@ export default function PublicFeedPage() {
   // Auth prompt modal state for unauthenticated guests
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authModalAction, setAuthModalAction] = useState("engage with study notes");
+
+  // Coins & Converter State
+  const [showCoinConverter, setShowCoinConverter] = useState(false);
+  const [userCoins, setUserCoins] = useState<number | null>(null);
+
+  const fetchUserCoins = useCallback(async () => {
+    if (!session?.user) return;
+    try {
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const u = await res.json();
+        setUserCoins(u.coins ?? 0);
+      }
+    } catch {
+      // ignore
+    }
+  }, [session?.user]);
+
+  useEffect(() => {
+    fetchUserCoins();
+  }, [fetchUserCoins]);
 
   const requireAuth = useCallback((actionName = "engage with study notes") => {
     if (!session?.user) {
@@ -438,8 +460,66 @@ export default function PublicFeedPage() {
 
   return (
     <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 flex flex-col antialiased">
-      {/* Top Bar Header Navigation for Unauthenticated Guests */}
-      {!session?.user && (
+      {/* Top Bar Header Navigation */}
+      {session?.user ? (
+        <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/dashboard"
+                className="p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors"
+                title="Back to Dashboard"
+              >
+                <ChevronLeft className="size-4" />
+              </Link>
+              <Link href="/feed" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
+                <span className="size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+                  N
+                </span>
+                <span className="font-heading text-[#F3F0E4]">PUBLIC FEED</span>
+              </Link>
+            </div>
+
+            {/* Right: Coins balance widget with Convert button */}
+            <div className="flex items-center gap-3">
+              {userCoins !== null && (
+                <div className="flex items-center gap-2 bg-[#16261D] border border-[#F0C93B]/30 rounded-full pl-3 pr-1.5 py-1 text-xs font-mono">
+                  <div className="flex items-center gap-1.5 text-[#F0C93B] font-bold">
+                    <Coins className="size-3.5" />
+                    <span>{userCoins.toLocaleString()}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowCoinConverter(true)}
+                    className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-[10px] px-2.5 py-1 inline-flex items-center gap-1 transition-all font-heading"
+                  >
+                    <Plus className="size-3" />
+                    <span>Convert</span>
+                  </button>
+                </div>
+              )}
+
+              <Link
+                href="/notifications"
+                className="p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors relative"
+              >
+                <Bell className="size-4" />
+              </Link>
+
+              <Link
+                href={`/user/${session.user.id}`}
+                className="size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 overflow-hidden flex items-center justify-center text-[#F0C93B]"
+              >
+                {session.user.image ? (
+                  <img src={session.user.image} alt="User" className="size-full object-cover" />
+                ) : (
+                  <UserIcon className="size-4" />
+                )}
+              </Link>
+            </div>
+          </div>
+        </header>
+      ) : (
         <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
@@ -906,6 +986,16 @@ export default function PublicFeedPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Coin Converter Modal */}
+      <CoinConverterModal
+        isOpen={showCoinConverter}
+        onClose={() => setShowCoinConverter(false)}
+        currentBalance={userCoins || 0}
+        onSuccess={() => {
+          fetchUserCoins();
+        }}
+      />
     </div>
   );
 }

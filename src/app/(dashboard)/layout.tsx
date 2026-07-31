@@ -9,6 +9,8 @@ import {
   User as UserIcon,
   Bell,
   Menu,
+  Coins,
+  Plus,
 } from "lucide-react";
 import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
 import { PusherListener } from "@/components/PusherListener";
@@ -210,21 +212,36 @@ export default async function DashboardLayout({
               <Menu className="h-5 w-5 text-neutral-300" />
             </label>
             <span
-              className="ml-4 text-sm font-bold tracking-widest text-primary"
+              className="ml-3 text-xs sm:text-sm font-bold tracking-widest text-primary"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
               NOTEXIA
             </span>
           </div>
 
-          <Link href="/notifications" className="relative p-2 rounded-lg hover:bg-sidebar-accent border border-transparent hover:border-sidebar-border transition-all group">
-            <Bell className="h-4 w-4 text-neutral-450 group-hover:text-primary transition-colors" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 h-3.5 min-w-[14px] px-1 bg-destructive text-neutral-100 text-[8px] font-extrabold flex items-center justify-center rounded-full border border-background">
-                {unreadCount}
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/user/${user.id}`}
+              className="flex items-center gap-1.5 bg-[#16261D] border border-[#F0C93B]/30 rounded-full pl-2.5 pr-1 py-0.5 text-xs font-mono"
+            >
+              <Coins className="size-3.5 text-[#F0C93B]" />
+              <span className="text-[#F0C93B] font-bold text-[11px]">
+                {(dbUser?.coins || 0).toLocaleString()}
               </span>
-            )}
-          </Link>
+              <span className="size-5 rounded-full bg-[#F0C93B] text-[#2A2118] font-bold flex items-center justify-center text-[10px] shrink-0 font-heading">
+                +
+              </span>
+            </Link>
+
+            <Link href="/notifications" className="relative p-2 rounded-lg hover:bg-sidebar-accent border border-transparent hover:border-sidebar-border transition-all group">
+              <Bell className="h-4 w-4 text-neutral-450 group-hover:text-primary transition-colors" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 h-3.5 min-w-[14px] px-1 bg-destructive text-neutral-100 text-[8px] font-extrabold flex items-center justify-center rounded-full border border-background">
+                  {unreadCount}
+                </span>
+              )}
+            </Link>
+          </div>
         </header>
 
         <main className="flex-1 flex flex-col h-full w-full overflow-y-auto bg-transparent pb-16 lg:pb-0 custom-scroll [&:has(.messages-page-root)]:pb-0 [&:has(.messages-page-root)]:overflow-hidden">

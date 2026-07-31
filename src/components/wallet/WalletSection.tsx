@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Wallet as WalletIcon,
@@ -19,12 +17,14 @@ import {
   Lock,
   KeyRound,
   ShieldAlert,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
 import { WithdrawEarningsModal } from "./WithdrawEarningsModal";
+import { CoinConverterModal } from "./CoinConverterModal";
 
 interface TransactionItem {
   id: string;
@@ -60,6 +60,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
   // Withdraw Modal State
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [showCoinConverter, setShowCoinConverter] = useState(false);
 
   // Send Coins Modal State
   const [isSendModalOpen, setIsSendModalOpen] = useState(false);
@@ -359,13 +360,22 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
             <div>
               <span className="text-xs text-[#9FAEA1]">Referrals, Signups &amp; Activity Tokens</span>
-              <div className="flex items-baseline gap-2 mt-1">
+              <div className="flex flex-wrap items-center gap-2.5 mt-1">
                 <h2 className="text-3xl font-black text-[#F0C93B] font-heading tracking-tight">
                   {isLoading ? "..." : balance.toLocaleString()}
                 </h2>
                 <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
                   Coins
                 </span>
+
+                <button
+                  type="button"
+                  onClick={() => setShowCoinConverter(true)}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2A2118] bg-[#F0C93B] hover:bg-[#F0C93B]/90 px-3 py-1 rounded-full border border-[#F0C93B]/50 transition-all font-heading shadow-md active:scale-95 ml-1"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Convert / Buy</span>
+                </button>
               </div>
             </div>
           </div>
@@ -863,6 +873,17 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         onClose={() => setIsWithdrawModalOpen(false)}
         creatorEarnings={creatorEarnings}
         existingPayoutDetails={payoutDetails}
+        onSuccess={() => {
+          fetchWalletInfo();
+          if (onCoinsUpdated) onCoinsUpdated();
+        }}
+      />
+
+      {/* COIN CONVERTER MODAL */}
+      <CoinConverterModal
+        isOpen={showCoinConverter}
+        onClose={() => setShowCoinConverter(false)}
+        currentBalance={balance}
         onSuccess={() => {
           fetchWalletInfo();
           if (onCoinsUpdated) onCoinsUpdated();

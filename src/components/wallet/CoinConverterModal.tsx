@@ -9,14 +9,14 @@ import { toast } from "sonner";
 interface CoinConverterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentBalance: number;
+  currentBalance?: number;
   onSuccess?: () => void;
 }
 
 export function CoinConverterModal({
   isOpen,
   onClose,
-  currentBalance,
+  currentBalance = 0,
   onSuccess,
 }: CoinConverterModalProps) {
   const [inrAmount, setInrAmount] = useState<number | "">(50);
