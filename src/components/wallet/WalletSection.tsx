@@ -299,16 +299,16 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="space-y-3 relative z-10">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold">
+                <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">
                   ₹
                 </div>
                 <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
                   Withdrawable Creator Earnings
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
                 WITHDRAWABLE CASH
               </span>
             </div>
@@ -326,13 +326,13 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#F3F0E4]/10 relative z-10 flex items-center justify-between">
+          <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <span className="text-[11px] text-[#9FAEA1] font-light">
               Only Creator Earnings can be withdrawn to bank/UPI.
             </span>
             <Button
               onClick={() => setIsWithdrawModalOpen(true)}
-              className="h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
+              className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
             >
               Withdraw Cash
             </Button>
@@ -344,23 +344,23 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
           <div className="absolute top-0 right-0 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="space-y-3 relative z-10">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B]">
+                <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
                   <WalletIcon className="h-4 w-4" />
                 </div>
                 <span className="text-xs font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
                   Activity Coins (Non-Withdrawable)
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
+              <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30 shrink-0">
                 PLATFORM TOKENS
               </span>
             </div>
 
             <div>
               <span className="text-xs text-[#9FAEA1]">Referrals, Signups &amp; Activity Tokens</span>
-              <div className="flex flex-wrap items-center gap-2.5 mt-1">
+              <div className="flex flex-wrap items-center gap-2 mt-1">
                 <h2 className="text-3xl font-black text-[#F0C93B] font-heading tracking-tight">
                   {isLoading ? "..." : balance.toLocaleString()}
                 </h2>
@@ -371,7 +371,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                 <button
                   type="button"
                   onClick={() => setShowCoinConverter(true)}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2A2118] bg-[#F0C93B] hover:bg-[#F0C93B]/90 px-3 py-1 rounded-full border border-[#F0C93B]/50 transition-all font-heading shadow-md active:scale-95 ml-1"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2A2118] bg-[#F0C93B] hover:bg-[#F0C93B]/90 px-3 py-1 rounded-full border border-[#F0C93B]/50 transition-all font-heading shadow-md active:scale-95"
                 >
                   <Plus className="size-3.5" />
                   <span>Convert / Buy</span>
@@ -380,19 +380,19 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             </div>
           </div>
 
-          <div className="pt-2 border-t border-[#F3F0E4]/10 relative z-10 flex items-center justify-between gap-2">
+          <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
             <Button
               onClick={() => setIsPasswordModalOpen(true)}
               variant="outline"
-              className="h-9 px-3 bg-[#121F18] hover:bg-[#1F362A] border-[#F3F0E4]/20 text-[#F3F0E4] hover:text-[#F0C93B] font-bold text-xs rounded-xl transition-all"
+              className="h-10 sm:h-9 px-3 bg-[#121F18] hover:bg-[#1F362A] border-[#F3F0E4]/20 text-[#F3F0E4] hover:text-[#F0C93B] font-bold text-xs rounded-xl transition-all"
             >
               <KeyRound className="h-3.5 w-3.5 text-[#F0C93B] mr-1" />
-              <span>{hasWalletPassword ? "PIN" : "Set PIN"}</span>
+              <span>{hasWalletPassword ? "Change PIN" : "Set Wallet PIN"}</span>
             </Button>
 
             <Button
               onClick={handleOpenSendModal}
-              className="h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all flex items-center gap-1.5 font-heading"
+              className="h-10 sm:h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all flex items-center justify-center gap-1.5 font-heading"
             >
               <Send className="h-3.5 w-3.5" />
               <span>Send Coins</span>

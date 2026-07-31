@@ -132,8 +132,8 @@ export function CoinConverterModal({
   const finalInr = Math.max(0, Number(inrAmount) - (appliedCoupon ? appliedCoupon.discountAmount : 0));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-[#121F18] border border-[#F0C93B]/30 rounded-3xl p-6 sm:p-7 space-y-5 shadow-[0_0_50px_rgba(240,201,59,0.15)] relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border border-[#F0C93B]/30 rounded-[2rem] sm:rounded-3xl p-5 sm:p-7 space-y-5 shadow-[0_0_50px_rgba(240,201,59,0.15)] relative">
         {/* Ambient Glow */}
         <div className="absolute top-0 left-0 w-72 h-72 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -173,7 +173,7 @@ export function CoinConverterModal({
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block">
             Popular Coin Packs:
           </span>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleSelectPack(100, 10)}

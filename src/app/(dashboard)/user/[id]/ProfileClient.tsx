@@ -191,7 +191,7 @@ export function ProfileClient({
   return (
     <div className="w-full space-y-6 sm:space-y-8 select-none">
       {/* 1. Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 w-full">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
         {/* Followers Stat Card */}
         <button
           onClick={() => canViewProfile && setActiveListModal("followers")}

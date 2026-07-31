@@ -118,12 +118,12 @@ export function WithdrawEarningsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg overflow-hidden rounded-[2.5rem] bg-[#121F18] border border-[#F3F0E4]/15 shadow-2xl p-6 sm:p-8 space-y-6 text-[#F3F0E4]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll rounded-[2rem] sm:rounded-[2.5rem] bg-[#121F18] border border-[#F3F0E4]/15 shadow-2xl p-5 sm:p-8 space-y-5 text-[#F3F0E4]">
         {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
-          className="absolute right-5 top-5 p-2 rounded-full bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-all"
+          className="absolute right-4 top-4 p-2 rounded-full bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-all"
         >
           <X className="size-4" />
         </button>
@@ -133,14 +133,14 @@ export function WithdrawEarningsModal({
           <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
             <DollarSign className="size-3.5" /> WITHDRAWABLE CREATOR EARNINGS
           </div>
-          <h2 className="text-2xl font-bold font-heading text-white">Withdraw Creator Earnings</h2>
+          <h2 className="text-xl sm:text-2xl font-bold font-heading text-white">Withdraw Creator Earnings</h2>
           <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
             Convert your 70% Course Sales revenue into direct cash payout via UPI or Bank Transfer.
           </p>
         </div>
 
         {/* BALANCE BANNER */}
-        <div className="rounded-2xl bg-[#16261D] border border-[#F0C93B]/30 p-4 flex items-center justify-between">
+        <div className="rounded-2xl bg-[#16261D] border border-[#F0C93B]/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">
             <span className="text-[11px] font-mono text-[#9FAEA1] uppercase tracking-wider">
               Withdrawable Earnings Balance
