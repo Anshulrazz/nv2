@@ -3,7 +3,7 @@
 
 import Script from "next/script";
 
-export const FB_PIXEL_ID = "1582651663509057";
+export const FB_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "857195406940874";
 
 export default function MetaPixel() {
   return (

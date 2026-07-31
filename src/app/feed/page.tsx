@@ -7,7 +7,6 @@ import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useAlertStore } from "@/stores/alertStore";
 import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { GoogleAdBanner } from "@/components/ads/GoogleAdBanner";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
@@ -59,7 +58,7 @@ interface CommentNode {
   createdAt: string;
 }
 
-export default function FeedPage() {
+export default function PublicFeedPage() {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id || "";
   const { showAlert } = useAlertStore();
@@ -88,6 +87,19 @@ export default function FeedPage() {
 
   // Follow states cache
   const [followingMap, setFollowingMap] = useState<Record<string, boolean>>({});
+
+  // Auth prompt modal state for unauthenticated guests
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authModalAction, setAuthModalAction] = useState("engage with study notes");
+
+  const requireAuth = useCallback((actionName = "engage with study notes") => {
+    if (!session?.user) {
+      setAuthModalAction(actionName);
+      setShowAuthModal(true);
+      return false;
+    }
+    return true;
+  }, [session?.user]);
 
   const fetchPosts = useCallback(async (reset = false) => {
     setIsLoading(true);
@@ -145,6 +157,7 @@ export default function FeedPage() {
   }, [fetchPosts]);
 
   const handleUpvote = async (postId: string) => {
+    if (!requireAuth("upvote and like study notes")) return;
     try {
       const res = await fetch(`/api/notes/${postId}/upvote`, {
         method: "POST",
@@ -177,6 +190,7 @@ export default function FeedPage() {
   };
 
   const handleBookmark = async (post: PostData) => {
+    if (!requireAuth("bookmark study notes")) return;
     try {
       const postSlug = post.slug || post._id;
       const authorName = encodeURIComponent(post.author?.name || post.userName || "user");
@@ -203,6 +217,7 @@ export default function FeedPage() {
   };
 
   const handleFlagPost = async (postId: string) => {
+    if (!requireAuth("report posts")) return;
     try {
       const res = await fetch(`/api/feed/${postId}/flag`, {
         method: "POST",
@@ -218,6 +233,7 @@ export default function FeedPage() {
   };
 
   const checkFollowStatus = useCallback(async (authorId: string) => {
+    if (!currentUserId) return;
     try {
       const res = await fetch(`/api/user/${authorId}/follow`);
       if (res.ok) {
@@ -227,9 +243,10 @@ export default function FeedPage() {
     } catch (e) {
       console.error(e);
     }
-  }, []);
+  }, [currentUserId]);
 
   const handleFollowToggle = async (authorId: string) => {
+    if (!requireAuth("follow student authors")) return;
     try {
       const res = await fetch(`/api/user/${authorId}/follow`, {
         method: "POST",
@@ -247,6 +264,7 @@ export default function FeedPage() {
   };
 
   const handleReshareSubmit = async () => {
+    if (!requireAuth("reshare posts")) return;
     if (!resharePost || isResharing) return;
     setIsResharing(true);
     try {
@@ -294,6 +312,7 @@ export default function FeedPage() {
   };
 
   const handleAddComment = async (parentId: string | null = null, text = "") => {
+    if (!requireAuth("post comments")) return;
     if (!activeCommentsPostId) return;
     const bodyText = parentId ? text : newCommentText;
     if (!bodyText.trim()) return;
@@ -319,6 +338,7 @@ export default function FeedPage() {
   };
 
   const handleVoteComment = async (commentId: string, action: "upvote" | "downvote") => {
+    if (!requireAuth("vote on comments")) return;
     if (!activeCommentsPostId) return;
     try {
       const res = await fetch(`/api/feed/${activeCommentsPostId}/comment`, {
@@ -335,6 +355,7 @@ export default function FeedPage() {
   };
 
   const handleFlagComment = async (commentId: string) => {
+    if (!requireAuth("report comments")) return;
     if (!activeCommentsPostId) return;
     try {
       const res = await fetch(`/api/feed/${activeCommentsPostId}/flag`, {
@@ -361,41 +382,42 @@ export default function FeedPage() {
           const hasDownvoted = comment.downvotes.includes(currentUserId);
           return (
             <div key={comment._id} className="space-y-2" style={{ marginLeft: `${depth > 0 ? Math.min(depth * 14, 28) : 0}px` }}>
-              <div className="bg-zinc-950 border border-white/5 rounded-2xl p-4 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500 select-none font-bold">
+              <div className="bg-[#121F18] border border-[#F3F0E4]/10 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#9FAEA1] select-none font-bold">
                   <div className="flex items-center gap-2 min-w-0">
                     {comment.userImage ? (
-                      <img src={comment.userImage} alt={comment.userName} className="size-5 rounded-full object-cover border border-white/10 shrink-0" />
+                      <img src={comment.userImage} alt={comment.userName} className="size-5 rounded-full object-cover border border-[#F3F0E4]/10 shrink-0" />
                     ) : (
-                      <div className="size-5 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-zinc-400 font-bold shrink-0">
+                      <div className="size-5 rounded-full bg-[#16261D] border border-[#F3F0E4]/10 flex items-center justify-center text-[#F0C93B] font-bold shrink-0">
                         {comment.userName?.[0]?.toUpperCase()}
                       </div>
                     )}
                     <span className="font-bold text-white truncate">{comment.userName}</span>
                     <span className="hidden sm:inline">{new Date(comment.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <button onClick={() => handleFlagComment(comment._id)} className="hover:text-rose-400 transition-colors uppercase shrink-0">
+                  <button onClick={() => handleFlagComment(comment._id)} className="hover:text-[#F28B6E] transition-colors uppercase shrink-0">
                     Report
                   </button>
                 </div>
 
-                <p className="text-xs text-zinc-300 leading-relaxed font-light">{comment.content}</p>
+                <p className="text-xs text-[#F3F0E4] leading-relaxed font-light">{comment.content}</p>
 
-                <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-500 font-bold select-none pt-1">
+                <div className="flex items-center gap-4 text-[10px] font-mono text-[#9FAEA1] font-bold select-none pt-1">
                   <button
                     onClick={() => handleVoteComment(comment._id, "upvote")}
-                    className={`hover:text-zinc-300 flex items-center gap-1 transition-colors ${hasUpvoted ? "text-cyan-400" : ""}`}
+                    className={`hover:text-white flex items-center gap-1 transition-colors ${hasUpvoted ? "text-[#8FC3DE]" : ""}`}
                   >
                     Upvote ({comment.upvotes.length})
                   </button>
                   <button
                     onClick={() => handleVoteComment(comment._id, "downvote")}
-                    className={`hover:text-zinc-300 flex items-center gap-1 transition-colors ${hasDownvoted ? "text-rose-400" : ""}`}
+                    className={`hover:text-white flex items-center gap-1 transition-colors ${hasDownvoted ? "text-[#F28B6E]" : ""}`}
                   >
                     Downvote ({comment.downvotes.length})
                   </button>
                   <button
                     onClick={() => {
+                      if (!requireAuth("reply to comments")) return;
                       const text = prompt("Write your reply:") || "";
                       if (text.trim()) handleAddComment(comment._id, text.trim());
                     }}
@@ -415,15 +437,73 @@ export default function FeedPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 flex flex-col antialiased">
+      {/* Top Bar Header Navigation for Unauthenticated Guests */}
+      {!session?.user && (
+        <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+            <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
+              <span className="size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+                N
+              </span>
+              <span className="font-heading text-[#F3F0E4]">NOTEXIA PUBLIC FEED</span>
+            </Link>
+
+            <div className="flex items-center gap-3">
+              <Link
+                href="/login"
+                className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] px-3 py-1.5 transition-colors font-heading uppercase"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs px-5 py-2 inline-flex items-center gap-1 transition-all shadow-md font-heading"
+              >
+                Get Started Free
+              </Link>
+            </div>
+          </div>
+        </header>
+      )}
+
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px]" />
       </div>
 
       {/* Responsive Header Banner */}
-      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
+      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10 space-y-4 max-w-7xl w-full mx-auto">
+        {/* Guest Mode Notification Banner */}
+        {!session?.user && (
+          <div className="rounded-2xl bg-[#1A2D23]/90 border border-[#F0C93B]/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
+            <div className="flex items-center gap-3 text-xs text-[#F3F0E4]">
+              <div className="size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] shrink-0 font-mono text-xs font-bold">
+                ⚡
+              </div>
+              <p className="leading-relaxed">
+                <strong className="text-[#F0C93B]">Guest Mode:</strong> You are browsing the Public Study Feed.{" "}
+                <span className="text-[#9FAEA1]">Sign in or create a free account to upvote, comment, and bookmark study notes.</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <Link
+                href="/login"
+                className="px-4 py-1.5 rounded-full text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] border border-[#F3F0E4]/20 transition-colors"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/signup"
+                className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#F0C93B] text-[#2A2118] hover:bg-[#F0C93B]/90 transition-colors shadow-sm font-heading"
+              >
+                Sign Up Free
+              </Link>
+            </div>
+          </div>
+        )}
+
         <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
@@ -463,7 +543,7 @@ export default function FeedPage() {
       </div>
 
       {/* Main Responsive Grid Layout */}
-      <div className="p-4 sm:p-8 lg:p-10 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10">
+      <div className="p-4 sm:p-8 lg:p-10 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start relative z-10 flex-1">
         
         {/* Left Main Feed Area */}
         <div className="col-span-1 lg:col-span-8 space-y-6 w-full min-w-0">
@@ -649,7 +729,7 @@ export default function FeedPage() {
                             <span>{post.commentsCount}</span>
                           </button>
 
-                          <button onClick={() => setResharePost(post)} className="hover:text-white flex items-center gap-1.5 transition-colors">
+                          <button onClick={() => { if (!requireAuth("reshare posts")) return; setResharePost(post); }} className="hover:text-white flex items-center gap-1.5 transition-colors">
                             <Share2 className="size-4" />
                             <span className="hidden sm:inline">Reshare</span>
                           </button>
@@ -747,25 +827,21 @@ export default function FeedPage() {
               </div>
             </div>
           </div>
-
-          <GoogleAdBanner adSlot="1002" adFormat="rectangle" />
         </div>
       </div>
 
-      {/* Reshare commentary dialog */}
+      {/* Reshare Dialog */}
       {resharePost && (
-        <Dialog open={true} onOpenChange={() => setResharePost(null)}>
-          <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-md rounded-3xl p-6">
+        <Dialog open={!!resharePost} onOpenChange={() => setResharePost(null)}>
+          <DialogContent className="sm:max-w-lg bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-6 space-y-4">
             <DialogHeader>
-              <DialogTitle className="text-base font-bold tracking-tight text-white">
-                Reshare Post
-              </DialogTitle>
+              <DialogTitle className="text-lg font-bold text-white font-heading">Reshare to Public Feed</DialogTitle>
             </DialogHeader>
 
-            <div className="space-y-4 py-2">
-              <div className="p-4 bg-zinc-900 border border-white/5 rounded-2xl space-y-1 select-none">
-                <span className="text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-widest block">
-                  Resharing:
+            <div className="space-y-3">
+              <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-1">
+                <span className="text-[10px] font-mono text-[#8FC3DE]">
+                  Original by {resharePost.author?.name || resharePost.userName}
                 </span>
                 <h4 className="text-xs font-bold text-white truncate">{resharePost.title}</h4>
               </div>
@@ -775,7 +851,7 @@ export default function FeedPage() {
                 onChange={(e) => setReshareCommentary(e.target.value)}
                 placeholder="Write your custom reshare commentary..."
                 rows={4}
-                className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none transition-colors"
+                className="w-full bg-[#16261D] border border-[#F3F0E4]/15 rounded-2xl p-3.5 text-xs text-white placeholder-[#9FAEA1]/50 focus:outline-none focus:border-[#F0C93B] resize-none transition-colors"
               />
             </div>
 
@@ -783,21 +859,53 @@ export default function FeedPage() {
               <Button
                 variant="ghost"
                 onClick={() => setResharePost(null)}
-                className="text-xs text-zinc-400 hover:text-white rounded-full px-4"
+                className="text-xs text-[#9FAEA1] hover:text-white rounded-full px-4"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleReshareSubmit}
                 disabled={isResharing}
-                className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-5 transition-all"
+                className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs font-bold h-9 px-5 transition-all font-heading"
               >
-                {isResharing ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Post to Feed"}
+                {isResharing ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post to Feed"}
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Auth Prompt Modal for Unauthenticated Guests */}
+      <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
+        <DialogContent className="sm:max-w-md bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-6 space-y-6">
+          <DialogHeader className="space-y-3 text-center sm:text-left">
+            <div className="size-12 rounded-2xl bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] mx-auto sm:mx-0">
+              <Compass className="size-6" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-white font-heading">
+              Sign In Required to {authModalAction.toUpperCase()}
+            </DialogTitle>
+            <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
+              Create a free account or sign in to {authModalAction}, participate in peer study discussions, bookmark formula sheets, and climb university batch leaderboards!
+            </p>
+          </DialogHeader>
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Link
+              href="/signup"
+              className="w-full rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs py-3 text-center transition-all font-heading shadow-md"
+            >
+              Create Free Account
+            </Link>
+            <Link
+              href="/login"
+              className="w-full rounded-full bg-[#16261D] hover:bg-[#16261D]/80 border border-[#F3F0E4]/20 text-[#F3F0E4] font-bold text-xs py-3 text-center transition-all font-heading"
+            >
+              Sign In
+            </Link>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

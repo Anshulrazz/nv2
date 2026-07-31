@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
 import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
+import { FB_PIXEL_ID } from "@/components/MetaPixel";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
@@ -151,7 +152,7 @@ export default function RootLayout({
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '1582651663509057');
+            fbq('init', '${FB_PIXEL_ID}');
             fbq('track', 'PageView');
           `}
         </Script>
@@ -160,7 +161,7 @@ export default function RootLayout({
             height="1"
             width="1"
             style={{ display: "none" }}
-            src="https://www.facebook.com/tr?id=1582651663509057&ev=PageView&noscript=1"
+            src={`https://www.facebook.com/tr?id=${FB_PIXEL_ID}&ev=PageView&noscript=1`}
             alt=""
           />
         </noscript>

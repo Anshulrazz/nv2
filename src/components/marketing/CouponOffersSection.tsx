@@ -1,0 +1,228 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Tag, Copy, Check, Sparkles, Percent, Gift, Zap, ArrowRight, Loader2 } from "lucide-react";
+
+interface CouponItem {
+  code: string;
+  description: string;
+  discountType: "percentage" | "fixed";
+  discountValue: number;
+  applicableFor: string;
+  validUntil: string;
+}
+
+const fallbackOffers: CouponItem[] = [
+  {
+    code: "STUDENT50",
+    description: "50% OFF Notexia Premium Subscriptions for University Students",
+    discountType: "percentage",
+    discountValue: 50,
+    applicableFor: "subscription",
+    validUntil: "2026-12-31",
+  },
+  {
+    code: "WELCOME100",
+    description: "Get 100 Free Activity Coins & AI Tokens on Upgrade",
+    discountType: "fixed",
+    discountValue: 100,
+    applicableFor: "coins",
+    validUntil: "2026-12-31",
+  },
+  {
+    code: "JEE2026",
+    description: "40% Flat Discount for JEE & NEET Competitive Exam Scholars",
+    discountType: "percentage",
+    discountValue: 40,
+    applicableFor: "all",
+    validUntil: "2026-12-31",
+  },
+  {
+    code: "VTUPRO",
+    description: "35% OFF Annual Engineering Research & Formula Pass",
+    discountType: "percentage",
+    discountValue: 35,
+    applicableFor: "subscription",
+    validUntil: "2026-12-31",
+  },
+];
+
+export function CouponOffersSection() {
+  const [coupons, setCoupons] = useState<CouponItem[]>(fallbackOffers);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [testCode, setTestCode] = useState("");
+  const [validationResult, setValidationResult] = useState<{
+    loading: boolean;
+    success?: boolean;
+    message?: string;
+    error?: string;
+  }>({ loading: false });
+
+  useEffect(() => {
+    fetch("/api/coupons")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.coupons) && data.coupons.length > 0) {
+          setCoupons(data.coupons);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code);
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode(null), 2500);
+  };
+
+  const handleTestCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!testCode.trim()) return;
+
+    setValidationResult({ loading: true });
+    try {
+      const res = await fetch("/api/coupons/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: testCode, amount: 499 }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setValidationResult({
+          loading: false,
+          success: true,
+          message: `${data.message} (Save ₹${data.discountAmount || 0})`,
+        });
+      } else {
+        setValidationResult({
+          loading: false,
+          success: false,
+          error: data.error || "Invalid coupon code.",
+        });
+      }
+    } catch {
+      setValidationResult({
+        loading: false,
+        success: false,
+        error: "Error validating coupon code.",
+      });
+    }
+  };
+
+  return (
+    <section id="offers" className="max-w-[1400px] mx-auto px-4 sm:px-6 relative z-10 space-y-12">
+      {/* SECTION HEADER */}
+      <div className="text-center space-y-4 max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] text-xs font-mono font-bold uppercase tracking-wider">
+          <Tag className="size-3.5" /> STUDENT DISCOUNTS &amp; OFFERS
+        </div>
+        <h2 className="text-3xl sm:text-5xl font-black text-[#F3F0E4] font-heading">
+          Exclusive Student Promo Codes
+        </h2>
+        <p className="text-sm sm:text-base text-[#9FAEA1] font-light leading-relaxed">
+          Copy an active promotional discount code below to apply flat savings on Notexia Premium subscriptions and AI token packages.
+        </p>
+      </div>
+
+      {/* OFFERS CARDS GRID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {coupons.map((c, idx) => (
+          <div
+            key={idx}
+            className="rounded-[2rem] bg-[#1A2D23]/90 border border-[#F3F0E4]/15 p-2 shadow-xl hover:border-[#F0C93B]/40 transition-colors flex flex-col justify-between"
+          >
+            <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] p-6 space-y-4 h-full flex flex-col justify-between">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="size-9 rounded-xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] font-bold">
+                    {c.discountType === "percentage" ? <Percent className="size-4" /> : <Gift className="size-4" />}
+                  </span>
+                  <span className="text-[10px] font-mono font-bold text-[#8FC3DE] bg-[#8FC3DE]/10 px-2.5 py-0.5 rounded-full border border-[#8FC3DE]/20 uppercase">
+                    {c.discountType === "percentage" ? `${c.discountValue}% OFF` : `+${c.discountValue} BONUS`}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="font-mono text-lg font-black text-[#F0C93B] tracking-wider">
+                    {c.code}
+                  </div>
+                  <p className="text-xs text-[#9FAEA1] font-light leading-relaxed min-h-[40px]">
+                    {c.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-[#F3F0E4]/10 space-y-2">
+                <button
+                  onClick={() => handleCopyCode(c.code)}
+                  className="w-full rounded-full bg-[#16261D] hover:bg-[#F0C93B] text-[#F3F0E4] hover:text-[#2A2118] border border-[#F3F0E4]/15 font-bold text-xs py-2.5 px-4 inline-flex items-center justify-center gap-2 transition-all font-heading"
+                >
+                  {copiedCode === c.code ? (
+                    <>
+                      <Check className="size-3.5 text-emerald-400" />
+                      <span>Code Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="size-3.5" />
+                      <span>Copy Code</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* QUICK COUPON VALIDATOR TESTER */}
+      <div className="rounded-[2.5rem] bg-[#1A2D23] border border-[#F3F0E4]/15 p-2 shadow-2xl max-w-3xl mx-auto">
+        <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#121F18] p-6 sm:p-8 space-y-4 text-center">
+          <h3 className="text-xl font-bold text-white font-heading">
+            Test Any Promo Code Instantly
+          </h3>
+          <p className="text-xs text-[#9FAEA1] max-w-lg mx-auto font-light">
+            Enter a promo code below to verify your discount eligibility before checkout:
+          </p>
+
+          <form onSubmit={handleTestCoupon} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
+            <input
+              type="text"
+              value={testCode}
+              onChange={(e) => setTestCode(e.target.value.toUpperCase())}
+              placeholder="e.g. STUDENT50"
+              className="flex-1 rounded-full bg-[#16261D] border border-[#F3F0E4]/15 px-4 py-2.5 text-xs text-white uppercase font-mono tracking-wider focus:outline-none focus:border-[#F0C93B]"
+            />
+            <button
+              type="submit"
+              disabled={validationResult.loading}
+              className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs px-6 py-2.5 inline-flex items-center justify-center gap-2 transition-all shrink-0 font-heading"
+            >
+              {validationResult.loading ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <>
+                  <span>Apply Code</span>
+                  <ArrowRight className="size-3.5" />
+                </>
+              )}
+            </button>
+          </form>
+
+          {validationResult.success && (
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium max-w-md mx-auto">
+              ✓ {validationResult.message}
+            </div>
+          )}
+
+          {validationResult.error && (
+            <div className="p-3 rounded-xl bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-medium max-w-md mx-auto">
+              ⚠️ {validationResult.error}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
