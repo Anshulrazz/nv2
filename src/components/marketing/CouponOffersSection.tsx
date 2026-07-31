@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Tag, Copy, Check, Sparkles, Percent, Gift, Zap, ArrowRight, Loader2 } from "lucide-react";
+import { Tag, Copy, Check, Percent, Gift } from "lucide-react";
 
 interface CouponItem {
   code: string;
@@ -50,13 +50,6 @@ const fallbackOffers: CouponItem[] = [
 export function CouponOffersSection() {
   const [coupons, setCoupons] = useState<CouponItem[]>(fallbackOffers);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
-  const [testCode, setTestCode] = useState("");
-  const [validationResult, setValidationResult] = useState<{
-    loading: boolean;
-    success?: boolean;
-    message?: string;
-    error?: string;
-  }>({ loading: false });
 
   useEffect(() => {
     fetch("/api/coupons")
@@ -73,41 +66,6 @@ export function CouponOffersSection() {
     navigator.clipboard.writeText(code);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2500);
-  };
-
-  const handleTestCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!testCode.trim()) return;
-
-    setValidationResult({ loading: true });
-    try {
-      const res = await fetch("/api/coupons/validate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: testCode, amount: 499 }),
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        setValidationResult({
-          loading: false,
-          success: true,
-          message: `${data.message} (Save ₹${data.discountAmount || 0})`,
-        });
-      } else {
-        setValidationResult({
-          loading: false,
-          success: false,
-          error: data.error || "Invalid coupon code.",
-        });
-      }
-    } catch {
-      setValidationResult({
-        loading: false,
-        success: false,
-        error: "Error validating coupon code.",
-      });
-    }
   };
 
   return (

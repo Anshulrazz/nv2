@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle2, Clock, HelpCircle, ShieldCheck } from "lucide-react";
+import { CreditCard, RefreshCw, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
 

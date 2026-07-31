@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -16,8 +16,6 @@ import {
   Lock,
   Coins,
   Tag,
-  TicketCheck,
-  Crown,
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
@@ -97,7 +95,7 @@ export default function CourseViewerPage() {
   // Coin Converter State
   const [showCoinConverter, setShowCoinConverter] = useState(false);
 
-  async function fetchCourseData() {
+  const fetchCourseData = useCallback(async () => {
     try {
       const res = await fetch(`/api/courses/${id}`);
       if (!res.ok) throw new Error("Failed to fetch course details");
@@ -121,11 +119,11 @@ export default function CourseViewerPage() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [id]);
 
   useEffect(() => {
     if (id) fetchCourseData();
-  }, [id]);
+  }, [id, fetchCourseData]);
 
   const activeModule = course?.modules?.[activeModuleIdx];
   const activeLesson = activeModule?.lessons?.[activeLessonIdx];

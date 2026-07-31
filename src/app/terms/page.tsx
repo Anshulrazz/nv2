@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Scale, AlertTriangle, BookOpen, UserCheck, ShieldCheck, Coins, Gavel } from "lucide-react";
+import { Scale, AlertTriangle, BookOpen, UserCheck, ShieldCheck, Coins } from "lucide-react";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
 

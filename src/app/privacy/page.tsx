@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Shield, Lock, Eye, Database, UserCheck, Key, Server, RefreshCw } from "lucide-react";
+import { Shield, Lock, Eye, Database, UserCheck, Key, Server } from "lucide-react";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
 

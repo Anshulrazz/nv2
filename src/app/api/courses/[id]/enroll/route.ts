@@ -58,7 +58,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       });
     }
 
-    let originalPrice = course.price || 0;
+    const originalPrice = course.price || 0;
     let finalPrice = originalPrice;
     let appliedCoupon: string | undefined = undefined;
 

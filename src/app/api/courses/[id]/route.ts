@@ -55,9 +55,9 @@ export const GET = auth(async function GET(req, { params }) {
 
     // Mask lesson video/text if course is locked and user is not enrolled
     if (!isEnrolled && courseObj.modules) {
-      courseObj.modules = courseObj.modules.map((mod: any) => ({
+      courseObj.modules = courseObj.modules.map((mod: { lessons?: Array<{ title: string; text?: string }> }) => ({
         ...mod,
-        lessons: (mod.lessons || []).map((l: any, idx: number) => ({
+        lessons: (mod.lessons || []).map((l: { title: string; text?: string }, idx: number) => ({
           title: l.title,
           isLocked: idx > 0 || courseObj.price > 0, // First lesson overview preview only if non-enrolled
           text: idx === 0 && !courseObj.isPaid ? l.text : undefined,

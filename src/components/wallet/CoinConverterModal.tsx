@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Coins, Sparkles, X, ArrowRightLeft, Tag, TicketCheck, Loader2, CheckCircle2 } from "lucide-react";
+import { Coins, Sparkles, X, ArrowRightLeft, Tag, TicketCheck, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";

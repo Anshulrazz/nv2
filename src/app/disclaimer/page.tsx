@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { AlertCircle, Bot, BookOpen, Calculator, ExternalLink, ShieldAlert } from "lucide-react";
+import { Bot, BookOpen, Calculator, ExternalLink, ShieldAlert } from "lucide-react";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
 

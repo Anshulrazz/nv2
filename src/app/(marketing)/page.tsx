@@ -3,21 +3,15 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import {
   ArrowUpRight,
-  Sparkles,
   MessageSquare,
   Bot,
   FileText,
   Trophy,
   BookOpen,
   Calculator,
-  CheckCircle2,
   Zap,
-  Users,
-  ShieldCheck,
   Star,
   ArrowRight,
-  GraduationCap,
-  TrendingUp,
 } from "lucide-react";
 import { HeroWorkspaceShowcase } from "@/components/marketing/HeroWorkspaceShowcase";
 import { InteractiveDoubtSimulator } from "@/components/marketing/InteractiveDoubtSimulator";

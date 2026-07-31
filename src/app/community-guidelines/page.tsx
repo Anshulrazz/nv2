@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { Users, ShieldCheck, HeartHandshake, Flag, AlertTriangle, CheckCircle2, MessageSquare } from "lucide-react";
+import { Users, ShieldCheck, HeartHandshake, Flag, MessageSquare } from "lucide-react";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
 
