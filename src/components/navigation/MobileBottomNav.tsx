@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { HomeIcon, LayoutDashboard, Users, Send, Trophy, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
-export function MobileBottomNav({
+function MobileBottomNavContent({
   userId,
   unreadMessagesCount = 0,
 }: {
@@ -101,6 +101,17 @@ export function MobileBottomNav({
         );
       })}
     </div>
+  );
+}
+
+export function MobileBottomNav(props: {
+  userId?: string;
+  unreadMessagesCount?: number;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <MobileBottomNavContent {...props} />
+    </Suspense>
   );
 }
 

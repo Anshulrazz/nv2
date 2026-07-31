@@ -3,7 +3,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { useAlertStore } from "@/stores/alertStore";
 import { Heart, MessageSquare, Share2, Loader2, ArrowUpRight, Search, Compass, Bookmark, TrendingUp, Filter, Coins, Plus, Menu, Bell, User as UserIcon, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -999,7 +999,9 @@ export default function PublicFeedPage() {
       />
 
       {/* Mobile Bottom Navigation */}
-      <MobileBottomNav userId={session?.user?.id} />
+      <Suspense fallback={null}>
+        <MobileBottomNav userId={session?.user?.id} />
+      </Suspense>
     </div>
   );
 }
