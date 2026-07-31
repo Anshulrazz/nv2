@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Course } from "@/models/Course";
 import { User } from "@/models/User";
+import { CourseEnrollment } from "@/models/CourseEnrollment";
 import { isValidObjectId } from "@/lib/validation";
 
 export const GET = auth(async function GET(req, { params }) {
@@ -25,15 +26,49 @@ export const GET = auth(async function GET(req, { params }) {
       return NextResponse.json({ error: "Course not found" }, { status: 404 });
     }
 
+    const user = await User.findById(userId);
+
     // Only allow instructor or admin to view unpublished courses
     if (!course.isPublished) {
-      const user = await User.findById(userId);
       if (!user || (user.role !== "admin" && course.instructor._id.toString() !== userId)) {
          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
 
-    return NextResponse.json(course);
+    const isInstructor = course.instructor._id.toString() === userId;
+    const isAdmin = user?.role === "admin";
+    const isFree = !course.price || course.price === 0;
+
+    let isEnrolled = isInstructor || isAdmin || isFree;
+
+    if (!isEnrolled) {
+      const enrollment = await CourseEnrollment.findOne({ userId, courseId: id });
+      if (enrollment) {
+        isEnrolled = true;
+      }
+    }
+
+    const courseObj = course.toObject();
+    courseObj.isEnrolled = isEnrolled;
+    courseObj.price = course.price || 0;
+    courseObj.isPaid = (course.price || 0) > 0;
+
+    // Mask lesson video/text if course is locked and user is not enrolled
+    if (!isEnrolled && courseObj.modules) {
+      courseObj.modules = courseObj.modules.map((mod: any) => ({
+        ...mod,
+        lessons: (mod.lessons || []).map((l: any, idx: number) => ({
+          title: l.title,
+          isLocked: idx > 0 || courseObj.price > 0, // First lesson overview preview only if non-enrolled
+          text: idx === 0 && !courseObj.isPaid ? l.text : undefined,
+          videoUrl: undefined,
+          photoUrl: undefined,
+          quiz: [],
+        })),
+      }));
+    }
+
+    return NextResponse.json(courseObj);
   } catch (error) {
     console.error("Fetch course error:", error);
     return NextResponse.json({ error: "Failed to fetch course." }, { status: 500 });
@@ -69,7 +104,7 @@ export const PUT = auth(async function PUT(req, { params }) {
     }
 
     const body = await req.json();
-    const { title, description, thumbnail, isPublished, modules } = body;
+    const { title, description, thumbnail, isPublished, modules, price } = body;
 
     const updates: Record<string, unknown> = {};
 
@@ -99,6 +134,15 @@ export const PUT = auth(async function PUT(req, { params }) {
         return NextResponse.json({ error: "isPublished must be a boolean." }, { status: 400 });
       }
       updates.isPublished = isPublished;
+    }
+
+    if (price !== undefined) {
+      const numPrice = Number(price);
+      if (isNaN(numPrice) || numPrice < 0) {
+        return NextResponse.json({ error: "Price must be a non-negative number." }, { status: 400 });
+      }
+      updates.price = numPrice;
+      updates.isPaid = numPrice > 0;
     }
 
     if (modules !== undefined) {

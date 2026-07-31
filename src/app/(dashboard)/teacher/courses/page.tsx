@@ -12,6 +12,7 @@ interface CourseItem {
   _id: string;
   title: string;
   thumbnail?: string;
+  price?: number;
   isPublished?: boolean;
   modules?: unknown[];
   createdAt: string;
@@ -74,7 +75,7 @@ export default function TeacherDashboardPage() {
                 </span>
               </h1>
               <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
-                Manage, edit, and publish your educational courses and module content.
+                Manage your courses and earn <strong className="text-emerald-400">70% revenue share</strong> on every course purchase.
               </p>
             </div>
           </div>
@@ -91,6 +92,18 @@ export default function TeacherDashboardPage() {
 
       {/* Main Content Area */}
       <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-8 relative z-10">
+        {/* Creator Revenue Banner */}
+        <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-2">
+              <span>💰 Creator Revenue Guarantee</span>
+            </div>
+            <p className="text-xs text-zinc-300 font-light">
+              As a verified instructor, you receive <strong>70% of the coin value</strong> on every course enrollment. 30% goes to platform support & hosting.
+            </p>
+          </div>
+        </div>
+
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3 font-semibold">
             <Loader2 className="size-8 animate-spin text-amber-400" />
@@ -120,60 +133,69 @@ export default function TeacherDashboardPage() {
                     <tr>
                       <th className="px-6 py-4 font-bold">Course Title</th>
                       <th className="px-6 py-4 font-bold">Status</th>
+                      <th className="px-6 py-4 font-bold">Price (Coins)</th>
+                      <th className="px-6 py-4 font-bold">Your Share (70%)</th>
                       <th className="px-6 py-4 font-bold">Modules</th>
-                      <th className="px-6 py-4 font-bold">Created</th>
                       <th className="px-6 py-4 font-bold text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {courses.map((course) => (
-                      <tr key={course._id} className="hover:bg-white/5 transition-colors">
-                        <td className="px-6 py-4 font-bold text-white">
-                          <div className="flex items-center gap-3">
-                            {course.thumbnail ? (
-                              <img src={course.thumbnail} alt="" className="size-10 rounded-xl bg-zinc-950 object-cover border border-white/10" />
+                    {courses.map((course) => {
+                      const cPrice = course.price || 0;
+                      const creatorShare = Math.floor(cPrice * 0.7);
+
+                      return (
+                        <tr key={course._id} className="hover:bg-white/5 transition-colors">
+                          <td className="px-6 py-4 font-bold text-white">
+                            <div className="flex items-center gap-3">
+                              {course.thumbnail ? (
+                                <img src={course.thumbnail} alt="" className="size-10 rounded-xl bg-zinc-950 object-cover border border-white/10" />
+                              ) : (
+                                <div className="size-10 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center">
+                                  <BookOpen className="size-4 text-zinc-500" />
+                                </div>
+                              )}
+                              <span className="truncate max-w-[240px]">{course.title}</span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            {course.isPublished ? (
+                              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
+                                Published
+                              </span>
                             ) : (
-                              <div className="size-10 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center">
-                                <BookOpen className="size-4 text-zinc-500" />
-                              </div>
+                              <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
+                                Draft
+                              </span>
                             )}
-                            <span className="truncate max-w-[240px]">{course.title}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {course.isPublished ? (
-                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider">
-                              Published
-                            </span>
-                          ) : (
-                            <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase tracking-wider">
-                              Draft
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-zinc-400">
-                          {course.modules?.length || 0}
-                        </td>
-                        <td className="px-6 py-4 font-mono text-zinc-500">
-                          {new Date(course.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <Link href={`/courses/${course._id}`}>
-                            <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white">
-                              <Eye className="size-4 text-zinc-400" />
+                          </td>
+                          <td className="px-6 py-4 font-mono font-bold text-[#F0C93B]">
+                            {cPrice > 0 ? `${cPrice} Coins` : "Free"}
+                          </td>
+                          <td className="px-6 py-4 font-mono font-bold text-emerald-400">
+                            {cPrice > 0 ? `${creatorShare} Coins` : "0 Coins"}
+                          </td>
+                          <td className="px-6 py-4 font-mono text-zinc-400">
+                            {course.modules?.length || 0}
+                          </td>
+                          <td className="px-6 py-4 text-right space-x-2">
+                            <Link href={`/courses/${course._id}`}>
+                              <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white">
+                                <Eye className="size-4 text-zinc-400" />
+                              </Button>
+                            </Link>
+                            <Link href={`/teacher/courses/${course._id}/edit`}>
+                              <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white">
+                                <Edit className="size-4 text-zinc-400" />
+                              </Button>
+                            </Link>
+                            <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-rose-400 hover:text-rose-300" onClick={() => handleDelete(course._id)}>
+                              <Trash2 className="size-4" />
                             </Button>
-                          </Link>
-                          <Link href={`/teacher/courses/${course._id}/edit`}>
-                            <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-white">
-                              <Edit className="size-4 text-zinc-400" />
-                            </Button>
-                          </Link>
-                          <Button variant="outline" size="sm" className="size-8 p-0 bg-zinc-900 border-white/10 hover:bg-zinc-800 text-rose-400 hover:text-rose-300" onClick={() => handleDelete(course._id)}>
-                            <Trash2 className="size-4" />
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

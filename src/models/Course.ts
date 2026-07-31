@@ -25,6 +25,8 @@ export interface ICourse extends Document {
   thumbnail?: string;
   instructor: mongoose.Types.ObjectId;
   isPublished: boolean;
+  price: number;
+  isPaid: boolean;
   modules: IModule[];
   createdAt: Date;
   updatedAt: Date;
@@ -56,9 +58,15 @@ const CourseSchema = new Schema<ICourse>(
     thumbnail: { type: String },
     instructor: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isPublished: { type: Boolean, default: false },
+    price: { type: Number, default: 0, min: 0 },
+    isPaid: { type: Boolean, default: false },
     modules: { type: [ModuleSchema], default: [] },
   },
   { timestamps: true }
 );
+
+if (mongoose.models.Course && !mongoose.models.Course.schema.path("price")) {
+  mongoose.deleteModel("Course");
+}
 
 export const Course = mongoose.models.Course || mongoose.model<ICourse>("Course", CourseSchema);

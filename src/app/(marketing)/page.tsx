@@ -21,7 +21,6 @@ import {
 } from "lucide-react";
 import { HeroWorkspaceShowcase } from "@/components/marketing/HeroWorkspaceShowcase";
 import { InteractiveDoubtSimulator } from "@/components/marketing/InteractiveDoubtSimulator";
-import { CouponOffersSection } from "@/components/marketing/CouponOffersSection";
 import { Reveal } from "@/components/marketing/Reveal";
 import { CountUp } from "@/components/marketing/CountUp";
 import { FAQAccordion } from "@/components/marketing/FAQAccordion";
@@ -380,11 +379,6 @@ export default async function MarketingPage() {
             </div>
           </div>
         </section>
-
-        {/* STUDENT OFFERS & COUPONS SECTION */}
-        <Reveal>
-          <CouponOffersSection />
-        </Reveal>
 
         {/* HOW NOTEXIA WORKS (WORKFLOW SECTION) */}
         <section id="how-it-works" className="max-w-[1400px] mx-auto px-4 sm:px-6 relative z-10 space-y-12">

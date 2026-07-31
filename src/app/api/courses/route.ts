@@ -50,7 +50,7 @@ export const POST = auth(async function POST(req) {
     }
 
     const body = await req.json();
-    const { title, description, thumbnail, isPublished, modules } = body;
+    const { title, description, thumbnail, isPublished, modules, price } = body;
 
     if (typeof title !== "string" || typeof description !== "string" || title.trim() === "" || description.trim() === "") {
       return NextResponse.json({ error: "Title and description are required and must be strings." }, { status: 400 });
@@ -68,11 +68,15 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Modules must be an array." }, { status: 400 });
     }
 
+    const numPrice = typeof price === "number" && price >= 0 ? price : 0;
+
     const course = await Course.create({
       title: title.trim(),
       description: description.trim(),
       thumbnail: thumbnail || null,
       isPublished: isPublished || false,
+      price: numPrice,
+      isPaid: numPrice > 0,
       modules: modules || [],
       instructor: userId,
     });

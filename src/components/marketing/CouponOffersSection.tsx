@@ -175,54 +175,6 @@ export function CouponOffersSection() {
           </div>
         ))}
       </div>
-
-      {/* QUICK COUPON VALIDATOR TESTER */}
-      <div className="rounded-[2.5rem] bg-[#1A2D23] border border-[#F3F0E4]/15 p-2 shadow-2xl max-w-3xl mx-auto">
-        <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#121F18] p-6 sm:p-8 space-y-4 text-center">
-          <h3 className="text-xl font-bold text-white font-heading">
-            Test Any Promo Code Instantly
-          </h3>
-          <p className="text-xs text-[#9FAEA1] max-w-lg mx-auto font-light">
-            Enter a promo code below to verify your discount eligibility before checkout:
-          </p>
-
-          <form onSubmit={handleTestCoupon} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
-            <input
-              type="text"
-              value={testCode}
-              onChange={(e) => setTestCode(e.target.value.toUpperCase())}
-              placeholder="e.g. STUDENT50"
-              className="flex-1 rounded-full bg-[#16261D] border border-[#F3F0E4]/15 px-4 py-2.5 text-xs text-white uppercase font-mono tracking-wider focus:outline-none focus:border-[#F0C93B]"
-            />
-            <button
-              type="submit"
-              disabled={validationResult.loading}
-              className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs px-6 py-2.5 inline-flex items-center justify-center gap-2 transition-all shrink-0 font-heading"
-            >
-              {validationResult.loading ? (
-                <Loader2 className="size-3.5 animate-spin" />
-              ) : (
-                <>
-                  <span>Apply Code</span>
-                  <ArrowRight className="size-3.5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {validationResult.success && (
-            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-medium max-w-md mx-auto">
-              ✓ {validationResult.message}
-            </div>
-          )}
-
-          {validationResult.error && (
-            <div className="p-3 rounded-xl bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-medium max-w-md mx-auto">
-              ⚠️ {validationResult.error}
-            </div>
-          )}
-        </div>
-      </div>
     </section>
   );
 }

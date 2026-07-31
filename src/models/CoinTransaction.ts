@@ -5,7 +5,11 @@ export type TransactionType =
   | "signup_bonus"
   | "transfer"
   | "premium_purchase"
-  | "admin_adjustment";
+  | "admin_adjustment"
+  | "course_purchase"
+  | "course_creator_payout"
+  | "course_platform_fee"
+  | "buy_coins";
 
 export type TransactionStatus = "completed" | "failed" | "pending";
 
@@ -44,6 +48,10 @@ const CoinTransactionSchema = new Schema<ICoinTransaction>(
         "transfer",
         "premium_purchase",
         "admin_adjustment",
+        "course_purchase",
+        "course_creator_payout",
+        "course_platform_fee",
+        "buy_coins",
       ],
       required: true,
       index: true,

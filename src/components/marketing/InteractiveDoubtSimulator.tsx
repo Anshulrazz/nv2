@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Bot, Sparkles, Send, CheckCircle2, ArrowRight, Code, BookOpen, Cpu } from "lucide-react";
+import { Bot, Sparkles, Send, CheckCircle2, Cpu } from "lucide-react";
 
 const sampleQueries = [
   {
@@ -32,30 +32,54 @@ export function InteractiveDoubtSimulator() {
   const [customInput, setCustomInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [activeQuery, setActiveQuery] = useState(sampleQueries[0]);
+  const [engineName, setEngineName] = useState("OpenRouter AI (GPT-4o-mini)");
+
+  const fetchOpenRouterResponse = async (userQuery: string, fallbackBadge: string) => {
+    setIsTyping(true);
+    try {
+      const res = await fetch("/api/ai/demo-doubt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: userQuery }),
+      });
+      const data = await res.json();
+      if (res.ok && data.response) {
+        setActiveQuery({
+          topic: "OpenRouter Doubt",
+          query: userQuery,
+          response: data.response,
+          badge: fallbackBadge,
+        });
+        setEngineName(data.engine || "OpenRouter AI");
+      } else {
+        throw new Error(data.error || "OpenRouter failed");
+      }
+    } catch (err) {
+      console.warn("Falling back to local preset:", err);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   const handleSelectQuery = (index: number) => {
     setActiveIndex(index);
-    setIsTyping(true);
-    setTimeout(() => {
-      setActiveQuery(sampleQueries[index]);
-      setIsTyping(false);
-    }, 300);
+    const selected = sampleQueries[index];
+    setActiveQuery(selected);
+    fetchOpenRouterResponse(selected.query, selected.badge);
   };
 
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customInput.trim()) return;
-    setIsTyping(true);
-    setTimeout(() => {
-      setActiveQuery({
-        topic: "Custom Student Doubt",
-        query: customInput,
-        response: `### AI Copilot Synthesis\nAnalyzing doubt: "${customInput}"...\n\n1. **Key Concept Identified**: Core Academic Problem Statement.\n2. **Recommended Action**: Notexia AI copilot breaks down your question step-by-step with LaTeX equations, pseudocode, and reference diagrams. Sign up free to unlock 24/7 unlimited queries.`,
-        badge: "Custom Query",
-      });
-      setIsTyping(false);
-      setCustomInput("");
-    }, 400);
+    const queryText = customInput.trim();
+    setCustomInput("");
+    setActiveQuery({
+      topic: "Live Student Doubt",
+      query: queryText,
+      response: "Synthesizing answer via OpenRouter AI...",
+      badge: "Custom Query",
+    });
+    fetchOpenRouterResponse(queryText, "Custom AI Query");
   };
 
   return (
@@ -64,13 +88,13 @@ export function InteractiveDoubtSimulator() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#F3F0E4]/10 pb-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
-              <Bot className="size-3.5 animate-pulse" /> LIVE DEMO
+              <Bot className="size-3.5 animate-pulse" /> LIVE DEMO — OPENROUTER AI
             </div>
             <h3 className="text-2xl font-bold text-white font-heading">
               Test Notexia AI Copilot in Real-Time
             </h3>
             <p className="text-xs text-[#9FAEA1] font-light">
-              Click a sample student doubt prompt below or type your own question to see instant AI resolution:
+              Click a sample student doubt prompt below or type your own question to see instant OpenRouter AI resolution:
             </p>
           </div>
 
@@ -118,7 +142,8 @@ export function InteractiveDoubtSimulator() {
                 />
                 <button
                   type="submit"
-                  className="absolute right-1.5 top-1.5 size-7 rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] flex items-center justify-center transition-transform active:scale-90"
+                  disabled={isTyping}
+                  className="absolute right-1.5 top-1.5 size-7 rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] flex items-center justify-center transition-transform active:scale-90 disabled:opacity-50"
                 >
                   <Send className="size-3.5" />
                 </button>
@@ -134,14 +159,14 @@ export function InteractiveDoubtSimulator() {
                   <Sparkles className="size-4 text-[#F0C93B]" /> Notexia AI Copilot
                 </div>
                 <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
-                  LATEX &amp; CODE ENABLED
+                  OPENROUTER AI ACTIVE
                 </span>
               </div>
 
               {isTyping ? (
                 <div className="min-h-[120px] flex items-center justify-center space-x-2 text-xs font-mono text-[#8FC3DE]">
                   <Cpu className="size-4 animate-spin text-[#F0C93B]" />
-                  <span>Synthesizing step-by-step resolution...</span>
+                  <span>OpenRouter AI synthesizing resolution...</span>
                 </div>
               ) : (
                 <div className="font-mono text-xs text-[#F3F0E4] leading-relaxed bg-[#121F18] p-4 rounded-xl border border-[#F3F0E4]/10 whitespace-pre-wrap min-h-[120px]">
@@ -152,9 +177,9 @@ export function InteractiveDoubtSimulator() {
 
             <div className="flex items-center justify-between text-[11px] text-[#9FAEA1] pt-2 border-t border-[#F3F0E4]/10">
               <span className="flex items-center gap-1.5 text-[#8FC3DE]">
-                <CheckCircle2 className="size-3.5" /> Verified by Subject Specialists
+                <CheckCircle2 className="size-3.5" /> {engineName}
               </span>
-              <span className="font-mono text-[#F0C93B]">Response Time: 340ms</span>
+              <span className="font-mono text-[#F0C93B]">Live OpenRouter Model</span>
             </div>
           </div>
         </div>

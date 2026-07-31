@@ -14,6 +14,9 @@ interface Course {
   title: string;
   description: string;
   thumbnail: string | null;
+  price?: number;
+  isPaid?: boolean;
+  isEnrolled?: boolean;
   instructor: {
     _id: string;
     name: string;
@@ -93,66 +96,97 @@ export default function CoursesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 relative z-10">
-          {courses.map((course, idx) => (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              key={course._id}
-              className="group rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full"
-            >
-              <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-full">
-                {course.thumbnail ? (
-                  <div className="h-48 w-full relative overflow-hidden bg-zinc-950">
-                    <img
-                      src={course.thumbnail}
-                      alt={course.title}
-                      className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
-                  </div>
-                ) : (
-                  <div className="h-48 w-full bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-white/5">
-                    <Presentation className="size-16 text-violet-500/20 group-hover:scale-110 transition-transform duration-500" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
-                  </div>
-                )}
-                
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3">
+          {courses.map((course, idx) => {
+            const coursePrice = course.price || 0;
+            const isFree = coursePrice === 0;
+
+            return (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                key={course._id}
+                className="group rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full"
+              >
+                <div className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 overflow-hidden flex flex-col h-full">
+                  {course.thumbnail ? (
+                    <div className="h-48 w-full relative overflow-hidden bg-zinc-950">
                       <img
-                        src={course.instructor?.image || "/default-avatar.png"}
-                        alt={course.instructor?.name || "Instructor"}
-                        className="size-9 rounded-full border border-white/10 object-cover bg-zinc-900"
+                        src={course.thumbnail}
+                        alt={course.title}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
                       />
-                      <div>
-                        <p className="text-xs font-bold text-white">{course.instructor?.name || "Anonymous"}</p>
-                        <p className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
-                          <Clock className="size-3 text-violet-400" />
-                          {new Date(course.createdAt).toLocaleDateString()}
-                        </p>
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
+                      
+                      {/* Price Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        {isFree ? (
+                          <span className="bg-emerald-500/80 backdrop-blur-md text-emerald-950 text-[10px] font-extrabold px-2.5 py-1 rounded-full font-mono uppercase shadow-lg border border-emerald-400/40">
+                            FREE
+                          </span>
+                        ) : (
+                          <span className="bg-[#F0C93B] text-[#2A2118] text-[10px] font-extrabold px-2.5 py-1 rounded-full font-mono uppercase shadow-lg flex items-center gap-1">
+                            🔒 {coursePrice} Coins
+                          </span>
+                        )}
                       </div>
                     </div>
+                  ) : (
+                    <div className="h-48 w-full bg-zinc-950 relative overflow-hidden flex items-center justify-center border-b border-white/5">
+                      <Presentation className="size-16 text-violet-500/20 group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#07070a] via-transparent to-transparent" />
+                      
+                      {/* Price Badge */}
+                      <div className="absolute top-3 right-3 z-10">
+                        {isFree ? (
+                          <span className="bg-emerald-500/80 backdrop-blur-md text-emerald-950 text-[10px] font-extrabold px-2.5 py-1 rounded-full font-mono uppercase shadow-lg border border-emerald-400/40">
+                            FREE
+                          </span>
+                        ) : (
+                          <span className="bg-[#F0C93B] text-[#2A2118] text-[10px] font-extrabold px-2.5 py-1 rounded-full font-mono uppercase shadow-lg flex items-center gap-1">
+                            🔒 {coursePrice} Coins
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-6">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={course.instructor?.image || "/default-avatar.png"}
+                          alt={course.instructor?.name || "Instructor"}
+                          className="size-9 rounded-full border border-white/10 object-cover bg-zinc-900"
+                        />
+                        <div>
+                          <p className="text-xs font-bold text-white">{course.instructor?.name || "Anonymous"}</p>
+                          <p className="text-[10px] font-mono text-zinc-500 flex items-center gap-1">
+                            <Clock className="size-3 text-violet-400" />
+                            {new Date(course.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
 
-                    <h3 className="text-lg font-bold text-white line-clamp-1 group-hover:text-violet-400 transition-colors">
-                      {course.title}
-                    </h3>
-                    <p className="text-xs text-zinc-400 font-light line-clamp-2 leading-relaxed">
-                      {course.description}
-                    </p>
+                      <h3 className="text-lg font-bold text-white line-clamp-1 group-hover:text-violet-400 transition-colors">
+                        {course.title}
+                      </h3>
+                      <p className="text-xs text-zinc-400 font-light line-clamp-2 leading-relaxed">
+                        {course.description}
+                      </p>
+                    </div>
+
+                    <Link href={`/courses/${course._id}`} className="block w-full">
+                      <Button className="group/btn w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]">
+                        <span>{isFree ? "Start Free Course" : `View & Unlock Course (${coursePrice} Coins)`}</span>
+                        <ArrowUpRight className="size-4 text-zinc-950 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                      </Button>
+                    </Link>
                   </div>
-
-                  <Link href={`/courses/${course._id}`} className="block w-full">
-                    <Button className="group/btn w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]">
-                      <span>Start Course</span>
-                      <ArrowUpRight className="size-4 text-zinc-950 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
-                    </Button>
-                  </Link>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            );
+          })}
         </div>
       )}
     </div>

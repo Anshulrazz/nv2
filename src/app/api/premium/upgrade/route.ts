@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
+import { Coupon } from "@/models/Coupon";
 import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet } from "@/lib/wallet";
 
@@ -19,7 +20,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { plan } = await req.json();
+    const { plan, couponCode } = await req.json();
     if (plan !== "monthly" && plan !== "yearly") {
       return NextResponse.json(
         { error: "Invalid plan selected. Please choose 'monthly' or 'yearly'." },
@@ -27,9 +28,30 @@ export async function POST(req: Request) {
       );
     }
 
-    const cost = PLAN_PRICING[plan as keyof typeof PLAN_PRICING];
+    const baseCost: number = PLAN_PRICING[plan as keyof typeof PLAN_PRICING];
+    let finalCost: number = baseCost;
+    let appliedCoupon: string | undefined = undefined;
 
     await connectToDatabase();
+
+    // Process coupon code
+    if (couponCode && typeof couponCode === "string" && couponCode.trim()) {
+      const cleanCode = couponCode.trim().toUpperCase();
+      const coupon = await Coupon.findOne({ code: cleanCode, isActive: true });
+      if (coupon && new Date() <= new Date(coupon.validUntil) && coupon.usedCount < coupon.maxUses) {
+        if (coupon.applicableFor === "subscription" || coupon.applicableFor === "all") {
+          if (coupon.discountType === "percentage") {
+            const discount = Math.round((baseCost * coupon.discountValue) / 100);
+            finalCost = Math.max(0, baseCost - discount);
+          } else {
+            finalCost = Math.max(0, baseCost - coupon.discountValue);
+          }
+          appliedCoupon = coupon.code;
+          coupon.usedCount += 1;
+          await coupon.save();
+        }
+      }
+    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -39,14 +61,12 @@ export async function POST(req: Request) {
     const wallet = await getOrCreateUserWallet(user._id);
 
     // Balance check
-    if (wallet.balance < cost || (user.coins || 0) < cost) {
+    if (wallet.balance < finalCost || (user.coins || 0) < finalCost) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_BALANCE",
-          message: `Insufficient coins. ${
-            plan === "monthly" ? "500" : "5,000"
-          } coins required for ${plan} premium.`,
-          requiredCoins: cost,
+          message: `Insufficient coins balance. ${finalCost} coins required for ${plan} premium.`,
+          requiredCoins: finalCost,
           currentBalance: wallet.balance,
         },
         { status: 400 }
@@ -65,7 +85,7 @@ export async function POST(req: Request) {
     try {
       await dbSession.withTransaction(async () => {
         // Deduct coins from user & wallet
-        user.coins -= cost;
+        user.coins -= finalCost;
         user.isPremium = true;
         user.isPremiumUser = true;
         user.premiumSince = now;
@@ -73,7 +93,7 @@ export async function POST(req: Request) {
         user.premiumExpiresAt = expiryDate;
         await user.save({ session: dbSession });
 
-        wallet.balance -= cost;
+        wallet.balance -= finalCost;
         await wallet.save({ session: dbSession });
 
         // Record transaction ledger
@@ -82,11 +102,14 @@ export async function POST(req: Request) {
             {
               fromWalletAddress: wallet.address,
               toWalletAddress: "SYSTEM_PREMIUM_VAULT",
-              amount: cost,
+              amount: finalCost,
               type: "premium_purchase",
               status: "completed",
               metadata: {
                 plan,
+                baseCost,
+                finalCost,
+                appliedCoupon,
                 premiumExpiresAt: expiryDate,
                 note: `Purchased ${plan} premium subscription`,
               },
@@ -98,7 +121,7 @@ export async function POST(req: Request) {
     } catch (txError) {
       console.warn("MongoDB transaction fallback for premium upgrade:", txError);
       // Fallback for standalone Mongo instances without replica set
-      user.coins -= cost;
+      user.coins -= finalCost;
       user.isPremium = true;
       user.isPremiumUser = true;
       user.premiumSince = now;
@@ -106,17 +129,20 @@ export async function POST(req: Request) {
       user.premiumExpiresAt = expiryDate;
       await user.save();
 
-      wallet.balance -= cost;
+      wallet.balance -= finalCost;
       await wallet.save();
 
       await CoinTransaction.create({
         fromWalletAddress: wallet.address,
         toWalletAddress: "SYSTEM_PREMIUM_VAULT",
-        amount: cost,
+        amount: finalCost,
         type: "premium_purchase",
         status: "completed",
         metadata: {
           plan,
+          baseCost,
+          finalCost,
+          appliedCoupon,
           premiumExpiresAt: expiryDate,
           note: `Purchased ${plan} premium subscription`,
         },

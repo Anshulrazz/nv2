@@ -15,6 +15,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [thumbnail, setThumbnail] = useState(initialData?.thumbnail || "");
+  const [price, setPrice] = useState<number>(initialData?.price || 0);
   const [isPublished, setIsPublished] = useState(initialData?.isPublished || false);
   const [modules, setModules] = useState<any[]>(initialData?.modules || []);
 
@@ -102,7 +103,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
     setError("");
 
     try {
-      const payload = { title, description, thumbnail, isPublished, modules };
+      const payload = { title, description, thumbnail, isPublished, price, modules };
       
       const url = initialData ? `/api/courses/${initialData._id}` : "/api/courses";
       const method = initialData ? "PUT" : "POST";
@@ -158,6 +159,28 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
             className="w-full bg-background border border-border rounded-lg px-4 py-2 outline-none focus:border-violet-500 min-h-[100px]"
             placeholder="Course description..."
           />
+        </div>
+
+        {/* Course Pricing & Revenue Share */}
+        <div className="space-y-2 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium text-foreground">Course Price (in Coins)</label>
+            <span className="text-xs font-mono text-emerald-400 font-bold bg-emerald-500/20 px-2 py-0.5 rounded-md">
+              70% Creator / 30% Admin Split
+            </span>
+          </div>
+          <input
+            type="number"
+            min={0}
+            value={price}
+            onChange={e => setPrice(Math.max(0, parseInt(e.target.value) || 0))}
+            className="w-full bg-background border border-border rounded-lg px-4 py-2 outline-none focus:border-violet-500 font-mono"
+            placeholder="0 for Free Course"
+          />
+          <p className="text-xs text-muted-foreground">
+            Set to <strong>0</strong> for a free course. If set to paid (e.g. 200 coins), students unlock it using coins.
+            <strong> You receive 70% ({Math.floor(price * 0.7)} coins)</strong> on every enrollment!
+          </p>
         </div>
 
         <div className="space-y-1">
