@@ -3,15 +3,15 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { HomeIcon, Users, Send, Trophy, User as UserIcon } from "lucide-react";
+import { HomeIcon, LayoutDashboard, Users, Send, Trophy, User as UserIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 export function MobileBottomNav({
   userId,
-  unreadMessagesCount,
+  unreadMessagesCount = 0,
 }: {
-  userId: string;
-  unreadMessagesCount: number;
+  userId?: string;
+  unreadMessagesCount?: number;
 }) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -21,6 +21,11 @@ export function MobileBottomNav({
       href: "/feed",
       icon: HomeIcon,
       label: "Home",
+    },
+    {
+      href: "/dashboard",
+      icon: LayoutDashboard,
+      label: "Dashboard",
     },
     {
       href: "/community",
@@ -39,7 +44,7 @@ export function MobileBottomNav({
       label: "Leaderboard",
     },
     {
-      href: `/user/${userId}`,
+      href: userId ? `/user/${userId}` : "/login",
       icon: UserIcon,
       label: "Profile",
     },

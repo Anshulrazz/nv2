@@ -13,6 +13,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CoinConverterModal } from "@/components/wallet/CoinConverterModal";
+import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
 
 interface Author {
   _id: string;
@@ -459,7 +460,7 @@ export default function PublicFeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 flex flex-col antialiased">
+    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 flex flex-col antialiased pb-20 lg:pb-0">
       {/* Top Bar Header Navigation */}
       {session?.user ? (
         <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
@@ -996,6 +997,9 @@ export default function PublicFeedPage() {
           fetchUserCoins();
         }}
       />
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav userId={session?.user?.id} />
     </div>
   );
 }
