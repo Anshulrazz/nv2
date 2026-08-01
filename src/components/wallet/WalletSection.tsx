@@ -29,6 +29,7 @@ import { toast } from "sonner";
 import { WithdrawEarningsModal } from "./WithdrawEarningsModal";
 import { CoinConverterModal } from "./CoinConverterModal";
 import { BecomeTeacherModal } from "@/components/teacher/BecomeTeacherModal";
+import { ListSkeleton } from "@/components/ui/skeleton";
 
 interface TransactionItem {
   id: string;
@@ -537,10 +538,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         </div>
 
         {isLedgerLoading && transactions.length === 0 ? (
-          <div className="py-12 text-center text-xs text-[#9FAEA1] flex items-center justify-center gap-2">
-            <Loader2 className="h-4 w-4 animate-spin text-[#F0C93B]" />
-            <span>Fetching ledger audit records...</span>
-          </div>
+          <ListSkeleton count={4} />
         ) : transactions.length === 0 ? (
           <div className="py-12 text-center text-xs text-[#9FAEA1] space-y-1">
             <p>No coin transactions recorded yet.</p>
