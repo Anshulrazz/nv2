@@ -251,9 +251,9 @@ async function generateQuiz(
   transcript: string
 ): Promise<PipelineQuizQuestion[]> {
   const systemPrompt = `You are a senior exam question creator for competitive exams (JEE, NEET, GATE, CBSE).
-Create a minimum of 10 Multiple-Choice Questions (MCQs) strictly based on the provided lecture transcript.
+Create 10 Multiple-Choice Questions (MCQs) strictly based on the provided lecture transcript.
 
-Respond ONLY with a valid JSON array of question objects matching this exact schema:
+Respond ONLY with a valid JSON array or object containing question objects:
 [
   {
     "question": "Clear, precise question text?",
@@ -266,13 +266,13 @@ Respond ONLY with a valid JSON array of question objects matching this exact sch
 REQUIREMENTS:
 - Exactly 4 options per question.
 - "correctIndex" MUST be an integer from 0 to 3.
-- Minimum 10 questions total.`;
+- Provide 10 questions.`;
 
   const userPrompt = `Transcript:
 ---
 ${transcript.slice(0, 30000)}
 ---
-Generate at least 10 high-quality MCQs as a JSON array.`;
+Generate high-quality MCQs as a JSON array.`;
 
   try {
     const rawOutput = await generateGeminiContent({
@@ -283,23 +283,39 @@ Generate at least 10 high-quality MCQs as a JSON array.`;
     });
     const parsed = JSON.parse(cleanJsonResponse(rawOutput));
 
-    if (Array.isArray(parsed) && parsed.length >= 10) {
+    const items = Array.isArray(parsed)
+      ? parsed
+      : (parsed?.quiz || parsed?.questions || parsed?.mcqs || parsed?.data || []);
+
+    if (Array.isArray(items) && items.length > 0) {
       interface RawQuizItem {
         question?: string;
         options?: unknown[];
         correctIndex?: number;
         explanation?: string;
       }
-      const validQuestions = (parsed as RawQuizItem[])
-        .filter((q) => q.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number" && q.explanation)
-        .map((q) => ({
-          question: String(q.question).trim(),
-          options: (q.options || []).map((o: unknown) => String(o).trim()),
-          correctIndex: Math.min(Math.max(0, Math.floor(Number(q.correctIndex))), 3),
-          explanation: String(q.explanation).trim(),
-        }));
 
-      if (validQuestions.length >= 10) {
+      const validQuestions = (items as RawQuizItem[])
+        .filter((q) => q && q.question && Array.isArray(q.options) && q.options.length >= 2)
+        .map((q) => {
+          const rawOpts = (q.options || []).map((o: unknown) => String(o).trim());
+          while (rawOpts.length < 4) {
+            rawOpts.push(`Option ${String.fromCharCode(65 + rawOpts.length)}`);
+          }
+          const options = rawOpts.slice(0, 4);
+          const rawIdx = Number(q.correctIndex ?? 0);
+          const correctIndex = isNaN(rawIdx) ? 0 : Math.min(Math.max(0, Math.floor(rawIdx)), 3);
+          const explanation = q.explanation ? String(q.explanation).trim() : `Option ${String.fromCharCode(65 + correctIndex)} is correct based on the lecture.`;
+
+          return {
+            question: String(q.question).trim(),
+            options,
+            correctIndex,
+            explanation,
+          };
+        });
+
+      if (validQuestions.length >= 5) {
         return validQuestions;
       }
     }
