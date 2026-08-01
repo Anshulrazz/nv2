@@ -292,52 +292,75 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
   return (
     <div className="space-y-6">
       {/* WALLET ADDRESS HEADER BANNER */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#121F18] via-[#16261D] to-[#0A120E] border border-[#F0C93B]/30 p-5 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+      <div className="rounded-2xl bg-gradient-to-r from-[#121F18] via-[#16261D] to-[#0A120E] border border-[#F0C93B]/30 p-4 sm:p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl space-y-4">
         <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+        
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative z-10">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
                 Official Wallet Address
               </span>
-              <span className="text-[10px] text-[#9FAEA1] font-mono">• Unique Peer-to-Peer ID</span>
+              <span className="text-[10px] text-[#9FAEA1] font-mono">• Peer-to-Peer ID</span>
             </div>
-            <p className="text-xs text-[#9FAEA1] max-w-xl">
-              Share this wallet address with other scholars or educators on Notexia to receive instant coin transfers.
+            <p className="text-xs text-[#9FAEA1] max-w-xl leading-relaxed">
+              Share this unique wallet address with other scholars or educators on Notexia to receive instant coin transfers.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-[#0A120E]/80 border border-[#F0C93B]/40 p-2 sm:px-4 sm:py-2.5 rounded-xl self-start sm:self-auto w-full sm:w-auto justify-between">
-            <div className="flex items-center gap-2.5 font-mono text-xs text-[#F0C93B] font-bold select-all tracking-wider">
-              <WalletIcon className="size-4 text-[#F0C93B] shrink-0" />
-              <span>{isLoading ? "Fetching address..." : (address || "NTX-GENERATING...")}</span>
+          <Button
+            type="button"
+            onClick={() => {
+              if (!address) return;
+              navigator.clipboard.writeText(address);
+              setCopiedAddress(true);
+              toast.success("Wallet address copied to clipboard!");
+              setTimeout(() => setCopiedAddress(false), 2000);
+            }}
+            disabled={!address}
+            className="w-full md:w-auto h-10 px-4 text-xs font-mono font-bold bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] border border-[#F0C93B]/60 rounded-xl shrink-0 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(240,201,59,0.2)] transition-all active:scale-95 cursor-pointer font-heading"
+          >
+            {copiedAddress ? (
+              <>
+                <Check className="size-4 text-[#2A2118]" />
+                <span>Address Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="size-4" />
+                <span>Copy Wallet Address</span>
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* CLICK TO COPY ADDRESS CONTAINER */}
+        <div 
+          onClick={() => {
+            if (!address) return;
+            navigator.clipboard.writeText(address);
+            setCopiedAddress(true);
+            toast.success("Wallet address copied to clipboard!");
+            setTimeout(() => setCopiedAddress(false), 2000);
+          }}
+          className="bg-[#0A120E]/90 border border-[#F0C93B]/40 p-3 sm:px-4 sm:py-3 rounded-xl flex items-center justify-between gap-3 group cursor-pointer hover:border-[#F0C93B]/70 transition-all select-all overflow-hidden"
+          title="Click to copy wallet address"
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
+              <WalletIcon className="size-3.5" />
             </div>
-            <Button
-              type="button"
-              size="sm"
-              variant="ghost"
-              onClick={() => {
-                if (!address) return;
-                navigator.clipboard.writeText(address);
-                setCopiedAddress(true);
-                toast.success("Wallet address copied to clipboard!");
-                setTimeout(() => setCopiedAddress(false), 2000);
-              }}
-              disabled={!address}
-              className="h-8 px-3 text-xs font-mono bg-[#F0C93B]/20 hover:bg-[#F0C93B]/30 text-[#F0C93B] border border-[#F0C93B]/40 rounded-lg shrink-0 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
-            >
-              {copiedAddress ? (
-                <>
-                  <Check className="size-3.5 text-emerald-400" />
-                  <span className="text-emerald-400">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="size-3.5" />
-                  <span>Copy</span>
-                </>
-              )}
-            </Button>
+            <div className="min-w-0 flex-1">
+              <span className="text-[9px] text-[#9FAEA1] uppercase tracking-wider font-mono block">Your Unique Address</span>
+              <span className="font-mono text-xs sm:text-sm text-[#F0C93B] font-bold tracking-tight sm:tracking-wider break-all block truncate sm:whitespace-normal">
+                {isLoading ? "Fetching address..." : (address || "NTX-GENERATING...")}
+              </span>
+            </div>
+          </div>
+
+          <div className="shrink-0 flex items-center gap-1.5 text-[11px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 group-hover:bg-[#F0C93B]/20 border border-[#F0C93B]/30 px-2.5 py-1 rounded-lg transition-colors">
+            {copiedAddress ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+            <span className="hidden sm:inline">{copiedAddress ? "Copied" : "Copy"}</span>
           </div>
         </div>
       </div>

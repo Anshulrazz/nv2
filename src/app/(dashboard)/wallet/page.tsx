@@ -35,7 +35,7 @@ export default async function WalletPage() {
       </div>
 
       {/* Header */}
-      <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-6 z-10 relative">
+      <div className="p-3.5 sm:p-6 lg:p-10 max-w-6xl w-full mx-auto space-y-6 z-10 relative">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
           <div className="space-y-1">
             <Link
