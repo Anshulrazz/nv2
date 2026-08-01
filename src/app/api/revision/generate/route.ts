@@ -25,12 +25,139 @@ function extractText(node: TipTapNode): string {
   return "";
 }
 
-// High-fidelity dynamic fallback study material generator when API key is missing
+// Robust JSON response normalizer for Cheat Sheets, Flashcards, and Quizzes
+function parseAndNormalizeRevisionResponse(
+  rawText: string,
+  mode: "cheatsheet" | "flashcards" | "quiz",
+  noteTitle: string
+) {
+  let cleaned = rawText
+    .replace(/```json/gi, "")
+    .replace(/```/gi, "")
+    .trim();
+
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+  if (jsonMatch) {
+    cleaned = jsonMatch[0];
+  }
+
+  let parsed = JSON.parse(cleaned);
+
+  if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+    if (parsed.data && typeof parsed.data === "object") parsed = parsed.data;
+    else if (parsed.result && typeof parsed.result === "object") parsed = parsed.result;
+    else if (parsed.revision && typeof parsed.revision === "object") parsed = parsed.revision;
+  }
+
+  // Mode: Cheat Sheet
+  if (mode === "cheatsheet") {
+    let cheatsheetData = parsed.cheatsheet || parsed;
+    if (!cheatsheetData.summary && typeof cheatsheetData === "object") {
+      cheatsheetData = {
+        summary: cheatsheetData.overview || cheatsheetData.summary || "Summary of the study content.",
+        concepts: Array.isArray(cheatsheetData.concepts) ? cheatsheetData.concepts : (Array.isArray(cheatsheetData.terms) ? cheatsheetData.terms : []),
+        formulas: Array.isArray(cheatsheetData.formulas) ? cheatsheetData.formulas : (Array.isArray(cheatsheetData.equations) ? cheatsheetData.equations : []),
+        highlights: Array.isArray(cheatsheetData.highlights) ? cheatsheetData.highlights : (Array.isArray(cheatsheetData.keyPoints) ? cheatsheetData.keyPoints : []),
+      };
+    }
+
+    return {
+      title: parsed.title || `${noteTitle} Cheat Sheet`,
+      type: "cheatsheet",
+      cheatsheet: {
+        summary: cheatsheetData.summary || "Executive overview of the study material.",
+        concepts: (cheatsheetData.concepts || []).map((c: Record<string, unknown>) => ({
+          term: String(c.term || c.name || "Concept"),
+          definition: String(c.definition || c.description || "Explanation of key concept."),
+        })),
+        formulas: (cheatsheetData.formulas || []).map((f: Record<string, unknown>) => ({
+          name: String(f.name || f.title || "Rule / Formula"),
+          description: String(f.description || f.formula || f.value || "Description or equation."),
+        })),
+        highlights: Array.isArray(cheatsheetData.highlights)
+          ? cheatsheetData.highlights.map(String)
+          : ["Focus on core concepts.", "Review formulas repeatedly."],
+      },
+    };
+  }
+
+  // Mode: Flashcards
+  if (mode === "flashcards") {
+    let rawCards = parsed.flashcards || parsed.cards || (Array.isArray(parsed) ? parsed : []);
+    if (!Array.isArray(rawCards) && typeof parsed === "object") {
+      const foundArray = Object.values(parsed).find(Array.isArray);
+      if (foundArray) rawCards = foundArray;
+    }
+
+    const flashcards = (Array.isArray(rawCards) ? rawCards : []).map((c: Record<string, unknown>) => ({
+      question: String(c.question || c.q || "What is the key concept discussed?"),
+      answer: String(c.answer || c.a || c.definition || "Explanation details."),
+    }));
+
+    return {
+      title: parsed.title || `${noteTitle} Spaced Flashcards`,
+      type: "flashcards",
+      flashcards: flashcards.length > 0 ? flashcards : [
+        { question: `What is the primary topic of ${noteTitle}?`, answer: "Review the key topics and foundational principles explained in the note." }
+      ],
+    };
+  }
+
+  // Mode: Quiz
+  let rawQuiz = parsed.quiz || parsed.questions || parsed.mcqs || (Array.isArray(parsed) ? parsed : []);
+  if (!Array.isArray(rawQuiz) && typeof parsed === "object") {
+    const foundArray = Object.values(parsed).find(Array.isArray);
+    if (foundArray) rawQuiz = foundArray;
+  }
+
+  const quiz = (Array.isArray(rawQuiz) ? rawQuiz : []).map((q: Record<string, unknown>) => {
+    const rawOptions = Array.isArray(q.options)
+      ? q.options.map(String)
+      : Array.isArray(q.choices)
+      ? q.choices.map(String)
+      : ["Option A", "Option B", "Option C", "Option D"];
+
+    while (rawOptions.length < 4) {
+      rawOptions.push(`Option ${String.fromCharCode(65 + rawOptions.length)}`);
+    }
+
+    let correctIndex = typeof q.correctAnswerIndex === "number"
+      ? q.correctAnswerIndex
+      : typeof q.correctIndex === "number"
+      ? q.correctIndex
+      : typeof q.answerIndex === "number"
+      ? q.answerIndex
+      : 0;
+
+    if (correctIndex < 0 || correctIndex > 3) correctIndex = 0;
+
+    return {
+      question: q.question || "Which of the following statements is correct?",
+      options: rawOptions.slice(0, 4),
+      correctAnswerIndex: correctIndex,
+      explanation: q.explanation || `Option ${String.fromCharCode(65 + correctIndex)} is the correct answer according to the study material.`,
+    };
+  });
+
+  return {
+    title: parsed.title || `${noteTitle} Practice Quiz`,
+    type: "quiz",
+    quiz: quiz.length > 0 ? quiz : [
+      {
+        question: `What is the main objective of studying ${noteTitle}?`,
+        options: ["To master core concepts", "To skip revision", "To ignore formulas", "None of the above"],
+        correctAnswerIndex: 0,
+        explanation: "Mastering core concepts is the primary goal of smart revision."
+      }
+    ],
+  };
+}
+
+// Fallback dynamic generator if AI keys fail completely
 function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards" | "quiz", title: string) {
   const cleanTitle = title || "Study Guide";
   const words = text.split(/\s+/).filter(w => w.length > 3);
   
-  // Find interesting capitalized terms or keywords
   const keywords = Array.from(new Set(
     words
       .map(w => w.replace(/[^a-zA-Z]/g, ""))
@@ -39,7 +166,6 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
 
   const defaultKeywords = keywords.length > 2 ? keywords : ["Variable", "Function", "Module", "Database", "Asynchronous"];
 
-  // Extract mock summaries/sentences
   const sentences = text
     .split(/[.!?]+/)
     .map(s => s.trim())
@@ -49,11 +175,10 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
 
   if (mode === "cheatsheet") {
     const concepts = defaultKeywords.map((kw) => {
-      // Find a sentence containing this keyword, or fallback
       const matchingSentence = sentences.find(s => s.toLowerCase().includes(kw.toLowerCase()));
       return {
         term: kw,
-        definition: matchingSentence || `${kw} is a key concept defined in the notes, representing crucial functionality and structural parameters in ${cleanTitle}.`
+        definition: matchingSentence || `${kw} is a key concept defined in the notes, representing crucial functionality in ${cleanTitle}.`
       };
     });
 
@@ -62,20 +187,19 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
       { name: "Retention Rate Efficiency", description: "R = (Active Recalls / Total Reviews) * 100%" }
     ];
 
-    const highlights = sentences.slice(0, 4).map(s => s) || [
+    const highlights = sentences.slice(0, 4).length > 0 ? sentences.slice(0, 4) : [
       "Revision is key to long-term memory retrieval.",
-      "Reviewing concept summaries before self-testing increases confidence.",
-      "Use spaced repetition to optimize retention limits."
+      "Reviewing concept summaries before self-testing increases confidence."
     ];
 
     return {
       title: `${cleanTitle} Cheat Sheet`,
       type: "cheatsheet",
       cheatsheet: {
-        summary: summary || "This study guide provides a detailed overview of the core concepts, glossary, and rules explained in the active note document.",
+        summary: summary || "This study guide provides an overview of the core concepts explained in the note.",
         concepts,
         formulas,
-        highlights: highlights.length > 0 ? highlights : ["Focus on core concepts.", "Review formulas repeatedly."]
+        highlights
       }
     };
   }
@@ -85,47 +209,37 @@ function generateFallbackMaterial(text: string, mode: "cheatsheet" | "flashcards
       const matchingSentence = sentences.find(s => s.toLowerCase().includes(kw.toLowerCase()));
       return {
         question: `What is the significance of "${kw}" in ${cleanTitle}?`,
-        answer: matchingSentence || `In the context of ${cleanTitle}, "${kw}" represents a fundamental building block that manages data flow, structures logical constraints, or defines systemic operations.`
+        answer: matchingSentence || `In the context of ${cleanTitle}, "${kw}" represents a fundamental building block.`
       };
     });
 
     return {
       title: `${cleanTitle} Flashcards`,
       type: "flashcards",
-      flashcards: flashcards.length > 0 ? flashcards : [
-        { question: "What is the primary topic of this note?", answer: `The note covers fundamental guidelines and concepts related to ${cleanTitle}.` }
-      ]
+      flashcards
     };
   }
 
-  // mode === "quiz"
   const quiz = defaultKeywords.map((kw) => {
     const incorrectChoices = defaultKeywords.filter(k => k !== kw).slice(0, 3);
     while (incorrectChoices.length < 3) {
-      incorrectChoices.push(`Mock Alternative ${incorrectChoices.length + 1}`);
+      incorrectChoices.push(`Alternative ${incorrectChoices.length + 1}`);
     }
     const options = [kw, ...incorrectChoices].sort(() => Math.random() - 0.5);
     const correctAnswerIndex = options.indexOf(kw);
 
     return {
-      question: `Which of the following terms is defined as the core component representing: "${kw}"?`,
+      question: `Which term represents the core concept "${kw}" in ${cleanTitle}?`,
       options,
       correctAnswerIndex,
-      explanation: `In the study content of ${cleanTitle}, "${kw}" is the correct component described. The alternatives represent different namespaces.`
+      explanation: `In ${cleanTitle}, "${kw}" is the primary concept.`
     };
   });
 
   return {
     title: `${cleanTitle} Prep Quiz`,
     type: "quiz",
-    quiz: quiz.length > 0 ? quiz : [
-      {
-        question: `What is the primary objective of studying ${cleanTitle}?`,
-        options: ["To master core terminology", "To skip revisions", "To delete the documentation", "None of the above"],
-        correctAnswerIndex: 0,
-        explanation: "Mastering core terminology is crucial to build foundation in any study topic."
-      }
-    ]
+    quiz
   };
 }
 
@@ -141,7 +255,7 @@ export const POST = auth(async function POST(req) {
     if (!isPremium) {
       return NextResponse.json(
         {
-          error: "Revision Generator (Cheat Sheets, Flashcards, Quizzes) is an exclusive Premium feature. Upgrade to Premium to unlock Gemini AI!",
+          error: "Revision Generator (Cheat Sheets, Flashcards, Quizzes) is an exclusive Premium feature. Upgrade to Premium to unlock AI Revision!",
           isPremiumRequired: true,
         },
         { status: 403 }
@@ -184,19 +298,19 @@ export const POST = auth(async function POST(req) {
     if (mode === "cheatsheet") {
       promptDetails = `
       Create a Cheat Sheet with:
-      - title: A short title
-      - summary: A 2-3 paragraph summary condensing the core lessons.
-      - concepts: An array of up to 6 concepts, where each object has:
-          - term: name of the concept/definition
-          - definition: clear, detailed explanation of the term.
-      - formulas: An array of key formulas, equations, or laws, where each has:
-          - name: Name of formula/rule
-          - description: Math formula (e.g. A = B + C) or quick rule summary.
-      - highlights: Array of 3-5 bulleted highlights.
+      - title: Short title string
+      - summary: A 2-3 paragraph detailed summary condensing the core lessons.
+      - concepts: An array of up to 6 objects, each with:
+          - term: concept name
+          - definition: detailed explanation of term
+      - formulas: An array of key formulas or rules, each with:
+          - name: Formula/rule name
+          - description: Formula equation or rule summary
+      - highlights: Array of 3-5 bullet points.
       
-      Output JSON format:
+      Output JSON:
       {
-        "title": "title",
+        "title": "${noteTitle} Cheat Sheet",
         "type": "cheatsheet",
         "cheatsheet": {
           "summary": "...",
@@ -208,26 +322,26 @@ export const POST = auth(async function POST(req) {
       `;
     } else if (mode === "flashcards") {
       promptDetails = `
-      Create Flashcards containing up to 8 high-value cards where each has a concise question and a detailed answer.
+      Create Flashcards containing up to 8 cards. Each has a question and a detailed answer.
       
-      Output JSON format:
+      Output JSON:
       {
-        "title": "title",
+        "title": "${noteTitle} Spaced Flashcards",
         "type": "flashcards",
         "flashcards": [{"question": "...", "answer": "..."}]
       }
       `;
     } else {
       promptDetails = `
-      Create an Exam Prep Quiz of up to 5 mock multiple choice questions based on this study text. Each question has:
-      - question: the question text
-      - options: an array of 4 choices (only 1 choice is correct)
-      - correctAnswerIndex: index of correct choice (0, 1, 2, or 3)
-      - explanation: explanation of why it is correct.
+      Create an Exam Practice Quiz of 5 multiple choice questions. Each question has:
+      - question: Question text
+      - options: Array of 4 string choices
+      - correctAnswerIndex: Index of correct choice (0, 1, 2, or 3)
+      - explanation: Detailed explanation of why it is correct.
       
-      Output JSON format:
+      Output JSON:
       {
-        "title": "title",
+        "title": "${noteTitle} Practice Quiz",
         "type": "quiz",
         "quiz": [{"question": "...", "options": ["...", "...", "...", "..."], "correctAnswerIndex": 0, "explanation": "..."}]
       }
@@ -235,28 +349,24 @@ export const POST = auth(async function POST(req) {
     }
 
     const systemPrompt = `You are Notexia's smart study assistant. You generate revision materials (Cheat sheets, Flashcards, and Quizzes) from notes in strict, clean JSON. 
-    Do NOT include any preamble or conversational text. Return only raw JSON. No markdown code blocks.`;
-    const userPrompt = `Analyze this content:\n\n${studyText}\n\nTask: ${promptDetails}`;
+Do NOT include any preamble or conversational text. Return raw valid JSON matching the requested structure.`;
+    const userPrompt = `Study Content:\n\n${studyText}\n\nTask: ${promptDetails}`;
 
-    // 1. Try Gemini API
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (geminiKey && geminiKey !== "placeholder" && geminiKey.trim() !== "") {
-      try {
-        const rawJson = await generateGeminiContent({
-          systemPrompt,
-          userPrompt,
-          jsonMode: true,
-        });
+    // 1. Primary Engine: Gemini (with automatic OpenRouter fallback)
+    try {
+      const rawResponseText = await generateGeminiContent({
+        systemPrompt,
+        userPrompt,
+        jsonMode: true,
+      });
 
-        const cleaned = rawJson.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(cleaned);
-        return NextResponse.json(parsed);
-      } catch (geminiErr) {
-        console.warn("Gemini revision failed, trying Anthropic fallback:", geminiErr);
-      }
+      const normalizedResult = parseAndNormalizeRevisionResponse(rawResponseText, mode, noteTitle);
+      return NextResponse.json(normalizedResult);
+    } catch (aiEngineErr) {
+      console.warn("[Revision API] Primary AI Engine (Gemini / OpenRouter) failed:", aiEngineErr);
     }
 
-    // 2. Try Anthropic API
+    // 2. Secondary Backup Engine: Anthropic API (if configured)
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (apiKey && apiKey !== "placeholder" && apiKey !== "") {
       try {
@@ -268,16 +378,16 @@ export const POST = auth(async function POST(req) {
           messages: [{ role: "user", content: userPrompt }],
         });
 
-        let rawText = response.content[0].type === "text" ? response.content[0].text : "";
-        rawText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
-        const parsed = JSON.parse(rawText);
-        return NextResponse.json(parsed);
+        const rawText = response.content[0].type === "text" ? response.content[0].text : "";
+        const normalizedResult = parseAndNormalizeRevisionResponse(rawText, mode, noteTitle);
+        return NextResponse.json(normalizedResult);
       } catch (anthropicErr) {
-        console.warn("Anthropic revision failed:", anthropicErr);
+        console.warn("[Revision API] Anthropic fallback failed:", anthropicErr);
       }
     }
 
-    // 3. Fallback Dynamic Generator
+    // 3. Last Resort Fallback Generator
+    console.warn("[Revision API] All AI engines failed. Utilizing dynamic fallback material.");
     const fallbackResult = generateFallbackMaterial(studyText, mode, noteTitle);
     return NextResponse.json(fallbackResult);
   } catch (error) {
