@@ -93,7 +93,7 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export"
+    "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export" | "newsletter"
   >("analytics");
   const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
@@ -159,6 +159,53 @@ export default function AdminPage() {
     isActive: true,
   });
   const [isSubmittingCoupon, setIsSubmittingCoupon] = useState(false);
+
+  // Newsletter Subscribers state
+  const [newsletterSubscribers, setNewsletterSubscribers] = useState<Array<{
+    _id: string;
+    email: string;
+    status: "active" | "unsubscribed";
+    source: string;
+    createdAt: string;
+  }>>([]);
+  const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
+  const [newsletterSearch, setNewsletterSearch] = useState("");
+
+  const loadNewsletterSubscribers = useCallback(async () => {
+    setIsNewsletterLoading(true);
+    try {
+      const res = await fetch("/api/newsletter");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.subscribers)) {
+          setNewsletterSubscribers(data.subscribers);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load newsletter subscribers", e);
+    } finally {
+      setIsNewsletterLoading(false);
+    }
+  }, []);
+
+  const handleDeleteSubscriber = async (id: string, email: string) => {
+    if (!confirm(`Are you sure you want to remove '${email}' from subscribers?`)) return;
+    try {
+      const res = await fetch("/api/newsletter", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (res.ok) {
+        toast.success(`Removed ${email} from subscribers.`);
+        loadNewsletterSubscribers();
+      } else {
+        toast.error("Failed to delete subscriber.");
+      }
+    } catch {
+      toast.error("Error deleting subscriber.");
+    }
+  };
 
   const [, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -377,11 +424,22 @@ export default function AdminPage() {
     else if (activeTab === "users") await loadUsersList();
     else if (activeTab === "teacher_applications") await loadTeacherApplications();
     else if (activeTab === "coupons") await loadCoupons();
+    else if (activeTab === "newsletter") await loadNewsletterSubscribers();
     else if (activeTab === "moderation") await loadModerationQueue();
     else if (activeTab === "settings") await loadSiteSettings();
     else if (activeTab === "audit") await loadAuditLogsList();
     setIsLoading(false);
-  }, [activeTab, loadAnalytics, loadUsersList, loadTeacherApplications, loadCoupons, loadModerationQueue, loadSiteSettings, loadAuditLogsList]);
+  }, [
+    activeTab,
+    loadAnalytics,
+    loadUsersList,
+    loadTeacherApplications,
+    loadCoupons,
+    loadNewsletterSubscribers,
+    loadModerationQueue,
+    loadSiteSettings,
+    loadAuditLogsList,
+  ]);
 
   useEffect(() => {
     if (session?.user?.role === "admin" && isMounted) {
@@ -481,20 +539,21 @@ export default function AdminPage() {
   };
 
   const navTabs: Array<{
-    id: "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export";
+    id: "analytics" | "users" | "teacher_applications" | "coupons" | "newsletter" | "moderation" | "settings" | "audit" | "export";
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
   }> = [
-    { id: "analytics", label: "Telemetry & Growth", icon: BarChart3 },
-    { id: "users", label: "Scholars & Messages", icon: Users },
-    { id: "teacher_applications", label: "Teacher Applications", icon: GraduationCap, badge: pendingTeacherAppsCount },
-    { id: "coupons", label: "Coupons & Offers", icon: Tag },
-    { id: "moderation", label: "Content Queue", icon: ShieldAlert, badge: flaggedNotes.length },
-    { id: "settings", label: "System Control", icon: SettingsIcon },
-    { id: "audit", label: "Audit Logs", icon: FileText },
-    { id: "export", label: "Database Export", icon: Database },
-  ];
+      { id: "analytics", label: "Telemetry & Growth", icon: BarChart3 },
+      { id: "users", label: "Scholars & Messages", icon: Users },
+      { id: "teacher_applications", label: "Teacher Applications", icon: GraduationCap, badge: pendingTeacherAppsCount },
+      { id: "coupons", label: "Coupons & Offers", icon: Tag },
+      { id: "newsletter", label: "Newsletter Subscribers", icon: Send, badge: newsletterSubscribers.length },
+      { id: "moderation", label: "Content Queue", icon: ShieldAlert, badge: flaggedNotes.length },
+      { id: "settings", label: "System Control", icon: SettingsIcon },
+      { id: "audit", label: "Audit Logs", icon: FileText },
+      { id: "export", label: "Database Export", icon: Database },
+    ];
 
   return (
     <div className="flex-1 flex flex-col h-full bg-[#040406] text-zinc-100 overflow-y-auto antialiased relative selection:bg-rose-500/30 selection:text-rose-200">
@@ -565,9 +624,8 @@ export default function AdminPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`relative text-xs font-mono font-bold px-4 py-2.5 rounded-full uppercase tracking-wider transition-colors whitespace-nowrap flex items-center gap-2 ${
-                  isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                }`}
+                className={`relative text-xs font-mono font-bold px-4 py-2.5 rounded-full uppercase tracking-wider transition-colors whitespace-nowrap flex items-center gap-2 ${isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
+                  }`}
               >
                 {isActive && (
                   <motion.span
@@ -610,11 +668,10 @@ export default function AdminPage() {
                     <button
                       key={mode}
                       onClick={() => setInterval(mode)}
-                      className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all ${
-                        interval === mode
+                      className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all ${interval === mode
                           ? "bg-white text-zinc-950 shadow-sm"
                           : "text-zinc-500 hover:text-white"
-                      }`}
+                        }`}
                     >
                       {mode}
                     </button>
@@ -742,11 +799,10 @@ export default function AdminPage() {
                     <button
                       key={r}
                       onClick={() => setRoleFilter(r)}
-                      className={`text-[10px] font-mono font-bold px-3.5 py-2 rounded-xl uppercase tracking-wider transition-all whitespace-nowrap ${
-                        roleFilter === r
+                      className={`text-[10px] font-mono font-bold px-3.5 py-2 rounded-xl uppercase tracking-wider transition-all whitespace-nowrap ${roleFilter === r
                           ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
                           : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/5"
-                      }`}
+                        }`}
                     >
                       {r === "all" ? "All Roles" : r === "user" ? "Students" : r}
                     </button>
@@ -773,9 +829,8 @@ export default function AdminPage() {
                           <Users className="size-10 text-zinc-600 mx-auto" />
                           <p className="text-xs text-zinc-400 font-mono">
                             {userSearchQuery || roleFilter !== "all"
-                              ? `No scholars found matching "${userSearchQuery}" ${
-                                  roleFilter !== "all" ? `with role "${roleFilter}"` : ""
-                                }`
+                              ? `No scholars found matching "${userSearchQuery}" ${roleFilter !== "all" ? `with role "${roleFilter}"` : ""
+                              }`
                               : "No registered scholars found."}
                           </p>
                         </div>
@@ -818,13 +873,12 @@ export default function AdminPage() {
                                   <select
                                     value={u.role}
                                     onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
-                                    className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${
-                                      u.role === "admin"
+                                    className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${u.role === "admin"
                                         ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
                                         : u.role === "teacher"
-                                        ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                                        : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
-                                    }`}
+                                          ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
+                                          : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
+                                      }`}
                                   >
                                     <option value="user" className="bg-zinc-950 text-cyan-400 font-mono">
                                       User (Student)
@@ -1189,11 +1243,10 @@ export default function AdminPage() {
                               <td className="py-3.5 px-3">
                                 <button
                                   onClick={() => handleToggleCouponStatus(c._id, c.isActive)}
-                                  className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-full border transition-all ${
-                                    c.isActive
+                                  className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-full border transition-all ${c.isActive
                                       ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
                                       : "bg-zinc-800 border-zinc-700 text-zinc-500"
-                                  }`}
+                                    }`}
                                 >
                                   {c.isActive ? "Active" : "Inactive"}
                                 </button>
@@ -1302,16 +1355,14 @@ export default function AdminPage() {
                       </div>
                       <button
                         onClick={() => handleToggleSiteSetting(setting.key)}
-                        className={`h-7 w-12 rounded-full transition-all relative p-1 ${
-                          siteSettings[setting.key] ? "bg-emerald-500" : "bg-zinc-800"
-                        }`}
+                        className={`h-7 w-12 rounded-full transition-all relative p-1 ${siteSettings[setting.key] ? "bg-emerald-500" : "bg-zinc-800"
+                          }`}
                       >
                         <motion.div
                           layout
                           transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          className={`size-5 bg-zinc-950 rounded-full shadow-md ${
-                            siteSettings[setting.key] ? "ml-auto" : "mr-auto"
-                          }`}
+                          className={`size-5 bg-zinc-950 rounded-full shadow-md ${siteSettings[setting.key] ? "ml-auto" : "mr-auto"
+                            }`}
                         />
                       </button>
                     </div>
@@ -1427,6 +1478,113 @@ export default function AdminPage() {
                   >
                     Export JSON
                   </Button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Tab 7: Newsletter Subscribers */}
+          {activeTab === "newsletter" && (
+            <motion.div
+              key="newsletter"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-white font-heading flex items-center gap-2">
+                    <Send className="size-5 text-amber-400" /> Newsletter Subscribers ({newsletterSubscribers.length})
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-light">
+                    Emails collected from the marketing landing page footer &amp; subscription forms.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <Search className="size-4 text-zinc-500 absolute left-3 top-2.5" />
+                    <input
+                      type="text"
+                      placeholder="Search email..."
+                      value={newsletterSearch}
+                      onChange={(e) => setNewsletterSearch(e.target.value)}
+                      className="bg-zinc-900 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-400 w-48 sm:w-64"
+                    />
+                  </div>
+                  <Button
+                    onClick={() => {
+                      const csvContent =
+                        "data:text/csv;charset=utf-8," +
+                        "Email,Status,Source,Date Subscribed\n" +
+                        newsletterSubscribers.map((s) => `${s.email},${s.status},${s.source},${s.createdAt}`).join("\n");
+                      const encodedUri = encodeURI(csvContent);
+                      const link = document.createElement("a");
+                      link.setAttribute("href", encodedUri);
+                      link.setAttribute("download", `notexia_subscribers_${Date.now()}.csv`);
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/10 text-xs font-mono font-bold px-4 py-2 flex items-center gap-1.5"
+                  >
+                    <Download className="size-3.5 text-amber-400" /> Export CSV
+                  </Button>
+                </div>
+              </div>
+
+              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
+                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-6 overflow-x-auto">
+                  {isNewsletterLoading ? (
+                    <div className="py-12 flex justify-center items-center text-xs font-mono text-zinc-500 gap-2">
+                      <Loader2 className="size-4 animate-spin text-amber-400" /> Loading subscribers database...
+                    </div>
+                  ) : newsletterSubscribers.length === 0 ? (
+                    <p className="text-xs text-zinc-500 font-mono py-12 text-center">
+                      No newsletter subscribers in database yet.
+                    </p>
+                  ) : (
+                    <table className="w-full text-left text-xs font-mono">
+                      <thead>
+                        <tr className="border-b border-white/10 text-zinc-400 uppercase text-[10px] tracking-wider">
+                          <th className="py-3 px-4">Email Subscriber</th>
+                          <th className="py-3 px-4">Status</th>
+                          <th className="py-3 px-4">Source</th>
+                          <th className="py-3 px-4">Date Subscribed</th>
+                          <th className="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {newsletterSubscribers
+                          .filter((s) => s.email.toLowerCase().includes(newsletterSearch.toLowerCase()))
+                          .map((sub) => (
+                            <tr key={sub._id} className="hover:bg-white/[0.02] transition-colors">
+                              <td className="py-3.5 px-4 font-bold text-white">{sub.email}</td>
+                              <td className="py-3.5 px-4">
+                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                  <CheckCircle2 className="size-3" /> ACTIVE
+                                </span>
+                              </td>
+                              <td className="py-3.5 px-4 text-zinc-400 uppercase text-[10px]">{sub.source || "footer"}</td>
+                              <td className="py-3.5 px-4 text-zinc-400">
+                                {new Date(sub.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="py-3.5 px-4 text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteSubscriber(sub._id, sub.email)}
+                                  className="h-8 px-2.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg text-xs"
+                                >
+                                  <Trash2 className="size-3.5" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </motion.div>
