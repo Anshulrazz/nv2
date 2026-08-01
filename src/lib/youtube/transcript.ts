@@ -126,45 +126,46 @@ export async function extractTranscript(url: string): Promise<TranscriptResult> 
 
   let rawItems: TranscriptItem[] = [];
 
-  // Method 1: Try Innertube transcript retrieval
+  // Method 1: Fast direct subtitle fetch via youtube-transcript package
   try {
-    const { Innertube } = await import("youtubei.js");
-    const innertube = await Innertube.create();
-    const info = await innertube.getInfo(videoId);
-    const transcriptData = await info.getTranscript();
-
-    if (transcriptData?.transcript?.content?.body?.initial_segments) {
-      const segments = transcriptData.transcript.content.body.initial_segments;
-      rawItems = segments
-        .map((segItem: unknown) => {
-          const seg = segItem as { snippet?: { text?: string }; start_ms?: string | number; end_ms?: string | number };
-          const text = seg.snippet?.text?.trim() || "";
-          const startMs = Number(seg.start_ms || 0);
-          const durationMs = Number(seg.end_ms || startMs) - startMs;
-          const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
-          return { text, startMs, durationMs, startApproxTimestamp };
-        })
-        .filter((item: TranscriptItem) => item.text.length > 0);
+    const items = await YoutubeTranscript.fetchTranscript(videoId);
+    if (items && items.length > 0) {
+      rawItems = items.map((item) => {
+        const text = item.text.trim();
+        const startMs = Math.round(item.offset);
+        const durationMs = Math.round(item.duration);
+        const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
+        return { text, startMs, durationMs, startApproxTimestamp };
+      }).filter((item) => item.text.length > 0);
     }
-  } catch (innertubeErr) {
-    console.warn(`[Transcript] Innertube transcript failed for ${videoId}:`, innertubeErr);
+  } catch {
+    console.log(`[Transcript] youtube-transcript direct fetch unavailable for ${videoId}, checking Innertube fallback...`);
   }
 
-  // Method 2: Fallback to youtube-transcript npm package
+  // Method 2: Try Innertube transcript retrieval if direct fetch had no items
   if (rawItems.length === 0) {
     try {
-      const items = await YoutubeTranscript.fetchTranscript(videoId);
-      if (items && items.length > 0) {
-        rawItems = items.map((item) => {
-          const text = item.text.trim();
-          const startMs = Math.round(item.offset);
-          const durationMs = Math.round(item.duration);
-          const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
-          return { text, startMs, durationMs, startApproxTimestamp };
-        }).filter((item) => item.text.length > 0);
+      const { Innertube } = await import("youtubei.js");
+      const innertube = await Innertube.create();
+      const info = await innertube.getInfo(videoId);
+      if (info.captions) {
+        const transcriptData = await info.getTranscript();
+        if (transcriptData?.transcript?.content?.body?.initial_segments) {
+          const segments = transcriptData.transcript.content.body.initial_segments;
+          rawItems = segments
+            .map((segItem: unknown) => {
+              const seg = segItem as { snippet?: { text?: string }; start_ms?: string | number; end_ms?: string | number };
+              const text = seg.snippet?.text?.trim() || "";
+              const startMs = Number(seg.start_ms || 0);
+              const durationMs = Number(seg.end_ms || startMs) - startMs;
+              const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
+              return { text, startMs, durationMs, startApproxTimestamp };
+            })
+            .filter((item: TranscriptItem) => item.text.length > 0);
+        }
       }
-    } catch (ytTranscriptErr) {
-      console.warn(`[Transcript] youtube-transcript failed for ${videoId}:`, ytTranscriptErr);
+    } catch {
+      console.log(`[Transcript] Innertube caption track unavailable for ${videoId}.`);
     }
   }
 

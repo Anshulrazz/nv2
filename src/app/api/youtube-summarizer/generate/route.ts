@@ -76,7 +76,7 @@ export async function POST(req: Request) {
         generationStatus: "processing",
         aiModelUsed: process.env.AI_SUMMARIZER_MODEL || process.env.GEMINI_MODEL || "gemini-1.5-flash",
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
     );
 
     // 4. Run AI Pipeline
