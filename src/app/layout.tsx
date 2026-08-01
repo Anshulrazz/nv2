@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { Providers } from "@/components/providers";
 import { Toaster } from "sonner";
 import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
+import { RouteLoadingProgress } from "@/components/common/RouteLoadingProgress";
 import { FB_PIXEL_ID } from "@/lib/metaPixel";
 import "./globals.css";
 
@@ -167,6 +168,7 @@ export default function RootLayout({
         </noscript>
         <Suspense fallback={null}>
           <MetaPixelRouteTracker />
+          <RouteLoadingProgress />
         </Suspense>
         <Providers>{children}</Providers>
         <Toaster

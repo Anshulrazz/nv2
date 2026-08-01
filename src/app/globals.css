@@ -110,18 +110,41 @@
 @layer base {
   * {
     @apply border-border/80 outline-ring/50;
+    scroll-behavior: smooth;
+  }
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth !important;
   }
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-  }
-  html {
-    font-family: var(--font-sans);
+    scroll-behavior: smooth !important;
+    overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
   }
+}
+
+/* ─── Global Smooth Scrollbar ─── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(18, 31, 24, 0.6);
+  backdrop-filter: blur(10px);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(240, 201, 59, 0.4) 0%, rgba(143, 195, 222, 0.4) 100%);
+  border-radius: 9999px;
+  border: 1px solid rgba(243, 240, 228, 0.1);
+  transition: background 0.3s ease;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(240, 201, 59, 0.75) 0%, rgba(143, 195, 222, 0.75) 100%);
 }
 
 /* ─── Global utility classes ─── */
