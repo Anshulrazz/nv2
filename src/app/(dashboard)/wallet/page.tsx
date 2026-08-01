@@ -4,7 +4,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { WalletSection } from "@/components/wallet/WalletSection";
-import { ArrowLeft, Wallet, Sparkles, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Wallet, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 export const metadata = {
