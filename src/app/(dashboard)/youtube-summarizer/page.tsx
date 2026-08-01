@@ -375,7 +375,7 @@ export default function YouTubeSummarizerPage() {
                   : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
               }`}
             >
-              <ListChecks className="size-4" /> Key Points ({activeSummary.keyPoints.length})
+              <ListChecks className="size-4" /> Key Points ({(activeSummary.keyPoints || []).length})
             </button>
             <button
               onClick={() => setActiveTab("lectures")}
@@ -385,7 +385,7 @@ export default function YouTubeSummarizerPage() {
                   : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
               }`}
             >
-              <Sparkles className="size-4" /> Lecture Notes ({activeSummary.lectures.length})
+              <Sparkles className="size-4" /> Lecture Notes ({(activeSummary.lectures || []).length})
             </button>
             <button
               onClick={() => setActiveTab("quiz")}
@@ -395,7 +395,7 @@ export default function YouTubeSummarizerPage() {
                   : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
               }`}
             >
-              <HelpCircle className="size-4" /> Quiz ({activeSummary.quiz.length} Qs)
+              <HelpCircle className="size-4" /> Quiz ({(activeSummary.quiz || []).length} Qs)
             </button>
             <button
               onClick={() => setActiveTab("beyondTheVideo")}
@@ -426,7 +426,7 @@ export default function YouTubeSummarizerPage() {
                 <ListChecks className="size-5 text-violet-400" /> High-Yield Takeaways
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {activeSummary.keyPoints.map((point, idx) => (
+                {(activeSummary.keyPoints || []).map((point, idx) => (
                   <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-black/40 border border-white/5">
                     <span className="flex items-center justify-center size-6 rounded-full bg-violet-500/20 text-violet-400 text-xs font-bold shrink-0">
                       {idx + 1}
@@ -441,7 +441,7 @@ export default function YouTubeSummarizerPage() {
           {/* TAB 3: LECTURE NOTES */}
           {activeTab === "lectures" && (
             <div className="space-y-4">
-              {activeSummary.lectures.map((lec, idx) => {
+              {(activeSummary.lectures || []).map((lec, idx) => {
                 const isExpanded = expandedLectures[idx];
                 return (
                   <div key={idx} className="rounded-2xl bg-zinc-900/60 border border-white/10 overflow-hidden">
@@ -504,7 +504,7 @@ export default function YouTubeSummarizerPage() {
               </div>
 
               <div className="space-y-6">
-                {activeSummary.quiz.map((q, qIdx) => {
+                {(activeSummary.quiz || []).map((q, qIdx) => {
                   const resultItem = quizResult?.results[qIdx];
                   return (
                     <div key={qIdx} className="p-4 sm:p-5 rounded-xl bg-black/40 border border-white/5 space-y-3">
