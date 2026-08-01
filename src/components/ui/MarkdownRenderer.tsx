@@ -294,19 +294,20 @@ const GH_CSS = `
 .gh-md sup a { color: #58a6ff; text-decoration: none; font-size: 0.85em; }
 .gh-md sup a:hover { text-decoration: underline; }
 
-/* ── KaTeX ── */
-.gh-md .katex { font-size: 1.05em; }
+/* ── KaTeX / Math Formulas ── */
+.gh-md .katex { font-size: 1.06em; line-height: 1.2; }
 .gh-md .katex-display {
-  margin: 16px 0;
-  padding: 12px 16px;
-  background: #161b22;
+  margin: 20px 0;
+  padding: 14px 18px;
+  background: rgba(22, 27, 34, 0.65);
   border: 1px solid #30363d;
-  border-radius: 6px;
+  border-radius: 8px;
   overflow-x: auto;
   overflow-y: hidden;
   text-align: center;
+  -webkit-overflow-scrolling: touch;
 }
-.gh-md .katex-display .katex { font-size: 1.15em; }
+.gh-md .katex-display .katex { font-size: 1.18em; }
 
 /* ── Keyboard tag ── */
 .gh-md kbd {
