@@ -28,6 +28,7 @@ import {
   ImageIcon,
   Wand2,
   X,
+  Clock,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { toast } from "sonner";
@@ -134,6 +135,22 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
     setIsCopied(true);
     toast.success("Copied full study notes to clipboard! 📋");
     setTimeout(() => setIsCopied(false), 2500);
+  };
+
+  const expandAllLectures = () => {
+    if (!activeSummary) return;
+    const all: Record<number, boolean> = {};
+    (activeSummary.lectures || []).forEach((_, i) => (all[i] = true));
+    setExpandedLectures(all);
+  };
+
+  const collapseAllLectures = () => {
+    setExpandedLectures({});
+  };
+
+  const copyModuleNotes = (title: string, content: string) => {
+    navigator.clipboard.writeText(`### ${title}\n\n${content}`);
+    toast.success(`Copied module "${title}"! 📋`);
   };
 
   // Save & Publish Note Modal state
@@ -362,7 +379,7 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0D14] text-white p-4 sm:p-6 md:p-8 space-y-8 max-w-7xl mx-auto">
+    <div className="text-white p-4 sm:p-6 md:p-8 space-y-8 max-w-7xl mx-auto w-full">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
@@ -487,6 +504,69 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
             </div>
           </div>
 
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-zinc-900/60 border border-white/10 backdrop-blur-xl">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
+                <Clock className="size-4" />
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Reading Time</div>
+                <div className="text-xs sm:text-sm font-bold text-white">
+                  {Math.max(
+                    1,
+                    Math.ceil(
+                      (activeSummary.lectures || []).reduce(
+                        (acc, l) => acc + (l.wordCount || (l.content || "").split(/\s+/).filter(Boolean).length),
+                        0
+                      ) / 200
+                    )
+                  )}{" "}
+                  min read
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+                <FileText className="size-4" />
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Word Count</div>
+                <div className="text-xs sm:text-sm font-bold text-white">
+                  {(activeSummary.lectures || [])
+                    .reduce((acc, l) => acc + (l.wordCount || (l.content || "").split(/\s+/).filter(Boolean).length), 0)
+                    .toLocaleString()}{" "}
+                  words
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
+                <ListChecks className="size-4" />
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Takeaways</div>
+                <div className="text-xs sm:text-sm font-bold text-white">
+                  {(activeSummary.keyPoints || []).length} Points
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
+              <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400">
+                <HelpCircle className="size-4" />
+              </div>
+              <div>
+                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Exam Quiz</div>
+                <div className="text-xs sm:text-sm font-bold text-white">
+                  {(activeSummary.quiz || []).length} MCQs
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Navigation Tabs */}
           <div className="flex items-center gap-2 border-b border-white/10 overflow-x-auto pb-2 scrollbar-none">
             <button
@@ -559,7 +639,7 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {(activeSummary.keyPoints || []).map((point, idx) => (
-                  <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-black/40 border border-white/5">
+                  <div key={idx} className="flex items-start gap-3 p-3.5 rounded-xl bg-black/40 border border-white/5 hover:border-violet-500/20 transition-colors">
                     <span className="flex items-center justify-center size-6 rounded-full bg-violet-500/20 text-violet-400 text-xs font-bold shrink-0">
                       {idx + 1}
                     </span>
@@ -573,27 +653,56 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
           {/* TAB 3: LECTURE NOTES */}
           {activeTab === "lectures" && (
             <div className="space-y-4">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs text-zinc-400 font-mono">
+                  {(activeSummary.lectures || []).length} Detailed Modules
+                </span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={expandAllLectures}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 transition-colors cursor-pointer"
+                  >
+                    Expand All
+                  </button>
+                  <button
+                    onClick={collapseAllLectures}
+                    className="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 transition-colors cursor-pointer"
+                  >
+                    Collapse All
+                  </button>
+                </div>
+              </div>
+
               {(activeSummary.lectures || []).map((lec, idx) => {
                 const isExpanded = expandedLectures[idx];
                 return (
-                  <div key={idx} className="rounded-2xl bg-zinc-900/60 border border-white/10 overflow-hidden">
-                    <button
-                      onClick={() => toggleLectureAccordion(idx)}
-                      className="w-full flex items-center justify-between p-4 text-left hover:bg-white/5 transition-colors cursor-pointer"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-mono font-bold">
-                          Lecture {idx + 1}
-                        </span>
-                        <h3 className="font-bold text-white text-sm sm:text-base">{lec.title}</h3>
-                      </div>
-                      <div className="flex items-center gap-3 text-xs text-zinc-400">
-                        <span className="font-mono bg-black/40 px-2 py-0.5 rounded border border-white/5">
-                          {lec.wordCount || 0} words
-                        </span>
-                        {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
-                      </div>
-                    </button>
+                  <div key={idx} className="rounded-2xl bg-zinc-900/60 border border-white/10 overflow-hidden transition-all duration-200 hover:border-white/20">
+                    <div className="flex items-center justify-between p-4 bg-zinc-900/40">
+                      <button
+                        onClick={() => toggleLectureAccordion(idx)}
+                        className="flex-1 flex items-center justify-between text-left cursor-pointer pr-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="px-2.5 py-1 rounded-lg bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-mono font-bold">
+                            Module {idx + 1}
+                          </span>
+                          <h3 className="font-bold text-white text-sm sm:text-base">{lec.title}</h3>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-zinc-400">
+                          <span className="font-mono bg-black/40 px-2 py-0.5 rounded border border-white/5">
+                            {lec.wordCount || (lec.content || "").split(/\s+/).filter(Boolean).length} words
+                          </span>
+                          {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => copyModuleNotes(lec.title, lec.content)}
+                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white transition-colors cursor-pointer shrink-0"
+                        title="Copy this module"
+                      >
+                        <Copy className="size-3.5" />
+                      </button>
+                    </div>
 
                     {isExpanded && (
                       <div className="p-6 border-t border-white/10 bg-black/30">
@@ -650,6 +759,7 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pl-9">
                         {q.options.map((opt, oIdx) => {
                           const isSelected = selectedAnswers[qIdx] === oIdx;
+                          const letter = String.fromCharCode(65 + oIdx);
                           let btnStyle = "bg-white/5 border-white/10 text-zinc-300 hover:bg-white/10";
 
                           if (resultItem) {
@@ -669,7 +779,12 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
                               disabled={!!quizResult}
                               className={`w-full p-3 rounded-lg border text-left text-xs sm:text-sm flex items-center justify-between transition-all cursor-pointer ${btnStyle}`}
                             >
-                              <span>{opt}</span>
+                              <div className="flex items-center gap-2.5">
+                                <span className={`flex items-center justify-center size-5 rounded text-[11px] font-mono font-bold shrink-0 ${isSelected ? "bg-violet-500 text-white" : "bg-white/10 text-zinc-400"}`}>
+                                  {letter}
+                                </span>
+                                <span>{opt}</span>
+                              </div>
                               {resultItem && oIdx === q.correctIndex && <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />}
                               {resultItem && isSelected && !resultItem.isCorrect && <XCircle className="size-4 text-rose-400 shrink-0" />}
                             </button>
