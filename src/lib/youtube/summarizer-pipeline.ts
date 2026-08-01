@@ -52,8 +52,7 @@ function cleanJsonResponse(raw: string): string {
  * Stage 1: Detect logical topic shifts / lecture segments
  */
 async function detectLectures(
-  transcript: string,
-  modelName: string
+  transcript: string
 ): Promise<Array<{ title: string; startApproxTimestamp?: string; summaryHint?: string }>> {
   const truncatedTranscript = transcript.length > 25000 ? transcript.slice(0, 25000) : transcript;
 
@@ -101,8 +100,7 @@ Analyze the content and return the logical lecture segments array as JSON.`;
  */
 async function generateLectureContent(
   segmentTitle: string,
-  fullTranscript: string,
-  modelName: string
+  fullTranscript: string
 ): Promise<PipelineLectureOutput> {
   const systemPrompt = `You are a distinguished university professor and textbook author preparing comprehensive, textbook-quality lecture notes for Indian engineering and competitive exam students (JEE, NEET, GATE, CBSE).
 
@@ -179,8 +177,7 @@ Keep the existing formatting and output ONLY the expanded, complete lecture note
  * Stage 3: Generate Summary (150-250 words) & Key Points (8-15 bullet points)
  */
 async function generateSummaryAndKeyPoints(
-  transcript: string,
-  modelName: string
+  transcript: string
 ): Promise<{ summary: string; keyPoints: string[] }> {
   const systemPrompt = `You are an academic summarization engine. Analyze the provided video transcript and respond ONLY with a strict JSON object:
 {
@@ -216,7 +213,7 @@ Generate the summary and key points JSON.`;
       : "This lecture provides a comprehensive overview of the core concepts, analytical frameworks, and problem-solving methodologies presented in the video lesson. Students will gain deep insight into key academic principles required for competitive examination prep.";
 
     const keyPoints = Array.isArray(parsed.keyPoints) && parsed.keyPoints.length >= 5
-      ? parsed.keyPoints.map((kp: any) => String(kp).trim())
+      ? parsed.keyPoints.map((kp: unknown) => String(kp).trim())
       : [
           "Understanding core theoretical principles and foundational definitions.",
           "Applying step-by-step analytical techniques to complex lecture topics.",
@@ -251,8 +248,7 @@ Generate the summary and key points JSON.`;
  * Stage 4: Generate minimum 10 MCQs
  */
 async function generateQuiz(
-  transcript: string,
-  modelName: string
+  transcript: string
 ): Promise<PipelineQuizQuestion[]> {
   const systemPrompt = `You are a senior exam question creator for competitive exams (JEE, NEET, GATE, CBSE).
 Create a minimum of 10 Multiple-Choice Questions (MCQs) strictly based on the provided lecture transcript.
@@ -288,11 +284,17 @@ Generate at least 10 high-quality MCQs as a JSON array.`;
     const parsed = JSON.parse(cleanJsonResponse(rawOutput));
 
     if (Array.isArray(parsed) && parsed.length >= 10) {
-      const validQuestions = parsed
-        .filter((q: any) => q.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number" && q.explanation)
-        .map((q: any) => ({
+      interface RawQuizItem {
+        question?: string;
+        options?: unknown[];
+        correctIndex?: number;
+        explanation?: string;
+      }
+      const validQuestions = (parsed as RawQuizItem[])
+        .filter((q) => q.question && Array.isArray(q.options) && q.options.length === 4 && typeof q.correctIndex === "number" && q.explanation)
+        .map((q) => ({
           question: String(q.question).trim(),
-          options: q.options.map((o: any) => String(o).trim()),
+          options: (q.options || []).map((o: unknown) => String(o).trim()),
           correctIndex: Math.min(Math.max(0, Math.floor(Number(q.correctIndex))), 3),
           explanation: String(q.explanation).trim(),
         }));
@@ -323,8 +325,7 @@ Generate at least 10 high-quality MCQs as a JSON array.`;
  * Stage 5: "Beyond the Video" (Notexia's differentiator bonus content)
  */
 async function generateBeyondTheVideo(
-  transcript: string,
-  modelName: string
+  transcript: string
 ): Promise<PipelineBeyondTheVideo> {
   const systemPrompt = `You are Notexia's Lead Academic Strategist and Science Educator.
 Create a "Beyond the Video" bonus educational enrichment pack based on the lecture topic.
@@ -428,8 +429,7 @@ Generate the "Beyond the Video" JSON object.`;
  * Stage 6: Infer Subject Taxonomy & Exam Tags
  */
 async function inferSubjectAndTags(
-  transcript: string,
-  modelName: string
+  transcript: string
 ): Promise<{ subject: string; examTags: string[] }> {
   const systemPrompt = `Analyze the lecture transcript and identify its primary academic subject and relevant Indian competitive exam tags.
 Respond ONLY with a valid JSON object:
@@ -472,27 +472,27 @@ export async function runSummarizerPipeline(fullTranscript: string): Promise<Pip
   const modelName = process.env.AI_SUMMARIZER_MODEL || process.env.GEMINI_MODEL || "gemini-1.5-flash";
 
   // Stage 1: Structure detection
-  const detectedLectures = await detectLectures(fullTranscript, modelName);
+  const detectedLectures = await detectLectures(fullTranscript);
 
   // Stage 2: Per-lecture elaboration (Sequential to ensure quality)
   const lectures: PipelineLectureOutput[] = [];
   for (const seg of detectedLectures) {
-    const lectureOutput = await generateLectureContent(seg.title, fullTranscript, modelName);
+    const lectureOutput = await generateLectureContent(seg.title, fullTranscript);
     lectureOutput.startApproxTimestamp = seg.startApproxTimestamp || "00:00";
     lectures.push(lectureOutput);
   }
 
   // Stage 3: Summary + Key Points
-  const { summary, keyPoints } = await generateSummaryAndKeyPoints(fullTranscript, modelName);
+  const { summary, keyPoints } = await generateSummaryAndKeyPoints(fullTranscript);
 
   // Stage 4: Quiz generation (minimum 10 questions)
-  const quiz = await generateQuiz(fullTranscript, modelName);
+  const quiz = await generateQuiz(fullTranscript);
 
   // Stage 5: Beyond the Video
-  const beyondTheVideo = await generateBeyondTheVideo(fullTranscript, modelName);
+  const beyondTheVideo = await generateBeyondTheVideo(fullTranscript);
 
   // Stage 6: Subject and exam tagging
-  const { subject, examTags } = await inferSubjectAndTags(fullTranscript, modelName);
+  const { subject, examTags } = await inferSubjectAndTags(fullTranscript);
 
   const processingTimeMs = Date.now() - startTime;
 

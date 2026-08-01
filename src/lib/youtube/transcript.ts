@@ -1,5 +1,4 @@
 import { YoutubeTranscript } from "youtube-transcript";
-import { Innertube } from "youtubei.js";
 
 export type TranscriptErrorCode = "INVALID_URL" | "VIDEO_UNAVAILABLE" | "NO_TRANSCRIPT_AVAILABLE";
 
@@ -73,6 +72,7 @@ export async function fetchVideoMetadata(videoId: string): Promise<VideoMetadata
   const defaultThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
   try {
+    const { Innertube } = await import("youtubei.js");
     const innertube = await Innertube.create();
     const info = await innertube.getBasicInfo(videoId);
     const basic = info.basic_info;
@@ -128,6 +128,7 @@ export async function extractTranscript(url: string): Promise<TranscriptResult> 
 
   // Method 1: Try Innertube transcript retrieval
   try {
+    const { Innertube } = await import("youtubei.js");
     const innertube = await Innertube.create();
     const info = await innertube.getInfo(videoId);
     const transcriptData = await info.getTranscript();
@@ -135,7 +136,8 @@ export async function extractTranscript(url: string): Promise<TranscriptResult> 
     if (transcriptData?.transcript?.content?.body?.initial_segments) {
       const segments = transcriptData.transcript.content.body.initial_segments;
       rawItems = segments
-        .map((seg: any) => {
+        .map((segItem: unknown) => {
+          const seg = segItem as { snippet?: { text?: string }; start_ms?: string | number; end_ms?: string | number };
           const text = seg.snippet?.text?.trim() || "";
           const startMs = Number(seg.start_ms || 0);
           const durationMs = Number(seg.end_ms || startMs) - startMs;

@@ -13,7 +13,6 @@ import {
   ChevronDown,
   ChevronUp,
   History,
-  Clock,
   Award,
   Zap,
   RotateCcw,
@@ -175,8 +174,8 @@ export default function YouTubeSummarizerPage() {
         toast.success(`Summary ready! +${data.xpAwarded || 15} XP earned! 🎉`);
         fetchHistory();
       }
-    } catch (err: any) {
-      toast.error(err.message || "An error occurred while analyzing the video.");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "An error occurred while analyzing the video.");
     } finally {
       setIsLoading(false);
     }
@@ -233,8 +232,8 @@ export default function YouTubeSummarizerPage() {
       } else {
         toast.info(`Quiz Attempt Recorded. Score: ${data.score}/${data.totalQuestions}`);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Error submitting quiz.");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Error submitting quiz.");
     } finally {
       setIsSubmittingQuiz(false);
     }
@@ -321,6 +320,7 @@ export default function YouTubeSummarizerPage() {
           <div className="flex flex-col sm:flex-row gap-4 p-4 rounded-2xl bg-zinc-900/40 border border-white/10 items-start sm:items-center justify-between">
             <div className="flex items-center gap-4">
               {activeSummary.thumbnailUrl && (
+                /* eslint-disable-next-line @next/next/no-img-element */
                 <img
                   src={activeSummary.thumbnailUrl}
                   alt={activeSummary.title}
@@ -683,6 +683,7 @@ export default function YouTubeSummarizerPage() {
               >
                 <div className="flex items-center gap-3">
                   {item.thumbnailUrl && (
+                    /* eslint-disable-next-line @next/next/no-img-element */
                     <img src={item.thumbnailUrl} alt="" className="w-16 h-10 object-cover rounded border border-white/10 shrink-0" />
                   )}
                   <div className="overflow-hidden">

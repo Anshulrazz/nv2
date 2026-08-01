@@ -43,9 +43,17 @@ export async function POST(
     const quizQuestions = summary.quiz;
     const totalQuestions = quizQuestions.length;
 
+    interface QuizQuestionSchemaItem {
+      question: string;
+      options: string[];
+      correctIndex: number;
+      explanation: string;
+    }
+
     // Score evaluation strictly on the backend
     let score = 0;
-    const results = quizQuestions.map((q: any, idx: number) => {
+    const results = quizQuestions.map((qItem: unknown, idx: number) => {
+      const q = qItem as QuizQuestionSchemaItem;
       const selectedIndex = answers[idx] !== undefined ? Number(answers[idx]) : -1;
       const isCorrect = selectedIndex === q.correctIndex;
       if (isCorrect) score++;
