@@ -7,6 +7,8 @@ import { extractVideoId, extractTranscript, TranscriptError } from "@/lib/youtub
 import { runSummarizerPipeline } from "@/lib/youtube/summarizer-pipeline";
 import { pusherServer } from "@/lib/pusher";
 
+export const maxDuration = 60;
+
 export async function POST(req: Request) {
   try {
     const session = await auth();

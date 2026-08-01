@@ -1,6 +1,7 @@
 /**
- * Google Gemini AI API Service Wrapper
- * Supports prompt completion, structured JSON parsing, and streaming responses using GEMINI_API_KEY.
+ * Google Gemini AI & OpenRouter API Service Wrapper
+ * Primary engine: Google Gemini API
+ * Fallback engine: OpenRouter API (if Gemini is unavailable, unconfigured, or rate-limited)
  */
 
 export interface GeminiGenerateOptions {
@@ -10,56 +11,121 @@ export interface GeminiGenerateOptions {
   jsonMode?: boolean;
 }
 
-export async function generateGeminiContent(options: GeminiGenerateOptions): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === "placeholder" || apiKey.trim() === "") {
-    throw new Error("GEMINI_API_KEY is not configured on the server.");
+async function callOpenRouter(options: GeminiGenerateOptions): Promise<string> {
+  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  if (!openRouterKey || openRouterKey === "placeholder" || openRouterKey.trim() === "") {
+    throw new Error("OPENROUTER_API_KEY is not configured on the server.");
   }
 
-  const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const model = process.env.OPENROUTER_MODEL || "openai/gpt-4o-mini";
+  const messages: Array<{ role: "system" | "user"; content: string }> = [];
 
-  const contents = [];
   if (options.systemPrompt) {
-    contents.push({
-      role: "user",
-      parts: [{ text: `[System Instruction]\n${options.systemPrompt}` }],
-    });
-    contents.push({
-      role: "model",
-      parts: [{ text: "Understood. I will strictly follow these instructions." }],
-    });
+    messages.push({ role: "system", content: options.systemPrompt });
   }
-
-  contents.push({
-    role: "user",
-    parts: [{ text: options.userPrompt }],
-  });
+  messages.push({ role: "user", content: options.userPrompt });
 
   const payload: Record<string, unknown> = {
-    contents,
-    generationConfig: {
-      temperature: options.temperature ?? 0.7,
-      ...(options.jsonMode ? { responseMimeType: "application/json" } : {}),
-    },
+    model,
+    messages,
+    temperature: options.temperature ?? 0.7,
   };
 
-  const res = await fetch(url, {
+  if (options.jsonMode) {
+    payload.response_format = { type: "json_object" };
+  }
+
+  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Authorization": `Bearer ${openRouterKey}`,
+      "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://notexia.in",
+      "X-Title": process.env.OPENROUTER_SITE_NAME || "Notexia AI",
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
   });
 
   if (!res.ok) {
     const errorText = await res.text();
-    throw new Error(`Gemini API Error (${res.status}): ${errorText}`);
+    throw new Error(`OpenRouter API Error (${res.status}): ${errorText}`);
   }
 
   const data = await res.json();
-  const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!textOutput) {
-    throw new Error("Gemini returned an empty response.");
+  const textOutput = data?.choices?.[0]?.message?.content;
+  if (!textOutput || typeof textOutput !== "string") {
+    throw new Error("OpenRouter returned an empty response.");
   }
 
-  return textOutput;
+  return textOutput.trim();
+}
+
+export async function generateGeminiContent(options: GeminiGenerateOptions): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY;
+
+  // 1. Try Gemini API first if configured
+  if (apiKey && apiKey !== "placeholder" && apiKey.trim() !== "") {
+    try {
+      const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+      const contents = [];
+      if (options.systemPrompt) {
+        contents.push({
+          role: "user",
+          parts: [{ text: `[System Instruction]\n${options.systemPrompt}` }],
+        });
+        contents.push({
+          role: "model",
+          parts: [{ text: "Understood. I will strictly follow these instructions." }],
+        });
+      }
+
+      contents.push({
+        role: "user",
+        parts: [{ text: options.userPrompt }],
+      });
+
+      const payload: Record<string, unknown> = {
+        contents,
+        generationConfig: {
+          temperature: options.temperature ?? 0.7,
+          ...(options.jsonMode ? { responseMimeType: "application/json" } : {}),
+        },
+      };
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Gemini API Error (${res.status}): ${errorText}`);
+      }
+
+      const data = await res.json();
+      const textOutput = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!textOutput) {
+        throw new Error("Gemini returned an empty response.");
+      }
+
+      return textOutput;
+    } catch (geminiErr: unknown) {
+      const errMsg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
+      console.warn(`[AI Engine] Gemini API unavailable or failed (${errMsg}). Attempting OpenRouter fallback...`);
+    }
+  } else {
+    console.log(`[AI Engine] GEMINI_API_KEY not configured. Falling back directly to OpenRouter API...`);
+  }
+
+  // 2. Fallback to OpenRouter API
+  try {
+    return await callOpenRouter(options);
+  } catch (openRouterErr: unknown) {
+    const errMsg = openRouterErr instanceof Error ? openRouterErr.message : String(openRouterErr);
+    console.error(`[AI Engine] OpenRouter fallback also failed: ${errMsg}`);
+    throw new Error(`AI Generation failed: Neither Gemini nor OpenRouter could fulfill the request. (${errMsg})`);
+  }
 }

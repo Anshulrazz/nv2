@@ -71,6 +71,26 @@ export async function fetchVideoMetadata(videoId: string): Promise<VideoMetadata
   const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const defaultThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
 
+  // Method 1: Try YouTube oEmbed endpoint first (fastest, no rate limits/blocking)
+  try {
+    const oembedRes = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`);
+    if (oembedRes.ok) {
+      const oembedData = await oembedRes.json();
+      if (oembedData && oembedData.title) {
+        return {
+          videoId,
+          url: watchUrl,
+          title: oembedData.title || `YouTube Video (${videoId})`,
+          channelName: oembedData.author_name || "YouTube Creator",
+          thumbnailUrl: oembedData.thumbnail_url || defaultThumbnail,
+        };
+      }
+    }
+  } catch (oembedErr) {
+    console.warn(`[Transcript] oEmbed fetch failed for ${videoId}:`, oembedErr);
+  }
+
+  // Method 2: Fallback to Innertube basic info
   try {
     const { Innertube } = await import("youtubei.js");
     const innertube = await Innertube.create();
@@ -88,24 +108,7 @@ export async function fetchVideoMetadata(videoId: string): Promise<VideoMetadata
       };
     }
   } catch (err) {
-    console.warn(`[Transcript] Innertube basic info failed for ${videoId}, falling back to oEmbed:`, err);
-  }
-
-  // Fallback to oEmbed endpoint (no API key required)
-  try {
-    const oembedRes = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`);
-    if (oembedRes.ok) {
-      const oembedData = await oembedRes.json();
-      return {
-        videoId,
-        url: watchUrl,
-        title: oembedData.title || `YouTube Video (${videoId})`,
-        channelName: oembedData.author_name || "YouTube Creator",
-        thumbnailUrl: oembedData.thumbnail_url || defaultThumbnail,
-      };
-    }
-  } catch (oembedErr) {
-    console.warn(`[Transcript] oEmbed fetch failed for ${videoId}:`, oembedErr);
+    console.warn(`[Transcript] Innertube basic info failed for ${videoId}:`, err);
   }
 
   return {

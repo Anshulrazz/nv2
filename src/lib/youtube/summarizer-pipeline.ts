@@ -474,25 +474,26 @@ export async function runSummarizerPipeline(fullTranscript: string): Promise<Pip
   // Stage 1: Structure detection
   const detectedLectures = await detectLectures(fullTranscript);
 
-  // Stage 2: Per-lecture elaboration (Sequential to ensure quality)
-  const lectures: PipelineLectureOutput[] = [];
-  for (const seg of detectedLectures) {
-    const lectureOutput = await generateLectureContent(seg.title, fullTranscript);
-    lectureOutput.startApproxTimestamp = seg.startApproxTimestamp || "00:00";
-    lectures.push(lectureOutput);
-  }
-
-  // Stage 3: Summary + Key Points
-  const { summary, keyPoints } = await generateSummaryAndKeyPoints(fullTranscript);
-
-  // Stage 4: Quiz generation (minimum 10 questions)
-  const quiz = await generateQuiz(fullTranscript);
-
-  // Stage 5: Beyond the Video
-  const beyondTheVideo = await generateBeyondTheVideo(fullTranscript);
-
-  // Stage 6: Subject and exam tagging
-  const { subject, examTags } = await inferSubjectAndTags(fullTranscript);
+  // Stage 2 to Stage 6: Run per-lecture content generation, summary, quiz, beyond-the-video, and taxonomy in PARALLEL
+  const [
+    lectures,
+    { summary, keyPoints },
+    quiz,
+    beyondTheVideo,
+    { subject, examTags },
+  ] = await Promise.all([
+    Promise.all(
+      detectedLectures.map(async (seg) => {
+        const lectureOutput = await generateLectureContent(seg.title, fullTranscript);
+        lectureOutput.startApproxTimestamp = seg.startApproxTimestamp || "00:00";
+        return lectureOutput;
+      })
+    ),
+    generateSummaryAndKeyPoints(fullTranscript),
+    generateQuiz(fullTranscript),
+    generateBeyondTheVideo(fullTranscript),
+    inferSubjectAndTags(fullTranscript),
+  ]);
 
   const processingTimeMs = Date.now() - startTime;
 
