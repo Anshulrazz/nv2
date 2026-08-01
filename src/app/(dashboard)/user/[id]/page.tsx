@@ -191,21 +191,29 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
       </div>
 
       {/* Header */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-6 sm:p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0 flex items-center justify-between">
+      <div className="bg-zinc-950/40 p-4 sm:p-6 lg:p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-4 sm:m-8 lg:m-10 mb-0 flex flex-wrap items-center justify-between gap-3">
         <Link href="/dashboard" className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-2 font-bold uppercase tracking-widest transition-colors">
           <ArrowLeft className="size-4" /> Back to Dashboard
         </Link>
         
         {isOwnProfile && (
-          <Link href="/settings">
-            <Button className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-5">
-              Edit Profile Settings
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/wallet">
+              <Button variant="outline" className="rounded-full bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-bold h-9 px-4 flex items-center gap-1.5 cursor-pointer">
+                <Sparkles className="size-3.5" />
+                <span>My Wallet</span>
+              </Button>
+            </Link>
+            <Link href="/settings">
+              <Button className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-4 sm:px-5">
+                Edit Profile Settings
+              </Button>
+            </Link>
+          </div>
         )}
       </div>
 
-      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 z-10 relative">
+      <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-6 sm:space-y-8 z-10 relative">
         {/* User Doppelrand Card */}
         <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
           <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col md:flex-row items-center md:items-start gap-8">

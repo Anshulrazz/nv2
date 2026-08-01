@@ -14,12 +14,12 @@ import {
   HelpCircle,
   Wallet as WalletIcon,
   Gift,
+  ArrowUpRight,
 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { WalletSection } from "@/components/wallet/WalletSection";
 import { ReferAndEarnCard } from "@/components/referrals/ReferAndEarnCard";
 
 interface UserProfile {
@@ -133,7 +133,7 @@ export function ProfileClient({
   // Active profile tab
   const isOwnProfile = currentUserId === targetUser._id;
   const [activeTab, setActiveTab] = useState<
-    "notes" | "blogs" | "social" | "forums" | "wallet" | "referrals"
+    "notes" | "blogs" | "social" | "forums" | "referrals"
   >("notes");
 
   const openSocialPost = async (post: SocialPostNode) => {
@@ -190,16 +190,16 @@ export function ProfileClient({
 
   return (
     <div className="w-full space-y-6 sm:space-y-8 select-none">
-      {/* 1. Stats Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
+      {/* 1. Stats Bento Row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 w-full">
         {/* Followers Stat Card */}
         <button
           onClick={() => canViewProfile && setActiveListModal("followers")}
-          className="bg-neutral-950/40 backdrop-blur-md border border-white/5 hover:border-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)] transition-all p-4 rounded-xl text-center group cursor-pointer"
+          className="bg-zinc-900/40 backdrop-blur-md border border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] transition-all p-4 rounded-2xl text-center group cursor-pointer"
           disabled={!canViewProfile}
         >
-          <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono block">Followers</span>
-          <span className="text-lg font-bold text-neutral-100 mt-1 block group-hover:text-cyan-400 transition-colors">
+          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Followers</span>
+          <span className="text-xl font-black text-white mt-1 block group-hover:text-cyan-400 transition-colors">
             {followers.length}
           </span>
         </button>
@@ -207,65 +207,69 @@ export function ProfileClient({
         {/* Following Stat Card */}
         <button
           onClick={() => canViewProfile && setActiveListModal("following")}
-          className="bg-neutral-950/40 backdrop-blur-md border border-white/5 hover:border-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.02)] transition-all p-4 rounded-xl text-center group cursor-pointer"
+          className="bg-zinc-900/40 backdrop-blur-md border border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] transition-all p-4 rounded-2xl text-center group cursor-pointer"
           disabled={!canViewProfile}
         >
-          <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono block">Following</span>
-          <span className="text-lg font-bold text-neutral-100 mt-1 block group-hover:text-cyan-400 transition-colors">
+          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Following</span>
+          <span className="text-xl font-black text-white mt-1 block group-hover:text-cyan-400 transition-colors">
             {following.length}
           </span>
         </button>
 
         {/* Rank Tier Card */}
-        <div className="bg-neutral-955/40 backdrop-blur-md border border-white/5 p-4 rounded-xl flex flex-col justify-between items-center min-h-[76px]">
-          <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono block">Rank Tier</span>
-          <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${targetUser.scholarRankColor || ""}`}>
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col justify-between items-center text-center">
+          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Scholar Rank</span>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${targetUser.scholarRankColor || ""}`}>
             {targetUser.scholarRank || "Novice Scholar"}
           </span>
         </div>
 
         {/* Leaderboard Rank points */}
-        <div className="bg-neutral-955/40 backdrop-blur-md border border-white/5 p-4 rounded-xl text-center">
-          <span className="text-[9px] text-neutral-500 uppercase tracking-widest font-mono block">Activity Points</span>
-          <span className="text-lg font-bold text-yellow-400 mt-1 block flex items-center justify-center gap-1 font-mono">
-            <Trophy className="h-4 w-4 text-yellow-400" />
+        <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-center flex flex-col justify-between items-center">
+          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Activity Points</span>
+          <span className="text-xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1.5 font-mono">
+            <Trophy className="size-4 text-amber-400 shrink-0" />
             {targetUser.points}
           </span>
         </div>
-
-        {/* Creator Earnings Stat Card (Teacher/Admin) OR Become Teacher CTA */}
-        {isOwnProfile && (targetUser.role === "teacher" || targetUser.role === "admin") ? (
-          <button
-            onClick={() => setActiveTab("wallet")}
-            className="bg-emerald-950/20 backdrop-blur-md border border-emerald-500/30 hover:border-emerald-500/50 transition-all p-4 rounded-xl text-center group cursor-pointer"
-          >
-            <span className="text-[9px] text-emerald-400 uppercase tracking-widest font-mono block">
-              Creator Earnings (₹)
-            </span>
-            <span className="text-lg font-bold text-emerald-400 mt-1 block font-mono">
-              ₹{(targetUser as unknown as { creatorEarnings?: number }).creatorEarnings || 0}
-            </span>
-          </button>
-        ) : isOwnProfile ? (
-          <button
-            onClick={() => setActiveTab("wallet")}
-            className="bg-[#F0C93B]/10 backdrop-blur-md border border-[#F0C93B]/30 hover:border-[#F0C93B]/60 transition-all p-4 rounded-xl text-center group cursor-pointer"
-          >
-            <span className="text-[9px] text-[#F0C93B] uppercase tracking-widest font-mono block">
-              Become Educator
-            </span>
-            <span className="text-xs font-bold text-[#F0C93B] mt-1 block font-heading">
-              Apply to Teach 🎓
-            </span>
-          </button>
-        ) : null}
       </div>
 
-      {/* 2. Interactive Contributions Section */}
+      {/* 2. Wallet Direct Access Banner (Own Profile) */}
+      {isOwnProfile && (
+        <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-zinc-950 border border-amber-500/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-xl">
+          <div className="flex items-center gap-3.5">
+            <div className="h-11 w-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              <WalletIcon className="size-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-bold text-white tracking-wide" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  Digital Wallet &amp; P2P Coins
+                </h3>
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                  Dedicated Page
+                </span>
+              </div>
+              <p className="text-xs text-zinc-400">
+                Manage platform activity coins, educator cash payouts, wallet PIN &amp; peer-to-peer transfers.
+              </p>
+            </div>
+          </div>
+
+          <Link href="/wallet" className="shrink-0 w-full sm:w-auto">
+            <Button className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 px-4 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.25)] transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+              <span>Open Wallet</span>
+              <ArrowUpRight className="size-4" />
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* 3. Interactive Contributions Section */}
       {canViewProfile && (
         <div className="space-y-6">
           {/* Tab Switcher Toolbar */}
-          <div className="flex border-b border-neutral-900 overflow-x-auto shrink-0 scrollbar-none gap-2">
+          <div className="flex border-b border-white/10 overflow-x-auto shrink-0 scrollbar-none gap-2">
             {[
               { id: "notes", label: "Notes", count: notes.length, icon: BookOpen },
               { id: "blogs", label: "Blogs", count: blogs.length, icon: Rss },
@@ -273,7 +277,6 @@ export function ProfileClient({
               { id: "forums", label: "Forums & Doubts", count: forums.length + doubts.length, icon: HelpCircle },
               ...(isOwnProfile
                 ? [
-                    { id: "wallet", label: "Coin Wallet", count: null, icon: WalletIcon },
                     { id: "referrals", label: "Refer & Earn", count: null, icon: Gift },
                   ]
                 : []),
@@ -285,20 +288,20 @@ export function ProfileClient({
                   key={tab.id}
                   onClick={() =>
                     setActiveTab(
-                      tab.id as "notes" | "blogs" | "social" | "forums" | "wallet" | "referrals"
+                      tab.id as "notes" | "blogs" | "social" | "forums" | "referrals"
                     )
                   }
                   className={`flex items-center gap-2 py-3 px-4 border-b-2 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     isActive
                       ? "border-cyan-400 text-cyan-400 bg-cyan-500/[0.02]"
-                      : "border-transparent text-neutral-500 hover:text-neutral-300"
+                      : "border-transparent text-zinc-400 hover:text-zinc-200"
                   }`}
                   style={{ fontFamily: "var(--font-space-grotesk)" }}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                   {tab.count !== null && (
-                    <span className="text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-400 px-2 py-0.5 rounded-full font-mono">
+                    <span className="text-[10px] bg-zinc-900 border border-white/10 text-zinc-400 px-2 py-0.5 rounded-full font-mono">
                       {tab.count}
                     </span>
                   )}
@@ -500,13 +503,6 @@ export function ProfileClient({
                     ))
                   )}
                 </div>
-              </div>
-            )}
-
-            {/* WALLET TAB */}
-            {activeTab === "wallet" && isOwnProfile && (
-              <div className="pt-2">
-                <WalletSection />
               </div>
             )}
 

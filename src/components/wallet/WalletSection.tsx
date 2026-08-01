@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState, useCallback } from "react";
 import {
   Wallet as WalletIcon,
@@ -17,6 +19,8 @@ import {
   ShieldAlert,
   Plus,
   GraduationCap,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +50,7 @@ interface TransactionItem {
 
 export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void }) {
   const [address, setAddress] = useState<string>("");
+  const [copiedAddress, setCopiedAddress] = useState(false);
   const [balance, setBalance] = useState<number>(0);
   const [creatorEarnings, setCreatorEarnings] = useState<number>(0);
   const [payoutDetails, setPayoutDetails] = useState<{
@@ -286,6 +291,57 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
   return (
     <div className="space-y-6">
+      {/* WALLET ADDRESS HEADER BANNER */}
+      <div className="rounded-2xl bg-gradient-to-r from-[#121F18] via-[#16261D] to-[#0A120E] border border-[#F0C93B]/30 p-5 shadow-2xl relative overflow-hidden backdrop-blur-xl">
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
+                Official Wallet Address
+              </span>
+              <span className="text-[10px] text-[#9FAEA1] font-mono">• Unique Peer-to-Peer ID</span>
+            </div>
+            <p className="text-xs text-[#9FAEA1] max-w-xl">
+              Share this wallet address with other scholars or educators on Notexia to receive instant coin transfers.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 bg-[#0A120E]/80 border border-[#F0C93B]/40 p-2 sm:px-4 sm:py-2.5 rounded-xl self-start sm:self-auto w-full sm:w-auto justify-between">
+            <div className="flex items-center gap-2.5 font-mono text-xs text-[#F0C93B] font-bold select-all tracking-wider">
+              <WalletIcon className="size-4 text-[#F0C93B] shrink-0" />
+              <span>{isLoading ? "Fetching address..." : (address || "NTX-GENERATING...")}</span>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              onClick={() => {
+                if (!address) return;
+                navigator.clipboard.writeText(address);
+                setCopiedAddress(true);
+                toast.success("Wallet address copied to clipboard!");
+                setTimeout(() => setCopiedAddress(false), 2000);
+              }}
+              disabled={!address}
+              className="h-8 px-3 text-xs font-mono bg-[#F0C93B]/20 hover:bg-[#F0C93B]/30 text-[#F0C93B] border border-[#F0C93B]/40 rounded-lg shrink-0 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+            >
+              {copiedAddress ? (
+                <>
+                  <Check className="size-3.5 text-emerald-400" />
+                  <span className="text-emerald-400">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="size-3.5" />
+                  <span>Copy</span>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
       {/* TWO SEPARATE BALANCE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (TEACHER / ADMIN ONLY) OR BECOME TEACHER CTA */}

@@ -24,6 +24,7 @@ import {
   ChevronDown,
   ChevronRight,
   FolderOpen,
+  Wallet,
 } from "lucide-react";
 
 interface SidebarNavigationProps {
@@ -84,6 +85,7 @@ export function SidebarNavigation({
             />
             <NavLink href="/notes" icon={<BookOpen className="size-4" />} label="Notes" accent="cyan" />
             <NavLink href="/projects" icon={<Briefcase className="size-4" />} label="Projects" accent="cyan" />
+            <NavLink href="/wallet" icon={<Wallet className="size-4" />} label="Wallet" accent="amber" />
           </div>
         )}
       </div>
