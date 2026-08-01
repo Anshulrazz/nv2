@@ -29,8 +29,10 @@ import {
   MoreVertical,
   Images,
   File as FileIcon,
+  Copy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -180,9 +182,9 @@ export default function MessagesPage() {
         message: msg,
       });
       if (typeof window !== "undefined" && window.navigator?.vibrate) {
-        window.navigator.vibrate(20);
+        window.navigator.vibrate(25);
       }
-    }, 600);
+    }, 220);
   };
 
   const handleTouchEnd = () => {
@@ -1576,6 +1578,23 @@ export default function MessagesPage() {
           }}
           onClick={(e) => e.stopPropagation()}
         >
+          <button
+            onClick={() => {
+              if (contextMenu.message.content) {
+                navigator.clipboard.writeText(contextMenu.message.content);
+                toast.success("Message text copied to clipboard!");
+              } else {
+                toast.info("No text content in this message to copy.");
+              }
+              setContextMenu(null);
+            }}
+            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-[#F0C93B] hover:bg-neutral-800 hover:text-white font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            style={{ fontFamily: "var(--font-space-grotesk)" }}
+          >
+            <Copy className="h-3.5 w-3.5 text-[#F0C93B]" />
+            <span>Copy Text</span>
+          </button>
+
           <button
             onClick={() => {
               setReplyingMessage(contextMenu.message);
