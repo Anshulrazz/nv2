@@ -307,21 +307,30 @@ export default function MarketingPage() {
     await handleAskAi(demoInputText);
   };
 
-  /* Real OpenRouter Video Summarizer execution */
+  /* Video Summarizer landing demo execution */
   const handleSummarizeVideo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!videoUrlInput.trim()) return;
     setIsVideoLoading(true);
     try {
-      const res = await fetch("/api/ai/demo-video-summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ videoUrl: videoUrlInput.trim() }),
+      // Simulate quick interactive preview on landing page
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setVideoSummaryData({
+        title: "Quantum Fourier Transform & Signal Processing Derivation",
+        channel: "NPTEL / MIT OpenCourseWare",
+        chapters: [
+          { timestamp: "00:00", title: "Intro & recap of Fourier series fundamentals", summary: "Brief overview of continuous vs discrete Fourier transforms." },
+          { timestamp: "04:12", title: "Derivation of the Quantum Fourier Transform operator", summary: "Step-by-step matrix derivation of QFT on n-qubits." },
+          { timestamp: "11:30", title: "Solved numerical exam problem", summary: "Applying QFT to 3-qubit state vectors for Phase Estimation." },
+          { timestamp: "18:05", title: "Common GATE/JEE exam pitfalls", summary: "Avoiding sign errors in phase rotation gates R_k." },
+        ],
+        formulas: [
+          "F_n = \\frac{1}{\\sqrt{N}} \\sum_{j=0}^{N-1} \\omega^{j k} |j\\rangle",
+          "\\omega = e^{2\\pi i / N}",
+        ],
+        xpEarned: 40,
+        engine: "Gemini AI Engine",
       });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setVideoSummaryData(data);
-      }
     } catch (error) {
       console.warn("Video summary error:", error);
     } finally {

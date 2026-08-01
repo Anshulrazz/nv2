@@ -1,0 +1,188 @@
+import { YoutubeTranscript } from "youtube-transcript";
+import { Innertube } from "youtubei.js";
+
+export type TranscriptErrorCode = "INVALID_URL" | "VIDEO_UNAVAILABLE" | "NO_TRANSCRIPT_AVAILABLE";
+
+export class TranscriptError extends Error {
+  code: TranscriptErrorCode;
+  constructor(code: TranscriptErrorCode, message: string) {
+    super(message);
+    this.name = "TranscriptError";
+    this.code = code;
+  }
+}
+
+export interface TranscriptItem {
+  text: string;
+  startMs: number;
+  durationMs: number;
+  startApproxTimestamp: string;
+}
+
+export interface VideoMetadata {
+  videoId: string;
+  url: string;
+  title: string;
+  channelName: string;
+  thumbnailUrl: string;
+  durationSeconds?: number;
+}
+
+export interface TranscriptResult {
+  metadata: VideoMetadata;
+  cleanText: string;
+  rawItems: TranscriptItem[];
+}
+
+/**
+ * Extract YouTube Video ID from standard formats:
+ * - https://www.youtube.com/watch?v=VIDEO_ID
+ * - https://youtu.be/VIDEO_ID
+ * - https://www.youtube.com/embed/VIDEO_ID
+ * - https://www.youtube.com/v/VIDEO_ID
+ * - https://www.youtube.com/shorts/VIDEO_ID
+ * - https://www.youtube.com/live/VIDEO_ID
+ */
+export function extractVideoId(url: string): string {
+  if (!url || typeof url !== "string") {
+    throw new TranscriptError("INVALID_URL", "URL must be a non-empty string.");
+  }
+
+  const cleanUrl = url.trim();
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|live\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = cleanUrl.match(regExp);
+
+  if (match && match[2].length === 11) {
+    return match[2];
+  }
+
+  throw new TranscriptError("INVALID_URL", "Invalid YouTube URL format. Could not extract video ID.");
+}
+
+function formatSecondsToTimestamp(totalSeconds: number): string {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = Math.floor(totalSeconds % 60);
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+/**
+ * Fetch video metadata via Innertube or fallback to YouTube oEmbed API
+ */
+export async function fetchVideoMetadata(videoId: string): Promise<VideoMetadata> {
+  const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+  const defaultThumbnail = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+
+  try {
+    const innertube = await Innertube.create();
+    const info = await innertube.getBasicInfo(videoId);
+    const basic = info.basic_info;
+
+    if (basic) {
+      return {
+        videoId,
+        url: watchUrl,
+        title: basic.title || `YouTube Video (${videoId})`,
+        channelName: basic.author || "YouTube Creator",
+        thumbnailUrl: basic.thumbnail?.[0]?.url || defaultThumbnail,
+        durationSeconds: basic.duration || undefined,
+      };
+    }
+  } catch (err) {
+    console.warn(`[Transcript] Innertube basic info failed for ${videoId}, falling back to oEmbed:`, err);
+  }
+
+  // Fallback to oEmbed endpoint (no API key required)
+  try {
+    const oembedRes = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(watchUrl)}&format=json`);
+    if (oembedRes.ok) {
+      const oembedData = await oembedRes.json();
+      return {
+        videoId,
+        url: watchUrl,
+        title: oembedData.title || `YouTube Video (${videoId})`,
+        channelName: oembedData.author_name || "YouTube Creator",
+        thumbnailUrl: oembedData.thumbnail_url || defaultThumbnail,
+      };
+    }
+  } catch (oembedErr) {
+    console.warn(`[Transcript] oEmbed fetch failed for ${videoId}:`, oembedErr);
+  }
+
+  return {
+    videoId,
+    url: watchUrl,
+    title: `YouTube Video (${videoId})`,
+    channelName: "YouTube",
+    thumbnailUrl: defaultThumbnail,
+  };
+}
+
+/**
+ * Main transcript extraction function
+ */
+export async function extractTranscript(url: string): Promise<TranscriptResult> {
+  const videoId = extractVideoId(url);
+  const metadata = await fetchVideoMetadata(videoId);
+
+  let rawItems: TranscriptItem[] = [];
+
+  // Method 1: Try Innertube transcript retrieval
+  try {
+    const innertube = await Innertube.create();
+    const info = await innertube.getInfo(videoId);
+    const transcriptData = await info.getTranscript();
+
+    if (transcriptData?.transcript?.content?.body?.initial_segments) {
+      const segments = transcriptData.transcript.content.body.initial_segments;
+      rawItems = segments
+        .map((seg: any) => {
+          const text = seg.snippet?.text?.trim() || "";
+          const startMs = Number(seg.start_ms || 0);
+          const durationMs = Number(seg.end_ms || startMs) - startMs;
+          const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
+          return { text, startMs, durationMs, startApproxTimestamp };
+        })
+        .filter((item: TranscriptItem) => item.text.length > 0);
+    }
+  } catch (innertubeErr) {
+    console.warn(`[Transcript] Innertube transcript failed for ${videoId}:`, innertubeErr);
+  }
+
+  // Method 2: Fallback to youtube-transcript npm package
+  if (rawItems.length === 0) {
+    try {
+      const items = await YoutubeTranscript.fetchTranscript(videoId);
+      if (items && items.length > 0) {
+        rawItems = items.map((item) => {
+          const text = item.text.trim();
+          const startMs = Math.round(item.offset);
+          const durationMs = Math.round(item.duration);
+          const startApproxTimestamp = formatSecondsToTimestamp(startMs / 1000);
+          return { text, startMs, durationMs, startApproxTimestamp };
+        }).filter((item) => item.text.length > 0);
+      }
+    } catch (ytTranscriptErr) {
+      console.warn(`[Transcript] youtube-transcript failed for ${videoId}:`, ytTranscriptErr);
+    }
+  }
+
+  if (rawItems.length === 0) {
+    throw new TranscriptError(
+      "NO_TRANSCRIPT_AVAILABLE",
+      "No transcript or closed captions could be retrieved for this YouTube video. Please ensure captions/subtitles are enabled on the video."
+    );
+  }
+
+  // Build clean text string
+  const cleanText = rawItems
+    .map((item) => item.text)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return {
+    metadata,
+    cleanText,
+    rawItems,
+  };
+}

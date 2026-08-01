@@ -113,7 +113,6 @@ export function SidebarNavigation({
           <div className="pl-2.5 space-y-0.5 border-l border-white/5 ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
             <NavLink href="/revision" icon={<Sparkles className="size-4" />} label="Smart Revision" accent="violet" />
             <NavLink href="/youtube-summarizer" icon={<Play className="size-4" />} label="YouTube Summarizer" accent="violet" />
-            <NavLink href="/youtube" icon={<Play className="size-4" />} label="YouTube Learning" accent="violet" />
             <NavLink href="/planner" icon={<Calendar className="size-4" />} label="AI Daily Planner" accent="violet" />
           </div>
         )}

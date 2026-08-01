@@ -1,71 +1,66 @@
-import mongoose, { Schema, Document, Model } from "mongoose";
+import mongoose, { Schema, model, models } from "mongoose";
 
-export interface IChapter {
-  timestampSeconds: number;
-  title: string;
-  summary: string;
-}
-
-export interface IVideoSummary extends Document {
-  _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
-  videoId: string;
-  videoUrl: string;
-  title?: string;
-  thumbnailUrl?: string;
-  channelName?: string;
-  durationSeconds?: number;
-  transcriptRaw?: string;
-  summary?: string;
-  keyPoints?: string[];
-  chapters?: IChapter[];
-  status: "processing" | "completed" | "failed";
-  errorMessage?: string;
-  xpAwarded: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-const ChapterSchema = new Schema<IChapter>(
+const QuizQuestionSchema = new Schema(
   {
-    timestampSeconds: { type: Number, required: true },
-    title: { type: String, required: true },
-    summary: { type: String, required: true },
+    question: { type: String, required: true },
+    options: { type: [String], required: true, validate: (v: string[]) => v.length === 4 },
+    correctIndex: { type: Number, required: true, min: 0, max: 3 },
+    explanation: { type: String, required: true },
   },
   { _id: false }
 );
 
-const VideoSummarySchema = new Schema<IVideoSummary>(
+const LectureSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    videoId: { type: String, required: true, index: true },
-    videoUrl: { type: String, required: true },
-    title: { type: String, default: "" },
-    thumbnailUrl: { type: String, default: "" },
-    channelName: { type: String, default: "" },
-    durationSeconds: { type: Number, default: 0 },
-    transcriptRaw: { type: String, default: "" },
-    summary: { type: String, default: "" },
-    keyPoints: { type: [String], default: [] },
-    chapters: { type: [ChapterSchema], default: [] },
-    status: {
-      type: String,
-      enum: ["processing", "completed", "failed"],
-      default: "processing",
-    },
-    errorMessage: { type: String },
-    xpAwarded: { type: Boolean, default: false },
+    title: { type: String, required: true },
+    startApproxTimestamp: { type: String }, // e.g. "00:00" if derivable from transcript timing
+    content: { type: String, required: true }, // 1000+ words, markdown
+    wordCount: { type: Number, required: true },
   },
-  {
-    timestamps: true,
-  }
+  { _id: false }
 );
 
-// Compound index to prevent duplicate processing per user
-VideoSummarySchema.index({ userId: 1, videoId: 1 });
+const VideoSummarySchema = new Schema(
+  {
+    videoId: { type: String, required: true, unique: true, index: true }, // YouTube video ID
+    url: { type: String, required: true },
+    title: { type: String, required: true },
+    channelName: { type: String },
+    thumbnailUrl: { type: String },
+    durationSeconds: { type: Number },
 
-// Fast cache index for global video lookup
-VideoSummarySchema.index({ videoId: 1, status: 1 });
+    transcriptRaw: { type: String, required: true },
+    transcriptLanguage: { type: String, default: "en" },
 
-export const VideoSummary: Model<IVideoSummary> =
-  mongoose.models.VideoSummary || mongoose.model<IVideoSummary>("VideoSummary", VideoSummarySchema);
+    summary: { type: String, required: true },
+    keyPoints: { type: [String], required: true },
+    lectures: { type: [LectureSchema], required: true },
+    quiz: { type: [QuizQuestionSchema], required: true },
+
+    beyondTheVideo: {
+      funFacts: { type: [String], default: [] },
+      realWorldConnections: { type: [String], default: [] },
+      commonMisconceptions: { type: [String], default: [] },
+      furtherExploration: { type: [String], default: [] }, // suggested related topics/searches, NOT external links
+    },
+
+    subject: { type: String }, // e.g. "Physics", "Chemistry" — AI-inferred, used for leaderboard/XP category
+    examTags: { type: [String], default: [] }, // e.g. ["JEE", "NEET", "CBSE Class 12"]
+
+    generatedBy: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    generationStatus: {
+      type: String,
+      enum: ["pending", "processing", "completed", "failed"],
+      default: "pending",
+    },
+    failureReason: { type: String },
+    aiModelUsed: { type: String, required: true },
+    processingTimeMs: { type: Number },
+  },
+  { timestamps: true }
+);
+
+VideoSummarySchema.index({ generatedBy: 1, createdAt: -1 });
+VideoSummarySchema.index({ subject: 1 });
+
+export default models.VideoSummary || model("VideoSummary", VideoSummarySchema);
