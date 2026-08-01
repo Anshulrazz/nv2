@@ -43,9 +43,9 @@ export async function POST(req: Request) {
       message: "Successfully subscribed to Notexia study updates!",
       subscription: subscriber,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Newsletter subscription error:", error);
-    if (error.code === 11000) {
+    if (typeof error === "object" && error !== null && "code" in error && (error as { code?: number }).code === 11000) {
       return NextResponse.json({ message: "You are already subscribed!" });
     }
     return NextResponse.json({ error: "Failed to process subscription." }, { status: 500 });

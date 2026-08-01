@@ -3,16 +3,12 @@
 import React, { useState } from "react";
 import {
   FileText,
-  Award,
-  Zap,
   Sparkles,
   Bot,
   Calculator,
   Trophy,
   CheckCircle2,
-  Cpu,
   Flame,
-  Globe,
   CornerDownRight,
 } from "lucide-react";
 
@@ -60,7 +56,7 @@ export function HeroWorkspaceShowcase() {
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => setActiveTab(t.id as any)}
+                  onClick={() => setActiveTab(t.id as "editor" | "ai" | "leaderboard" | "cgpa")}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-mono font-bold transition-all duration-300 flex items-center gap-2 active:scale-95 ${
                     activeTab === t.id
                       ? `${t.color} shadow-[0_0_15px_rgba(255,255,255,0.2)]`

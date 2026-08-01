@@ -313,6 +313,7 @@ export default function MarketingPage() {
     <div className="min-h-screen flex flex-col bg-[#16261D] text-[#F3F0E4] font-sans selection:bg-[#F0C93B]/30 overflow-x-hidden relative antialiased cyber-grid">
       {/* ── EXTERNAL FONTS & KATEX STYLES ── */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
+      {/* eslint-disable-next-line @next/next/no-page-custom-font */}
       <link
         href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Kalam:wght@400;700&display=swap"
         rel="stylesheet"
@@ -1107,7 +1108,7 @@ export default function MarketingPage() {
                   Notes that get <em>checked</em> before the exam does.
                 </h1>
                 <p className="lead">
-                  Notexia turns rough lecture notes into an AI-verified study system — LaTeX-perfect formulas, doubt-solving that answers in seconds, and a leaderboard that actually tracks who's putting in the hours.
+                  Notexia turns rough lecture notes into an AI-verified study system — LaTeX-perfect formulas, doubt-solving that answers in seconds, and a leaderboard that actually tracks who&apos;s putting in the hours.
                 </p>
                 <div className="hero-ctas">
                   <Link href="/signup" className="btn btn-solid">
@@ -1199,7 +1200,7 @@ export default function MarketingPage() {
           <div className="wrap">
             <div className="section-head">
               <span className="section-tag">Live AI copilot</span>
-              <h2>Ask it something you'd actually get stuck on.</h2>
+              <h2>Ask it something you&apos;d actually get stuck on.</h2>
               <p>
                 This box is wired to a real model — try a sample doubt below, or type your own. Answers come back the way a good senior would explain them: short, stepped, and exam-ready.
               </p>
@@ -1271,7 +1272,7 @@ export default function MarketingPage() {
           <div className="wrap">
             <div className="section-head">
               <span className="section-tag">Pick your category</span>
-              <h2>Built differently for every exam you're actually taking.</h2>
+              <h2>Built differently for every exam you&apos;re actually taking.</h2>
               <p>
                 Same workspace underneath — but the notes, AI prompts and content packs are tuned per exam, because a JEE derivation and a NEET diagram need explaining differently.
               </p>
@@ -1285,7 +1286,7 @@ export default function MarketingPage() {
                 </div>
                 <h3>JEE Main &amp; Advanced</h3>
                 <p>
-                  Physics, Chemistry and Math notes built around numericals, not paragraphs. The AI copilot solves multi-step problems the way a topper's solution key would.
+                  Physics, Chemistry and Math notes built around numericals, not paragraphs. The AI copilot solves multi-step problems the way a topper&apos;s solution key would.
                 </p>
               </div>
               <div className="persona-card">
@@ -1329,7 +1330,7 @@ export default function MarketingPage() {
               <span className="section-tag">Built for the grind</span>
               <h2>Everything you need to actually study, in one workspace.</h2>
               <p>
-                Organise lecture notes, solve the problem that's blocking you at 11pm, and collaborate with classmates across India — without ten different tabs open.
+                Organise lecture notes, solve the problem that&apos;s blocking you at 11pm, and collaborate with classmates across India — without ten different tabs open.
               </p>
             </div>
 
@@ -1352,7 +1353,7 @@ export default function MarketingPage() {
                   </svg>
                 </div>
                 <h3>24/7 AI doubt-solving</h3>
-                <p>Ask physics derivations, calculus integrals or debugging questions right inside your note, and get a stepped explanation in seconds — not tomorrow's doubt session.</p>
+                <p>Ask physics derivations, calculus integrals or debugging questions right inside your note, and get a stepped explanation in seconds — not tomorrow&apos;s doubt session.</p>
               </div>
               <div className="feat-card">
                 <div className="feat-icon" aria-hidden="true">
@@ -1518,7 +1519,7 @@ export default function MarketingPage() {
                 </span>
                 <h3>Study alone. Rank with everyone.</h3>
                 <p>
-                  Answer a peer's doubt, publish a clean note, or refer a friend — each earns coins toward your scholar rank. Redeem coins against Notexia Premium, or just enjoy watching your name climb your batch leaderboard.
+                  Answer a peer&apos;s doubt, publish a clean note, or refer a friend — each earns coins toward your scholar rank. Redeem coins against Notexia Premium, or just enjoy watching your name climb your batch leaderboard.
                 </p>
                 <ul className="spotlight-list">
                   <li>
@@ -1563,7 +1564,7 @@ export default function MarketingPage() {
           <div className="wrap">
             <div className="checklist-wrap">
               <div className="section-head" style={{ marginBottom: "26px" }}>
-                <span className="section-tag">And there's more</span>
+                <span className="section-tag">And there&apos;s more</span>
                 <h2 style={{ fontSize: "22px" }}>The smaller things that end up mattering most.</h2>
               </div>
               <ul className="checklist">
@@ -1635,30 +1636,30 @@ export default function MarketingPage() {
             </div>
             <div className="love-grid">
               <div className="love-card">
-                <h4>“Saved me during midterms”</h4>
+                <h4>&ldquo;Saved me during midterms&rdquo;</h4>
                 <p>
-                  “I was drowning in lecture slides until I started using Notexia. The AI summarizer turned 2‑hour videos into 10‑minute notes, and the leaderboard kept me accountable. I scored 12% higher than last semester.”
+                  &ldquo;I was drowning in lecture slides until I started using Notexia. The AI summarizer turned 2‑hour videos into 10‑minute notes, and the leaderboard kept me accountable. I scored 12% higher than last semester.&rdquo;
                   <br />— <strong>Ananya R., VTU CSE</strong>
                 </p>
               </div>
               <div className="love-card">
-                <h4>“LaTeX finally clicked”</h4>
+                <h4>&ldquo;LaTeX finally clicked&rdquo;</h4>
                 <p>
-                  “I never understood how to write beautiful math notation until I used Notexia’s editor. Now my physics notes look like they came straight out of a textbook — and I actually enjoy revising them.”
+                  &ldquo;I never understood how to write beautiful math notation until I used Notexia&apos;s editor. Now my physics notes look like they came straight out of a textbook — and I actually enjoy revising them.&rdquo;
                   <br />— <strong>Karan S., IIT Bombay</strong>
                 </p>
               </div>
               <div className="love-card">
-                <h4>“Community is gold”</h4>
+                <h4>&ldquo;Community is gold&rdquo;</h4>
                 <p>
-                  “The doubt forums are incredible. I posted a tough organic chemistry question and within 20 minutes I had three responses from seniors and the AI gave me a detailed mechanism. It felt like having a tutor 24/7.”
+                  &ldquo;The doubt forums are incredible. I posted a tough organic chemistry question and within 20 minutes I had three responses from seniors and the AI gave me a detailed mechanism. It felt like having a tutor 24/7.&rdquo;
                   <br />— <strong>Priya M., NEET aspirant</strong>
                 </p>
               </div>
               <div className="love-card">
-                <h4>“My batch loves the leaderboard”</h4>
+                <h4>&ldquo;My batch loves the leaderboard&rdquo;</h4>
                 <p>
-                  “Our entire class started using Notexia after I shared my notes. Now we compete for the top spot — it’s made studying way more engaging and we’re all helping each other improve.”
+                  &ldquo;Our entire class started using Notexia after I shared my notes. Now we compete for the top spot — it&apos;s made studying way more engaging and we&apos;re all helping each other improve.&rdquo;
                   <br />— <strong>Vikram G., GATE aspirant</strong>
                 </p>
               </div>
@@ -1684,7 +1685,7 @@ export default function MarketingPage() {
                 className={`toggle-switch ${isAnnual ? "on" : ""}`}
                 onClick={() => setIsAnnual(!isAnnual)}
                 aria-label="Toggle annual pricing"
-                aria-pressed={isAnnual}
+                aria-checked={isAnnual}
                 role="switch"
               />
               <span className="toggle-label">Annual</span>
