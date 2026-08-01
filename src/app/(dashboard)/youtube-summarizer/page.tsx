@@ -21,6 +21,8 @@ import {
   Globe2,
   HelpCircle as QuestionIcon,
   Compass,
+  Copy,
+  Check,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { toast } from "sonner";
@@ -104,6 +106,30 @@ export default function YouTubeSummarizerPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false);
   const [quizResult, setQuizResult] = useState<QuizAttemptResult | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopyNotes = () => {
+    if (!activeSummary) return;
+    const text = `
+# ${activeSummary.title}
+Channel: ${activeSummary.channelName || "YouTube"}
+Subject: ${activeSummary.subject || "General"}
+
+## Concise Summary
+${activeSummary.summary}
+
+## Key Takeaways
+${(activeSummary.keyPoints || []).map((kp, i) => `${i + 1}. ${kp}`).join("\n")}
+
+## Detailed Lecture Notes
+${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`).join("\n\n")}
+`.trim();
+
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    toast.success("Copied full study notes to clipboard! 📋");
+    setTimeout(() => setIsCopied(false), 2500);
+  };
 
   // Saved history state
   const [history, setHistory] = useState<VideoSummaryData[]>([]);
@@ -345,14 +371,23 @@ export default function YouTubeSummarizerPage() {
               </div>
             </div>
 
-            <a
-              href={activeSummary.url}
-              target="_blank"
-              rel="noreferrer"
-              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors shrink-0"
-            >
-              <Play className="size-3 text-rose-500" /> Watch on YouTube
-            </a>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={handleCopyNotes}
+                className="px-3 py-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 text-xs text-violet-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+              >
+                {isCopied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3 text-violet-400" />}
+                {isCopied ? "Copied!" : "Copy Notes"}
+              </button>
+              <a
+                href={activeSummary.url}
+                target="_blank"
+                rel="noreferrer"
+                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
+              >
+                <Play className="size-3 text-rose-500" /> Watch on YouTube
+              </a>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
