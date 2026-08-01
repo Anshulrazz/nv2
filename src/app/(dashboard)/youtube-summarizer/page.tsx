@@ -23,6 +23,11 @@ import {
   Compass,
   Copy,
   Check,
+  FileText,
+  Share2,
+  ImageIcon,
+  Wand2,
+  X,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { toast } from "sonner";
@@ -129,6 +134,92 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
     setIsCopied(true);
     toast.success("Copied full study notes to clipboard! 📋");
     setTimeout(() => setIsCopied(false), 2500);
+  };
+
+  // Save & Publish Note Modal state
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [noteTitleInput, setNoteTitleInput] = useState("");
+  const [noteCategoryInput, setNoteCategoryInput] = useState("Computer Science");
+  const [noteTagsInput, setNoteTagsInput] = useState("");
+  const [coverImageUrl, setCoverImageUrl] = useState("");
+  const [isGeneratingCover, setIsGeneratingCover] = useState(false);
+  const [shouldPublish, setShouldPublish] = useState(true);
+  const [isSavingNote, setIsSavingNote] = useState(false);
+
+  const handleOpenSaveModal = () => {
+    if (!activeSummary) return;
+    setNoteTitleInput(activeSummary.title);
+    setNoteCategoryInput(activeSummary.subject || "Computer Science");
+    setNoteTagsInput((activeSummary.examTags || ["YouTube Summary", "Notexia AI"]).join(", "));
+    setCoverImageUrl(activeSummary.thumbnailUrl || "");
+    setShouldPublish(true);
+    setIsSaveModalOpen(true);
+  };
+
+  const handleGenerateAICover = async () => {
+    if (!activeSummary) return;
+    setIsGeneratingCover(true);
+    try {
+      const res = await fetch("/api/notes/generate-cover", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: noteTitleInput || activeSummary.title,
+          subject: noteCategoryInput || activeSummary.subject,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate AI cover.");
+      }
+      setCoverImageUrl(data.coverImageUrl);
+      toast.success("Generated AI Cover Image! ✨");
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Failed to generate cover image.");
+    } finally {
+      setIsGeneratingCover(false);
+    }
+  };
+
+  const handleSaveToNotes = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeSummary) return;
+
+    setIsSavingNote(true);
+    try {
+      const parsedTags = noteTagsInput
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+
+      const res = await fetch(`/api/youtube-summarizer/${activeSummary.videoId}/save-to-notes`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: noteTitleInput.trim() || activeSummary.title,
+          coverImage: coverImageUrl,
+          category: noteCategoryInput,
+          tags: parsedTags,
+          publish: shouldPublish,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to save note.");
+      }
+
+      setIsSaveModalOpen(false);
+      toast.success(
+        shouldPublish
+          ? `Note saved & published to Notexia Community! +${data.xpAwarded || 25} XP earned! 🎉`
+          : `Note saved to your personal Notes library! +${data.xpAwarded || 15} XP earned! 📚`
+      );
+    } catch (err: unknown) {
+      toast.error((err as Error).message || "Failed to save note.");
+    } finally {
+      setIsSavingNote(false);
+    }
   };
 
   // Saved history state
@@ -371,21 +462,27 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
               </div>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              <button
+                onClick={handleOpenSaveModal}
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-violet-600/30 cursor-pointer"
+              >
+                <FileText className="size-3.5" /> Save & Publish Note
+              </button>
               <button
                 onClick={handleCopyNotes}
-                className="px-3 py-1.5 rounded-lg bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/20 text-xs text-violet-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                {isCopied ? <Check className="size-3 text-emerald-400" /> : <Copy className="size-3 text-violet-400" />}
-                {isCopied ? "Copied!" : "Copy Notes"}
+                {isCopied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5 text-violet-400" />}
+                {isCopied ? "Copied!" : "Copy"}
               </button>
               <a
                 href={activeSummary.url}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
+                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
               >
-                <Play className="size-3 text-rose-500" /> Watch on YouTube
+                <Play className="size-3.5 text-rose-500" /> Watch
               </a>
             </div>
           </div>
@@ -737,6 +834,159 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
           </div>
         )}
       </div>
+
+      {/* Save & Publish Note Modal */}
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-xl rounded-2xl bg-[#0F131C] border border-white/10 p-6 space-y-5 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-violet-500/10 border border-violet-500/20 text-violet-400">
+                  <FileText className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">Save & Publish Study Note</h3>
+                  <p className="text-xs text-zinc-400">Save to your Notexia Notes or publish to community feed</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsSaveModalOpen(false)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveToNotes} className="space-y-4">
+              {/* Note Title */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-zinc-300">Note Title</label>
+                <input
+                  type="text"
+                  value={noteTitleInput}
+                  onChange={(e) => setNoteTitleInput(e.target.value)}
+                  required
+                  className="w-full bg-black/40 border border-white/10 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-violet-500/60"
+                />
+              </div>
+
+              {/* AI Cover Image Generator Box */}
+              <div className="space-y-2 p-3.5 rounded-xl bg-black/30 border border-white/5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+                    <ImageIcon className="size-3.5 text-violet-400" /> AI Cover Image
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleGenerateAICover}
+                    disabled={isGeneratingCover}
+                    className="px-2.5 py-1 rounded-lg bg-violet-500/20 hover:bg-violet-500/30 border border-violet-500/30 text-violet-300 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {isGeneratingCover ? (
+                      <>
+                        <Loader2 className="size-3 animate-spin" /> Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="size-3 text-amber-300" /> Generate with AI ✨
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {coverImageUrl ? (
+                  <div className="relative rounded-lg overflow-hidden border border-white/10 aspect-[2/1] max-h-36">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={coverImageUrl} alt="Cover Preview" className="w-full h-full object-cover" />
+                  </div>
+                ) : (
+                  <div className="text-center py-6 text-xs text-zinc-500 border border-dashed border-white/10 rounded-lg">
+                    No cover image set. Click &quot;Generate with AI&quot; to create a custom cover banner!
+                  </div>
+                )}
+              </div>
+
+              {/* Category & Tags */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-300">Category</label>
+                  <select
+                    value={noteCategoryInput}
+                    onChange={(e) => setNoteCategoryInput(e.target.value)}
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500/60"
+                  >
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Biology">Biology</option>
+                    <option value="General Study">General Study</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-zinc-300">Exam / Subject Tags</label>
+                  <input
+                    type="text"
+                    value={noteTagsInput}
+                    onChange={(e) => setNoteTagsInput(e.target.value)}
+                    placeholder="JEE, NEET, GATE, CBSE"
+                    className="w-full bg-black/40 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-violet-500/60"
+                  />
+                </div>
+              </div>
+
+              {/* Publish Toggle */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-violet-500/10 border border-violet-500/20">
+                <div className="flex items-center gap-3">
+                  <Share2 className="size-5 text-violet-400 shrink-0" />
+                  <div>
+                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                      Publish to Notexia Community & Blog
+                      <span className="px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 text-[10px]">
+                        +25 XP Reward
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-zinc-400">Make note public in Notexia community feed and blog</div>
+                  </div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={shouldPublish}
+                  onChange={(e) => setShouldPublish(e.target.checked)}
+                  className="size-4 accent-violet-600 rounded cursor-pointer"
+                />
+              </div>
+
+              {/* Submit Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsSaveModalOpen(false)}
+                  className="px-4 py-2 rounded-xl text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSavingNote}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-lg shadow-violet-600/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {isSavingNote ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" /> Saving Note...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="size-4 text-amber-300" /> Save Note
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
