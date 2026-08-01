@@ -2,8 +2,64 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
+
+function LandingSkeleton() {
+  return (
+    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] p-6 space-y-12 animate-pulse selection:bg-[#F0C93B]/30">
+      {/* Header Skeleton */}
+      <div className="max-w-6xl mx-auto flex items-center justify-between h-16 border-b border-[#F3F0E4]/10 pb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-white/10" />
+          <div className="w-28 h-5 rounded bg-white/10" />
+        </div>
+        <div className="hidden md:flex gap-6">
+          <div className="w-16 h-4 rounded-full bg-white/10" />
+          <div className="w-16 h-4 rounded-full bg-white/10" />
+          <div className="w-16 h-4 rounded-full bg-white/10" />
+          <div className="w-16 h-4 rounded-full bg-white/10" />
+        </div>
+        <div className="flex gap-3">
+          <div className="w-20 h-9 rounded-lg bg-white/10" />
+          <div className="w-32 h-9 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/30" />
+        </div>
+      </div>
+
+      {/* Hero Skeleton */}
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center pt-8">
+        <div className="space-y-6">
+          <div className="w-56 h-7 rounded-full bg-[#8FC3DE]/20 border border-[#8FC3DE]/30" />
+          <div className="space-y-3">
+            <div className="w-full h-12 rounded-2xl bg-white/10" />
+            <div className="w-4/5 h-12 rounded-2xl bg-white/10" />
+          </div>
+          <div className="w-3/4 h-5 rounded-lg bg-white/10" />
+          <div className="flex gap-4 pt-2">
+            <div className="w-44 h-11 rounded-xl bg-[#F0C93B]/30 border border-[#F0C93B]/40" />
+            <div className="w-36 h-11 rounded-xl bg-white/10" />
+          </div>
+        </div>
+        <div className="h-80 bg-[#121F18] border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
+          <div className="flex justify-between items-center pb-4 border-b border-white/10">
+            <div className="w-32 h-4 rounded bg-white/10" />
+            <div className="w-24 h-4 rounded bg-white/10" />
+          </div>
+          <div className="w-3/4 h-6 rounded bg-white/10" />
+          <div className="w-full h-24 rounded-xl bg-[#16261D] border border-white/10" />
+          <div className="grid grid-cols-4 gap-2 pt-4">
+            <div className="h-8 rounded bg-white/5" />
+            <div className="h-8 rounded bg-white/5" />
+            <div className="h-8 rounded bg-white/5" />
+            <div className="h-8 rounded bg-white/5" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const homepageFaqs = [
   {
@@ -116,6 +172,10 @@ interface VideoSummaryData {
 }
 
 export default function MarketingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
   /* ── INTERACTIVE DEMO STATE ── */
   const [activeChip, setActiveChip] = useState<number>(0);
   const [demoInputText, setDemoInputText] = useState("");
@@ -160,6 +220,18 @@ export default function MarketingPage() {
 
   /* ── SCROLL NAVIGATION ── */
   const [activeSection, setActiveSection] = useState("");
+
+  /* Set hydration mount flag */
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  /* Redirect authenticated logged-in users directly to Dashboard */
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      router.replace("/dashboard");
+    }
+  }, [status, session, router]);
 
   /* Fetch Real Leaderboard from MongoDB */
   useEffect(() => {
@@ -307,6 +379,11 @@ export default function MarketingPage() {
       element.scrollIntoView({ behavior: "smooth" });
     }
   };
+
+  /* Render Skeleton Loader during mount, session verification, or redirecting */
+  if (!isMounted || status === "loading" || (status === "authenticated" && session?.user)) {
+    return <LandingSkeleton />;
+  }
 
   return (
     // ── STICKY FOOTER: flex column, min-h-screen ──
@@ -1083,12 +1160,20 @@ export default function MarketingPage() {
             </button>
           </nav>
           <div className="nav-cta">
-            <Link href="/login" className="btn btn-ghost btn-sm">
-              Sign in
-            </Link>
-            <Link href="/signup" className="btn btn-solid btn-sm">
-              Get started free
-            </Link>
+            {session?.user ? (
+              <Link href="/dashboard" className="btn btn-solid btn-sm">
+                Go to Dashboard &rarr;
+              </Link>
+            ) : (
+              <>
+                <Link href="/login" className="btn btn-ghost btn-sm">
+                  Sign in
+                </Link>
+                <Link href="/signup" className="btn btn-solid btn-sm">
+                  Get started free
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </header>
