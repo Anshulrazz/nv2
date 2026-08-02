@@ -263,16 +263,24 @@ export default function EventsHubPage() {
                   </div>
                 </div>
 
-                <div className="pt-2 mt-auto flex items-center gap-2">
-                  <Link href={`/events/${ev.slug || ev._id}/register`} className="flex-1">
-                    <Button size="sm" variant="outline" className="w-full font-bold text-xs h-9 rounded-xl">
-                      Register
-                    </Button>
-                  </Link>
+                <div className="pt-2 mt-auto flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/events/${ev.slug || ev._id}/register`} className="flex-1">
+                      <Button size="sm" variant="outline" className="w-full font-bold text-xs h-9 rounded-xl">
+                        Register
+                      </Button>
+                    </Link>
 
-                  <Link href={`/events/${ev.slug || ev._id}/challenges`} className="flex-1">
-                    <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-9 rounded-xl flex items-center justify-center gap-1">
-                      Enter Arena <ArrowRight className="size-3.5" />
+                    <Link href={`/events/${ev.slug || ev._id}/challenges`} className="flex-1">
+                      <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-9 rounded-xl flex items-center justify-center gap-1">
+                        Enter Arena <ArrowRight className="size-3.5" />
+                      </Button>
+                    </Link>
+                  </div>
+
+                  <Link href={`/events/${ev.slug || ev._id}/host`} className="w-full">
+                    <Button size="sm" variant="ghost" className="w-full text-amber-400 hover:bg-amber-500/10 font-bold text-xs h-8 rounded-xl flex items-center justify-center gap-1 font-mono">
+                      Host Panel &amp; Certificates 🛡️
                     </Button>
                   </Link>
                 </div>
