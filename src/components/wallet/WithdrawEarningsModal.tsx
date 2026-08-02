@@ -21,6 +21,8 @@ interface WithdrawEarningsModalProps {
   isOpen: boolean;
   onClose: () => void;
   creatorEarnings: number;
+  userCoins?: number;
+  userRole?: "user" | "teacher" | "admin";
   existingPayoutDetails?: {
     upiId?: string;
     bankAccount?: string;
@@ -34,6 +36,8 @@ export function WithdrawEarningsModal({
   isOpen,
   onClose,
   creatorEarnings,
+  userCoins = 0,
+  userRole = "user",
   existingPayoutDetails,
   onSuccess,
 }: WithdrawEarningsModalProps) {
@@ -52,6 +56,9 @@ export function WithdrawEarningsModal({
 
   if (!isOpen) return null;
 
+  const isTeacherOrAdmin = userRole === "teacher" || userRole === "admin";
+  const availableBalance = isTeacherOrAdmin ? creatorEarnings + userCoins : creatorEarnings;
+
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
@@ -62,15 +69,15 @@ export function WithdrawEarningsModal({
       return;
     }
 
-    if (withdrawNum > creatorEarnings) {
+    if (withdrawNum > availableBalance) {
       setErrorMsg(
-        `Withdrawal amount exceeds your available creator earnings balance of ${creatorEarnings} coins.`
+        `Withdrawal amount exceeds your available balance of ${availableBalance} coins.`
       );
       return;
     }
 
     if (payoutMethod === "upi" && !upiId.trim()) {
-      setErrorMsg("Please enter a valid UPI ID (e.g. name@upi).");
+      setErrorMsg("Please enter a valid UPI ID (e.g. name@upi or 9876543210@paytm).");
       return;
     }
 
@@ -131,11 +138,16 @@ export function WithdrawEarningsModal({
         {/* MODAL HEADER */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
-            <DollarSign className="size-3.5" /> WITHDRAWABLE CREATOR EARNINGS
+            <DollarSign className="size-3.5" />{" "}
+            {isTeacherOrAdmin ? `${userRole.toUpperCase()} CASH PAYOUT` : "WITHDRAWABLE EARNINGS"}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-white">Withdraw Creator Earnings</h2>
+          <h2 className="text-xl sm:text-2xl font-bold font-heading text-white">
+            {isTeacherOrAdmin ? "Request Cash Payout" : "Withdraw Creator Earnings"}
+          </h2>
           <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
-            Convert your 70% Course Sales revenue into direct cash payout via UPI or Bank Transfer.
+            {isTeacherOrAdmin
+              ? "Withdraw your course sales, platform earnings, or teacher revenue directly to UPI or Bank Account."
+              : "Convert your 70% Course Sales revenue into direct cash payout via UPI or Bank Transfer."}
           </p>
         </div>
 
@@ -143,12 +155,12 @@ export function WithdrawEarningsModal({
         <div className="rounded-2xl bg-[#16261D] border border-[#F0C93B]/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">
             <span className="text-[11px] font-mono text-[#9FAEA1] uppercase tracking-wider">
-              Withdrawable Earnings Balance
+              {isTeacherOrAdmin ? "Total Withdrawable Balance" : "Withdrawable Earnings Balance"}
             </span>
             <div className="text-2xl font-black text-[#F0C93B] font-mono flex items-center gap-1.5">
               <Coins className="size-5" />
-              <span>{creatorEarnings.toLocaleString()}</span>
-              <span className="text-xs text-[#9FAEA1] font-normal">Coins (₹{creatorEarnings})</span>
+              <span>{availableBalance.toLocaleString()}</span>
+              <span className="text-xs text-[#9FAEA1] font-normal">Coins (₹{availableBalance})</span>
             </div>
           </div>
           <div className="text-right">
@@ -201,17 +213,17 @@ export function WithdrawEarningsModal({
                 <span>WITHDRAWAL AMOUNT (COINS / ₹)</span>
                 <button
                   type="button"
-                  onClick={() => setAmount(String(creatorEarnings))}
-                  className="text-[10px] text-[#F0C93B] hover:underline"
+                  onClick={() => setAmount(String(availableBalance))}
+                  className="text-[10px] text-[#F0C93B] hover:underline font-mono"
                 >
-                  Withdraw Max ({creatorEarnings})
+                  Withdraw Max ({availableBalance})
                 </button>
               </label>
               <div className="relative">
                 <Input
                   type="number"
                   min="1"
-                  max={creatorEarnings}
+                  max={availableBalance}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Enter amount to withdraw..."

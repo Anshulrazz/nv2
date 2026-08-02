@@ -985,6 +985,8 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         isOpen={isWithdrawModalOpen}
         onClose={() => setIsWithdrawModalOpen(false)}
         creatorEarnings={creatorEarnings}
+        userCoins={balance}
+        userRole={userRole}
         existingPayoutDetails={payoutDetails}
         onSuccess={() => {
           fetchWalletInfo();

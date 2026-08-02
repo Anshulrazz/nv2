@@ -37,6 +37,11 @@ import {
   Tag,
   GraduationCap,
   XCircle,
+  DollarSign,
+  QrCode,
+  Building2,
+  Copy,
+  Check,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
@@ -93,12 +98,47 @@ export default function AdminPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    "analytics" | "users" | "teacher_applications" | "coupons" | "moderation" | "settings" | "audit" | "export" | "newsletter"
+    "analytics" | "users" | "teacher_applications" | "withdrawals" | "coupons" | "moderation" | "settings" | "audit" | "export" | "newsletter"
   >("analytics");
   const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
+
+  // Withdrawal Requests state
+  const [withdrawalRequests, setWithdrawalRequests] = useState<Array<{
+    id: string;
+    userId: string;
+    userName: string;
+    userEmail: string;
+    userImage?: string;
+    userRole: string;
+    amount: number;
+    amountINR: number;
+    payoutMethod: "upi" | "bank_transfer";
+    payoutDetails: {
+      upiId?: string;
+      bankAccount?: string;
+      ifscCode?: string;
+      accountHolderName?: string;
+    };
+    status: "pending" | "approved" | "completed" | "rejected";
+    adminNote?: string;
+    transactionRef?: string;
+    createdAt: string;
+  }>>([]);
+  const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
+  const [isWithdrawalsLoading, setIsWithdrawalsLoading] = useState(false);
+  const [withdrawalActionModal, setWithdrawalActionModal] = useState<{
+    id: string;
+    action: "approve" | "complete" | "reject";
+    userName: string;
+    amount: number;
+    payoutMethod: string;
+  } | null>(null);
+  const [withdrawalTxRef, setWithdrawalTxRef] = useState("");
+  const [withdrawalNote, setWithdrawalNote] = useState("");
+  const [isProcessingWithdrawalAction, setIsProcessingWithdrawalAction] = useState(false);
 
   // Teacher Applications state
   const [teacherApplications, setTeacherApplications] = useState<Array<{
@@ -418,11 +458,57 @@ export default function AdminPage() {
     }
   };
 
+  const loadWithdrawals = useCallback(async () => {
+    try {
+      setIsWithdrawalsLoading(true);
+      const res = await fetch("/api/admin/withdrawals");
+      if (res.ok) {
+        const data = await res.json();
+        setWithdrawalRequests(data.requests || []);
+        setPendingWithdrawalsCount(data.pendingCount || 0);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsWithdrawalsLoading(false);
+    }
+  }, []);
+
+  const handleProcessWithdrawal = async () => {
+    if (!withdrawalActionModal) return;
+    try {
+      setIsProcessingWithdrawalAction(true);
+      const res = await fetch(`/api/admin/withdrawals/${withdrawalActionModal.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: withdrawalActionModal.action,
+          transactionRef: withdrawalTxRef,
+          adminNote: withdrawalNote,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Action failed.");
+
+      toast.success(data.message || "Withdrawal request updated successfully.");
+      setWithdrawalActionModal(null);
+      setWithdrawalTxRef("");
+      setWithdrawalNote("");
+      loadWithdrawals();
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to process withdrawal action.");
+    } finally {
+      setIsProcessingWithdrawalAction(false);
+    }
+  };
+
   const fetchTabDetails = useCallback(async () => {
     setIsLoading(true);
     if (activeTab === "analytics") await loadAnalytics();
     else if (activeTab === "users") await loadUsersList();
     else if (activeTab === "teacher_applications") await loadTeacherApplications();
+    else if (activeTab === "withdrawals") await loadWithdrawals();
     else if (activeTab === "coupons") await loadCoupons();
     else if (activeTab === "newsletter") await loadNewsletterSubscribers();
     else if (activeTab === "moderation") await loadModerationQueue();
@@ -434,6 +520,7 @@ export default function AdminPage() {
     loadAnalytics,
     loadUsersList,
     loadTeacherApplications,
+    loadWithdrawals,
     loadCoupons,
     loadNewsletterSubscribers,
     loadModerationQueue,
@@ -445,8 +532,9 @@ export default function AdminPage() {
     if (session?.user?.role === "admin" && isMounted) {
       fetchTabDetails();
       loadTeacherApplications();
+      loadWithdrawals();
     }
-  }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications]);
+  }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications, loadWithdrawals]);
 
   const handleUserModify = async (targetUserId: string, action: string, role?: string) => {
     try {
@@ -539,7 +627,7 @@ export default function AdminPage() {
   };
 
   const navTabs: Array<{
-    id: "analytics" | "users" | "teacher_applications" | "coupons" | "newsletter" | "moderation" | "settings" | "audit" | "export";
+    id: "analytics" | "users" | "teacher_applications" | "withdrawals" | "coupons" | "newsletter" | "moderation" | "settings" | "audit" | "export";
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     badge?: number;
@@ -547,6 +635,7 @@ export default function AdminPage() {
       { id: "analytics", label: "Telemetry & Growth", icon: BarChart3 },
       { id: "users", label: "Scholars & Messages", icon: Users },
       { id: "teacher_applications", label: "Teacher Applications", icon: GraduationCap, badge: pendingTeacherAppsCount },
+      { id: "withdrawals", label: "Payouts & Withdrawals", icon: DollarSign, badge: pendingWithdrawalsCount },
       { id: "coupons", label: "Coupons & Offers", icon: Tag },
       { id: "newsletter", label: "Newsletter Subscribers", icon: Send, badge: newsletterSubscribers.length },
       { id: "moderation", label: "Content Queue", icon: ShieldAlert, badge: flaggedNotes.length },
@@ -1060,7 +1149,246 @@ export default function AdminPage() {
             </motion.div>
           )}
 
-          {/* Tab: Coupons & Offers Management */}
+          {/* Tab: Payouts & Withdrawals */}
+          {activeTab === "withdrawals" && (
+            <motion.div
+              key="withdrawals"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-6"
+            >
+              {/* Stats Header */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
+                  <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Total Payout Requests</p>
+                  <p className="text-2xl font-black text-white font-mono">{withdrawalRequests.length}</p>
+                </div>
+                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
+                  <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Pending Verification</p>
+                  <p className="text-2xl font-black text-amber-400 font-mono">{pendingWithdrawalsCount}</p>
+                </div>
+                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
+                  <p className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Completed Payouts (₹)</p>
+                  <p className="text-2xl font-black text-emerald-400 font-mono">
+                    ₹{withdrawalRequests
+                      .filter((w) => w.status === "completed")
+                      .reduce((sum, w) => sum + w.amount, 0)
+                      .toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Header Title */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+                <div>
+                  <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
+                    <DollarSign className="size-5 text-[#F0C93B]" /> Teacher & Admin Cash Payouts
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-light mt-0.5">
+                    Review and process cash withdrawals to UPI IDs or Bank Accounts for Teachers and Admins.
+                  </p>
+                </div>
+                <Button
+                  onClick={loadWithdrawals}
+                  disabled={isWithdrawalsLoading}
+                  className="bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-mono px-3 py-2 rounded-xl border border-white/10 shrink-0"
+                >
+                  <RefreshCw className={`size-3.5 mr-1.5 ${isWithdrawalsLoading ? "animate-spin" : ""}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {/* Requests List */}
+              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
+                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 overflow-hidden">
+                  {isWithdrawalsLoading ? (
+                    <div className="p-16 text-center space-y-3">
+                      <Loader2 className="size-8 animate-spin text-[#F0C93B] mx-auto" />
+                      <p className="text-xs text-zinc-400 font-mono">Loading payout requests...</p>
+                    </div>
+                  ) : withdrawalRequests.length === 0 ? (
+                    <div className="p-16 text-center space-y-3">
+                      <DollarSign className="size-10 text-zinc-600 mx-auto" />
+                      <p className="text-xs text-zinc-400 font-mono">No withdrawal requests submitted yet.</p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-white/5">
+                      {withdrawalRequests.map((req) => (
+                        <div key={req.id} className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors">
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            {/* User details */}
+                            <div className="flex items-center gap-3">
+                              <div className="size-11 rounded-2xl bg-zinc-900 border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
+                                {req.userImage ? (
+                                  <img src={req.userImage} alt={req.userName} className="size-full object-cover" />
+                                ) : (
+                                  <span className="text-sm font-bold font-mono text-zinc-400">
+                                    {req.userName.substring(0, 2).toUpperCase()}
+                                  </span>
+                                )}
+                              </div>
+                              <div>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <h4 className="text-sm font-bold text-white">{req.userName}</h4>
+                                  <span
+                                    className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
+                                      req.userRole === "teacher"
+                                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                                        : req.userRole === "admin"
+                                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/30"
+                                        : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
+                                    }`}
+                                  >
+                                    {req.userRole}
+                                  </span>
+                                </div>
+                                <p className="text-xs text-zinc-400 font-mono mt-0.5">{req.userEmail}</p>
+                              </div>
+                            </div>
+
+                            {/* Amount & Status */}
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <span className="text-base font-black text-[#F0C93B] font-mono block">
+                                  ₹{req.amount.toLocaleString()}
+                                </span>
+                                <span className="text-[10px] text-zinc-500 font-mono block">
+                                  {new Date(req.createdAt).toLocaleDateString("en-IN", {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  })}
+                                </span>
+                              </div>
+
+                              <span
+                                className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${
+                                  req.status === "completed"
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                    : req.status === "approved"
+                                    ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
+                                    : req.status === "rejected"
+                                    ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                                    : "bg-amber-500/10 text-amber-400 border-amber-500/30 animate-pulse"
+                                }`}
+                              >
+                                {req.status.toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Payout Target Details */}
+                          <div className="p-3.5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-2 font-mono text-xs">
+                            <div className="flex items-center justify-between">
+                              <span className="text-zinc-400 flex items-center gap-1.5 text-[11px]">
+                                {req.payoutMethod === "upi" ? (
+                                  <>
+                                    <QrCode className="size-3.5 text-[#F0C93B]" /> UPI VPA Target
+                                  </>
+                                ) : (
+                                  <>
+                                    <Building2 className="size-3.5 text-blue-400" /> Bank Transfer Target
+                                  </>
+                                )}
+                              </span>
+                              {req.transactionRef && (
+                                <span className="text-[10px] text-emerald-400">
+                                  UTR: <strong>{req.transactionRef}</strong>
+                                </span>
+                              )}
+                            </div>
+
+                            {req.payoutMethod === "upi" ? (
+                              <div className="flex items-center justify-between text-white bg-black/40 p-2 rounded-xl">
+                                <span>{req.payoutDetails?.upiId || "N/A"}</span>
+                                {req.payoutDetails?.upiId && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(req.payoutDetails.upiId || "");
+                                      toast.success("UPI ID copied!");
+                                    }}
+                                    className="h-6 text-[10px] text-zinc-400 hover:text-white"
+                                  >
+                                    <Copy className="size-3 mr-1" /> Copy UPI
+                                  </Button>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-white bg-black/40 p-2.5 rounded-xl">
+                                <div>
+                                  <span className="text-[10px] text-zinc-500 block">ACCOUNT HOLDER</span>
+                                  <span className="font-bold">{req.payoutDetails?.accountHolderName || "N/A"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-zinc-500 block">ACCOUNT NUMBER</span>
+                                  <span className="font-bold">{req.payoutDetails?.bankAccount || "N/A"}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[10px] text-zinc-500 block">IFSC CODE</span>
+                                  <span className="font-bold uppercase text-amber-400">{req.payoutDetails?.ifscCode || "N/A"}</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {req.adminNote && (
+                              <p className="text-[11px] text-zinc-400 italic pt-1">
+                                Admin Note: &ldquo;{req.adminNote}&rdquo;
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Action Controls */}
+                          {req.status === "pending" && (
+                            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setWithdrawalActionModal({
+                                    id: req.id,
+                                    action: "complete",
+                                    userName: req.userName,
+                                    amount: req.amount,
+                                    payoutMethod: req.payoutMethod,
+                                  });
+                                  setWithdrawalTxRef("");
+                                  setWithdrawalNote("");
+                                }}
+                                className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-mono font-bold text-xs h-8 px-3 rounded-xl flex items-center gap-1.5"
+                              >
+                                <CheckCircle2 className="size-3.5" /> Complete Payout
+                              </Button>
+
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  setWithdrawalActionModal({
+                                    id: req.id,
+                                    action: "reject",
+                                    userName: req.userName,
+                                    amount: req.amount,
+                                    payoutMethod: req.payoutMethod,
+                                  });
+                                  setWithdrawalTxRef("");
+                                  setWithdrawalNote("");
+                                }}
+                                className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-mono text-xs h-8 px-3 rounded-xl flex items-center gap-1.5"
+                              >
+                                <XCircle className="size-3.5" /> Reject & Refund
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
           {activeTab === "coupons" && (
             <motion.div
               key="coupons"
@@ -1591,6 +1919,104 @@ export default function AdminPage() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* WITHDRAWAL ACTION MODAL */}
+      {withdrawalActionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-md bg-[#0C120E] border border-white/15 rounded-3xl p-6 space-y-5 shadow-2xl relative text-zinc-100">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-base font-bold font-heading text-white flex items-center gap-2">
+                {withdrawalActionModal.action === "complete" ? (
+                  <>
+                    <CheckCircle2 className="size-5 text-emerald-400" /> Complete Cash Payout
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="size-5 text-rose-400" /> Reject & Refund Withdrawal
+                  </>
+                )}
+              </h3>
+              <button
+                onClick={() => setWithdrawalActionModal(null)}
+                className="text-zinc-400 hover:text-white p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-white/5 space-y-1 text-xs font-mono">
+              <p className="text-zinc-400">
+                User: <strong className="text-white">{withdrawalActionModal.userName}</strong>
+              </p>
+              <p className="text-zinc-400">
+                Amount: <strong className="text-[#F0C93B]">₹{withdrawalActionModal.amount}</strong> ({withdrawalActionModal.amount} coins)
+              </p>
+              <p className="text-zinc-400">
+                Target Method: <strong className="text-white uppercase">{withdrawalActionModal.payoutMethod}</strong>
+              </p>
+            </div>
+
+            {withdrawalActionModal.action === "complete" && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono text-zinc-300 font-bold block">
+                  BANK UTR / UPI REFERENCE / RAZORPAY PAYOUT ID
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. UTR492810482910 or pay_ref_12345"
+                  value={withdrawalTxRef}
+                  onChange={(e) => setWithdrawalTxRef(e.target.value)}
+                  className="w-full bg-zinc-900 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#F0C93B] outline-none"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-mono text-zinc-300 font-bold block">
+                ADMIN NOTE (OPTIONAL)
+              </label>
+              <input
+                type="text"
+                placeholder={
+                  withdrawalActionModal.action === "complete"
+                    ? "e.g. Sent via IMPS bank transfer"
+                    : "e.g. Invalid UPI ID; coins refunded to creator earnings balance"
+                }
+                value={withdrawalNote}
+                onChange={(e) => setWithdrawalNote(e.target.value)}
+                className="w-full bg-zinc-900 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#F0C93B] outline-none"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="ghost"
+                onClick={() => setWithdrawalActionModal(null)}
+                className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs h-10 rounded-xl"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isProcessingWithdrawalAction}
+                onClick={handleProcessWithdrawal}
+                className={`flex-1 font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 ${
+                  withdrawalActionModal.action === "complete"
+                    ? "bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-heading"
+                    : "bg-rose-500 hover:bg-rose-600 text-white font-heading"
+                }`}
+              >
+                {isProcessingWithdrawalAction ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : withdrawalActionModal.action === "complete" ? (
+                  "Confirm & Complete Payout"
+                ) : (
+                  "Confirm & Refund User"
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

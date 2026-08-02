@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const session = await auth();
     const userId = session?.user?.id;
     if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized. Please sign in first." }, { status: 401 });
     }
 
     const body = await req.json();
@@ -35,13 +35,16 @@ export async function POST(req: Request) {
 
     if (!payoutDetails || typeof payoutDetails !== "object") {
       return NextResponse.json(
-        { error: "Payout details (UPI ID or Bank Details) are required." },
+        { error: "Payout details (UPI ID or Bank Account Details) are required." },
         { status: 400 }
       );
     }
 
     if (payoutMethod === "upi" && (!payoutDetails.upiId || !payoutDetails.upiId.trim())) {
-      return NextResponse.json({ error: "Valid UPI ID is required for UPI payout." }, { status: 400 });
+      return NextResponse.json(
+        { error: "Valid UPI ID is required (e.g. name@upi or 9876543210@paytm)." },
+        { status: 400 }
+      );
     }
 
     if (
@@ -61,15 +64,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
+    const isTeacherOrAdmin = user.role === "teacher" || user.role === "admin";
     const creatorEarnings = user.creatorEarnings || 0;
+    const coinBalance = user.coins || 0;
 
-    // Strict validation: Only creatorEarnings can be withdrawn! Regular promotional activity coins cannot be withdrawn to cash.
-    if (withdrawAmount > creatorEarnings) {
+    // Total available withdrawable balance
+    const availableWithdrawable = isTeacherOrAdmin
+      ? creatorEarnings + coinBalance
+      : creatorEarnings;
+
+    if (withdrawAmount > availableWithdrawable) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_EARNINGS",
-          message: `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins from course sales. Regular promotional/activity coins cannot be withdrawn to cash.`,
+          message: isTeacherOrAdmin
+            ? `Withdrawal amount exceeds your total available balance of ${availableWithdrawable} coins (Creator Earnings: ${creatorEarnings}, Wallet Coins: ${coinBalance}).`
+            : `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins from course sales. Regular promotional/activity coins cannot be withdrawn to cash.`,
           creatorEarnings,
+          coinBalance,
+          availableWithdrawable,
           requestedAmount: withdrawAmount,
         },
         { status: 400 }
@@ -78,13 +91,22 @@ export async function POST(req: Request) {
 
     const wallet = await getOrCreateUserWallet(user._id);
 
+    // Compute balance deduction split
+    let deductFromEarnings = Math.min(creatorEarnings, withdrawAmount);
+    let deductFromCoins = withdrawAmount - deductFromEarnings;
+
     const dbSession = await mongoose.startSession();
     let withdrawalReq;
 
     try {
       await dbSession.withTransaction(async () => {
-        // Deduct from creatorEarnings & update stored payout details
-        user.creatorEarnings -= withdrawAmount;
+        user.creatorEarnings = Math.max(0, user.creatorEarnings - deductFromEarnings);
+        if (deductFromCoins > 0) {
+          user.coins = Math.max(0, user.coins - deductFromCoins);
+          wallet.balance = Math.max(0, wallet.balance - deductFromCoins);
+          await wallet.save({ session: dbSession });
+        }
+
         user.payoutDetails = {
           ...(user.payoutDetails || {}),
           ...payoutDetails,
@@ -96,9 +118,15 @@ export async function POST(req: Request) {
           [
             {
               userId: user._id,
+              userRole: user.role || "user",
               amount: withdrawAmount,
               payoutMethod,
-              payoutDetails,
+              payoutDetails: {
+                upiId: payoutDetails.upiId?.trim() || "",
+                bankAccount: payoutDetails.bankAccount?.trim() || "",
+                ifscCode: payoutDetails.ifscCode?.trim()?.toUpperCase() || "",
+                accountHolderName: payoutDetails.accountHolderName?.trim() || "",
+              },
               status: "pending",
             },
           ],
@@ -117,8 +145,11 @@ export async function POST(req: Request) {
               status: "pending",
               metadata: {
                 payoutMethod,
+                userRole: user.role,
                 withdrawalRequestId: reqDoc._id,
-                note: `Withdrawal request of ${withdrawAmount} coins via ${payoutMethod}`,
+                deductFromEarnings,
+                deductFromCoins,
+                note: `Withdrawal request of ₹${withdrawAmount} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
               },
             },
           ],
@@ -128,7 +159,13 @@ export async function POST(req: Request) {
     } catch (txError) {
       console.warn("MongoDB transaction fallback for withdrawal request:", txError);
 
-      user.creatorEarnings -= withdrawAmount;
+      user.creatorEarnings = Math.max(0, user.creatorEarnings - deductFromEarnings);
+      if (deductFromCoins > 0) {
+        user.coins = Math.max(0, user.coins - deductFromCoins);
+        wallet.balance = Math.max(0, wallet.balance - deductFromCoins);
+        await wallet.save();
+      }
+
       user.payoutDetails = {
         ...(user.payoutDetails || {}),
         ...payoutDetails,
@@ -137,9 +174,15 @@ export async function POST(req: Request) {
 
       withdrawalReq = await WithdrawalRequest.create({
         userId: user._id,
+        userRole: user.role || "user",
         amount: withdrawAmount,
         payoutMethod,
-        payoutDetails,
+        payoutDetails: {
+          upiId: payoutDetails.upiId?.trim() || "",
+          bankAccount: payoutDetails.bankAccount?.trim() || "",
+          ifscCode: payoutDetails.ifscCode?.trim()?.toUpperCase() || "",
+          accountHolderName: payoutDetails.accountHolderName?.trim() || "",
+        },
         status: "pending",
       });
 
@@ -151,8 +194,11 @@ export async function POST(req: Request) {
         status: "pending",
         metadata: {
           payoutMethod,
+          userRole: user.role,
           withdrawalRequestId: withdrawalReq._id,
-          note: `Withdrawal request of ${withdrawAmount} coins via ${payoutMethod}`,
+          deductFromEarnings,
+          deductFromCoins,
+          note: `Withdrawal request of ₹${withdrawAmount} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
         },
       });
     } finally {
@@ -160,9 +206,11 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: `Withdrawal request of ${withdrawAmount} coins submitted successfully!`,
+      message: `Withdrawal request of ₹${withdrawAmount} submitted successfully via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"}! Funds will be transferred to your account within 24–48 hours.`,
       withdrawalRequest: withdrawalReq,
       remainingCreatorEarnings: user.creatorEarnings,
+      remainingCoins: user.coins,
+      walletBalance: wallet.balance,
     });
   } catch (error) {
     console.error("Withdrawal API error:", error);

@@ -5,6 +5,7 @@ export type PayoutMethod = "upi" | "bank_transfer";
 
 export interface IWithdrawalRequest extends Document {
   userId: mongoose.Types.ObjectId;
+  userRole?: "user" | "teacher" | "admin";
   amount: number;
   payoutMethod: PayoutMethod;
   payoutDetails: {
@@ -15,6 +16,8 @@ export interface IWithdrawalRequest extends Document {
   };
   status: WithdrawalStatus;
   adminNote?: string;
+  transactionRef?: string;
+  processedAt?: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,6 +25,7 @@ export interface IWithdrawalRequest extends Document {
 const WithdrawalRequestSchema = new Schema<IWithdrawalRequest>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    userRole: { type: String, enum: ["user", "teacher", "admin"], default: "user" },
     amount: { type: Number, required: true, min: 1 },
     payoutMethod: { type: String, enum: ["upi", "bank_transfer"], required: true },
     payoutDetails: { type: Schema.Types.Mixed, required: true },
@@ -32,6 +36,8 @@ const WithdrawalRequestSchema = new Schema<IWithdrawalRequest>(
       index: true,
     },
     adminNote: { type: String, default: "" },
+    transactionRef: { type: String, default: "" },
+    processedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
