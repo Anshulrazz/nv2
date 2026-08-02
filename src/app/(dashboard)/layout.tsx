@@ -61,14 +61,15 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div suppressHydrationWarning className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden cyber-grid">
+    <div suppressHydrationWarning className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden">
       <PusherListener />
       <CallWrapper />
-      {/* ── Premium Background Glow Shapes ── */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#8FC3DE]/5 rounded-full filter blur-[120px] pointer-events-none select-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#F28B6E]/4 rounded-full filter blur-[150px] pointer-events-none select-none" />
-      <div className="absolute top-[30%] right-[20%] w-[400px] h-[400px] bg-[#C9A9E0]/4 rounded-full filter blur-[130px] pointer-events-none select-none" />
-      <div className="absolute bottom-[20%] left-[10%] w-[450px] h-[450px] bg-[#F0C93B]/4 rounded-full filter blur-[140px] pointer-events-none select-none" />
+      {/* ── Fixed Continuous Background & Glow Layer ── */}
+      <div className="fixed inset-0 pointer-events-none z-0 cyber-grid bg-background" />
+      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#8FC3DE]/5 rounded-full filter blur-[120px] pointer-events-none select-none z-0" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#F28B6E]/4 rounded-full filter blur-[150px] pointer-events-none select-none z-0" />
+      <div className="fixed top-[30%] right-[20%] w-[400px] h-[400px] bg-[#C9A9E0]/4 rounded-full filter blur-[130px] pointer-events-none select-none z-0" />
+      <div className="fixed bottom-[20%] left-[10%] w-[450px] h-[450px] bg-[#F0C93B]/4 rounded-full filter blur-[140px] pointer-events-none select-none z-0" />
 
       {/* ── Mobile sidebar checkbox (CSS hack) ── */}
       <input type="checkbox" id="sidebar-toggle" className="peer hidden" />

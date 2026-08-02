@@ -172,6 +172,7 @@ export function SidebarNavigation({
             <NavLink href="/research" icon={<GraduationCap className="size-4" />} label="Research" accent="violet" />
             <NavLink href="/bookmarks" icon={<Bookmark className="size-4" />} label="Bookmarks" accent="amber" />
             <NavLink href="/leaderboard" icon={<Trophy className="size-4" />} label="Leaderboard" accent="yellow" />
+            <NavLink href="/events" icon={<Calendar className="size-4" />} label="Events & Hackathons" accent="amber" />
             <NavLink href="/courses" icon={<Presentation className="size-4" />} label="Courses" accent="violet" />
             <NavLink href="/referrals" icon={<Gift className="size-4" />} label="Referrals" accent="yellow" />
             <NavLink href="/settings" icon={<Settings className="size-4" />} label="Settings" accent="cyan" />

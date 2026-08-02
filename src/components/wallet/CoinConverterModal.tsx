@@ -158,9 +158,10 @@ export function CoinConverterModal({
           },
         },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || "An unexpected error occurred during payment.");
+      const msg = err instanceof Error ? err.message : "An unexpected error occurred during payment.";
+      toast.error(msg);
       setIsConverting(false);
     }
   };
