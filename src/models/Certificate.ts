@@ -1,0 +1,29 @@
+import mongoose, { Schema, Document } from "mongoose";
+
+export interface ICertificate extends Document {
+  eventId: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  rank: number;
+  displayName: string;
+  issuedAt: Date;
+  certificateUrl: string;
+}
+
+const CertificateSchema = new Schema<ICertificate>(
+  {
+    eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true, index: true },
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    rank: { type: Number, required: true },
+    displayName: { type: String, required: true },
+    issuedAt: { type: Date, default: Date.now },
+    certificateUrl: { type: String, default: "" },
+  },
+  {
+    timestamps: false,
+  }
+);
+
+CertificateSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+
+export const Certificate =
+  mongoose.models.Certificate || mongoose.model<ICertificate>("Certificate", CertificateSchema);
