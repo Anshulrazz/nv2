@@ -3,7 +3,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { generateGeminiContent } from "@/lib/gemini";
 
-export const maxDuration = 60; // Allow up to 60s for multi-stage AI generation
+export const maxDuration = 60;
+export const dynamic = "force-dynamic";
 
 /**
  * Robust JSON parser for LLM outputs containing control characters, unescaped newlines inside strings, or extra text
@@ -65,19 +66,17 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Course topic is required." }, { status: 400 });
     }
 
-    const systemPrompt = `You are an elite master curriculum designer and domain expert. Your task is to generate a comprehensive, highly thorough, professional course on the given topic.
+    const systemPrompt = `You are an elite curriculum designer. Generate a high-quality, comprehensive course on the topic.
 
-CRITICAL REQUIREMENTS:
-1. The total course word count across all modules and lessons MUST BE EXTREMELY DETAILED (at least 5,000+ words in total across all text fields).
-2. Create 4 to 6 Modules.
-3. Each Module MUST contain 3 to 5 Lessons.
-4. For EACH Lesson:
-   - Provide an extensive, deep-dive explanation text in Markdown (at least 300 to 500+ words per lesson) covering theoretical concepts, step-by-step code/formula examples, key takeaways, diagrams in ASCII or bullet lists, and real-world practical applications.
-   - Include 2 to 3 Knowledge Check Quiz questions with 4 options and the zero-based index of the correct option.
-5. Provide a captivating course title and description.
-6. STYLE & FORMAT: Return strictly valid JSON. Escape all newlines in string properties using \\n so that the JSON is 100% valid.
+FAST & RICH FORMAT:
+1. Create 3 to 4 Modules.
+2. Each Module MUST contain 2 to 3 Lessons.
+3. For EACH Lesson:
+   - Provide an informative, well-formatted Markdown explanation (200-300 words) covering key concepts, code/formula examples, and practical takeaways.
+   - Include 2 Knowledge Check Quiz questions with 4 options and the 0-based index of the correct option.
+4. Return ONLY valid JSON with escaped newlines (use \\n inside JSON string literals).
 
-Return ONLY a valid JSON object strictly adhering to this structure with NO markdown backticks or commentary outside JSON:
+Adhere strictly to this JSON structure:
 {
   "title": "Course Title",
   "description": "Comprehensive course overview and learning objectives...",
@@ -88,7 +87,7 @@ Return ONLY a valid JSON object strictly adhering to this structure with NO mark
       "lessons": [
         {
           "title": "Lesson 1.1 Title",
-          "text": "Detailed, deep-dive lesson content in Markdown...",
+          "text": "Detailed lesson content in Markdown...",
           "quiz": [
             {
               "question": "Question text?",
@@ -107,12 +106,12 @@ Target Level: ${level}
 Target Audience: ${targetAudience}
 ${additionalInstructions ? `Special Instructions: ${additionalInstructions}` : ""}
 
-Please construct the complete 5000+ word, multi-module, multi-lecture course in exact JSON format. Ensure all lesson text fields are filled with comprehensive, high-quality, step-by-step markdown explanations.`;
+Construct the complete, high-quality course in exact JSON format.`;
 
     const rawOutput = await generateGeminiContent({
       systemPrompt,
       userPrompt,
-      temperature: 0.7,
+      temperature: 0.5,
       jsonMode: true,
     });
 

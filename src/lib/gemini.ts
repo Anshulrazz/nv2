@@ -1,7 +1,7 @@
 /**
  * Google Gemini AI & OpenRouter API Service Wrapper
  * Primary engine: Google Gemini API
- * Fallback engine: OpenRouter API (if Gemini is unavailable, unconfigured, or rate-limited)
+ * Fallback engine: OpenRouter API (if Gemini is unavailable, unconfigured, slow, or rate-limited)
  */
 
 export interface GeminiGenerateOptions {
@@ -9,6 +9,22 @@ export interface GeminiGenerateOptions {
   userPrompt: string;
   temperature?: number;
   jsonMode?: boolean;
+}
+
+/**
+ * Fetch helper with strict timeout to prevent 504 Gateway Timeouts
+ */
+async function fetchWithTimeout(url: string, options: RequestInit, timeoutMs = 20000): Promise<Response> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    clearTimeout(timer);
+    return response;
+  } catch (err) {
+    clearTimeout(timer);
+    throw err;
+  }
 }
 
 async function callOpenRouter(options: GeminiGenerateOptions): Promise<string> {
@@ -28,14 +44,14 @@ async function callOpenRouter(options: GeminiGenerateOptions): Promise<string> {
   const payload: Record<string, unknown> = {
     model,
     messages,
-    temperature: options.temperature ?? 0.7,
+    temperature: options.temperature ?? 0.5,
   };
 
   if (options.jsonMode) {
     payload.response_format = { type: "json_object" };
   }
 
-  const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  const res = await fetchWithTimeout("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${openRouterKey}`,
@@ -44,7 +60,7 @@ async function callOpenRouter(options: GeminiGenerateOptions): Promise<string> {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(payload),
-  });
+  }, 25000);
 
   if (!res.ok) {
     const errorText = await res.text();
@@ -89,16 +105,16 @@ export async function generateGeminiContent(options: GeminiGenerateOptions): Pro
       const payload: Record<string, unknown> = {
         contents,
         generationConfig: {
-          temperature: options.temperature ?? 0.7,
+          temperature: options.temperature ?? 0.5,
           ...(options.jsonMode ? { responseMimeType: "application/json" } : {}),
         },
       };
 
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
-      });
+      }, 20000); // 20s max for Gemini
 
       if (!res.ok) {
         const errorText = await res.text();
@@ -114,7 +130,7 @@ export async function generateGeminiContent(options: GeminiGenerateOptions): Pro
       return textOutput;
     } catch (geminiErr: unknown) {
       const errMsg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
-      console.warn(`[AI Engine] Gemini API unavailable or failed (${errMsg}). Attempting OpenRouter fallback...`);
+      console.warn(`[AI Engine] Gemini API unavailable or slow (${errMsg}). Attempting OpenRouter fallback...`);
     }
   } else {
     console.log(`[AI Engine] GEMINI_API_KEY not configured. Falling back directly to OpenRouter API...`);
