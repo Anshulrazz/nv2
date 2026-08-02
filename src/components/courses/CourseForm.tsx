@@ -4,7 +4,8 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, Trash2, CheckCircle,  } from "lucide-react";
+import { Loader2, Plus, Trash2, CheckCircle, Sparkles, Wand2, X, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 export function CourseForm({ initialData = null }: { initialData?: any }) {
   const router = useRouter();
@@ -18,6 +19,54 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
   const [price, setPrice] = useState<number>(initialData?.price || 0);
   const [isPublished, setIsPublished] = useState(initialData?.isPublished || false);
   const [modules, setModules] = useState<any[]>(initialData?.modules || []);
+
+  // AI Course Generator Modal State
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiLevel, setAiLevel] = useState("Intermediate");
+  const [aiTargetAudience, setAiTargetAudience] = useState("Students & Developers");
+  const [aiPrice, setAiPrice] = useState(0);
+  const [aiInstructions, setAiInstructions] = useState("");
+  const [generatingAI, setGeneratingAI] = useState(false);
+
+  const handleGenerateAICourse = async (e?: React.SyntheticEvent) => {
+    if (e) e.preventDefault();
+    if (!aiTopic.trim()) return;
+
+    setGeneratingAI(true);
+    try {
+      const res = await fetch("/api/courses/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: aiTopic,
+          level: aiLevel,
+          targetAudience: aiTargetAudience,
+          price: aiPrice,
+          additionalInstructions: aiInstructions,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to generate course with AI.");
+
+      if (data.course) {
+        if (data.course.title) setTitle(data.course.title);
+        if (data.course.description) setDescription(data.course.description);
+        if (typeof data.course.price === "number") setPrice(data.course.price);
+        if (Array.isArray(data.course.modules) && data.course.modules.length > 0) {
+          setModules(data.course.modules);
+        }
+        toast.success("🎉 Course successfully generated with 5,000+ words across modules and quizzes!");
+        setShowAIModal(false);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.message || "AI Course Generation failed.");
+    } finally {
+      setGeneratingAI(false);
+    }
+  };
 
   const handleAddModule = () => {
     setModules([...modules, { title: "", lessons: [] }]);
@@ -132,6 +181,143 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
       {error && (
         <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-sm">
           {error}
+        </div>
+      )}
+
+      {/* AI Course Generator Banner Card */}
+      <div className="bg-gradient-to-r from-amber-500/15 via-violet-500/10 to-amber-500/15 p-6 rounded-3xl border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-amber-500/5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+              <Sparkles className="size-3.5 animate-pulse" /> AI GENERATOR (GEMINI & OPENROUTER)
+            </span>
+          </div>
+          <h3 className="text-lg font-bold text-white">Auto-Generate 5000+ Word Course</h3>
+          <p className="text-xs text-zinc-300 font-light max-w-lg">
+            Let Gemini & OpenRouter AI generate a complete multi-module curriculum, 5000+ words of lecture notes, and quizzes in seconds.
+          </p>
+        </div>
+
+        <Button
+          type="button"
+          onClick={() => setShowAIModal(true)}
+          className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs h-11 px-6 rounded-2xl shadow-xl shadow-amber-500/20 shrink-0 flex items-center gap-2"
+        >
+          <Wand2 className="size-4" />
+          <span>Generate with AI</span>
+        </Button>
+      </div>
+
+      {/* AI Course Generator Modal */}
+      {showAIModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg bg-[#0d0d14] border border-amber-500/30 rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="size-10 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
+                  <Sparkles className="size-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-white">AI Course Generator</h3>
+                  <p className="text-xs text-zinc-400 font-mono">Gemini AI with OpenRouter Fallback</p>
+                </div>
+              </div>
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                onClick={() => setShowAIModal(false)}
+                disabled={generatingAI}
+                className="size-8 text-zinc-400 hover:text-white rounded-xl"
+              >
+                <X className="size-4" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-zinc-300">Course Topic / Title *</label>
+                <input
+                  required
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  placeholder="e.g. Full Stack Next.js 15 & AI Web Development"
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-zinc-300">Target Difficulty Level</label>
+                  <select
+                    value={aiLevel}
+                    onChange={(e) => setAiLevel(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-amber-500"
+                  >
+                    <option value="Beginner">Beginner</option>
+                    <option value="Intermediate">Intermediate</option>
+                    <option value="Advanced">Advanced</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-zinc-300">Course Price (Coins)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={aiPrice}
+                    onChange={(e) => setAiPrice(Math.max(0, parseInt(e.target.value) || 0))}
+                    placeholder="0 for Free"
+                    className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white font-mono outline-none focus:border-amber-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-zinc-300">Target Audience</label>
+                <input
+                  value={aiTargetAudience}
+                  onChange={(e) => setAiTargetAudience(e.target.value)}
+                  placeholder="e.g. College Students, Web Developers"
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-500"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-medium text-zinc-300">Additional Instructions (Optional)</label>
+                <textarea
+                  value={aiInstructions}
+                  onChange={(e) => setAiInstructions(e.target.value)}
+                  placeholder="e.g. Include code snippets in TypeScript, practice quizzes, and real-world project tasks..."
+                  className="w-full bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-amber-500 min-h-[80px]"
+                />
+              </div>
+
+              <div className="pt-4 space-y-3">
+                <Button
+                  type="button"
+                  onClick={(e: React.MouseEvent) => handleGenerateAICourse(e)}
+                  disabled={generatingAI || !aiTopic.trim()}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold text-xs h-12 rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                >
+                  {generatingAI ? (
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Drafting 5000+ Word Course with Gemini/OpenRouter...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="size-4" />
+                      <span>Generate 5000+ Word Course</span>
+                    </>
+                  )}
+                </Button>
+                <p className="text-[10px] text-zinc-500 font-mono text-center">
+                  Will generate 4-6 Modules, 12-20 detailed Lectures with Markdown notes & quizzes.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

@@ -22,6 +22,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CoinConverterModal } from "@/components/wallet/CoinConverterModal";
+import { CourseAICopilot } from "@/components/courses/CourseAICopilot";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { toast } from "sonner";
 
 interface CourseLesson {
@@ -94,6 +96,9 @@ export default function CourseViewerPage() {
 
   // Coin Converter State
   const [showCoinConverter, setShowCoinConverter] = useState(false);
+
+  // AI Side-Chat Copilot State
+  const [showCopilot, setShowCopilot] = useState(false);
 
   const fetchCourseData = useCallback(async () => {
     try {
@@ -474,13 +479,23 @@ export default function CourseViewerPage() {
                 animate={{ opacity: 1, y: 0 }}
                 className="max-w-4xl mx-auto space-y-8 pb-20"
               >
-                <div className="space-y-2">
-                  <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                    {activeModule?.title}
-                  </span>
-                  <h1 className="text-3xl font-black text-white tracking-tight">
-                    {activeLesson.title}
-                  </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
+                      {activeModule?.title}
+                    </span>
+                    <h1 className="text-3xl font-black text-white tracking-tight">
+                      {activeLesson.title}
+                    </h1>
+                  </div>
+
+                  <Button
+                    onClick={() => setShowCopilot(true)}
+                    className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold h-10 px-5 rounded-2xl shrink-0 flex items-center gap-2 shadow-lg shadow-amber-500/10 transition-all"
+                  >
+                    <Sparkles className="size-4 text-amber-400 animate-pulse" />
+                    <span>Gemini AI Copilot</span>
+                  </Button>
                 </div>
 
                 {/* Video Player */}
@@ -513,8 +528,8 @@ export default function CourseViewerPage() {
                 )}
 
                 {activeLesson.text && (
-                  <div className="prose prose-invert max-w-none text-zinc-300 text-sm leading-relaxed whitespace-pre-wrap bg-zinc-950/40 p-6 rounded-2xl border border-white/5">
-                    {activeLesson.text}
+                  <div className="bg-[#08080c] p-6 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
+                    <MarkdownRenderer content={activeLesson.text} />
                   </div>
                 )}
 
@@ -721,6 +736,26 @@ export default function CourseViewerPage() {
         onClose={() => setShowCoinConverter(false)}
         currentBalance={userCoins}
         onSuccess={() => fetchCourseData()}
+      />
+
+      {/* Floating Gemini Copilot Trigger Button */}
+      {!showCopilot && (
+        <button
+          onClick={() => setShowCopilot(true)}
+          className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs px-5 py-3 rounded-full shadow-2xl shadow-amber-500/40 flex items-center gap-2 border border-amber-300/40 transition-all hover:scale-105 active:scale-95"
+        >
+          <Sparkles className="size-4 animate-pulse text-zinc-950" />
+          <span>Gemini Copilot</span>
+        </button>
+      )}
+
+      {/* AI Side Chat Copilot */}
+      <CourseAICopilot
+        courseTitle={course.title}
+        lessonTitle={activeLesson?.title || ""}
+        lessonText={activeLesson?.text || ""}
+        isOpen={showCopilot}
+        onClose={() => setShowCopilot(false)}
       />
     </div>
   );
