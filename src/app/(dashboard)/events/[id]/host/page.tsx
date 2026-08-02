@@ -7,16 +7,11 @@ import {
   Trophy,
   Users,
   Award,
-  Download,
   Loader2,
   ArrowLeft,
   Search,
-  CheckCircle2,
-  Clock,
-  Sparkles,
   ExternalLink,
   Shield,
-  Coins,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

@@ -4,9 +4,11 @@ export interface IAttempt extends Document {
   eventId: mongoose.Types.ObjectId;
   challengeId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  status: "not_started" | "in_progress" | "solved" | "expired" | "locked";
+  sequenceIndex: number;
+  status: "not_started" | "in_progress" | "solved" | "skipped" | "expired" | "locked";
   startedAt?: Date;
   solvedAt?: Date;
+  resolvedAt?: Date;
   timeTakenSeconds?: number;
   wrongAttemptCount: number;
   pointsAwarded: number;
@@ -18,14 +20,16 @@ const AttemptSchema = new Schema<IAttempt>(
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true, index: true },
     challengeId: { type: Schema.Types.ObjectId, ref: "Challenge", required: true, index: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    sequenceIndex: { type: Number, default: 0 },
     status: {
       type: String,
-      enum: ["not_started", "in_progress", "solved", "expired", "locked"],
+      enum: ["not_started", "in_progress", "solved", "skipped", "expired", "locked"],
       default: "not_started",
       index: true,
     },
     startedAt: { type: Date, default: null },
     solvedAt: { type: Date, default: null },
+    resolvedAt: { type: Date, default: null },
     timeTakenSeconds: { type: Number, default: 0 },
     wrongAttemptCount: { type: Number, default: 0 },
     pointsAwarded: { type: Number, default: 0 },

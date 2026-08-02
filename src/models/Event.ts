@@ -22,6 +22,7 @@ export interface IEvent extends Document {
   isPaid: boolean;
   entryFeeINR: number;
   rules?: string;
+  challengeOrder: mongoose.Types.ObjectId[];
   certificate: IEventCertificateConfig;
   createdAt: Date;
   updatedAt: Date;
@@ -58,6 +59,7 @@ const EventSchema = new Schema<IEvent>(
     isPaid: { type: Boolean, default: false, index: true },
     entryFeeINR: { type: Number, default: 0, min: 0 },
     rules: { type: String, default: "" },
+    challengeOrder: { type: [{ type: Schema.Types.ObjectId, ref: "Challenge" }], default: [] },
     certificate: { type: CertificateConfigSchema, default: () => ({ enabled: true, topN: 3, templateId: "navy_gold" }) },
   },
   {

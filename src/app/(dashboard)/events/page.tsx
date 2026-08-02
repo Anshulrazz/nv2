@@ -11,7 +11,6 @@ import {
   ArrowRight,
   Award,
   Download,
-  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 

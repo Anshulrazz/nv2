@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Certificate } from "@/models/Certificate";
-import { Event } from "@/models/Event";
 
 export async function GET() {
   try {

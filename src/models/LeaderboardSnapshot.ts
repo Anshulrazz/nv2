@@ -7,6 +7,7 @@ export interface ILeaderboardEntry {
   totalPoints: number;
   totalTimeSeconds: number;
   lastSolveAt?: Date;
+  completed: boolean;
 }
 
 export interface ILeaderboardSnapshot extends Document {
@@ -23,6 +24,7 @@ const LeaderboardEntrySchema = new Schema<ILeaderboardEntry>(
     totalPoints: { type: Number, default: 0 },
     totalTimeSeconds: { type: Number, default: 0 },
     lastSolveAt: { type: Date, default: null },
+    completed: { type: Boolean, default: false },
   },
   { _id: false }
 );
