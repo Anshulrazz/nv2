@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Coins, Sparkles, X, ArrowRightLeft, Tag, TicketCheck, Loader2 } from "lucide-react";
+import { Coins, Sparkles, X, Tag, TicketCheck, Loader2, CreditCard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 
 interface CoinConverterModalProps {
   isOpen: boolean;
@@ -102,10 +103,11 @@ export function CoinConverterModal({
 
     try {
       setIsConverting(true);
-      const res = await fetch("/api/coins/convert", {
+      const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          type: "buy_coins",
           amountINR: inrNum,
           coinsRequested: coinsNum,
           couponCode: appliedCoupon ? appliedCoupon.code : undefined,
@@ -114,22 +116,57 @@ export function CoinConverterModal({
 
       const json = await res.json();
       if (!res.ok) {
-        toast.error(json.error || "Failed to convert coins.");
+        toast.error(json.error || "Failed to create payment order.");
+        setIsConverting(false);
         return;
       }
 
-      toast.success(json.message || `Added ${json.coinsAdded} coins to your balance! ✨`);
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (err) {
+      await openRazorpayCheckout({
+        key: json.keyId,
+        amount: json.amount,
+        currency: json.currency || "INR",
+        name: "Notexia Coins",
+        description: `Purchase ${json.coinsToDeliver} Notexia Coins`,
+        order_id: json.orderId,
+        theme: { color: "#F0C93B" },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch("/api/razorpay/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              toast.success(verifyData.message || `Added ${json.coinsToDeliver} coins to your balance! ✨`);
+              if (onSuccess) onSuccess();
+              onClose();
+            } else {
+              toast.error(verifyData.error || "Payment verification failed.");
+            }
+          } catch (verifyErr) {
+            console.error(verifyErr);
+            toast.error("Payment verification error.");
+          } finally {
+            setIsConverting(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsConverting(false);
+            toast.info("Payment cancelled.");
+          },
+        },
+      });
+    } catch (err: any) {
       console.error(err);
-      toast.error("An unexpected error occurred during conversion.");
-    } finally {
+      toast.error(err?.message || "An unexpected error occurred during payment.");
       setIsConverting(false);
     }
   };
 
   const finalInr = Math.max(0, Number(inrAmount) - (appliedCoupon ? appliedCoupon.discountAmount : 0));
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
@@ -334,15 +371,20 @@ export function CoinConverterModal({
               {isConverting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
-                  <span>Converting...</span>
+                  <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <ArrowRightLeft className="h-4 w-4" />
-                  <span>Convert & Get {Number(coinsRequested || 0).toLocaleString()} Coins</span>
+                  <CreditCard className="h-4 w-4" />
+                  <span>Pay ₹{finalInr} via Razorpay</span>
                 </>
               )}
             </Button>
+          </div>
+
+          <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#9FAEA1]/80 text-center pt-1">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+            <span>Secure 256-Bit SSL Payment via Razorpay (UPI, Cards, NetBanking)</span>
           </div>
         </div>
       </div>

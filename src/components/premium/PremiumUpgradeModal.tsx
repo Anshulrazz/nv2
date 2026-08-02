@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Crown, Check, Sparkles, Loader2, X, AlertCircle, Coins, Tag, TicketCheck } from "lucide-react";
+import { Crown, Check, Sparkles, Loader2, X, AlertCircle, Coins, Tag, TicketCheck, CreditCard, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { openRazorpayCheckout } from "@/lib/razorpay";
 
 interface PremiumUpgradeModalProps {
   isOpen: boolean;
@@ -22,6 +23,7 @@ export function PremiumUpgradeModal({
   onOpenCoinConverter,
 }: PremiumUpgradeModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
+  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "coins">("razorpay");
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Coupon State
@@ -35,10 +37,14 @@ export function PremiumUpgradeModal({
 
   if (!isOpen) return null;
 
-  const basePlanCost = selectedPlan === "monthly" ? 500 : 5000;
+  const basePlanCoins = selectedPlan === "monthly" ? 500 : 5000;
+  const basePlanInr = selectedPlan === "monthly" ? 49 : 399;
+
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const finalPlanCost = Math.max(0, basePlanCost - discountAmount);
-  const isInsufficientCoins = currentBalance < finalPlanCost;
+  const finalPlanCostCoins = Math.max(0, basePlanCoins - discountAmount);
+  const finalPlanCostInr = Math.max(1, basePlanInr - (appliedCoupon ? Math.round(discountAmount / 10) : 0));
+
+  const isInsufficientCoins = currentBalance < finalPlanCostCoins;
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -47,7 +53,10 @@ export function PremiumUpgradeModal({
       const res = await fetch("/api/coupons/validate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: couponCode.trim(), amount: basePlanCost }),
+        body: JSON.stringify({
+          code: couponCode.trim(),
+          amount: paymentMethod === "coins" ? basePlanCoins : basePlanInr,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -61,7 +70,7 @@ export function PremiumUpgradeModal({
         discountAmount: data.discountAmount,
         description: data.description,
       });
-      toast.success(`Coupon '${data.code}' applied! Saved ${data.discountAmount} coins.`);
+      toast.success(`Coupon '${data.code}' applied!`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to validate coupon.");
@@ -76,7 +85,71 @@ export function PremiumUpgradeModal({
     toast.info("Coupon removed.");
   };
 
-  const handleUpgrade = async () => {
+  const handleRazorpayUpgrade = async () => {
+    try {
+      setIsUpgrading(true);
+      const res = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: "subscription",
+          plan: selectedPlan,
+          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        }),
+      });
+
+      const json = await res.json();
+      if (!res.ok) {
+        toast.error(json.error || "Failed to create payment order.");
+        setIsUpgrading(false);
+        return;
+      }
+
+      await openRazorpayCheckout({
+        key: json.keyId,
+        amount: json.amount,
+        currency: json.currency || "INR",
+        name: "Notexia Premium Pass",
+        description: `${selectedPlan === "yearly" ? "Annual" : "Monthly"} Premium Subscription`,
+        order_id: json.orderId,
+        theme: { color: "#F0C93B" },
+        handler: async (response) => {
+          try {
+            const verifyRes = await fetch("/api/razorpay/verify-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(response),
+            });
+            const verifyData = await verifyRes.json();
+            if (verifyRes.ok && verifyData.success) {
+              toast.success(verifyData.message || "Upgraded to Premium successfully! ✨");
+              if (onSuccess) onSuccess();
+              onClose();
+            } else {
+              toast.error(verifyData.error || "Payment verification failed.");
+            }
+          } catch (verifyErr) {
+            console.error(verifyErr);
+            toast.error("Payment verification error.");
+          } finally {
+            setIsUpgrading(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsUpgrading(false);
+            toast.info("Payment cancelled.");
+          },
+        },
+      });
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Payment initiation failed.");
+      setIsUpgrading(false);
+    }
+  };
+
+  const handleCoinsUpgrade = async () => {
     if (isInsufficientCoins) return;
 
     try {
@@ -265,30 +338,77 @@ export function PremiumUpgradeModal({
           )}
         </div>
 
+        {/* Payment Method Selector */}
+        <div className="space-y-1.5 relative z-10">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block">
+            Select Payment Method:
+          </span>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod("razorpay")}
+              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+                paymentMethod === "razorpay"
+                  ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F3F0E4]"
+                  : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#9FAEA1]"
+              }`}
+            >
+              <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 text-[#F0C93B] flex items-center justify-center shrink-0">
+                <CreditCard className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold font-heading">Razorpay</div>
+                <div className="text-[10px] font-mono text-[#9FAEA1]">UPI / Cards / NetBanking</div>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPaymentMethod("coins")}
+              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
+                paymentMethod === "coins"
+                  ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F3F0E4]"
+                  : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#9FAEA1]"
+              }`}
+            >
+              <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 text-[#F0C93B] flex items-center justify-center shrink-0">
+                <Coins className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="text-xs font-bold font-heading">Notexia Coins</div>
+                <div className="text-[10px] font-mono text-[#9FAEA1]">Use Coin Balance</div>
+              </div>
+            </button>
+          </div>
+        </div>
+
         {/* Balance Status & Action */}
         <div className="space-y-3 relative z-10">
           <div className="flex justify-between items-center text-xs p-3 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 font-mono">
-            <span className="text-[#9FAEA1]">Payable Coins:</span>
+            <span className="text-[#9FAEA1]">Total Amount:</span>
             <div className="flex items-center gap-2">
-              {appliedCoupon && (
-                <span className="text-[#9FAEA1] line-through text-[11px]">{basePlanCost}</span>
+              {paymentMethod === "razorpay" ? (
+                <span className="font-bold text-[#F0C93B] text-sm">₹{finalPlanCostInr}</span>
+              ) : (
+                <span className="font-bold text-[#F0C93B] flex items-center gap-1">
+                  <Coins className="h-3.5 w-3.5" /> {finalPlanCostCoins.toLocaleString()} coins
+                </span>
               )}
-              <span className="font-bold text-[#F0C93B] flex items-center gap-1">
-                <Coins className="h-3.5 w-3.5" /> {finalPlanCost.toLocaleString()} coins
-              </span>
             </div>
           </div>
 
-          <div className="flex justify-between items-center text-xs px-3 font-mono text-[#9FAEA1]">
-            <span>Your Coin Balance:</span>
-            <span className="text-[#F3F0E4] font-bold">{currentBalance.toLocaleString()} coins</span>
-          </div>
+          {paymentMethod === "coins" && (
+            <div className="flex justify-between items-center text-xs px-3 font-mono text-[#9FAEA1]">
+              <span>Your Coin Balance:</span>
+              <span className="text-[#F3F0E4] font-bold">{currentBalance.toLocaleString()} coins</span>
+            </div>
+          )}
 
-          {isInsufficientCoins && (
+          {paymentMethod === "coins" && isInsufficientCoins && (
             <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
-                <span>Need <strong>{finalPlanCost - currentBalance}</strong> more coins.</span>
+                <span>Need <strong>{finalPlanCostCoins - currentBalance}</strong> more coins.</span>
               </div>
               {onOpenCoinConverter && (
                 <Button
@@ -316,25 +436,37 @@ export function PremiumUpgradeModal({
             </Button>
             <Button
               type="button"
-              disabled={isUpgrading || isInsufficientCoins}
-              onClick={handleUpgrade}
+              disabled={isUpgrading || (paymentMethod === "coins" && isInsufficientCoins)}
+              onClick={paymentMethod === "razorpay" ? handleRazorpayUpgrade : handleCoinsUpgrade}
               className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 shadow-[0_0_20px_rgba(240,201,59,0.3)]"
             >
               {isUpgrading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
-                  <span>Upgrading...</span>
+                  <span>Processing...</span>
+                </>
+              ) : paymentMethod === "razorpay" ? (
+                <>
+                  <CreditCard className="h-4 w-4" />
+                  <span>Pay ₹{finalPlanCostInr} via Razorpay</span>
                 </>
               ) : isInsufficientCoins ? (
                 <span>Not Enough Coins</span>
               ) : (
                 <>
                   <Crown className="h-4 w-4" />
-                  <span>Confirm & Upgrade ({finalPlanCost} Coins)</span>
+                  <span>Upgrade ({finalPlanCostCoins} Coins)</span>
                 </>
               )}
             </Button>
           </div>
+
+          {paymentMethod === "razorpay" && (
+            <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#9FAEA1]/80 text-center pt-1">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span>Instant Premium Activation via Razorpay (UPI, Credit/Debit Cards, NetBanking)</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
