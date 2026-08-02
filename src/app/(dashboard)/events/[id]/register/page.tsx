@@ -34,7 +34,7 @@ interface EventInfo {
 export default function EventRegisterPage() {
   const params = useParams();
   const router = useRouter();
-  const slug = params.slug as string;
+  const eventIdentifier = (params.id || params.slug) as string;
 
   const [event, setEvent] = useState<EventInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +56,7 @@ export default function EventRegisterPage() {
   useEffect(() => {
     async function fetchEvent() {
       try {
-        const res = await fetch(`/api/events/${slug}`);
+        const res = await fetch(`/api/events/${eventIdentifier}`);
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Event not found");
         setEvent(data.event);
@@ -67,8 +67,8 @@ export default function EventRegisterPage() {
         setLoading(false);
       }
     }
-    if (slug) fetchEvent();
-  }, [slug]);
+    if (eventIdentifier) fetchEvent();
+  }, [eventIdentifier]);
 
   // Debounced username availability check (400ms)
   const checkUsername = useCallback(

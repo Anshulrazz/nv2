@@ -28,7 +28,7 @@ interface LeaderboardEntry {
 
 export default function CTFResultsPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const eventIdentifier = (params.id || params.slug) as string;
 
   const [eventId, setEventId] = useState<string | null>(null);
   const [eventTitle, setEventTitle] = useState("");
@@ -39,7 +39,7 @@ export default function CTFResultsPage() {
 
   const fetchResults = useCallback(async () => {
     try {
-      const res = await fetch(`/api/events/${slug}`);
+      const res = await fetch(`/api/events/${eventIdentifier}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Event not found");
 
@@ -64,11 +64,11 @@ export default function CTFResultsPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [eventIdentifier]);
 
   useEffect(() => {
-    if (slug) fetchResults();
-  }, [slug, fetchResults]);
+    if (eventIdentifier) fetchResults();
+  }, [eventIdentifier, fetchResults]);
 
   if (loading) {
     return (

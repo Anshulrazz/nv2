@@ -9,6 +9,9 @@ import {
   Plus,
   Loader2,
   ArrowRight,
+  Award,
+  Download,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -29,21 +32,44 @@ interface EventItem {
   entryFeeINR: number;
 }
 
+interface UserCertificate {
+  _id: string;
+  rank: number;
+  displayName: string;
+  issuedAt: string;
+  certificateUrl: string;
+  eventId: {
+    _id: string;
+    title: string;
+    slug: string;
+    category: string;
+  };
+}
+
 export default function EventsHubPage() {
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [certificates, setCertificates] = useState<UserCertificate[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "live" | "certificates">("all");
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/events?status=${statusFilter}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load events");
-      setEvents(data.events || []);
+      if (statusFilter === "certificates") {
+        const certRes = await fetch("/api/events/my-certificates");
+        const certData = await certRes.json();
+        if (certRes.ok) {
+          setCertificates(certData.certificates || []);
+        }
+      } else {
+        const res = await fetch(`/api/events?status=${statusFilter}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to load events");
+        setEvents(data.events || []);
+      }
     } catch (err: unknown) {
       console.error("Error loading events:", err);
     } finally {
@@ -103,10 +129,10 @@ export default function EventsHubPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto overflow-x-auto custom-scroll pb-1 md:pb-0">
-          <div className="flex items-center gap-1.5 bg-card p-1 rounded-2xl border border-border shrink-0">
+          <div className="flex items-center gap-1.5 bg-card p-1 rounded-2xl border border-border shrink-0 font-mono">
             <button
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === "all" ? "bg-amber-500 text-black shadow" : "text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -114,22 +140,72 @@ export default function EventsHubPage() {
             </button>
             <button
               onClick={() => setStatusFilter("live")}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 statusFilter === "live" ? "bg-emerald-500 text-black shadow" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Live CTFs ⚡
             </button>
+            <button
+              onClick={() => setStatusFilter("certificates")}
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                statusFilter === "certificates" ? "bg-amber-500 text-black shadow" : "text-amber-400 hover:text-amber-300"
+              }`}
+            >
+              <Award className="size-3.5" /> My Certificates 📜
+            </button>
           </div>
         </div>
       </div>
 
-      {/* Events Grid */}
+      {/* Main Grid View */}
       {loading ? (
         <div className="min-h-64 flex flex-col items-center justify-center space-y-3 p-12 bg-card border border-border rounded-3xl">
           <Loader2 className="size-8 text-amber-500 animate-spin" />
-          <p className="text-xs text-muted-foreground font-mono">Loading events...</p>
+          <p className="text-xs text-muted-foreground font-mono">Loading data...</p>
         </div>
+      ) : statusFilter === "certificates" ? (
+        /* Certificates Tab Content */
+        certificates.length === 0 ? (
+          <div className="p-12 text-center bg-card border border-border rounded-3xl space-y-3">
+            <Award className="size-10 text-amber-500/60 mx-auto" />
+            <h3 className="text-base font-bold">No Certificates Earned Yet</h3>
+            <p className="text-xs text-muted-foreground">
+              Participate in live CTFs and rank in the top performers to earn official certificates!
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {certificates.map((cert) => (
+              <div
+                key={cert._id}
+                className="p-6 rounded-3xl bg-amber-500/10 border border-amber-500/40 flex flex-col space-y-4 shadow-xl relative overflow-hidden"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="px-3 py-1 rounded-full bg-amber-500 text-black font-mono text-xs font-extrabold shadow">
+                    Rank #{cert.rank} Winner 🏆
+                  </span>
+                  <span className="text-[11px] font-mono text-muted-foreground">
+                    {new Date(cert.issuedAt).toLocaleDateString()}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-foreground">{cert.eventId?.title || "Notexia CTF Event"}</h3>
+                  <p className="text-xs text-amber-400 font-mono font-bold">Awarded to {cert.displayName}</p>
+                </div>
+
+                <div className="pt-3 mt-auto">
+                  <a href={`/certificates/${cert.eventId?._id || cert._id}_${cert.displayName}`} target="_blank" rel="noopener noreferrer">
+                    <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 shadow">
+                      <Download className="size-4" /> View &amp; Print Certificate
+                    </Button>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : filteredEvents.length === 0 ? (
         <div className="p-12 text-center bg-card border border-border rounded-3xl space-y-3">
           <Trophy className="size-10 text-muted-foreground mx-auto" />
@@ -137,6 +213,7 @@ export default function EventsHubPage() {
           <p className="text-xs text-muted-foreground">Check back soon or create your own CTF event!</p>
         </div>
       ) : (
+        /* Events Cards Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map((ev) => {
             const isLive = ev.status === "live";
@@ -187,13 +264,13 @@ export default function EventsHubPage() {
                 </div>
 
                 <div className="pt-2 mt-auto flex items-center gap-2">
-                  <Link href={`/events/${ev.slug}/register`} className="flex-1">
+                  <Link href={`/events/${ev.slug || ev._id}/register`} className="flex-1">
                     <Button size="sm" variant="outline" className="w-full font-bold text-xs h-9 rounded-xl">
                       Register
                     </Button>
                   </Link>
 
-                  <Link href={`/events/${ev.slug}/challenges`} className="flex-1">
+                  <Link href={`/events/${ev.slug || ev._id}/challenges`} className="flex-1">
                     <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-9 rounded-xl flex items-center justify-center gap-1">
                       Enter Arena <ArrowRight className="size-3.5" />
                     </Button>

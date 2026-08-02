@@ -41,7 +41,7 @@ interface AttemptData {
 
 export default function CTFChallengesPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const eventIdentifier = (params.id || params.slug) as string;
 
   const [eventId, setEventId] = useState<string | null>(null);
   const [eventTitle, setEventTitle] = useState("");
@@ -62,7 +62,7 @@ export default function CTFChallengesPage() {
 
   const fetchEventData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/events/${slug}`);
+      const res = await fetch(`/api/events/${eventIdentifier}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Event not found");
 
@@ -81,11 +81,11 @@ export default function CTFChallengesPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [eventIdentifier]);
 
   useEffect(() => {
-    if (slug) fetchEventData();
-  }, [slug, fetchEventData]);
+    if (eventIdentifier) fetchEventData();
+  }, [eventIdentifier, fetchEventData]);
 
   // Start Challenge Attempt Timer
   const handleStartChallenge = async (challengeId: string) => {
@@ -244,7 +244,7 @@ export default function CTFChallengesPage() {
 
         {/* Quick Nav to Leaderboard & Results */}
         <div className="flex items-center gap-3 font-mono">
-          <Link href={`/events/${slug}/leaderboard`}>
+          <Link href={`/events/${eventIdentifier}/leaderboard`}>
             <Button size="sm" className="bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs border border-emerald-500/40 rounded-xl flex items-center gap-1.5">
               <Trophy className="size-4 text-amber-400" /> Live Leaderboard
             </Button>

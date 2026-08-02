@@ -24,7 +24,7 @@ interface LeaderboardEntry {
 
 export default function CTFLeaderboardPage() {
   const params = useParams();
-  const slug = params.slug as string;
+  const eventIdentifier = (params.id || params.slug) as string;
 
   const [eventId, setEventId] = useState<string | null>(null);
   const [eventTitle, setEventTitle] = useState("");
@@ -35,7 +35,7 @@ export default function CTFLeaderboardPage() {
 
   const fetchLeaderboard = useCallback(async () => {
     try {
-      const res = await fetch(`/api/events/${slug}`);
+      const res = await fetch(`/api/events/${eventIdentifier}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Event not found");
 
@@ -54,11 +54,11 @@ export default function CTFLeaderboardPage() {
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [eventIdentifier]);
 
   useEffect(() => {
-    if (slug) fetchLeaderboard();
-  }, [slug, fetchLeaderboard]);
+    if (eventIdentifier) fetchLeaderboard();
+  }, [eventIdentifier, fetchLeaderboard]);
 
   // Subscribe to Pusher channel `event-{eventId}-leaderboard`
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function CTFLeaderboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6 font-mono">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Link href={`/events/${slug}/challenges`}>
+            <Link href={`/events/${eventIdentifier}/challenges`}>
               <Button variant="ghost" size="sm" className="gap-2 text-xs text-emerald-400 hover:bg-emerald-500/10 p-0 h-auto">
                 <ArrowLeft className="size-3.5" /> Challenges
               </Button>

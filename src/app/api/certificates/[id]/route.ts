@@ -9,7 +9,7 @@ export const GET = async function GET(req: Request, { params }: { params: Promis
     const { id: certificateId } = await params;
 
     await connectToDatabase();
-    
+
     // Find the progress document with this certificateId
     const progress = await CourseProgress.findOne({ certificateId });
     if (!progress) {
