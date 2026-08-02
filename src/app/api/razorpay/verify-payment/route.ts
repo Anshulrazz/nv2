@@ -269,10 +269,11 @@ export async function POST(req: Request) {
       coins: user.coins,
       walletBalance: wallet.balance,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error verifying Razorpay payment:", error);
+    const message = error instanceof Error ? error.message : "Failed to verify payment.";
     return NextResponse.json(
-      { error: error?.message || "Failed to verify payment." },
+      { error: message },
       { status: 500 }
     );
   }

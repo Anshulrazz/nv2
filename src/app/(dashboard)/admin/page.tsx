@@ -41,7 +41,6 @@ import {
   QrCode,
   Building2,
   Copy,
-  Check,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
@@ -496,8 +495,9 @@ export default function AdminPage() {
       setWithdrawalTxRef("");
       setWithdrawalNote("");
       loadWithdrawals();
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to process withdrawal action.");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to process withdrawal action.";
+      toast.error(message);
     } finally {
       setIsProcessingWithdrawalAction(false);
     }

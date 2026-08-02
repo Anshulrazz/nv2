@@ -92,8 +92,8 @@ export async function POST(req: Request) {
     const wallet = await getOrCreateUserWallet(user._id);
 
     // Compute balance deduction split
-    let deductFromEarnings = Math.min(creatorEarnings, withdrawAmount);
-    let deductFromCoins = withdrawAmount - deductFromEarnings;
+    const deductFromEarnings = Math.min(creatorEarnings, withdrawAmount);
+    const deductFromCoins = withdrawAmount - deductFromEarnings;
 
     const dbSession = await mongoose.startSession();
     let withdrawalReq;

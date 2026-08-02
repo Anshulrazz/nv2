@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import mongoose from "mongoose";
 import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
-import { Wallet } from "@/models/Wallet";
 import { WithdrawalRequest } from "@/models/WithdrawalRequest";
 import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet } from "@/lib/wallet";
@@ -132,10 +130,11 @@ export async function PATCH(
     }
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Admin PATCH withdrawal error:", error);
+    const message = error instanceof Error ? error.message : "Failed to process withdrawal action.";
     return NextResponse.json(
-      { error: error?.message || "Failed to process withdrawal action." },
+      { error: message },
       { status: 500 }
     );
   }

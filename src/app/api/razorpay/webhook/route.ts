@@ -119,8 +119,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ status: "ok" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Razorpay webhook error:", error);
-    return NextResponse.json({ error: error?.message || "Webhook error" }, { status: 500 });
+    const message = error instanceof Error ? error.message : "Webhook error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

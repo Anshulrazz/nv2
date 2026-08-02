@@ -26,7 +26,7 @@ export async function GET(req: Request) {
     const statusFilter = searchParams.get("status");
     const roleFilter = searchParams.get("role");
 
-    const query: Record<string, any> = {};
+    const query: Record<string, unknown> = {};
     if (statusFilter && ["pending", "approved", "completed", "rejected"].includes(statusFilter)) {
       query.status = statusFilter;
     }
@@ -39,33 +39,38 @@ export async function GET(req: Request) {
       .sort({ createdAt: -1 })
       .lean();
 
-    const formattedRequests = requests.map((item: any) => ({
-      id: item._id.toString(),
-      userId: item.userId?._id?.toString() || "",
-      userName: item.userId?.name || "Unknown User",
-      userEmail: item.userId?.email || "",
-      userImage: item.userId?.image || null,
-      userRole: item.userRole || item.userId?.role || "user",
-      amount: item.amount,
-      amountINR: item.amount,
-      payoutMethod: item.payoutMethod,
-      payoutDetails: item.payoutDetails || {},
-      status: item.status,
-      adminNote: item.adminNote || "",
-      transactionRef: item.transactionRef || "",
-      processedAt: item.processedAt ? item.processedAt.toISOString() : null,
-      createdAt: item.createdAt ? item.createdAt.toISOString() : new Date().toISOString(),
-    }));
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formattedRequests = requests.map((item: any) => {
+      const userObj = item.userId;
+      return {
+        id: item._id.toString(),
+        userId: userObj?._id ? userObj._id.toString() : "",
+        userName: userObj?.name || "Unknown User",
+        userEmail: userObj?.email || "",
+        userImage: userObj?.image || null,
+        userRole: item.userRole || userObj?.role || "user",
+        amount: item.amount,
+        amountINR: item.amount,
+        payoutMethod: item.payoutMethod,
+        payoutDetails: item.payoutDetails || {},
+        status: item.status,
+        adminNote: item.adminNote || "",
+        transactionRef: item.transactionRef || "",
+        processedAt: item.processedAt ? new Date(item.processedAt).toISOString() : null,
+        createdAt: item.createdAt ? new Date(item.createdAt).toISOString() : new Date().toISOString(),
+      };
+    });
 
     return NextResponse.json({
       requests: formattedRequests,
       totalCount: formattedRequests.length,
       pendingCount: formattedRequests.filter((r) => r.status === "pending").length,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Admin GET withdrawals error:", error);
+    const message = error instanceof Error ? error.message : "Failed to fetch withdrawal requests.";
     return NextResponse.json(
-      { error: error?.message || "Failed to fetch withdrawal requests." },
+      { error: message },
       { status: 500 }
     );
   }

@@ -165,10 +165,11 @@ export async function POST(req: Request) {
       coinsToDeliver,
       appliedCoupon,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating Razorpay order:", error);
+    const message = error instanceof Error ? error.message : "Failed to create payment order.";
     return NextResponse.json(
-      { error: error?.message || "Failed to create payment order." },
+      { error: message },
       { status: 500 }
     );
   }

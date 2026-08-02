@@ -11,7 +11,7 @@ export interface IPaymentOrder extends Document {
   plan?: "monthly" | "yearly" | null;
   status: "created" | "paid" | "failed";
   appliedCoupon?: string | null;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -142,9 +142,10 @@ export function PremiumUpgradeModal({
           },
         },
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      toast.error(err?.message || "Payment initiation failed.");
+      const message = err instanceof Error ? err.message : "Payment initiation failed.";
+      toast.error(message);
       setIsUpgrading(false);
     }
   };
