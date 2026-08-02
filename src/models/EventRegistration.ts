@@ -36,6 +36,7 @@ const EventRegistrationSchema = new Schema<IEventRegistration>(
 
 // Enforce one registration per user per event
 EventRegistrationSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+EventRegistrationSchema.index({ eventId: 1, registeredAt: -1 });
 
 export const EventRegistration =
   mongoose.models.EventRegistration ||

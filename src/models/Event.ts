@@ -114,4 +114,7 @@ const EventSchema = new Schema<IEvent>(
   }
 );
 
+EventSchema.index({ status: 1, startDate: -1 });
+EventSchema.index({ eventType: 1, status: 1 });
+
 export const Event = mongoose.models.Event || mongoose.model<IEvent>("Event", EventSchema);

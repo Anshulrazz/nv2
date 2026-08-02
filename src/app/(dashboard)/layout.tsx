@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
+import nextDynamic from "next/dynamic";
 import {
   LogOut,
   User as UserIcon,
@@ -11,10 +12,11 @@ import {
   Menu,
   Coins,
 } from "lucide-react";
-import { CustomAlertDialog } from "@/components/ui/CustomAlertDialog";
-import { PusherListener } from "@/components/PusherListener";
-import { CallWrapper } from "@/components/CallWrapper";
 import { Button } from "@/components/ui/button";
+
+const CustomAlertDialog = nextDynamic(() => import("@/components/ui/CustomAlertDialog").then((mod) => mod.CustomAlertDialog));
+const PusherListener = nextDynamic(() => import("@/components/PusherListener").then((mod) => mod.PusherListener));
+const CallWrapper = nextDynamic(() => import("@/components/CallWrapper").then((mod) => mod.CallWrapper));
 import { SidebarTree } from "@/components/sidebar/SidebarTree";
 import { NavLink } from "@/components/sidebar/NavLink";
 import { SidebarNavigation } from "@/components/sidebar/SidebarNavigation";

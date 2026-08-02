@@ -63,8 +63,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 
     // Sanitize secret flags for non-hosts/admins
     const sanitizedChallenges = (event.challenges || []).map((ch: { _id?: unknown; title: string; description: string; category?: string; points: number; flag?: string; hints?: string[]; imageUrl?: string }) => {
-      const { flag: _flag, ...rest } = ch;
-      return canManage ? ch : rest;
+      if (canManage) return ch;
+      const rest = { ...ch };
+      delete rest.flag;
+      return rest;
     });
 
     return NextResponse.json({

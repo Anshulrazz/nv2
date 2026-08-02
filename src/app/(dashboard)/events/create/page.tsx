@@ -277,16 +277,42 @@ export default function CreateEventPage() {
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold text-foreground">Physical Location / Address</label>
+            <div className="space-y-1.5 sm:col-span-2">
+              <label className="text-xs font-bold text-foreground">Tags (comma separated)</label>
               <input
                 type="text"
-                placeholder="Building / City / Address"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                placeholder="hackathon, ai, web3, ctf"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
                 className="w-full px-4 py-3 bg-background border border-border rounded-2xl text-xs focus:outline-none focus:border-amber-500"
               />
             </div>
+
+            {eventType === "hackathon" && (
+              <>
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-foreground">Problem Statement &amp; Challenges Overview</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Problem statement for hackathon participants..."
+                    value={problemStatement}
+                    onChange={(e) => setProblemStatement(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-2xl text-xs focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5 sm:col-span-2">
+                  <label className="text-xs font-bold text-foreground">Prizes &amp; Pool Rewards</label>
+                  <textarea
+                    rows={2}
+                    placeholder="1st Place: ₹10,000, 2nd Place: ₹5,000..."
+                    value={prizes}
+                    onChange={(e) => setPrizes(e.target.value)}
+                    className="w-full px-4 py-3 bg-background border border-border rounded-2xl text-xs focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 

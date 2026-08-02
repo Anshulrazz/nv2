@@ -53,6 +53,7 @@ const EventSubmissionSchema = new Schema<IEventSubmission>(
 
 // One submission per participant per hackathon
 EventSubmissionSchema.index({ eventId: 1, userId: 1 }, { unique: true });
+EventSubmissionSchema.index({ eventId: 1, score: -1, submittedAt: 1 });
 
 export const EventSubmission =
   mongoose.models.EventSubmission ||
