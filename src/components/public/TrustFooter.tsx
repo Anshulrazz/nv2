@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
 
 export function TrustFooter() {
   return (
@@ -17,6 +18,10 @@ export function TrustFooter() {
             <p className="text-xs text-[#9FAEA1] leading-relaxed font-light">
               Smart study platform for Indian students &amp; engineers. AI doubt resolution, collaborative markdown notes, and peer study groups.
             </p>
+
+            <div className="pt-2">
+              <RazorpayPaymentButton buttonId="pl_TKvnrbgY75iRaH" className="flex items-start justify-start" />
+            </div>
           </div>
 
           <div className="space-y-3">

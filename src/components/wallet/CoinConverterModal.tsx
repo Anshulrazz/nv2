@@ -158,10 +158,9 @@ export function CoinConverterModal({
           },
         },
       });
-    } catch (err: unknown) {
+    } catch (err: any) {
       console.error(err);
-      const message = err instanceof Error ? err.message : "An unexpected error occurred during payment.";
-      toast.error(message);
+      toast.error(err?.message || "An unexpected error occurred during payment.");
       setIsConverting(false);
     }
   };
@@ -215,11 +214,10 @@ export function CoinConverterModal({
             <button
               type="button"
               onClick={() => handleSelectPack(100, 10)}
-              className={`p-3 rounded-xl border text-center transition-all ${
-                coinsRequested === 100
+              className={`p-3 rounded-xl border text-center transition-all ${coinsRequested === 100
                   ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
                   : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-              }`}
+                }`}
             >
               <div className="text-sm font-black font-heading">100 Coins</div>
               <div className="text-[10px] font-mono text-[#9FAEA1]">₹10</div>
@@ -228,11 +226,10 @@ export function CoinConverterModal({
             <button
               type="button"
               onClick={() => handleSelectPack(500, 50)}
-              className={`p-3 rounded-xl border text-center transition-all relative ${
-                coinsRequested === 500
+              className={`p-3 rounded-xl border text-center transition-all relative ${coinsRequested === 500
                   ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
                   : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-              }`}
+                }`}
             >
               <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#F0C93B] text-[#2A2118] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full font-mono uppercase">
                 Popular
@@ -244,11 +241,10 @@ export function CoinConverterModal({
             <button
               type="button"
               onClick={() => handleSelectPack(5000, 400)}
-              className={`p-3 rounded-xl border text-center transition-all relative ${
-                coinsRequested === 5000
+              className={`p-3 rounded-xl border text-center transition-all relative ${coinsRequested === 5000
                   ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
                   : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-              }`}
+                }`}
             >
               <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#F0C93B] text-[#2A2118] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full font-mono uppercase">
                 Save 20%

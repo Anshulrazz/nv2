@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { NotexiaLogo } from "@/components/common/NotexiaLogo";
+import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
 
 function LandingSkeleton() {
@@ -2001,6 +2002,10 @@ export default function MarketingPage() {
                   </div>
                 )}
               </form>
+
+              <div className="mt-4">
+                <RazorpayPaymentButton buttonId="pl_TKvnrbgY75iRaH" className="flex items-start justify-start" />
+              </div>
             </div>
 
             <div className="foot-links">

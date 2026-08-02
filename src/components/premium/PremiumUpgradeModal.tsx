@@ -228,11 +228,10 @@ export function PremiumUpgradeModal({
               setSelectedPlan("monthly");
               if (appliedCoupon) setAppliedCoupon(null);
             }}
-            className={`p-4 rounded-2xl border text-left transition-all relative ${
-              selectedPlan === "monthly"
+            className={`p-4 rounded-2xl border text-left transition-all relative ${selectedPlan === "monthly"
                 ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_20px_rgba(240,201,59,0.2)]"
                 : "bg-[#16261D]/60 border-[#F3F0E4]/15 hover:border-[#F3F0E4]/30"
-            }`}
+              }`}
           >
             {selectedPlan === "monthly" && (
               <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-[#F0C93B] animate-pulse" />
@@ -254,11 +253,10 @@ export function PremiumUpgradeModal({
               setSelectedPlan("yearly");
               if (appliedCoupon) setAppliedCoupon(null);
             }}
-            className={`p-4 rounded-2xl border text-left transition-all relative ${
-              selectedPlan === "yearly"
+            className={`p-4 rounded-2xl border text-left transition-all relative ${selectedPlan === "yearly"
                 ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_20px_rgba(240,201,59,0.2)]"
                 : "bg-[#16261D]/60 border-[#F3F0E4]/15 hover:border-[#F3F0E4]/30"
-            }`}
+              }`}
           >
             <span className="absolute -top-2.5 right-3 bg-[#F0C93B] text-[#2A2118] text-[9px] font-extrabold px-2 py-0.5 rounded-full font-mono uppercase shadow-md">
               Save 16%
@@ -348,11 +346,10 @@ export function PremiumUpgradeModal({
             <button
               type="button"
               onClick={() => setPaymentMethod("razorpay")}
-              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
-                paymentMethod === "razorpay"
+              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${paymentMethod === "razorpay"
                   ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F3F0E4]"
                   : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#9FAEA1]"
-              }`}
+                }`}
             >
               <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 text-[#F0C93B] flex items-center justify-center shrink-0">
                 <CreditCard className="h-4 w-4" />
@@ -366,11 +363,10 @@ export function PremiumUpgradeModal({
             <button
               type="button"
               onClick={() => setPaymentMethod("coins")}
-              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${
-                paymentMethod === "coins"
+              className={`p-3 rounded-xl border text-left transition-all flex items-center gap-2.5 ${paymentMethod === "coins"
                   ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F3F0E4]"
                   : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#9FAEA1]"
-              }`}
+                }`}
             >
               <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 text-[#F0C93B] flex items-center justify-center shrink-0">
                 <Coins className="h-4 w-4" />
