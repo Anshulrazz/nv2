@@ -61,7 +61,6 @@ export default function EditEventPage() {
 
   // 4. Challenges CRUD
   const [challenges, setChallenges] = useState<ChallengeItem[]>([]);
-  const [editingChallengeId, setEditingChallengeId] = useState<string | null>(null);
 
   // 5. Certificates & Rules
   const [certEnabled, setCertEnabled] = useState(true);
@@ -418,7 +417,7 @@ export default function EditEventPage() {
             <div className="space-y-4">
               {challenges.length === 0 ? (
                 <div className="p-6 text-center text-xs text-muted-foreground font-mono">
-                  No challenges added yet. Click "Add Challenge" to create one.
+                  No challenges added yet. Click Add Challenge to create one.
                 </div>
               ) : (
                 challenges.map((ch, idx) => (

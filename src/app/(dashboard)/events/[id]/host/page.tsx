@@ -10,7 +10,6 @@ import {
   Loader2,
   ArrowLeft,
   Search,
-  ExternalLink,
   Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -292,7 +291,6 @@ export default function EventHostDashboardPage() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {filteredParticipants.map((part) => {
-                  const cert = part.certificate;
                   const isProcessing = generatingUserId === (part.user?._id || part._id);
 
                   return (
@@ -324,8 +322,8 @@ export default function EventHostDashboardPage() {
                       </td>
 
                       <td className="py-3.5 pr-4">
-                        {part.hasCertificate ? (
-                          <a href={`/events/certificates/${part.userId || part._id}`} target="_blank" rel="noopener noreferrer">
+                        {part.certificate ? (
+                          <a href={`/events/certificates/${part.user?._id || part._id}`} target="_blank" rel="noopener noreferrer">
                             <Button variant="ghost" size="sm" className="text-amber-400 font-bold text-xs h-8 px-2.5">
                               View CTF Cert 📜
                             </Button>

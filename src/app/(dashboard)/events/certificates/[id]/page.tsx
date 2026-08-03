@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { Loader2, AlertCircle, Download, Trophy, Shield, ArrowLeft, Award, Sparkles } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Loader2, AlertCircle, Download, Trophy, Shield, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface CTFCertificateData {
@@ -18,7 +18,6 @@ interface CTFCertificateData {
 
 export default function DedicatedCTFCertificatePage() {
   const params = useParams();
-  const router = useRouter();
   const id = params.id as string;
 
   const [cert, setCert] = useState<CTFCertificateData | null>(null);
