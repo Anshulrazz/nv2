@@ -28,10 +28,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const now = new Date();
-    if (now < new Date(event.registrationStart)) {
+    if (event.registrationStart && now < new Date(event.registrationStart)) {
       return NextResponse.json({ error: "Registration has not opened yet." }, { status: 400 });
     }
-    if (now > new Date(event.registrationEnd)) {
+    if (event.registrationEnd && now > new Date(event.registrationEnd)) {
       return NextResponse.json({ error: "Registration for this event has closed." }, { status: 400 });
     }
 

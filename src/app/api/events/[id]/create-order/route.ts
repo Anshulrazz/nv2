@@ -38,6 +38,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
+    const now = new Date();
+    if (event.registrationStart && now < new Date(event.registrationStart)) {
+      return NextResponse.json({ error: "Registration has not opened yet." }, { status: 400 });
+    }
+    if (event.registrationEnd && now > new Date(event.registrationEnd)) {
+      return NextResponse.json({ error: "Registration for this event has closed." }, { status: 400 });
+    }
+
     if (!event.isPaid || (event.entryFeeINR || 0) <= 0) {
       return NextResponse.json({ error: "This event is free. No Razorpay order required." }, { status: 400 });
     }

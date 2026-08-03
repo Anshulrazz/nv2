@@ -40,10 +40,10 @@ export default function CreateEventPage() {
   const [description, setDescription] = useState("");
 
   // 2. Schedule
-  const [registrationStart, setRegistrationStart] = useState("");
-  const [registrationEnd, setRegistrationEnd] = useState("");
-  const [eventStart, setEventStart] = useState("");
-  const [eventEnd, setEventEnd] = useState("");
+  const [registrationStart, setRegistrationStart] = useState(() => new Date().toISOString().slice(0, 16));
+  const [registrationEnd, setRegistrationEnd] = useState(() => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16));
+  const [eventStart, setEventStart] = useState(() => new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 16));
+  const [eventEnd, setEventEnd] = useState(() => new Date(Date.now() + 8 * 86400000).toISOString().slice(0, 16));
 
   // 3. Capacity & Pricing
   const [maxParticipants, setMaxParticipants] = useState<number | "">("");

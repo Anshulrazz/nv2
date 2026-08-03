@@ -8,6 +8,15 @@ import { Chat } from "@/models/Chat";
 import { AuditLog } from "@/models/AuditLog";
 import mongoose from "mongoose";
 import { Project } from "@/models/Project";
+import { EventRegistration } from "@/models/EventRegistration";
+import { Attempt } from "@/models/Attempt";
+import { Run } from "@/models/Run";
+import { Certificate } from "@/models/Certificate";
+import { CourseProgress } from "@/models/CourseProgress";
+import { CourseEnrollment } from "@/models/CourseEnrollment";
+import { Todo } from "@/models/Todo";
+import { Bookmark } from "@/models/Bookmark";
+import { Notification } from "@/models/Notification";
 
 export const GET = auth(async function GET(req) {
   try {
@@ -107,13 +116,22 @@ export const DELETE = auth(async function DELETE(req) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    // Dependent cascade deletions
+    // Dependent cascade deletions per Notexia conventions
     await Promise.all([
       User.deleteOne({ _id: targetUserId }),
       Folder.deleteMany({ userId: targetUserId }),
       Note.deleteMany({ userId: targetUserId }),
       Chat.deleteMany({ userId: targetUserId }),
       Project.deleteMany({ ownerId: targetUserId }),
+      EventRegistration.deleteMany({ userId: targetUserId }),
+      Attempt.deleteMany({ userId: targetUserId }),
+      Run.deleteMany({ userId: targetUserId }),
+      Certificate.deleteMany({ userId: targetUserId }),
+      CourseProgress.deleteMany({ userId: targetUserId }),
+      CourseEnrollment.deleteMany({ userId: targetUserId }),
+      Todo.deleteMany({ userId: targetUserId }),
+      Bookmark.deleteMany({ userId: targetUserId }),
+      Notification.deleteMany({ userId: targetUserId }),
     ]);
 
     // Log audit log

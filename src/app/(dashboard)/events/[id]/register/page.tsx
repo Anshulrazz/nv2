@@ -254,6 +254,18 @@ export default function EventRegisterPage() {
           </p>
         </div>
 
+        {event.registrationStart && new Date() < new Date(event.registrationStart) && (
+          <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-mono font-medium">
+            ⚠️ Registration has not opened yet. Registration opens on: {new Date(event.registrationStart).toLocaleString()}
+          </div>
+        )}
+
+        {event.registrationEnd && new Date() > new Date(event.registrationEnd) && (
+          <div className="p-4 rounded-2xl bg-destructive/15 border border-destructive/30 text-destructive text-xs font-mono font-medium">
+            🚫 Registration for this event closed on: {new Date(event.registrationEnd).toLocaleString()}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Display Name */}
           <div className="space-y-1.5">
@@ -353,11 +365,20 @@ export default function EventRegisterPage() {
 
           <Button
             type="submit"
-            disabled={submitting || isUsernameAvailable === false}
+            disabled={
+              submitting ||
+              isUsernameAvailable === false ||
+              Boolean(event.registrationStart && new Date() < new Date(event.registrationStart)) ||
+              Boolean(event.registrationEnd && new Date() > new Date(event.registrationEnd))
+            }
             className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-11 rounded-2xl shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
           >
             {submitting ? (
               <Loader2 className="size-4 animate-spin" />
+            ) : event.registrationStart && new Date() < new Date(event.registrationStart) ? (
+              "Registration Not Open Yet ⏳"
+            ) : event.registrationEnd && new Date() > new Date(event.registrationEnd) ? (
+              "Registration Closed 🚫"
             ) : event.isPaid ? (
               <>
                 <Coins className="size-4" /> Pay ₹{event.entryFeeINR} via Razorpay &amp; Register

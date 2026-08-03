@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 
 interface CertificateInfo {
+  _id?: string;
   rank: number;
   displayName: string;
   issuedAt: string;
@@ -125,7 +126,7 @@ export default function CTFResultsPage() {
             </div>
           </div>
 
-          <a href={`/events/certificates/${eventId}_${userCert.displayName}`} target="_blank" rel="noopener noreferrer">
+          <a href={`/events/certificates/${userCert._id || `${eventId}_${userCert.displayName}`}`} target="_blank" rel="noopener noreferrer">
             <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-10 px-5 rounded-xl flex items-center gap-2">
               <Download className="size-4" /> Download CTF Certificate
             </Button>
@@ -134,46 +135,56 @@ export default function CTFResultsPage() {
       )}
 
       {/* Top 3 Winner Podium */}
-      <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-        {entries.slice(0, 3).map((entry, idx) => {
-          const rank = idx + 1;
+      {entries.length === 0 ? (
+        <div className="max-w-xl mx-auto p-12 text-center bg-card border border-border rounded-3xl space-y-3 font-mono">
+          <Award className="size-10 text-muted-foreground mx-auto" />
+          <h3 className="text-base font-bold">No Submissions Recorded Yet</h3>
+          <p className="text-xs text-muted-foreground">
+            Official standings will populate as participants complete CTF challenges.
+          </p>
+        </div>
+      ) : (
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+          {entries.slice(0, 3).map((entry, idx) => {
+            const rank = idx + 1;
 
-          return (
-            <div
-              key={entry.userId}
-              className={`p-6 rounded-3xl border bg-card flex flex-col items-center text-center space-y-4 shadow-xl ${
-                rank === 1
-                  ? "border-amber-500/80 bg-gradient-to-b from-amber-500/10 to-card shadow-amber-500/20 md:-translate-y-4"
-                  : rank === 2
-                  ? "border-zinc-400/60"
-                  : "border-amber-700/60"
-              }`}
-            >
+            return (
               <div
-                className={`size-12 rounded-full flex items-center justify-center font-extrabold text-lg shadow-lg font-mono ${
+                key={entry.userId}
+                className={`p-6 rounded-3xl border bg-card flex flex-col items-center text-center space-y-4 shadow-xl ${
                   rank === 1
-                    ? "bg-amber-500 text-black"
+                    ? "border-amber-500/80 bg-gradient-to-b from-amber-500/10 to-card shadow-amber-500/20 md:-translate-y-4"
                     : rank === 2
-                    ? "bg-zinc-300 text-black"
-                    : "bg-amber-700 text-white"
+                    ? "border-zinc-400/60"
+                    : "border-amber-700/60"
                 }`}
               >
-                #{rank}
-              </div>
+                <div
+                  className={`size-12 rounded-full flex items-center justify-center font-extrabold text-lg shadow-lg font-mono ${
+                    rank === 1
+                      ? "bg-amber-500 text-black"
+                      : rank === 2
+                      ? "bg-zinc-300 text-black"
+                      : "bg-amber-700 text-white"
+                  }`}
+                >
+                  #{rank}
+                </div>
 
-              <div className="space-y-1">
-                <h3 className="text-lg font-bold text-foreground">{entry.displayName}</h3>
-                <p className="text-xs text-amber-400 font-mono font-bold">@{entry.username}</p>
-              </div>
+                <div className="space-y-1">
+                  <h3 className="text-lg font-bold text-foreground">{entry.displayName}</h3>
+                  <p className="text-xs text-amber-400 font-mono font-bold">@{entry.username}</p>
+                </div>
 
-              <div className="pt-2 text-xs font-mono">
-                <span className="text-amber-400 font-extrabold text-base">{entry.totalPoints} PTS</span>
-                <p className="text-muted-foreground text-[10px]">{Math.round(entry.totalTimeSeconds / 60)} mins total time</p>
+                <div className="pt-2 text-xs font-mono">
+                  <span className="text-amber-400 font-extrabold text-base">{entry.totalPoints} PTS</span>
+                  <p className="text-muted-foreground text-[10px]">{Math.round(entry.totalTimeSeconds / 60)} mins total time</p>
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

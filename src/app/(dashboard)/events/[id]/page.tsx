@@ -200,11 +200,21 @@ export default function EventLandingPage() {
                 </Button>
               </Link>
             ) : !regInfo.isRegistered ? (
-              <Link href={`/events/${event.slug || event._id}/register`}>
-                <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-11 px-6 rounded-xl">
-                  {event.isPaid ? `Register for ₹${event.entryFeeINR}` : "Register Free"}
+              new Date() < new Date(event.registrationStart) ? (
+                <Button disabled className="bg-muted text-muted-foreground font-bold text-xs h-11 px-6 rounded-xl cursor-not-allowed">
+                  Registration Opens {new Date(event.registrationStart).toLocaleDateString()}
                 </Button>
-              </Link>
+              ) : new Date() > new Date(event.registrationEnd) ? (
+                <Button disabled className="bg-muted text-muted-foreground font-bold text-xs h-11 px-6 rounded-xl cursor-not-allowed">
+                  Registration Closed
+                </Button>
+              ) : (
+                <Link href={`/events/${event.slug || event._id}/register`}>
+                  <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-11 px-6 rounded-xl">
+                    {event.isPaid ? `Register for ₹${event.entryFeeINR}` : "Register Free"}
+                  </Button>
+                </Link>
+              )
             ) : regInfo.paymentStatus === "pending" || regInfo.paymentStatus === "failed" ? (
               <Link href={`/events/${event.slug || event._id}/register`}>
                 <Button className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-11 px-6 rounded-xl">
