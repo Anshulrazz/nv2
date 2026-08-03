@@ -65,10 +65,6 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    if (event.eventType !== "hackathon") {
-      return NextResponse.json({ error: "Submissions are only open for Hackathons." }, { status: 400 });
-    }
-
     // Check if user is registered
     const isRegistered = await EventRegistration.exists({ eventId: event._id, userId });
     if (!isRegistered) {

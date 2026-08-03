@@ -35,6 +35,10 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Registration for this event has closed." }, { status: 400 });
     }
 
+    if (event.status === "ended") {
+      return NextResponse.json({ error: "This event has ended. Registration is closed." }, { status: 400 });
+    }
+
     if (event.maxParticipants) {
       const currentCount = await EventRegistration.countDocuments({ eventId: event._id });
       if (currentCount >= event.maxParticipants) {

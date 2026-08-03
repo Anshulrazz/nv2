@@ -51,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     for (let i = 0; i < topEntries.length; i++) {
       const entry = topEntries[i];
       const rank = i + 1;
-      const certUrl = `/certificates/${event._id}_${entry.userId}`;
+      const certUrl = `/events/certificates/${event._id}_${entry.userId}`;
 
       const cert = await Certificate.findOneAndUpdate(
         { eventId: event._id, userId: entry.userId },

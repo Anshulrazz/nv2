@@ -4,6 +4,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
 import { EventSubmission } from "@/models/EventSubmission";
+import { Challenge } from "@/models/Challenge";
+import { verifyFlag } from "@/lib/ctf-security";
 import { isValidObjectId } from "@/lib/validation";
 
 export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -40,20 +42,17 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       return NextResponse.json({ error: "Challenge ID and flag string are required." }, { status: 400 });
     }
 
-    const challenge = (event.challenges || []).find((c: { _id?: { toString(): string } }) => c._id?.toString() === challengeId);
+    const challenge = await Challenge.findOne({ _id: challengeId, eventId: event._id });
     if (!challenge) {
       return NextResponse.json({ error: "Challenge not found for this event." }, { status: 404 });
     }
 
-    if (!challenge.flag || !challenge.flag.trim()) {
-      return NextResponse.json({ error: "This challenge has no active flag." }, { status: 400 });
-    }
-
     const cleanInputFlag = submittedFlag.trim();
-    const cleanSecretFlag = challenge.flag.trim();
 
-    // Exact string match (case sensitive or exact)
-    if (cleanInputFlag !== cleanSecretFlag) {
+    // SHA-256 Constant-time comparison using verifyFlag helper
+    const isCorrect = verifyFlag(cleanInputFlag, challenge.flagHash);
+
+    if (!isCorrect) {
       return NextResponse.json({ error: "❌ Incorrect flag. Double check and try again!" }, { status: 400 });
     }
 

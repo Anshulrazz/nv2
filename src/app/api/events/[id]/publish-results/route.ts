@@ -28,7 +28,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     }
 
     const user = await User.findById(userId).select("role").lean();
-    const isHost = event.hostId.toString() === userId;
+    const isHost = (event.createdBy?.toString() || "") === userId;
     const isAdmin = user?.role === "admin";
 
     if (!isHost && !isAdmin) {

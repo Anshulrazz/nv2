@@ -323,7 +323,7 @@ export default function EventHostDashboardPage() {
 
                       <td className="py-3.5 pr-4">
                         {part.certificate ? (
-                          <a href={`/events/certificates/${part.user?._id || part._id}`} target="_blank" rel="noopener noreferrer">
+                          <a href={`/events/certificates/${part.certificate._id || `${event._id}_${part.user?._id}`}`} target="_blank" rel="noopener noreferrer">
                             <Button variant="ghost" size="sm" className="text-amber-400 font-bold text-xs h-8 px-2.5">
                               View CTF Cert 📜
                             </Button>

@@ -34,12 +34,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     const isOwner = event.createdBy.toString() === userId;
     const isAdmin = user?.role === "admin";
 
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Only event owner or admin can view host dashboard." }, { status: 403 });
-    }
+    // Non-owners/non-admins get their own registration record
+    const filter = isOwner || isAdmin ? { eventId: event._id } : { eventId: event._id, userId };
 
-    // Fetch all registrations
-    const registrations = await EventRegistration.find({ eventId: event._id })
+    // Fetch registrations matching filter
+    const registrations = await EventRegistration.find(filter)
       .populate("userId", "name email image")
       .sort({ registeredAt: -1 })
       .lean();

@@ -51,7 +51,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       for (let i = 0; i < entriesToCertify.length; i++) {
         const entry = entriesToCertify[i];
         const certRank = i + 1;
-        const certUrl = `/certificates/${event._id}_${entry.userId}`;
+        const certUrl = `/events/certificates/${event._id}_${entry.userId}`;
 
         const cert = await Certificate.findOneAndUpdate(
           { eventId: event._id, userId: entry.userId },
@@ -80,7 +80,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
     const reg = await EventRegistration.findOne({ eventId: event._id, userId: targetUserId });
     const participantName = reg?.displayName || "Competitor";
 
-    const certUrl = `/certificates/${event._id}_${targetUserId}`;
+    const certUrl = `/events/certificates/${event._id}_${targetUserId}`;
     const certificate = await Certificate.findOneAndUpdate(
       { eventId: event._id, userId: targetUserId },
       {

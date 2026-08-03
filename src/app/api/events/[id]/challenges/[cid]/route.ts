@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { Challenge } from "@/models/Challenge";
+import { Attempt } from "@/models/Attempt";
 import { User } from "@/models/User";
 import { hashFlag } from "@/lib/ctf-security";
 import { isValidObjectId } from "@/lib/validation";
@@ -105,7 +106,11 @@ export async function DELETE(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    await Challenge.deleteOne({ _id: challengeId, eventId: event._id });
+    // Cascade: delete all Attempt records for this challenge
+    await Promise.all([
+      Challenge.deleteOne({ _id: challengeId, eventId: event._id }),
+      Attempt.deleteMany({ challengeId, eventId: event._id }),
+    ]);
     return NextResponse.json({ message: "Challenge deleted" });
   } catch (error) {
     console.error("DELETE challenge error:", error);
