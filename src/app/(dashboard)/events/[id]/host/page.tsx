@@ -178,6 +178,11 @@ export default function EventHostDashboardPage() {
         </Link>
 
         <div className="flex items-center gap-2">
+          <Link href={`/events/${event.slug || event._id}/edit`}>
+            <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs rounded-xl">
+              Edit Event ✏️
+            </Button>
+          </Link>
           <Link href={`/events/${event.slug || event._id}/challenges`}>
             <Button variant="outline" size="sm" className="text-xs font-bold rounded-xl">
               CTF Arena
@@ -319,15 +324,12 @@ export default function EventHostDashboardPage() {
                       </td>
 
                       <td className="py-3.5 pr-4">
-                        {cert ? (
-                          <div className="flex items-center gap-2">
-                            <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-[10px]">
-                              Rank #{cert.rank} Issued ✓
-                            </span>
-                            <a href={cert.certificateUrl} target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline flex items-center gap-1 text-[11px]">
-                              <ExternalLink className="size-3" /> View
-                            </a>
-                          </div>
+                        {part.hasCertificate ? (
+                          <a href={`/events/certificates/${part.userId || part._id}`} target="_blank" rel="noopener noreferrer">
+                            <Button variant="ghost" size="sm" className="text-amber-400 font-bold text-xs h-8 px-2.5">
+                              View CTF Cert 📜
+                            </Button>
+                          </a>
                         ) : (
                           <span className="text-[11px] text-muted-foreground">Not Issued</span>
                         )}

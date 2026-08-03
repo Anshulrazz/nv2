@@ -195,7 +195,7 @@ export default function EventsHubPage() {
                 </div>
 
                 <div className="pt-3 mt-auto">
-                  <a href={`/certificates/${cert.eventId?._id || cert._id}_${cert.displayName}`} target="_blank" rel="noopener noreferrer">
+                  <a href={`/events/certificates/${cert._id}`} target="_blank" rel="noopener noreferrer">
                     <Button size="sm" className="w-full bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 shadow">
                       <Download className="size-4" /> View &amp; Print Certificate
                     </Button>

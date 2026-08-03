@@ -125,9 +125,9 @@ export default function CTFResultsPage() {
             </div>
           </div>
 
-          <a href={userCert.certificateUrl} target="_blank" rel="noopener noreferrer">
+          <a href={`/events/certificates/${eventId}_${userCert.displayName}`} target="_blank" rel="noopener noreferrer">
             <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-black font-bold text-xs h-10 px-5 rounded-xl flex items-center gap-2">
-              <Download className="size-4" /> Download Certificate
+              <Download className="size-4" /> Download CTF Certificate
             </Button>
           </a>
         </div>
