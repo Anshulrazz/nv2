@@ -9,7 +9,7 @@ import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
 import { buildArticleSchema, buildBreadcrumbSchema } from "@/lib/seo/jsonld";
 import { isValidObjectId } from "@/lib/validation";
 import { notFound } from "next/navigation";
-import { Calendar, Clock, ArrowLeft, BookOpen } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, BookOpen, FileText, ExternalLink } from "lucide-react";
 import Link from "next/link";
 
 // Dynamic routing config segment
@@ -404,24 +404,63 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
           </div>
         </div>
 
-        {/* Content body — GitHub README-style card */}
-        <div className="w-full rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden shadow-2xl">
-          {/* File header bar, mimics GitHub's README.md file box */}
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d] bg-[#161b22]">
-            <BookOpen className="h-4 w-4 text-[#8b949e]" />
-            <span
-              className="text-[13px] font-semibold text-[#c9d1d9]"
-              style={{ fontFamily: "var(--font-jetbrains-mono, monospace)" }}
-            >
-              README.md
-            </span>
-          </div>
+        {/* Content body */}
+        {note.assetUrl &&
+        (note.assetUrl.toLowerCase().includes(".pdf") ||
+          note.assetName?.toLowerCase().endsWith(".pdf")) ? (
+          /* ── PDF Viewer ── */
+          <div className="w-full rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden shadow-2xl">
+            {/* File header bar */}
+            <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-[#21262d] bg-[#161b22]">
+              <div className="flex items-center gap-2">
+                <FileText className="h-4 w-4 text-cyan-400" />
+                <span
+                  className="text-[13px] font-semibold text-[#c9d1d9]"
+                  style={{ fontFamily: "var(--font-jetbrains-mono, monospace)" }}
+                >
+                  {note.assetName || "document.pdf"}
+                </span>
+              </div>
+              <a
+                href={note.assetUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-[11px] text-neutral-400 hover:text-cyan-400 transition-colors font-mono"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Open in new tab
+              </a>
+            </div>
 
-          {/* Rendered content */}
-          <article className="w-full px-6 md:px-10 py-8">
-            <BlogContentRenderer content={note.content} />
-          </article>
-        </div>
+            {/* Embedded PDF */}
+            <div className="w-full" style={{ height: "85vh" }}>
+              <iframe
+                src={`${note.assetUrl}#toolbar=1`}
+                className="w-full h-full border-none"
+                title={note.assetName || "PDF Document"}
+              />
+            </div>
+          </div>
+        ) : (
+          /* ── Markdown / TipTap content ── */
+          <div className="w-full rounded-xl border border-[#30363d] bg-[#0d1117] overflow-hidden shadow-2xl">
+            {/* File header bar, mimics GitHub's README.md file box */}
+            <div className="flex items-center gap-2 px-4 py-3 border-b border-[#21262d] bg-[#161b22]">
+              <BookOpen className="h-4 w-4 text-[#8b949e]" />
+              <span
+                className="text-[13px] font-semibold text-[#c9d1d9]"
+                style={{ fontFamily: "var(--font-jetbrains-mono, monospace)" }}
+              >
+                README.md
+              </span>
+            </div>
+
+            {/* Rendered content */}
+            <article className="w-full px-6 md:px-10 py-8">
+              <BlogContentRenderer content={note.content} />
+            </article>
+          </div>
+        )}
 
         {/* Public Blog Google Ad Placement */}
         <GoogleAdBanner adSlot="1003" className="mt-8" />

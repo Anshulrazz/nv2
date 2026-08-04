@@ -6,7 +6,6 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
-import { Button } from "@/components/ui/button";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
 
 function LandingSkeleton() {

@@ -87,6 +87,13 @@ export default function NotesPage() {
       setIsPinned(activeNote.isPinned || false);
       setWordCount(activeNote.wordCount || 0);
       setReadingTime(activeNote.readingTime || "");
+      // Auto-select correct view mode when switching notes
+      const hasPdf =
+        !!activeNote.assetUrl &&
+        (activeNote.assetUrl.toLowerCase().includes(".pdf") ||
+          activeNote.assetName?.toLowerCase().endsWith(".pdf"));
+      setMode(hasPdf ? "pdf" : "editor");
+
     }
   }, [activeNoteId, activeNote]);
 
@@ -237,6 +244,40 @@ export default function NotesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     setIsImporting(true);
+
+    const isPdf =
+      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
+    if (isPdf) {
+      // Upload PDF → store as assetUrl on a new note, switch to PDF viewer
+      try {
+        const title = file.name.replace(/\.pdf$/i, "");
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        if (res.ok) {
+          const data = await res.json();
+          const newNote = await createNote(title, null);
+          if (newNote) {
+            await updateNote(newNote._id, {
+              assetUrl: data.url,
+              assetName: file.name,
+            });
+          }
+          setMode("pdf");
+        } else {
+          alert("Failed to upload PDF.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error uploading PDF.");
+      } finally {
+        setIsImporting(false);
+      }
+      return;
+    }
+
+    // Text / Markdown import
     const reader = new FileReader();
     reader.onload = async (event) => {
       const text = event.target?.result as string;
@@ -781,10 +822,10 @@ export default function NotesPage() {
 
             <label className="cursor-pointer text-zinc-400 hover:text-white text-xs flex items-center gap-1.5 transition-colors pt-1 font-mono">
               <FileUp className="size-3.5 text-cyan-400" />
-              <span>{isImporting ? "Importing..." : "Import .txt / .md file"}</span>
+              <span>{isImporting ? "Importing..." : "Import .txt / .md / .pdf"}</span>
               <input
                 type="file"
-                accept=".txt,.md"
+                accept=".txt,.md,.pdf,application/pdf"
                 onChange={handleFileUpload}
                 className="sr-only"
                 disabled={isImporting}
