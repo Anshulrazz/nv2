@@ -44,8 +44,8 @@ export default function HostAnnouncementsPage() {
             setContent('');
             setIsPinned(false);
             setSendPush(false);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Failed to send announcement.');
         } finally {
             setIsSubmitting(false);
         }

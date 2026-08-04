@@ -1,6 +1,5 @@
 /* eslint-disable @next/next/no-img-element */
 import type { Metadata } from "next";
-import { Space_Grotesk, Plus_Jakarta_Sans, JetBrains_Mono, Kalam } from "next/font/google";
 import Script from "next/script";
 import { Suspense } from "react";
 import { Providers } from "@/components/providers";
@@ -9,30 +8,6 @@ import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
 import { RouteLoadingProgress } from "@/components/common/RouteLoadingProgress";
 import { FB_PIXEL_ID } from "@/lib/metaPixel";
 import "./globals.css";
-
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-jakarta",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-const kalam = Kalam({
-  variable: "--font-kalam",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo/jsonld";
 
@@ -139,10 +114,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSiteSchema()) }}
         />
       </head>
-      <body
-        className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetbrainsMono.variable} ${kalam.variable} antialiased bg-background text-foreground`}
-        style={{ fontFamily: "var(--font-jakarta)" }}
-      >
+      <body className="antialiased bg-background text-foreground">
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
