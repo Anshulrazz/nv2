@@ -19,6 +19,7 @@ import {
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -215,8 +216,11 @@ function SingleChallengeCard({
       </div>
 
       {/* Description */}
-      <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap font-sans bg-background/50 p-4 rounded-xl border border-sidebar-border/50">
-        {challenge.descriptionMarkdown}
+      <div className="bg-background/50 p-4 rounded-xl border border-sidebar-border/50">
+        <MarkdownRenderer
+          content={challenge.descriptionMarkdown}
+          className="text-sm"
+        />
       </div>
 
       {/* Images */}

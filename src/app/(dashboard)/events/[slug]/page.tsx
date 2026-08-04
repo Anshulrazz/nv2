@@ -17,6 +17,8 @@ import {
   ChevronRight,
   FileText,
 } from "lucide-react";
+import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
+import { EventCountdown } from "@/components/events/EventCountdown";
 
 export const dynamic = "force-dynamic";
 
@@ -38,31 +40,7 @@ export async function generateMetadata({
   };
 }
 
-function Countdown({ target, label }: { target: Date; label: string }) {
-  const diff = target.getTime() - Date.now();
-  if (diff <= 0) return null;
 
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const minutes = Math.floor((diff % 3600000) / 60000);
-
-  return (
-    <div className="flex flex-col gap-1">
-      <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-        {label}
-      </span>
-      <div className="flex items-center gap-2">
-        {days > 0 && (
-          <span className="text-lg font-bold text-foreground font-mono">
-            {days}d
-          </span>
-        )}
-        <span className="text-lg font-bold text-foreground font-mono">{hours}h</span>
-        <span className="text-lg font-bold text-foreground font-mono">{minutes}m</span>
-      </div>
-    </div>
-  );
-}
 
 const TYPE_CONFIG = {
   hackathon: { icon: Trophy, label: "Hackathon", color: "text-amber-400" },
@@ -243,10 +221,8 @@ export default async function EventDetailPage({
                     Rules & Guidelines
                   </h2>
                 </div>
-                <div className="prose prose-sm prose-invert max-w-none text-muted-foreground">
-                  <pre className="whitespace-pre-wrap text-xs font-sans leading-relaxed">
-                    {event.rulesMarkdown as string}
-                  </pre>
+                <div className="max-w-none">
+                  <MarkdownRenderer content={event.rulesMarkdown as string} className="text-sm" />
                 </div>
               </div>
             )}
@@ -269,15 +245,15 @@ export default async function EventDetailPage({
             {/* Countdown timers */}
             <div className="bg-sidebar border border-sidebar-border rounded-2xl p-5 space-y-4">
               {isRegOpen && (
-                <Countdown
-                  target={regEnd}
+                <EventCountdown
+                  targetIso={regEnd.toISOString()}
                   label="Registration closes in"
                 />
               )}
               {!isLive && !isEnded && now < evStart && (
-                <Countdown target={evStart} label="Event starts in" />
+                <EventCountdown targetIso={evStart.toISOString()} label="Event starts in" />
               )}
-              {isLive && <Countdown target={evEnd} label="Event ends in" />}
+              {isLive && <EventCountdown targetIso={evEnd.toISOString()} label="Event ends in" />}
 
               <div className="flex flex-col gap-2 text-xs text-muted-foreground pt-2 border-t border-sidebar-border">
                 <div className="flex items-center gap-2">
