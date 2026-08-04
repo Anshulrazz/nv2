@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
-import { Plus, Trophy, Code2, GraduationCap, Edit, Eye, BarChart2 } from "lucide-react";
+import { Plus, Trophy, Code2, GraduationCap, Edit, Eye, BarChart2, Flag } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Host Dashboard — Events | Notexia",
@@ -129,6 +129,13 @@ export default async function HostEventsPage() {
                     title="Edit event"
                   >
                     <Edit className="size-4" />
+                  </Link>
+                  <Link
+                    href={`/host/events/${event._id}/challenges`}
+                    className="p-2 rounded-lg hover:bg-sidebar-accent transition-colors text-muted-foreground hover:text-foreground"
+                    title="Manage challenges"
+                  >
+                    <Flag className="size-4" />
                   </Link>
                   <Link
                     href={`/host/events/${event._id}/monitor`}
