@@ -1,100 +1,112 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
-import { Attempt } from "@/models/Attempt";
-import { Certificate } from "@/models/Certificate";
-import { User } from "@/models/User";
-import { isValidObjectId } from "@/lib/validation";
+import { EventSubmission } from "@/models/EventSubmission";
+import { requireAdminOrHost } from "@/lib/eventAuth";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// GET /api/events/[id]/participants — host/admin only, full participant list with scores
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: identifier } = await params;
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(identifier)) {
-      event = await Event.findById(identifier);
-    } else {
-      event = await Event.findOne({ slug: identifier });
-    }
-
+    const event = await Event.findById(id);
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    const user = await User.findById(userId).select("role").lean();
-    const isOwner = event.createdBy.toString() === userId;
-    const isAdmin = user?.role === "admin";
+    const check = requireAdminOrHost(session, event);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
+    }
 
-    // Non-owners/non-admins get their own registration record
-    const filter = isOwner || isAdmin ? { eventId: event._id } : { eventId: event._id, userId };
+    const { searchParams } = new URL(req.url);
+    const page = parseInt(searchParams.get("page") ?? "1", 10);
+    const limit = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 100);
+    const skip = (page - 1) * limit;
 
-    // Fetch registrations matching filter
-    const registrations = await EventRegistration.find(filter)
-      .populate("userId", "name email image")
-      .sort({ registeredAt: -1 })
-      .lean();
+    const [registrations, total] = await Promise.all([
+      EventRegistration.find({ eventId: id })
+        .sort({ registeredAt: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      EventRegistration.countDocuments({ eventId: id }),
+    ]);
 
-    // Fetch all solved attempts for score summary
-    const solvedAttempts = await Attempt.find({ eventId: event._id, status: "solved" }).lean();
-    const userScoreMap = new Map<string, { totalPoints: number; solvedCount: number }>();
-    solvedAttempts.forEach((att) => {
-      const uid = att.userId.toString();
-      const existing = userScoreMap.get(uid) || { totalPoints: 0, solvedCount: 0 };
-      existing.totalPoints += att.pointsAwarded || 0;
-      existing.solvedCount += 1;
-      userScoreMap.set(uid, existing);
-    });
-
-    // Fetch all issued certificates for this event
-    const issuedCerts = await Certificate.find({ eventId: event._id }).lean();
-    const userCertMap = new Map<string, unknown>();
-    issuedCerts.forEach((cert) => {
-      userCertMap.set(cert.userId.toString(), cert);
-    });
-
-    const participants = registrations.map((reg) => {
-      const uid = reg.userId?._id?.toString() || reg.userId?.toString();
-      const scoreData = userScoreMap.get(uid) || { totalPoints: 0, solvedCount: 0 };
-      const cert = userCertMap.get(uid) || null;
-
-      return {
-        _id: reg._id,
-        user: reg.userId,
-        displayName: reg.displayName,
-        username: reg.username,
-        paymentStatus: reg.paymentStatus,
-        registeredAt: reg.registeredAt,
-        totalPoints: scoreData.totalPoints,
-        solvedCount: scoreData.solvedCount,
-        certificate: cert,
-      };
-    });
-
-    return NextResponse.json({
-      event: {
-        _id: event._id,
-        title: event.title,
-        slug: event.slug,
-        status: event.status,
-        maxParticipants: event.maxParticipants,
-        isPaid: event.isPaid,
-        entryFeeINR: event.entryFeeINR,
+    // Aggregate scores for all participants
+    const userIds = registrations.map((r) => r.userId.toString());
+    const eventObjId = new mongoose.Types.ObjectId(id);
+    const scoreAgg = await EventSubmission.aggregate([
+      {
+        $match: {
+          eventId: eventObjId,
+          isCorrect: true,
+        },
       },
-      participants,
-      totalCount: participants.length,
-      issuedCertificateCount: issuedCerts.length,
-    });
-  } catch (error) {
-    console.error("GET /api/events/[id]/participants error:", error);
-    return NextResponse.json({ error: "Failed to fetch participants" }, { status: 500 });
+      {
+        $group: {
+          _id: "$userId",
+          totalPoints: { $sum: "$pointsAwarded" },
+          solveCount: { $sum: 1 },
+          lastSolveAt: { $max: "$submittedAt" },
+        },
+      },
+    ]);
+
+    const scoreMap = new Map(
+      scoreAgg.map((a) => [a._id.toString(), a])
+    );
+
+    // Attempt frequency for cheating signal
+    const attemptAgg = await EventSubmission.aggregate([
+      { $match: { eventId: eventObjId } },
+      {
+        $group: {
+          _id: "$userId",
+          totalAttempts: { $sum: 1 },
+          wrongAttempts: {
+            $sum: { $cond: [{ $eq: ["$isCorrect", false] }, 1, 0] },
+          },
+        },
+      },
+    ]);
+    const attemptMap = new Map(
+      attemptAgg.map((a) => [a._id.toString(), a])
+    );
+
+    const participants = registrations
+      .filter((r) => userIds.includes(r.userId.toString()))
+      .map((r) => {
+        const uid = r.userId.toString();
+        const score = scoreMap.get(uid);
+        const attempts = attemptMap.get(uid);
+        return {
+          userId: uid,
+          codename: r.codename,
+          realName: r.realName, // only visible to hosts/admins
+          paymentStatus: r.paymentStatus,
+          isDisqualified: r.isDisqualified,
+          disqualifiedReason: r.disqualifiedReason,
+          registeredAt: r.registeredAt,
+          totalPoints: score?.totalPoints ?? 0,
+          solveCount: score?.solveCount ?? 0,
+          lastSolveAt: score?.lastSolveAt ?? null,
+          totalAttempts: attempts?.totalAttempts ?? 0,
+          wrongAttempts: attempts?.wrongAttempts ?? 0,
+        };
+      });
+
+    return NextResponse.json({ participants, total, page, limit });
+  } catch (err) {
+    console.error("[GET /api/events/[id]/participants]", err);
+    return NextResponse.json({ error: "Failed to fetch participants." }, { status: 500 });
   }
 }

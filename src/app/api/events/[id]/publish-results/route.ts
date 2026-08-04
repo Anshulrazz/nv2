@@ -1,66 +1,94 @@
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
-import { User } from "@/models/User";
-import { isValidObjectId } from "@/lib/validation";
+import { EventRegistration } from "@/models/EventRegistration";
+import { EventSubmission } from "@/models/EventSubmission";
+import { requireAdminOrHost } from "@/lib/eventAuth";
+import { pusherServer } from "@/lib/pusher";
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// POST /api/events/[id]/publish-results — calculate final ranks, set resultsRevealedAt
+export async function POST(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: eventId } = await params;
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(eventId)) {
-      event = await Event.findById(eventId);
-    } else {
-      event = await Event.findOne({ slug: eventId });
-    }
-
+    const event = await Event.findById(id);
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    const user = await User.findById(userId).select("role").lean();
-    const isHost = (event.createdBy?.toString() || "") === userId;
-    const isAdmin = user?.role === "admin";
-
-    if (!isHost && !isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Only event host can publish official results." }, { status: 403 });
+    const check = requireAdminOrHost(session, event);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
     }
 
-    const body = await req.json();
-    const { winners = [] } = body;
+    // Aggregate scores across all non-disqualified active participants
+    const [registrations, solveAgg] = await Promise.all([
+      EventRegistration.find({ eventId: id, paymentStatus: { $in: ["not_required", "paid"] } }),
+      EventSubmission.aggregate([
+        { $match: { eventId: new mongoose.Types.ObjectId(id), isCorrect: true } },
+        {
+          $group: {
+            _id: "$userId",
+            totalPoints: { $sum: "$pointsAwarded" },
+            lastSolveAt: { $max: "$submittedAt" },
+          },
+        },
+      ]),
+    ]);
 
-    if (!Array.isArray(winners) || winners.length === 0) {
-      return NextResponse.json({ error: "At least one winner position is required to publish results." }, { status: 400 });
+    const solveMap = new Map(solveAgg.map((s) => [s._id.toString(), s]));
+
+    // Rank participants: non-DQ first, score desc, lastSolveAt asc
+    const rankedList = registrations.map((r) => {
+      const stats = solveMap.get(r.userId.toString());
+      return {
+        reg: r,
+        totalPoints: stats?.totalPoints ?? 0,
+        lastSolveAt: stats?.lastSolveAt ?? new Date(0),
+        isDisqualified: r.isDisqualified,
+      };
+    });
+
+    rankedList.sort((a, b) => {
+      if (a.isDisqualified !== b.isDisqualified) return a.isDisqualified ? 1 : -1;
+      if (b.totalPoints !== a.totalPoints) return b.totalPoints - a.totalPoints;
+      return new Date(a.lastSolveAt).getTime() - new Date(b.lastSolveAt).getTime();
+    });
+
+    // Save final scores and ranks
+    let rank = 1;
+    for (const item of rankedList) {
+      item.reg.finalScore = item.totalPoints;
+      item.reg.finalRank = item.isDisqualified ? null : rank;
+      item.reg.finalizedAt = new Date();
+      await item.reg.save();
+      if (!item.isDisqualified) rank++;
     }
 
-    const formattedWinners = winners.map((w: { rank?: number; participantId: string; submissionId?: string; prize?: string; note?: string }, index: number) => ({
-      rank: w.rank || index + 1,
-      participantId: w.participantId,
-      submissionId: w.submissionId || undefined,
-      prize: w.prize || "",
-      note: w.note || "",
-    }));
-
-    event.isResultsPublished = true;
-    event.publishedResults = formattedWinners;
-    event.status = "ended";
+    // Set resultsRevealedAt on event and change status to ended
+    event.resultsRevealedAt = new Date();
+    if (event.status !== "ended") event.status = "ended";
     await event.save();
 
-    return NextResponse.json({
-      message: "Official results published successfully!",
-      event,
+    // Trigger Pusher notification
+    await pusherServer.trigger(`event-${id}-leaderboard`, "results-published", {
+      resultsRevealedAt: event.resultsRevealedAt,
     });
-  } catch (error) {
-    console.error("POST /api/events/[id]/publish-results error:", error);
-    return NextResponse.json({ error: "Failed to publish results" }, { status: 500 });
+
+    return NextResponse.json({
+      success: true,
+      resultsRevealedAt: event.resultsRevealedAt,
+      totalRanked: rank - 1,
+    });
+  } catch (err) {
+    console.error("[POST /api/events/[id]/publish-results]", err);
+    return NextResponse.json({ error: "Failed to publish results." }, { status: 500 });
   }
 }

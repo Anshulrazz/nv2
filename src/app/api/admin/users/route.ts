@@ -8,7 +8,7 @@ import { Chat } from "@/models/Chat";
 import { AuditLog } from "@/models/AuditLog";
 import mongoose from "mongoose";
 import { Project } from "@/models/Project";
-import { EventRegistration } from "@/models/EventRegistration";
+
 import { Attempt } from "@/models/Attempt";
 import { Run } from "@/models/Run";
 import { Certificate } from "@/models/Certificate";
@@ -123,7 +123,6 @@ export const DELETE = auth(async function DELETE(req) {
       Note.deleteMany({ userId: targetUserId }),
       Chat.deleteMany({ userId: targetUserId }),
       Project.deleteMany({ ownerId: targetUserId }),
-      EventRegistration.deleteMany({ userId: targetUserId }),
       Attempt.deleteMany({ userId: targetUserId }),
       Run.deleteMany({ userId: targetUserId }),
       Certificate.deleteMany({ userId: targetUserId }),

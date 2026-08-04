@@ -2,166 +2,113 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
-import { Challenge } from "@/models/Challenge";
-import { EventRegistration } from "@/models/EventRegistration";
-import { Attempt } from "@/models/Attempt";
-import { Run } from "@/models/Run";
-import { LeaderboardSnapshot } from "@/models/LeaderboardSnapshot";
-import { Certificate } from "@/models/Certificate";
-import { User } from "@/models/User";
-import { isValidObjectId } from "@/lib/validation";
+import { requireAdminOrHost } from "@/lib/eventAuth";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// GET /api/events/[id] — detail by MongoDB _id or slug
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id: identifier } = await params;
+    const { id } = await params;
     await connectToDatabase();
+    const session = await auth();
+    const role = session?.user?.role ?? "user";
+    const userId = session?.user?.id;
 
-    let event = null;
-    if (isValidObjectId(identifier)) {
-      event = await Event.findById(identifier).populate("createdBy", "name email image role").lean();
-    } else {
-      event = await Event.findOne({ slug: identifier }).populate("createdBy", "name email image role").lean();
-    }
+    // Try by _id first, then by slug
+    const isObjectId = /^[a-f\d]{24}$/i.test(id);
+    const event = isObjectId
+      ? await Event.findById(id).lean()
+      : await Event.findOne({ slug: id }).lean();
 
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    const session = await auth();
-    const userId = session?.user?.id;
-    let isOwnerOrAdmin = false;
+    // Non-admin, non-host: hide draft/archived events
+    const isHost =
+      role === "admin" ||
+      event.createdBy?.toString() === userId ||
+      event.hostIds?.some((h: { toString: () => string }) => h.toString() === userId);
 
-    if (userId) {
-      const user = await User.findById(userId).select("role").lean();
-      isOwnerOrAdmin = event.createdBy._id.toString() === userId || user?.role === "admin";
+    if (!isHost && !["published", "live", "ended"].includes(event.status)) {
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    // Public users can only see published/live/ended events (teachers/admins can see draft)
-    if (event.status === "draft" && !isOwnerOrAdmin) {
-      return NextResponse.json({ error: "Event not published yet" }, { status: 403 });
-    }
-
-    return NextResponse.json({ event, canManage: isOwnerOrAdmin });
-  } catch (error) {
-    console.error("GET /api/events/[id] error:", error);
-    return NextResponse.json({ error: "Failed to fetch event" }, { status: 500 });
+    return NextResponse.json({ event });
+  } catch (err) {
+    console.error("[GET /api/events/[id]]", err);
+    return NextResponse.json({ error: "Failed to fetch event." }, { status: 500 });
   }
 }
 
-export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// PATCH /api/events/[id] — update (host/admin only)
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: identifier } = await params;
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(identifier)) {
-      event = await Event.findById(identifier);
-    } else {
-      event = await Event.findOne({ slug: identifier });
-    }
-
+    const event = await Event.findById(id);
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    const user = await User.findById(userId).select("role").lean();
-    const isOwner = event.createdBy.toString() === userId;
-    const isAdmin = user?.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Only event owner or admin can edit event." }, { status: 403 });
+    const check = requireAdminOrHost(session, event);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
     }
 
     const body = await req.json();
-    const allowedFields = [
-      "title",
-      "description",
-      "bannerUrl",
-      "category",
-      "status",
-      "registrationStart",
-      "registrationEnd",
-      "eventStart",
-      "eventEnd",
-      "maxParticipants",
-      "isPaid",
-      "entryFeeINR",
-      "rules",
-      "certificate",
-    ];
 
-    allowedFields.forEach((field) => {
-      if (body[field] !== undefined) {
-        if (field.endsWith("Start") || field.endsWith("End")) {
-          (event as unknown as Record<string, unknown>)[field] = new Date(body[field]);
-        } else {
-          (event as unknown as Record<string, unknown>)[field] = body[field];
-        }
-      }
-    });
+    // Prevent status mutation via PATCH (use /publish endpoint instead)
+    delete body.status;
+    delete body.createdBy;
+    delete body.slug; // slug is immutable after creation
 
-    event.updatedAt = new Date();
+    // Date re-validation if dates are being updated
+    const patchedRegStart = body.registrationStart
+      ? new Date(body.registrationStart)
+      : event.registrationStart;
+    const patchedRegEnd = body.registrationEnd
+      ? new Date(body.registrationEnd)
+      : event.registrationEnd;
+    const patchedEvStart = body.eventStart ? new Date(body.eventStart) : event.eventStart;
+    const patchedEvEnd = body.eventEnd ? new Date(body.eventEnd) : event.eventEnd;
+
+    if (patchedRegStart >= patchedRegEnd) {
+      return NextResponse.json(
+        { error: "registrationStart must be before registrationEnd." },
+        { status: 400 }
+      );
+    }
+    if (patchedRegEnd > patchedEvStart) {
+      return NextResponse.json(
+        { error: "registrationEnd must be on or before eventStart." },
+        { status: 400 }
+      );
+    }
+    if (patchedEvStart >= patchedEvEnd) {
+      return NextResponse.json(
+        { error: "eventStart must be before eventEnd." },
+        { status: 400 }
+      );
+    }
+
+    Object.assign(event, body);
+    event.registrationStart = patchedRegStart;
+    event.registrationEnd = patchedRegEnd;
+    event.eventStart = patchedEvStart;
+    event.eventEnd = patchedEvEnd;
     await event.save();
 
-    return NextResponse.json({ message: "Event updated successfully", event });
-  } catch (error: unknown) {
-    console.error("PATCH /api/events/[id] error:", error);
-    const msg = error instanceof Error ? error.message : "Failed to update event";
-    return NextResponse.json({ error: msg }, { status: 500 });
-  }
-}
-
-export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: identifier } = await params;
-    await connectToDatabase();
-
-    let event = null;
-    if (isValidObjectId(identifier)) {
-      event = await Event.findById(identifier);
-    } else {
-      event = await Event.findOne({ slug: identifier });
-    }
-
-    if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-
-    const user = await User.findById(userId).select("role").lean();
-    const isOwner = event.createdBy.toString() === userId;
-    const isAdmin = user?.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Only event owner or admin can delete event." }, { status: 403 });
-    }
-
-    const eventId = event._id;
-
-    // Cascade deletion per Notexia rule: deleting an event deletes dependent challenges, registrations, attempts, runs, snapshots & certificates
-    await Challenge.deleteMany({ eventId });
-    await EventRegistration.deleteMany({ eventId });
-    await Attempt.deleteMany({ eventId });
-    await Run.deleteMany({ eventId });
-    await LeaderboardSnapshot.deleteMany({ eventId });
-    await Certificate.deleteMany({ eventId });
-    await Event.deleteOne({ _id: eventId });
-
-    return NextResponse.json({ message: "🗑️ Event and all associated challenges, runs, and records deleted successfully!" });
-  } catch (error: unknown) {
-    console.error("DELETE /api/events/[id] error:", error);
-    const msg = error instanceof Error ? error.message : "Failed to delete event";
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return NextResponse.json({ event });
+  } catch (err) {
+    console.error("[PATCH /api/events/[id]]", err);
+    return NextResponse.json({ error: "Failed to update event." }, { status: 500 });
   }
 }

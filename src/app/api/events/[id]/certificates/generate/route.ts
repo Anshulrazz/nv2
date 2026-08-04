@@ -4,101 +4,73 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
 import { Certificate } from "@/models/Certificate";
-import { User } from "@/models/User";
-import { updateLeaderboardSnapshot } from "@/lib/ctf-leaderboard";
-import { isValidObjectId } from "@/lib/validation";
+import { requireAdminOrHost } from "@/lib/eventAuth";
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// POST /api/events/[id]/certificates/generate
+export async function POST(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id: identifier } = await params;
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(identifier)) {
-      event = await Event.findById(identifier);
-    } else {
-      event = await Event.findOne({ slug: identifier });
-    }
-
+    const event = await Event.findById(id).select("name status createdBy hostIds").lean();
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    const user = await User.findById(userId).select("role").lean();
-    const isOwner = event.createdBy.toString() === userId;
-    const isAdmin = user?.role === "admin";
-
-    if (!isOwner && !isAdmin) {
-      return NextResponse.json({ error: "Forbidden: Only event host or admin can generate certificates." }, { status: 403 });
+    const check = requireAdminOrHost(session, event);
+    if (!check.ok) {
+      return NextResponse.json({ error: check.error }, { status: check.status });
     }
 
-    const body = await req.json();
-    const { targetUserId, rank = 1, mode = "single" } = body;
+    // Find all non-disqualified, active participants
+    const registrations = await EventRegistration.find({
+      eventId: id,
+      paymentStatus: { $in: ["not_required", "paid"] },
+      isDisqualified: false,
+    })
+      .sort({ finalScore: -1, registeredAt: 1 })
+      .lean();
 
-    if (mode === "bulk_all" || mode === "bulk_top3") {
-      // Bulk certificate generation
-      const snapshot = await updateLeaderboardSnapshot(event._id.toString());
-      const limit = mode === "bulk_top3" ? (event.certificate?.topN || 3) : (snapshot.entries || []).length;
-      const entriesToCertify = (snapshot.entries || []).slice(0, limit);
+    if (registrations.length === 0) {
+      return NextResponse.json(
+        { message: "No eligible participants found for certificate generation.", createdCount: 0 }
+      );
+    }
 
-      const createdCerts = [];
-      for (let i = 0; i < entriesToCertify.length; i++) {
-        const entry = entriesToCertify[i];
-        const certRank = i + 1;
-        const certUrl = `/events/certificates/${event._id}_${entry.userId}`;
+    let createdCount = 0;
 
-        const cert = await Certificate.findOneAndUpdate(
-          { eventId: event._id, userId: entry.userId },
-          {
-            rank: certRank,
-            displayName: entry.displayName,
+    for (let index = 0; index < registrations.length; index++) {
+      const reg = registrations[index];
+
+      // Upsert certificate idempotently
+      await Certificate.findOneAndUpdate(
+        { eventId: id, userId: reg.userId },
+        {
+          $setOnInsert: {
+            eventId: id,
+            userId: reg.userId,
+            displayName: reg.realName || reg.codename,
+            rank: reg.finalRank ?? index + 1,
             issuedAt: new Date(),
-            certificateUrl: certUrl,
+            revoked: false,
+            revokedReason: null,
           },
-          { upsert: true, new: true }
-        );
-        createdCerts.push(cert);
-      }
-
-      return NextResponse.json({
-        message: `🎉 Bulk generated ${createdCerts.length} certificates successfully!`,
-        count: createdCerts.length,
-      });
+        },
+        { upsert: true, new: true }
+      );
+      createdCount++;
     }
-
-    // Single participant certificate generation
-    if (!targetUserId || !isValidObjectId(targetUserId)) {
-      return NextResponse.json({ error: "Invalid targetUserId provided." }, { status: 400 });
-    }
-
-    const reg = await EventRegistration.findOne({ eventId: event._id, userId: targetUserId });
-    const participantName = reg?.displayName || "Competitor";
-
-    const certUrl = `/events/certificates/${event._id}_${targetUserId}`;
-    const certificate = await Certificate.findOneAndUpdate(
-      { eventId: event._id, userId: targetUserId },
-      {
-        rank: Number(rank) || 1,
-        displayName: participantName,
-        issuedAt: new Date(),
-        certificateUrl: certUrl,
-      },
-      { upsert: true, new: true }
-    );
 
     return NextResponse.json({
-      message: `🎉 Certificate generated for ${participantName} (Rank #${rank})!`,
-      certificate,
+      message: `Generated/verified certificates for ${createdCount} participants.`,
+      createdCount,
     });
-  } catch (error: unknown) {
-    console.error("POST /api/events/[id]/certificates/generate error:", error);
-    const msg = error instanceof Error ? error.message : "Failed to generate certificate";
-    return NextResponse.json({ error: msg }, { status: 500 });
+  } catch (err) {
+    console.error("[POST /api/events/[id]/certificates/generate]", err);
+    return NextResponse.json({ error: "Certificate generation failed." }, { status: 500 });
   }
 }

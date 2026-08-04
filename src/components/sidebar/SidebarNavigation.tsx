@@ -25,6 +25,7 @@ import {
   ChevronRight,
   FolderOpen,
   Wallet,
+  Flag,
 } from "lucide-react";
 
 interface SidebarNavigationProps {
@@ -141,6 +142,7 @@ export function SidebarNavigation({
           <div className="pl-2.5 space-y-0.5 border-l border-white/5 ml-4 animate-in fade-in slide-in-from-top-1 duration-200">
             <NavLink href="/feed" icon={<Rss className="size-4" />} label="Public Feed" accent="violet" />
             <NavLink href="/community" icon={<Users className="size-4" />} label="Community" accent="cyan" />
+            <NavLink href="/events" icon={<Flag className="size-4" />} label="Events" accent="amber" />
             <NavLink href="/blogs" icon={<Newspaper className="size-4" />} label="Blogs" accent="violet" />
             <NavLink href="/doubts" icon={<HelpCircle className="size-4" />} label="Doubts" accent="cyan" />
             <NavLink href="/forums" icon={<MessageSquare className="size-4" />} label="Forums" accent="violet" />
@@ -172,13 +174,15 @@ export function SidebarNavigation({
             <NavLink href="/research" icon={<GraduationCap className="size-4" />} label="Research" accent="violet" />
             <NavLink href="/bookmarks" icon={<Bookmark className="size-4" />} label="Bookmarks" accent="amber" />
             <NavLink href="/leaderboard" icon={<Trophy className="size-4" />} label="Leaderboard" accent="yellow" />
-            <NavLink href="/events" icon={<Calendar className="size-4" />} label="Events & Hackathons" accent="amber" />
             <NavLink href="/courses" icon={<Presentation className="size-4" />} label="Courses" accent="violet" />
             <NavLink href="/referrals" icon={<Gift className="size-4" />} label="Referrals" accent="yellow" />
             <NavLink href="/settings" icon={<Settings className="size-4" />} label="Settings" accent="cyan" />
             
             {(userRole === "teacher" || userRole === "admin") && (
               <NavLink href="/teacher/courses" icon={<Presentation className="size-4" />} label="Teacher Dashboard" accent="yellow" />
+            )}
+            {(userRole === "teacher" || userRole === "admin") && (
+              <NavLink href="/host/events" icon={<Trophy className="size-4" />} label="Host Events" accent="amber" />
             )}
             {userRole === "admin" && (
               <NavLink href="/admin" icon={<Settings className="size-4" />} label="Admin Panel" accent="red" />

@@ -1,59 +1,43 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface ISolvedChallenge {
-  challengeId: string;
-  solvedAt: Date;
-  pointsEarned: number;
-}
-
 export interface IEventSubmission extends Document {
+  challengeId: mongoose.Types.ObjectId;
   eventId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
-  projectTitle: string;
-  description: string;
-  githubUrl?: string;
-  demoUrl?: string;
-  techStack: string[];
-  score: number;
-  solvedChallenges?: ISolvedChallenge[];
-  feedback?: string;
-  isShortlisted: boolean;
+  teamId: mongoose.Types.ObjectId | null;
+  submittedFlag: string; // plaintext submitted flag (logged for audit; not the stored hash)
+  isCorrect: boolean;
+  pointsAwarded: number;
+  attemptNumber: number;
   submittedAt: Date;
-  updatedAt: Date;
 }
-
-const SolvedChallengeSchema = new Schema<ISolvedChallenge>(
-  {
-    challengeId: { type: String, required: true },
-    solvedAt: { type: Date, default: Date.now },
-    pointsEarned: { type: Number, default: 0 },
-  },
-  { _id: false }
-);
 
 const EventSubmissionSchema = new Schema<IEventSubmission>(
   {
+    challengeId: {
+      type: Schema.Types.ObjectId,
+      ref: "EventChallenge",
+      required: true,
+      index: true,
+    },
     eventId: { type: Schema.Types.ObjectId, ref: "Event", required: true, index: true },
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    projectTitle: { type: String, default: "Hackathon Entry", trim: true },
-    description: { type: String, default: "" },
-    githubUrl: { type: String, default: "" },
-    demoUrl: { type: String, default: "" },
-    techStack: { type: [String], default: [] },
-    score: { type: Number, default: 0, min: 0, index: true },
-    solvedChallenges: { type: [SolvedChallengeSchema], default: [] },
-    feedback: { type: String, default: "" },
-    isShortlisted: { type: Boolean, default: false },
-    submittedAt: { type: Date, default: Date.now },
+    teamId: { type: Schema.Types.ObjectId, ref: "EventTeam", default: null },
+    submittedFlag: { type: String, required: true },
+    isCorrect: { type: Boolean, required: true, default: false },
+    pointsAwarded: { type: Number, default: 0 },
+    attemptNumber: { type: Number, default: 1, min: 1 },
+    submittedAt: { type: Date, default: Date.now, index: true },
   },
   {
-    timestamps: true,
+    timestamps: false,
   }
 );
 
-// One submission per participant per hackathon
-EventSubmissionSchema.index({ eventId: 1, userId: 1 }, { unique: true });
-EventSubmissionSchema.index({ eventId: 1, score: -1, submittedAt: 1 });
+// Lookup: all submissions for a challenge in an event by user
+EventSubmissionSchema.index({ eventId: 1, userId: 1, challengeId: 1 });
+// Rate-limit check: count recent submissions by user for a challenge
+EventSubmissionSchema.index({ userId: 1, challengeId: 1, submittedAt: 1 });
 
 export const EventSubmission =
   mongoose.models.EventSubmission ||

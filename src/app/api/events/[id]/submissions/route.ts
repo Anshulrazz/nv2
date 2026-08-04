@@ -3,117 +3,134 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
-import { EventSubmission } from "@/models/EventSubmission";
-import { isValidObjectId } from "@/lib/validation";
+import { ProjectSubmission } from "@/models/ProjectSubmission";
 
-export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// GET /api/events/[id]/submissions — list submissions
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { id: eventId } = await params;
+    const { id } = await params;
+    const { searchParams } = new URL(req.url);
+    const trackId = searchParams.get("trackId");
+
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(eventId)) {
-      event = await Event.findById(eventId);
-    } else {
-      event = await Event.findOne({ slug: eventId });
-    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const filter: Record<string, any> = { eventId: id };
+    if (trackId) filter.trackId = trackId;
 
-    if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-
-    // Leaderboard sorted by score desc, then submittedAt asc
-    const submissions = await EventSubmission.find({ eventId: event._id })
-      .populate("userId", "name email image role points")
-      .sort({ score: -1, submittedAt: 1 })
+    const submissions = await ProjectSubmission.find(filter)
+      .populate("teamId", "teamName")
+      .populate("userId", "name username")
+      .populate("trackId", "name sponsorName")
+      .sort({ submittedAt: -1 })
       .lean();
 
-    const leaderboard = submissions.map((sub, index) => ({
-      ...sub,
-      rank: index + 1,
-    }));
-
-    return NextResponse.json({
-      submissions: leaderboard,
-      totalSubmissions: leaderboard.length,
-    });
-  } catch (error) {
-    console.error("GET /api/events/[id]/submissions error:", error);
-    return NextResponse.json({ error: "Failed to fetch submissions" }, { status: 500 });
+    return NextResponse.json({ submissions });
+  } catch (err) {
+    console.error("[GET /api/events/[id]/submissions]", err);
+    return NextResponse.json({ error: "Failed to fetch submissions." }, { status: 500 });
   }
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+// POST /api/events/[id]/submissions — create or update project submission
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
+    const { id } = await params;
     const session = await auth();
-    const userId = session?.user?.id;
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
-    const { id: eventId } = await params;
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+    }
+    const userId = session.user.id;
+
     await connectToDatabase();
 
-    let event = null;
-    if (isValidObjectId(eventId)) {
-      event = await Event.findById(eventId);
-    } else {
-      event = await Event.findOne({ slug: eventId });
-    }
-
+    const event = await Event.findById(id).select("type eventEnd status").lean();
     if (!event) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
 
-    // Check if user is registered
-    const isRegistered = await EventRegistration.exists({ eventId: event._id, userId });
-    if (!isRegistered) {
-      return NextResponse.json({ error: "You must join the event before submitting a project." }, { status: 403 });
+    if (event.type !== "hackathon") {
+      return NextResponse.json({ error: "Project submissions are only for hackathons." }, { status: 400 });
+    }
+
+    // ── Server-authoritative timing lock ─────────────────────────────────
+    const now = new Date();
+    const eventEnd = new Date(event.eventEnd as Date);
+    if (now > eventEnd) {
+      return NextResponse.json({ error: "Submissions are closed. Event has ended." }, { status: 403 });
+    }
+
+    const reg = await EventRegistration.findOne({
+      eventId: id,
+      userId,
+      paymentStatus: { $in: ["not_required", "paid"] },
+      isDisqualified: false,
+    });
+
+    if (!reg) {
+      return NextResponse.json({ error: "You are not registered or disqualified." }, { status: 403 });
     }
 
     const body = await req.json();
-    const { projectTitle, description, githubUrl = "", demoUrl = "", techStack = [] } = body;
+    const { title, description, repoUrl, demoUrl, videoUrl, deckUrl, trackId } = body;
 
-    if (!projectTitle || !description) {
-      return NextResponse.json(
-        { error: "Project title and description are required." },
-        { status: 400 }
-      );
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return NextResponse.json({ error: "Project title is required." }, { status: 400 });
     }
 
-    const parsedTechStack = Array.isArray(techStack)
-      ? techStack
-      : String(techStack).split(",").map((s) => s.trim()).filter(Boolean);
-
-    // Upsert project submission
-    let submission = await EventSubmission.findOne({ eventId: event._id, userId });
-
-    if (submission) {
-      submission.projectTitle = projectTitle.trim();
-      submission.description = description;
-      submission.githubUrl = githubUrl.trim();
-      submission.demoUrl = demoUrl.trim();
-      submission.techStack = parsedTechStack;
-      submission.updatedAt = new Date();
-      await submission.save();
+    // Upsert project submission (team submission if in team, solo otherwise)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query: Record<string, any> = { eventId: id };
+    if (reg.teamId) {
+      query.teamId = reg.teamId;
     } else {
-      submission = await EventSubmission.create({
-        eventId: event._id,
-        userId,
-        projectTitle: projectTitle.trim(),
-        description,
-        githubUrl: githubUrl.trim(),
-        demoUrl: demoUrl.trim(),
-        techStack: parsedTechStack,
-      });
+      query.userId = userId;
     }
 
-    return NextResponse.json({
-      message: "Project submitted successfully!",
-      submission,
-    });
-  } catch (error) {
-    console.error("POST /api/events/[id]/submissions error:", error);
-    return NextResponse.json({ error: "Failed to submit project" }, { status: 500 });
+    let submission = await ProjectSubmission.findOne(query);
+
+    if (submission && submission.isFinal) {
+      return NextResponse.json({ error: "Submission has been locked as final." }, { status: 403 });
+    }
+
+    if (!submission) {
+      submission = new ProjectSubmission({
+        eventId: id,
+        teamId: reg.teamId ?? null,
+        userId: reg.teamId ? null : userId,
+        trackId: trackId ?? null,
+        title: title.trim(),
+        description: description ?? "",
+        repoUrl: repoUrl ?? "",
+        demoUrl: demoUrl ?? "",
+        videoUrl: videoUrl ?? "",
+        deckUrl: deckUrl ?? "",
+        submittedAt: now,
+        isFinal: false,
+      });
+    } else {
+      submission.title = title.trim();
+      submission.description = description ?? "";
+      submission.repoUrl = repoUrl ?? "";
+      submission.demoUrl = demoUrl ?? "";
+      submission.videoUrl = videoUrl ?? "";
+      submission.deckUrl = deckUrl ?? "";
+      if (trackId) submission.trackId = trackId;
+      submission.submittedAt = now;
+    }
+
+    await submission.save();
+
+    return NextResponse.json({ submission }, { status: 200 });
+  } catch (err) {
+    console.error("[POST /api/events/[id]/submissions]", err);
+    return NextResponse.json({ error: "Failed to save submission." }, { status: 500 });
   }
 }
