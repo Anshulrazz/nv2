@@ -13,11 +13,21 @@ import {
   Users,
   Monitor,
   Award,
+  UserPlus,
+  X,
+  Search,
 } from "lucide-react";
 import Link from "next/link";
 
 type EventType = "hackathon" | "ctf" | "workshop";
 type ReleaseMode = "sequential" | "scheduled" | "all_at_once";
+
+interface Judge {
+  _id: string;
+  name?: string;
+  email: string;
+  image?: string;
+}
 
 interface EventData {
   _id: string;
@@ -69,6 +79,13 @@ export default function EditEventPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Judges state
+  const [judges, setJudges] = useState<Judge[]>([]);
+  const [judgeEmail, setJudgeEmail] = useState("");
+  const [addingJudge, setAddingJudge] = useState(false);
+  const [judgeError, setJudgeError] = useState("");
+  const [removingJudgeId, setRemovingJudgeId] = useState<string | null>(null);
+
   const [form, setForm] = useState<Partial<EventData>>({});
 
   useEffect(() => {
@@ -86,6 +103,12 @@ export default function EditEventPage() {
           eventEnd: toDatetimeLocal(data.event.eventEnd),
           scoreFreezeAt: toDatetimeLocal(data.event.scoreFreezeAt),
         });
+        // Load judges
+        const jRes = await fetch(`/api/events/${id}/judges`);
+        if (jRes.ok) {
+          const jData = await jRes.json();
+          setJudges(jData.judges ?? []);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : "Failed to load event.");
       } finally {
@@ -148,6 +171,47 @@ export default function EditEventPage() {
       setError("Failed to publish.");
     } finally {
       setPublishing(false);
+    }
+  };
+
+  const handleAddJudge = async () => {
+    if (!judgeEmail.trim()) return;
+    setJudgeError("");
+    setAddingJudge(true);
+    try {
+      const res = await fetch(`/api/events/${id}/judges`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: judgeEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setJudgeError(data.error || "Failed to add judge.");
+        return;
+      }
+      setJudges((prev) => [...prev, data.judge]);
+      setJudgeEmail("");
+    } catch {
+      setJudgeError("Failed to add judge.");
+    } finally {
+      setAddingJudge(false);
+    }
+  };
+
+  const handleRemoveJudge = async (judgeId: string) => {
+    setRemovingJudgeId(judgeId);
+    try {
+      const res = await fetch(`/api/events/${id}/judges`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ judgeId }),
+      });
+      if (!res.ok) return;
+      setJudges((prev) => prev.filter((j) => j._id !== judgeId));
+    } catch {
+      /* silent */
+    } finally {
+      setRemovingJudgeId(null);
     }
   };
 
@@ -455,6 +519,89 @@ export default function EditEventPage() {
             onChange={(e) => setForm((p) => ({ ...p, codeOfConductUrl: e.target.value }))}
             className={inputCls}
           />
+        </div>
+
+        {/* Judges Panel */}
+        <div className="space-y-3 border border-sidebar-border rounded-2xl p-5 bg-sidebar">
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="size-4 text-primary" />
+            <p className="text-sm font-bold text-foreground">Judging Panel</p>
+            <span className="text-[10px] font-mono text-muted-foreground ml-auto">
+              {judges.length} judge{judges.length !== 1 ? "s" : ""}
+            </span>
+          </div>
+
+          {/* Current judges */}
+          {judges.length > 0 && (
+            <div className="space-y-2">
+              {judges.map((judge) => (
+                <div
+                  key={judge._id}
+                  className="flex items-center gap-3 bg-background border border-sidebar-border rounded-xl px-3 py-2"
+                >
+                  {judge.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={judge.image} alt={judge.name ?? judge.email} className="size-7 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="size-7 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                      <Users className="size-3.5 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground truncate">{judge.name ?? "—"}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono truncate">{judge.email}</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveJudge(judge._id)}
+                    disabled={removingJudgeId === judge._id}
+                    className="p-1.5 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                    title="Remove judge"
+                  >
+                    {removingJudgeId === judge._id ? (
+                      <Loader2 className="size-3.5 animate-spin" />
+                    ) : (
+                      <X className="size-3.5" />
+                    )}
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {judges.length === 0 && (
+            <p className="text-xs text-muted-foreground py-2">No judges added yet.</p>
+          )}
+
+          {/* Add judge */}
+          <div className="flex gap-2 pt-1">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
+              <input
+                type="email"
+                placeholder="judge@example.com"
+                value={judgeEmail}
+                onChange={(e) => { setJudgeEmail(e.target.value); setJudgeError(""); }}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddJudge())}
+                className={`${inputCls} pl-9`}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={handleAddJudge}
+              disabled={addingJudge || !judgeEmail.trim()}
+              className="flex items-center gap-1.5 px-4 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
+            >
+              {addingJudge ? <Loader2 className="size-4 animate-spin" /> : <UserPlus className="size-4" />}
+              Add
+            </button>
+          </div>
+          {judgeError && (
+            <p className="text-xs text-destructive flex items-center gap-1.5">
+              <AlertCircle className="size-3.5 shrink-0" />
+              {judgeError}
+            </p>
+          )}
         </div>
 
         {error && (
