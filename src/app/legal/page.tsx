@@ -2,7 +2,8 @@ import React from "react";
 import Link from "next/link";
 import { TrustHeader } from "@/components/public/TrustHeader";
 import { TrustFooter } from "@/components/public/TrustFooter";
-import { LegalNav, LEGAL_PAGES } from "@/components/public/LegalNav";
+import { LegalNav } from "@/components/public/LegalNav";
+import { LEGAL_PAGES } from "@/lib/legal-data";
 import { Scale, ArrowRight, ShieldCheck, FileCheck } from "lucide-react";
 
 export default function LegalHubPage() {
@@ -48,7 +49,7 @@ export default function LegalHubPage() {
                     </h2>
                   </div>
                   <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
-                    Review legal agreements, compliance terms, and governance guidelines for {policy.label.toLowerCase()} on Notexia.
+                    {policy.description}
                   </p>
                 </div>
               </Link>

@@ -3,32 +3,8 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Shield,
-  Scale,
-  Cookie,
-  HardDrive,
-  Lock,
-  Cpu,
-  FileText,
-  Users,
-  RefreshCw,
-  AlertCircle,
-  ChevronRight,
-} from "lucide-react";
-
-export const LEGAL_PAGES = [
-  { href: "/legal/privacy-policy", label: "Privacy Policy", icon: Shield },
-  { href: "/legal/terms", label: "Terms of Service", icon: Scale },
-  { href: "/legal/cookie-policy", label: "Cookie Policy", icon: Cookie },
-  { href: "/legal/data-retention", label: "Data Retention", icon: HardDrive },
-  { href: "/legal/security-policy", label: "Security Policy", icon: Lock },
-  { href: "/legal/ai-usage-policy", label: "AI Usage Policy", icon: Cpu },
-  { href: "/legal/copyright-dmca", label: "Copyright & DMCA", icon: FileText },
-  { href: "/legal/community-guidelines", label: "Community Guidelines", icon: Users },
-  { href: "/legal/refund-policy", label: "Refund Policy", icon: RefreshCw },
-  { href: "/legal/grievance-redressal", label: "Grievance Redressal", icon: AlertCircle },
-];
+import { ChevronRight } from "lucide-react";
+import { LEGAL_PAGES } from "@/lib/legal-data";
 
 export function LegalNav() {
   const pathname = usePathname();
