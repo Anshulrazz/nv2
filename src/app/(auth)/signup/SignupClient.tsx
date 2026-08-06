@@ -16,11 +16,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, ArrowUpRight } from "lucide-react";
 import { trackMetaEvent } from "@/lib/metaPixel";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(6, { message: "Password must be at least 6 characters." }),
   referralCode: z.string().optional(),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the Terms of Use, Privacy Policy, and Data Compliance to continue.",
+  }),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -39,7 +44,13 @@ function SignupForm() {
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { name: "", email: "", password: "", referralCode: initialReferralCode },
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      referralCode: initialReferralCode,
+      acceptTerms: false,
+    },
   });
 
   const onSubmit = async (data: SignupFormValues) => {
@@ -74,7 +85,12 @@ function SignupForm() {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
+    const isAccepted = await form.trigger("acceptTerms");
+    if (!isAccepted) {
+      setError("You must agree to the Terms of Use, Privacy Policy, and Data Compliance to continue.");
+      return;
+    }
     signIn("google", { callbackUrl: "/dashboard?is_new_user=true" });
   };
 
@@ -187,6 +203,54 @@ function SignupForm() {
                       />
                     </FormControl>
                     <FormMessage className="text-rose-400 text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl bg-zinc-950/40 p-3 border border-white/5">
+                    <FormControl>
+                      <Checkbox
+                        id="signup-accept-terms"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-tight">
+                      <label
+                        htmlFor="signup-accept-terms"
+                        className="text-xs text-zinc-300 font-normal cursor-pointer select-none leading-relaxed block"
+                      >
+                        I accept the{" "}
+                        <Link
+                          href="/terms"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Terms of Use
+                        </Link>
+                        ,{" "}
+                        <Link
+                          href="/privacy"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          href="/privacy#data-compliance"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Data Compliance
+                        </Link>
+                      </label>
+                      <FormMessage className="text-rose-400 text-[11px]" />
+                    </div>
                   </FormItem>
                 )}
               />

@@ -14,9 +14,14 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, ArrowUpRight } from "lucide-react";
 import { trackPixelEvent } from "@/lib/pixel";
 
+import { Checkbox } from "@/components/ui/checkbox";
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
   password: z.string().min(1, { message: "Password is required." }),
+  acceptTerms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the Terms of Use, Privacy Policy, and Data Compliance to continue.",
+  }),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -39,7 +44,7 @@ function LoginForm() {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: "", password: "", acceptTerms: false },
   });
 
   const onSubmit = async (data: LoginFormValues) => {
@@ -65,7 +70,12 @@ function LoginForm() {
     }
   };
 
-  const handleGoogleSignIn = () => {
+  const handleGoogleSignIn = async () => {
+    const isAccepted = await form.trigger("acceptTerms");
+    if (!isAccepted) {
+      setError("You must agree to the Terms of Use, Privacy Policy, and Data Compliance to continue.");
+      return;
+    }
     trackPixelEvent("CompleteRegistration", { method: "google" });
     signIn("google", { callbackUrl: "/notes" });
   };
@@ -140,6 +150,54 @@ function LoginForm() {
                       />
                     </FormControl>
                     <FormMessage className="text-rose-400 text-xs" />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="acceptTerms"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl bg-zinc-950/40 p-3 border border-white/5">
+                    <FormControl>
+                      <Checkbox
+                        id="login-accept-terms"
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-tight">
+                      <label
+                        htmlFor="login-accept-terms"
+                        className="text-xs text-zinc-300 font-normal cursor-pointer select-none leading-relaxed block"
+                      >
+                        I accept the{" "}
+                        <Link
+                          href="/terms"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Terms of Use
+                        </Link>
+                        ,{" "}
+                        <Link
+                          href="/privacy"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Privacy Policy
+                        </Link>{" "}
+                        and{" "}
+                        <Link
+                          href="/privacy#data-compliance"
+                          target="_blank"
+                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                        >
+                          Data Compliance
+                        </Link>
+                      </label>
+                      <FormMessage className="text-rose-400 text-[11px]" />
+                    </div>
                   </FormItem>
                 )}
               />
