@@ -30,23 +30,28 @@ export function TrustFooter() {
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="hover:text-[#F3F0E4] transition-colors">
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/privacy-policy" className="hover:text-[#F3F0E4] transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/terms" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/terms" className="hover:text-[#F3F0E4] transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/disclaimer" className="hover:text-[#F3F0E4] transition-colors">
-                  Disclaimer
+                <Link href="/legal/cookie-policy" className="hover:text-[#F3F0E4] transition-colors">
+                  Cookie Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/data-retention" className="hover:text-[#F3F0E4] transition-colors">
+                  Data Retention
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/ai-usage-policy" className="hover:text-[#F3F0E4] transition-colors">
+                  AI Usage Policy
                 </Link>
               </li>
             </ul>
@@ -54,27 +59,32 @@ export function TrustFooter() {
 
           <div className="space-y-3">
             <h4 className="font-heading uppercase tracking-wider text-[11px] font-bold text-[#F3F0E4]">
-              Policies &amp; Support
+              Policies &amp; Governance
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/contact" className="hover:text-[#F3F0E4] transition-colors">
-                  Contact Support
+                <Link href="/legal/security-policy" className="hover:text-[#F3F0E4] transition-colors">
+                  Security Policy
                 </Link>
               </li>
               <li>
-                <Link href="/refund-policy" className="hover:text-[#F3F0E4] transition-colors">
-                  Refund &amp; Cancellation
+                <Link href="/legal/refund-policy" className="hover:text-[#F3F0E4] transition-colors">
+                  Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href="/community-guidelines" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/community-guidelines" className="hover:text-[#F3F0E4] transition-colors">
                   Community Guidelines
                 </Link>
               </li>
               <li>
-                <Link href="/security" className="hover:text-[#F3F0E4] transition-colors">
-                  Security Overview
+                <Link href="/legal/copyright-dmca" className="hover:text-[#F3F0E4] transition-colors">
+                  Copyright &amp; DMCA
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/grievance-redressal" className="hover:text-[#F3F0E4] transition-colors">
+                  Grievance Redressal
                 </Link>
               </li>
             </ul>

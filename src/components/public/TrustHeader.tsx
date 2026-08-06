@@ -11,11 +11,12 @@ export function TrustHeader({ title }: { title: string }) {
   const trustLinks = [
     { href: "/about", label: "About" },
     { href: "/contact", label: "Contact" },
-    { href: "/privacy", label: "Privacy" },
-    { href: "/terms", label: "Terms" },
-    { href: "/disclaimer", label: "Disclaimer" },
-    { href: "/refund-policy", label: "Refunds" },
-    { href: "/community-guidelines", label: "Guidelines" },
+    { href: "/legal/privacy-policy", label: "Privacy" },
+    { href: "/legal/terms", label: "Terms" },
+    { href: "/legal/security-policy", label: "Security" },
+    { href: "/legal/refund-policy", label: "Refunds" },
+    { href: "/legal/community-guidelines", label: "Guidelines" },
+    { href: "/legal/grievance-redressal", label: "Grievance" },
   ];
 
   return (
