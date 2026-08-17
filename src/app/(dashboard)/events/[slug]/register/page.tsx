@@ -50,7 +50,6 @@ interface TeamData {
 
 export default function RegisterEventPage() {
   const { slug } = useParams<{ slug: string }>();
-  const router = useRouter();
 
   const [event, setEvent] = useState<Record<string, unknown> | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
