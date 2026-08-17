@@ -100,6 +100,10 @@ export async function PATCH(
     }
 
     Object.assign(event, body);
+    if (typeof body.isPrizeRevealed === "boolean") {
+      event.isPrizeRevealed = body.isPrizeRevealed;
+      event.prizeRevealedAt = body.isPrizeRevealed ? (event.prizeRevealedAt || new Date()) : null;
+    }
     event.registrationStart = patchedRegStart;
     event.registrationEnd = patchedRegEnd;
     event.eventStart = patchedEvStart;

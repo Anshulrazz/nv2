@@ -20,6 +20,11 @@ export interface IEvent extends Document {
   resultsRevealedAt: Date | null;
   capacity: number | null;
   codeOfConductUrl: string;
+  // Prize & Rewards
+  prizePool: number;
+  prizes: Array<{ place: string; prize: string; amount?: number }>;
+  isPrizeRevealed: boolean;
+  prizeRevealedAt: Date | null;
   // Team settings (hackathon mode)
   teamMode: boolean;
   maxTeamSize: number;
@@ -62,6 +67,16 @@ const EventSchema = new Schema<IEvent>(
     resultsRevealedAt: { type: Date, default: null },
     capacity: { type: Number, default: null },
     codeOfConductUrl: { type: String, default: "" },
+    prizePool: { type: Number, default: 0, min: 0 },
+    prizes: [
+      {
+        place: { type: String, required: true },
+        prize: { type: String, required: true },
+        amount: { type: Number, default: 0 },
+      },
+    ],
+    isPrizeRevealed: { type: Boolean, default: false },
+    prizeRevealedAt: { type: Date, default: null },
     teamMode: { type: Boolean, default: false },
     maxTeamSize: { type: Number, default: 4, min: 1 },
     judgeIds: [{ type: Schema.Types.ObjectId, ref: "User" }],

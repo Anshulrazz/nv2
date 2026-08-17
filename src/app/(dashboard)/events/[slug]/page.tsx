@@ -4,6 +4,7 @@ import Link from "next/link";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
+import { User } from "@/models/User";
 import { auth } from "@/auth";
 import {
   Calendar,
@@ -16,6 +17,9 @@ import {
   CheckCircle2,
   ChevronRight,
   FileText,
+  Sparkles,
+  Award,
+  ShieldCheck,
 } from "lucide-react";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { EventCountdown } from "@/components/events/EventCountdown";
@@ -114,6 +118,13 @@ export default async function EventDetailPage({
     isDisqualified: false,
   });
 
+  // Fetch judges
+  const judges = event.judgeIds?.length
+    ? await User.find({ _id: { $in: event.judgeIds } })
+        .select("_id name username image email")
+        .lean()
+    : [];
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Banner */}
@@ -211,6 +222,114 @@ export default async function EventDetailPage({
                 </p>
               </div>
             </div>
+
+            {/* Prize Pool & Rewards Showcase */}
+            {(Boolean(event.prizePool) || (event.prizes && event.prizes.length > 0)) && (
+              <div className="bg-gradient-to-br from-amber-500/10 via-sidebar to-sidebar border border-amber-500/30 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <Trophy className="size-5 text-amber-400" />
+                    <h2 className="text-sm font-bold text-foreground uppercase tracking-widest font-mono">
+                      Prizes & Rewards
+                    </h2>
+                  </div>
+                  {event.isPrizeRevealed ? (
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-amber-500/20 text-amber-400 border-amber-500/40 flex items-center gap-1">
+                      <Sparkles className="size-3" /> Revealed
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border bg-sidebar border-sidebar-border text-muted-foreground flex items-center gap-1">
+                      <Lock className="size-3" /> Mystery Pool
+                    </span>
+                  )}
+                </div>
+
+                {event.isPrizeRevealed ? (
+                  <div className="space-y-4">
+                    {Boolean(event.prizePool) && (
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-sidebar/80 border border-amber-500/20 rounded-xl p-4">
+                        <div>
+                          <p className="text-xs font-mono uppercase tracking-wider text-muted-foreground">
+                            Total Reward Pool
+                          </p>
+                          <p className="text-3xl font-black text-amber-400 font-mono tracking-tight">
+                            ₹{Number(event.prizePool).toLocaleString("en-IN")}
+                          </p>
+                        </div>
+                        <div className="text-xs text-muted-foreground flex items-center gap-1.5 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">
+                          <Award className="size-4 text-amber-400" />
+                          <span>Cash prizes + Badges & Certificates</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4 bg-sidebar/60 border border-sidebar-border rounded-xl p-4">
+                    <div className="size-12 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                      <Lock className="size-6 text-amber-400" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">
+                        Prize Pool To Be Announced!
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Organizers will reveal full cash prize breakdown during the event. Stay tuned!
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Judges Showcase Section */}
+            {judges.length > 0 && (
+              <div className="bg-sidebar border border-sidebar-border rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center gap-2 mb-4">
+                  <Award className="size-4 text-primary" />
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-widest font-mono">
+                    Judges & Evaluation Panel ({judges.length})
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {judges.map((judge: { _id: string; name?: string; username?: string; image?: string; email?: string }) => (
+                    <div
+                      key={judge._id}
+                      className="flex items-center gap-3 bg-background border border-sidebar-border rounded-xl p-3.5 hover:border-primary/40 transition-colors"
+                    >
+                      {judge.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={judge.image}
+                          alt={judge.name || "Judge"}
+                          className="size-11 rounded-full object-cover border border-sidebar-border shrink-0"
+                        />
+                      ) : (
+                        <div className="size-11 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm border border-primary/20 shrink-0">
+                          {(judge.name || judge.username || "J")[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-sm font-bold text-foreground truncate">
+                            {judge.name || judge.username || "Event Judge"}
+                          </p>
+                          <ShieldCheck className="size-3.5 text-primary shrink-0" />
+                        </div>
+                        {judge.username && (
+                          <p className="text-xs text-muted-foreground truncate font-mono">
+                            @{judge.username}
+                          </p>
+                        )}
+                        <span className="inline-block text-[9px] font-mono font-bold uppercase tracking-wider text-primary bg-primary/10 px-1.5 py-0.5 rounded mt-1">
+                          Official Judge
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Rules */}
             {event.rulesMarkdown && (

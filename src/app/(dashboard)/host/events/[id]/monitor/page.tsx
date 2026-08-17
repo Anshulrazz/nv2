@@ -4,16 +4,13 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import {
   Loader2,
-  Users,
   Snowflake,
   Trophy,
-  Ban,
-  CheckCircle2,
   AlertCircle,
   ChevronLeft,
   Search,
-  Eye,
   Megaphone,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -42,6 +39,9 @@ export default function HostMonitorPage() {
   const [isFrozen, setIsFrozen] = useState(false);
   const [freezing, setFreezing] = useState(false);
 
+  const [isPrizeRevealed, setIsPrizeRevealed] = useState(false);
+  const [revealingPrize, setRevealingPrize] = useState(false);
+
   const [publishing, setPublishing] = useState(false);
   const [published, setPublished] = useState(false);
 
@@ -64,6 +64,7 @@ export default function HostMonitorPage() {
       const evData = await evRes.json();
       setIsFrozen(!!evData.event.scoreFreezeAt);
       setPublished(!!evData.event.resultsRevealedAt);
+      setIsPrizeRevealed(!!evData.event.isPrizeRevealed);
 
       // 2. Participants list
       const pRes = await fetch(`/api/events/${id}/participants`);
@@ -97,6 +98,24 @@ export default function HostMonitorPage() {
       setError(err instanceof Error ? err.message : "Action failed.");
     } finally {
       setFreezing(false);
+    }
+  };
+
+  const handleTogglePrizeReveal = async () => {
+    setRevealingPrize(true);
+    try {
+      const res = await fetch(`/api/events/${id}/price-reveal`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reveal: !isPrizeRevealed }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Prize reveal toggle failed.");
+      setIsPrizeRevealed(data.isPrizeRevealed);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to toggle prize reveal.");
+    } finally {
+      setRevealingPrize(false);
     }
   };
 
@@ -218,6 +237,20 @@ export default function HostMonitorPage() {
             <Megaphone className="size-4 text-primary" />
             Post Broadcast
           </button>
+          
+          <button
+            onClick={handleTogglePrizeReveal}
+            disabled={revealingPrize}
+            className={`flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border transition-all ${
+              isPrizeRevealed
+                ? "bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-sm shadow-amber-500/10"
+                : "bg-sidebar border-sidebar-border text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <Sparkles className={`size-4 ${isPrizeRevealed ? "text-amber-400 animate-pulse" : ""}`} />
+            {isPrizeRevealed ? "Prize Pool Revealed" : "Reveal Prize Pool"}
+          </button>
+
           <button
             onClick={handleToggleFreeze}
             disabled={freezing}
@@ -254,7 +287,7 @@ export default function HostMonitorPage() {
       )}
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div className="bg-sidebar border border-sidebar-border rounded-xl p-4">
           <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Total Participants</p>
           <p className="text-2xl font-bold text-foreground font-mono mt-1">{participants.length}</p>
@@ -275,6 +308,18 @@ export default function HostMonitorPage() {
           <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Freeze Status</p>
           <p className="text-sm font-bold font-mono mt-2">
             {isFrozen ? <span className="text-cyan-400">FROZEN</span> : <span className="text-zinc-400">LIVE</span>}
+          </p>
+        </div>
+        <div className="bg-sidebar border border-sidebar-border rounded-xl p-4">
+          <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">Prize Reveal</p>
+          <p className="text-sm font-bold font-mono mt-2">
+            {isPrizeRevealed ? (
+              <span className="text-amber-400 flex items-center gap-1 font-bold">
+                <Sparkles className="size-3.5" /> REVEALED
+              </span>
+            ) : (
+              <span className="text-zinc-400">HIDDEN</span>
+            )}
           </p>
         </div>
       </div>

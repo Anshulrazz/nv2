@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useParams } from "next/navigation";
 import {
   Loader2,
   CheckCircle2,
@@ -11,25 +11,41 @@ import {
   ChevronLeft,
   Users,
   Plus,
-  UserPlus,
-  Send,
+  Trash2,
+  ShieldCheck,
+  Mail,
 } from "lucide-react";
 import Link from "next/link";
 import { openRazorpayCheckout } from "@/lib/razorpay";
 
-interface TeamMember {
+interface VerifiedMember {
+  email: string;
+  user?: {
+    _id: string;
+    name?: string;
+    username?: string;
+    email: string;
+    image?: string;
+  };
+  checking: boolean;
+  exists: boolean | null;
+  alreadyRegistered: boolean;
+  error?: string;
+}
+
+interface TeamMemberResponse {
   _id: string;
   name?: string;
   username?: string;
+  email?: string;
   image?: string;
 }
 
-interface Team {
+interface TeamData {
   _id: string;
   teamName: string;
-  leaderUserId: TeamMember;
-  memberUserIds: TeamMember[];
-  lookingForMembers: boolean;
+  leaderUserId: TeamMemberResponse;
+  memberUserIds: TeamMemberResponse[];
 }
 
 export default function RegisterEventPage() {
@@ -42,25 +58,19 @@ export default function RegisterEventPage() {
   const [realName, setRealName] = useState("");
   const [acceptedCoC, setAcceptedCoC] = useState(false);
   const [codenameAvailable, setCodenameAvailable] = useState<boolean | null>(null);
-  const [checking, setChecking] = useState(false);
+  const [checkingCodename, setCheckingCodename] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [registrationId, setRegistrationId] = useState<string | null>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [registeredTeam, setRegisteredTeam] = useState<TeamData | null>(null);
 
-  // Team state (post-registration, for teamMode events)
-  const [teamTab, setTeamTab] = useState<"create" | "join">("create");
-  const [myTeam, setMyTeam] = useState<Team | null>(null);
-  const [openTeams, setOpenTeams] = useState<Team[]>([]);
-  const [loadingTeams, setLoadingTeams] = useState(false);
+  // Team Registration State
+  const [isTeamMode, setIsTeamMode] = useState(false);
   const [teamName, setTeamName] = useState("");
-  const [lookingForMembers, setLookingForMembers] = useState(true);
-  const [creatingTeam, setCreatingTeam] = useState(false);
-  const [teamError, setTeamError] = useState("");
-  const [teamSuccess, setTeamSuccess] = useState("");
-  const [sentRequestIds, setSentRequestIds] = useState<Set<string>>(new Set());
-  const [sendingRequestId, setSendingRequestId] = useState<string | null>(null);
+  const [memberRows, setMemberRows] = useState<VerifiedMember[]>([]);
+
+  const debounceCodenameRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const memberDebounceMap = useRef<Map<number, ReturnType<typeof setTimeout>>>(new Map());
 
   // Load event data
   useEffect(() => {
@@ -70,6 +80,7 @@ export default function RegisterEventPage() {
         if (!res.ok) throw new Error("Event not found.");
         const data = await res.json();
         setEvent(data.event);
+        setIsTeamMode(Boolean(data.event.teamMode));
       } catch {
         setError("Event not found.");
       } finally {
@@ -79,17 +90,17 @@ export default function RegisterEventPage() {
     load();
   }, [slug]);
 
-  // Debounced codename availability check
+  // Debounced codename check
   useEffect(() => {
     if (!event || !codename.trim() || codename.trim().length < 3) {
       setCodenameAvailable(null);
       return;
     }
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    setChecking(true);
+    if (debounceCodenameRef.current) clearTimeout(debounceCodenameRef.current);
+    setCheckingCodename(true);
 
-    debounceRef.current = setTimeout(async () => {
+    debounceCodenameRef.current = setTimeout(async () => {
       try {
         const res = await fetch(
           `/api/events/${event._id}/codename-check?codename=${encodeURIComponent(codename.trim())}`
@@ -99,48 +110,128 @@ export default function RegisterEventPage() {
       } catch {
         setCodenameAvailable(null);
       } finally {
-        setChecking(false);
+        setCheckingCodename(false);
       }
     }, 400);
   }, [codename, event]);
 
-  // Load teams when success + teamMode
-  useEffect(() => {
-    if (!success || !event || !event.teamMode) return;
-
-    async function loadTeams() {
-      setLoadingTeams(true);
-      try {
-        // Check if already in a team
-        const myRegRes = await fetch(`/api/events/${event!._id}/register`);
-        if (myRegRes.ok) {
-          const myRegData = await myRegRes.json();
-          if (myRegData.registration?.teamId) {
-            // Load team details
-            const teamRes = await fetch(`/api/events/${event!._id}/teams`);
-            if (teamRes.ok) {
-              const teamData = await teamRes.json();
-              const myT = (teamData.teams as Team[]).find(
-                (t) => t._id === myRegData.registration.teamId
-              );
-              if (myT) setMyTeam(myT);
-            }
-          }
-        }
-        // Load open teams
-        const openRes = await fetch(`/api/events/${event!._id}/teams?lookingForMembers=true`);
-        if (openRes.ok) {
-          const openData = await openRes.json();
-          setOpenTeams(openData.teams ?? []);
-        }
-      } catch {
-        /* silent */
-      } finally {
-        setLoadingTeams(false);
+  // Verify member email
+  const verifyMemberEmail = useCallback(
+    async (index: number, emailToVerify: string) => {
+      const email = emailToVerify.trim().toLowerCase();
+      if (!email || !event) {
+        setMemberRows((prev) =>
+          prev.map((row, i) =>
+            i === index
+              ? { ...row, checking: false, exists: null, user: undefined, error: undefined }
+              : row
+          )
+        );
+        return;
       }
-    }
-    loadTeams();
-  }, [success, event]);
+
+      setMemberRows((prev) =>
+        prev.map((row, i) => (i === index ? { ...row, checking: true, error: undefined } : row))
+      );
+
+      try {
+        const res = await fetch(
+          `/api/events/${event._id}/register/check-member?email=${encodeURIComponent(email)}`
+        );
+        const data = await res.json();
+
+        setMemberRows((prev) =>
+          prev.map((row, i) => {
+            if (i !== index) return row;
+            if (!res.ok || !data.exists) {
+              return {
+                ...row,
+                checking: false,
+                exists: false,
+                alreadyRegistered: false,
+                user: undefined,
+                error: data.error || "Not registered on Notexia.",
+              };
+            }
+            if (data.isSelf) {
+              return {
+                ...row,
+                checking: false,
+                exists: true,
+                alreadyRegistered: false,
+                user: undefined,
+                error: "You are registering as the team leader.",
+              };
+            }
+            if (data.alreadyRegistered) {
+              return {
+                ...row,
+                checking: false,
+                exists: true,
+                alreadyRegistered: true,
+                user: data.user,
+                error: data.error || "Already registered for this event.",
+              };
+            }
+            return {
+              ...row,
+              checking: false,
+              exists: true,
+              alreadyRegistered: false,
+              user: data.user,
+              error: undefined,
+            };
+          })
+        );
+      } catch {
+        setMemberRows((prev) =>
+          prev.map((row, i) =>
+            i === index
+              ? {
+                  ...row,
+                  checking: false,
+                  exists: false,
+                  user: undefined,
+                  error: "Failed to verify email.",
+                }
+              : row
+          )
+        );
+      }
+    },
+    [event]
+  );
+
+  const handleMemberEmailChange = (index: number, val: string) => {
+    setMemberRows((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, email: val, error: undefined } : row))
+    );
+
+    const existingTimeout = memberDebounceMap.current.get(index);
+    if (existingTimeout) clearTimeout(existingTimeout);
+
+    const timeout = setTimeout(() => {
+      verifyMemberEmail(index, val);
+    }, 450);
+
+    memberDebounceMap.current.set(index, timeout);
+  };
+
+  const handleAddMemberRow = () => {
+    const maxMembers = ((event?.maxTeamSize as number) || 4) - 1;
+    if (memberRows.length >= maxMembers) return;
+    setMemberRows((prev) => [
+      ...prev,
+      { email: "", checking: false, exists: null, alreadyRegistered: false },
+    ]);
+  };
+
+  const handleRemoveMemberRow = (index: number) => {
+    const existingTimeout = memberDebounceMap.current.get(index);
+    if (existingTimeout) clearTimeout(existingTimeout);
+    memberDebounceMap.current.delete(index);
+    setMemberRows((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -155,9 +246,39 @@ export default function RegisterEventPage() {
       return;
     }
 
+    if (isTeamMode) {
+      if (!teamName.trim()) {
+        setError("Team Name is required for team registration.");
+        return;
+      }
+
+      // Validate member rows
+      for (const row of memberRows) {
+        if (!row.email.trim()) continue;
+        if (row.checking) {
+          setError("Please wait for member email verifications to complete.");
+          return;
+        }
+        if (row.exists === false || row.error) {
+          setError(`Invalid member: ${row.email}. ${row.error || "Must be a registered Notexia user."}`);
+          return;
+        }
+        if (row.alreadyRegistered) {
+          setError(`Member ${row.email} is already registered for this event.`);
+          return;
+        }
+      }
+    }
+
     setSubmitting(true);
 
     try {
+      const memberEmails = isTeamMode
+        ? memberRows
+            .map((r) => r.email.trim().toLowerCase())
+            .filter((e) => Boolean(e))
+        : [];
+
       const res = await fetch(`/api/events/${event?._id}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -165,6 +286,9 @@ export default function RegisterEventPage() {
           codename: codename.trim(),
           realName: realName.trim(),
           acceptedCodeOfConduct: acceptedCoC,
+          isTeamRegistration: isTeamMode,
+          teamName: isTeamMode ? teamName.trim() : undefined,
+          memberEmails,
         }),
       });
 
@@ -175,7 +299,9 @@ export default function RegisterEventPage() {
         return;
       }
 
-      setRegistrationId(data.registration?._id ?? null);
+      if (data.team) {
+        setRegisteredTeam(data.team);
+      }
 
       if (data.requiresPayment && data.order) {
         await openRazorpayCheckout({
@@ -205,52 +331,6 @@ export default function RegisterEventPage() {
     }
   };
 
-  const handleCreateTeam = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setTeamError("");
-    setTeamSuccess("");
-    if (!teamName.trim()) return;
-    setCreatingTeam(true);
-    try {
-      const res = await fetch(`/api/events/${event!._id}/teams`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ teamName: teamName.trim(), lookingForMembers }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setTeamError(data.error || "Failed to create team.");
-        return;
-      }
-      setMyTeam(data.team);
-      setTeamSuccess(`Team "${data.team.teamName}" created!`);
-      setTeamName("");
-    } catch {
-      setTeamError("Failed to create team.");
-    } finally {
-      setCreatingTeam(false);
-    }
-  };
-
-  const handleJoinRequest = async (teamId: string) => {
-    setSendingRequestId(teamId);
-    try {
-      const res = await fetch(`/api/events/${event!._id}/teams/${teamId}/join-request`, {
-        method: "POST",
-      });
-      if (res.ok) {
-        setSentRequestIds((prev) => new Set([...prev, teamId]));
-      } else {
-        const data = await res.json();
-        setTeamError(data.error || "Failed to send join request.");
-      }
-    } catch {
-      setTeamError("Failed to send join request.");
-    } finally {
-      setSendingRequestId(null);
-    }
-  };
-
   if (loadingEvent) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -271,233 +351,114 @@ export default function RegisterEventPage() {
     );
   }
 
-  const isTeamMode = Boolean(event.teamMode);
-
-  // ── Success state ──
+  // ── Success State ──
   if (success) {
     return (
-      <div className="min-h-screen bg-background px-4 py-10 max-w-lg mx-auto">
-        {/* Success banner */}
+      <div className="min-h-screen bg-background px-4 py-12 max-w-lg mx-auto">
         <div className="flex flex-col items-center gap-4 text-center mb-8">
-          <div className="size-16 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+          <div className="size-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
             <CheckCircle2 className="size-8 text-emerald-400" />
           </div>
           <div>
-            <h2 className="text-xl font-bold text-foreground">You&apos;re registered!</h2>
+            <h2 className="text-2xl font-bold text-foreground">You&apos;re registered!</h2>
             <p className="text-sm text-muted-foreground mt-1">
-              Codename:{" "}
-              <span className="font-mono font-bold text-foreground">{codename}</span>
+              Your alias: <span className="font-mono font-bold text-primary">{codename}</span>
             </p>
             {Boolean(event.isPaid) && (
-              <p className="text-xs text-muted-foreground mt-1">
-                Payment processing. Your spot is reserved.
+              <p className="text-xs text-emerald-400/90 mt-1">
+                Payment confirmed. Spot secured!
               </p>
             )}
           </div>
-          <Link
-            href={`/events/${slug}`}
-            className="px-6 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-bold hover:opacity-90 transition-opacity"
-          >
-            Back to Event
-          </Link>
         </div>
 
-        {/* Team panel — only for hackathon team mode */}
-        {isTeamMode && (
-          <div className="border border-sidebar-border rounded-2xl overflow-hidden">
-            <div className="flex items-center gap-2 px-5 py-4 border-b border-sidebar-border bg-sidebar">
-              <Users className="size-4 text-primary" />
-              <h3 className="text-sm font-bold text-foreground">Team Registration</h3>
-              <span className="text-[10px] font-mono text-muted-foreground ml-auto">
-                Max {event.maxTeamSize as number} members
+        {/* Team Card if registered as team */}
+        {registeredTeam && (
+          <div className="border border-sidebar-border bg-sidebar rounded-2xl p-5 mb-8 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-sidebar-border pb-3">
+              <div className="flex items-center gap-2">
+                <Users className="size-4 text-primary" />
+                <h3 className="text-sm font-bold text-foreground">{registeredTeam.teamName}</h3>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 bg-primary/10 border border-primary/20 text-primary rounded-full font-bold">
+                Team Registered
               </span>
             </div>
 
-            {loadingTeams ? (
-              <div className="flex items-center justify-center py-10 gap-2">
-                <Loader2 className="size-4 animate-spin text-primary" />
-                <span className="text-xs text-muted-foreground">Loading teams…</span>
-              </div>
-            ) : myTeam ? (
-              /* Already in a team */
-              <div className="p-5 space-y-3">
-                <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold">
-                  <CheckCircle2 className="size-4" />
-                  You&apos;re in a team!
-                </div>
-                <div className="bg-sidebar border border-sidebar-border rounded-xl p-4">
-                  <p className="text-sm font-bold text-foreground mb-2">{myTeam.teamName}</p>
-                  <div className="space-y-1.5">
-                    {myTeam.memberUserIds.map((m) => (
-                      <div key={m._id} className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <div className="size-5 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                          <User className="size-3 text-primary" />
-                        </div>
-                        {m.name ?? m.username ?? "Member"}
-                        {m._id === myTeam.leaderUserId._id && (
-                          <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">
-                            Leader
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Create / Join tabs */
-              <div>
-                {/* Tabs */}
-                <div className="flex border-b border-sidebar-border">
-                  <button
-                    onClick={() => setTeamTab("create")}
-                    className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
-                      teamTab === "create"
-                        ? "text-foreground border-b-2 border-primary bg-primary/5"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Plus className="size-3.5 inline mr-1" />
-                    Create Team
-                  </button>
-                  <button
-                    onClick={() => setTeamTab("join")}
-                    className={`flex-1 py-2.5 text-xs font-semibold transition-colors ${
-                      teamTab === "join"
-                        ? "text-foreground border-b-2 border-primary bg-primary/5"
-                        : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <UserPlus className="size-3.5 inline mr-1" />
-                    Join a Team ({openTeams.length})
-                  </button>
-                </div>
-
-                {/* Create Team tab */}
-                {teamTab === "create" && (
-                  <form onSubmit={handleCreateTeam} className="p-5 space-y-4">
-                    <div>
-                      <label className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block mb-1.5">
-                        Team Name *
-                      </label>
-                      <input
-                        required
-                        value={teamName}
-                        onChange={(e) => setTeamName(e.target.value)}
-                        placeholder="awesome-hackers"
-                        className="w-full bg-sidebar border border-sidebar-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/20 transition-all"
-                      />
-                    </div>
-
-                    {/* Looking for members toggle */}
-                    <div className="flex items-center justify-between bg-sidebar border border-sidebar-border rounded-xl px-4 py-3">
-                      <div>
-                        <p className="text-xs font-semibold text-foreground">Looking for members</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
-                          Others can request to join your team
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setLookingForMembers((v) => !v)}
-                        className={`size-6 rounded border-2 flex items-center justify-center transition-all ${
-                          lookingForMembers ? "bg-primary border-primary" : "border-sidebar-border"
-                        }`}
-                      >
-                        {lookingForMembers && <CheckCircle2 className="size-3.5 text-primary-foreground" />}
-                      </button>
-                    </div>
-
-                    {teamError && (
-                      <p className="text-xs text-destructive flex items-center gap-1.5">
-                        <AlertCircle className="size-3.5 shrink-0" />
-                        {teamError}
-                      </p>
-                    )}
-                    {teamSuccess && (
-                      <p className="text-xs text-emerald-400 flex items-center gap-1.5">
-                        <CheckCircle2 className="size-3.5 shrink-0" />
-                        {teamSuccess}
-                      </p>
-                    )}
-
-                    <button
-                      type="submit"
-                      disabled={creatingTeam || !teamName.trim()}
-                      className="w-full py-2.5 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+            <div>
+              <p className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                Team Roster ({registeredTeam.memberUserIds?.length || 1} members)
+              </p>
+              <div className="space-y-2">
+                {registeredTeam.memberUserIds?.map((m) => {
+                  const isLeader =
+                    (typeof registeredTeam.leaderUserId === "object"
+                      ? registeredTeam.leaderUserId._id
+                      : registeredTeam.leaderUserId) === m._id;
+                  return (
+                    <div
+                      key={m._id}
+                      className="flex items-center justify-between bg-background border border-sidebar-border rounded-xl px-3 py-2 text-xs"
                     >
-                      {creatingTeam ? (
-                        <><Loader2 className="size-4 animate-spin" /> Creating…</>
-                      ) : (
-                        <><Plus className="size-4" /> Create Team</>
-                      )}
-                    </button>
-                  </form>
-                )}
-
-                {/* Join Team tab */}
-                {teamTab === "join" && (
-                  <div className="p-5 space-y-3">
-                    {openTeams.length === 0 ? (
-                      <div className="text-center py-8 text-muted-foreground text-xs">
-                        No open teams yet. Create one!
-                      </div>
-                    ) : (
-                      openTeams.map((team) => (
-                        <div
-                          key={team._id}
-                          className="flex items-center justify-between gap-3 bg-sidebar border border-sidebar-border rounded-xl px-4 py-3"
-                        >
-                          <div className="min-w-0">
-                            <p className="text-sm font-semibold text-foreground truncate">
-                              {team.teamName}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
-                              {team.memberUserIds.length} / {event.maxTeamSize as number} members
-                            </p>
+                      <div className="flex items-center gap-2 min-w-0">
+                        {m.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={m.image}
+                            alt=""
+                            className="size-6 rounded-full object-cover border border-sidebar-border"
+                          />
+                        ) : (
+                          <div className="size-6 rounded-full bg-primary/20 flex items-center justify-center text-[11px] font-bold text-primary">
+                            {(m.name || m.username || "U")[0].toUpperCase()}
                           </div>
-                          {sentRequestIds.has(team._id) ? (
-                            <span className="text-[10px] text-emerald-400 font-semibold flex items-center gap-1 shrink-0">
-                              <CheckCircle2 className="size-3.5" /> Requested
-                            </span>
-                          ) : (
-                            <button
-                              onClick={() => handleJoinRequest(team._id)}
-                              disabled={sendingRequestId === team._id}
-                              className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground rounded-lg text-xs font-bold hover:opacity-90 transition-opacity disabled:opacity-50 shrink-0"
-                            >
-                              {sendingRequestId === team._id ? (
-                                <Loader2 className="size-3.5 animate-spin" />
-                              ) : (
-                                <Send className="size-3.5" />
-                              )}
-                              Request
-                            </button>
+                        )}
+                        <div className="truncate">
+                          <p className="font-semibold text-foreground truncate">
+                            {m.name || m.username || m.email}
+                          </p>
+                          {m.email && (
+                            <p className="text-[10px] text-muted-foreground truncate">{m.email}</p>
                           )}
                         </div>
-                      ))
-                    )}
-                    {teamError && (
-                      <p className="text-xs text-destructive flex items-center gap-1.5">
-                        <AlertCircle className="size-3.5 shrink-0" />
-                        {teamError}
-                      </p>
-                    )}
-                  </div>
-                )}
+                      </div>
+                      {isLeader && (
+                        <span className="text-[9px] bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded font-mono font-bold shrink-0">
+                          Leader
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
           </div>
         )}
+
+        <div className="flex gap-3">
+          <Link
+            href={`/events/${slug}`}
+            className="flex-1 py-3 bg-sidebar border border-sidebar-border text-foreground rounded-xl text-sm font-bold text-center hover:border-primary/40 transition-all"
+          >
+            Back to Event
+          </Link>
+          <Link
+            href={`/events/${slug}/arena`}
+            className="flex-1 py-3 bg-primary text-primary-foreground rounded-xl text-sm font-bold text-center hover:opacity-90 transition-opacity"
+          >
+            Enter Arena →
+          </Link>
+        </div>
       </div>
     );
   }
 
   const inputCls =
     "w-full bg-sidebar border border-sidebar-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/20 transition-all";
+  const maxAllowedMembers = ((event?.maxTeamSize as number) || 4) - 1;
 
   return (
-    <div className="min-h-screen bg-background px-4 py-10 max-w-md mx-auto">
+    <div className="min-h-screen bg-background px-4 py-10 max-w-lg mx-auto">
       <Link
         href={`/events/${slug}`}
         className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-6"
@@ -506,93 +467,247 @@ export default function RegisterEventPage() {
         Back to event
       </Link>
 
-      <h1 className="text-2xl font-bold text-foreground mb-1">Register</h1>
-      <p className="text-sm text-muted-foreground mb-6">
-        {event.name as string}
-      </p>
-
-      {isTeamMode && (
-        <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 mb-6 text-xs text-primary">
-          <Users className="size-4 shrink-0" />
-          Team event — after registering you can create or join a team (up to {event.maxTeamSize as number} members).
+      <div className="mb-6">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">
+            {event.type as string} Registration
+          </span>
         </div>
-      )}
+        <h1 className="text-2xl md:text-3xl font-bold text-foreground">{event.name as string}</h1>
+        <p className="text-xs text-muted-foreground mt-1">
+          Complete the details below to secure your spot.
+        </p>
+      </div>
 
-      {Boolean(event.isPaid) && (
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-6 text-xs text-amber-400">
-          <Lock className="size-4 shrink-0" />
-          Paid event — ₹{event.price as number}. Payment required to confirm your spot.
-        </div>
-      )}
+      {/* Info Badges */}
+      <div className="space-y-2 mb-6">
+        {Boolean(event.teamMode) && (
+          <div className="flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-xl px-4 py-3 text-xs text-primary">
+            <Users className="size-4 shrink-0" />
+            <span>
+              <strong>Team Event</strong>: Register your entire team at once. Add members by their Notexia email (Max {event.maxTeamSize as number} members per team).
+            </span>
+          </div>
+        )}
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Codename */}
-        <div>
-          <label
-            htmlFor="reg-codename"
-            className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block"
-          >
-            Codename <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <input
-              id="reg-codename"
-              type="text"
-              required
-              minLength={3}
-              maxLength={30}
-              placeholder="your-hacker-alias"
-              value={codename}
-              onChange={(e) => setCodename(e.target.value.replace(/\s/g, "-").toLowerCase())}
-              className={`${inputCls} pr-10`}
-            />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              {checking ? (
-                <Loader2 className="size-4 animate-spin text-muted-foreground" />
-              ) : codenameAvailable === true ? (
-                <CheckCircle2 className="size-4 text-emerald-400" />
-              ) : codenameAvailable === false ? (
-                <AlertCircle className="size-4 text-destructive" />
-              ) : null}
+        {Boolean(event.isPaid) && (
+          <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 text-xs text-amber-400">
+            <Lock className="size-4 shrink-0" />
+            <span>
+              <strong>Paid Entry</strong>: ₹{event.price as number}. Payment will be required to confirm your spot.
+            </span>
+          </div>
+        )}
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Team Details Section (for Team Events) */}
+        {isTeamMode && (
+          <div className="border border-sidebar-border bg-sidebar/50 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center gap-2">
+              <Users className="size-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground">Team Details</h2>
+            </div>
+
+            {/* Team Name */}
+            <div>
+              <label
+                htmlFor="reg-teamname"
+                className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block"
+              >
+                Team Name <span className="text-destructive">*</span>
+              </label>
+              <input
+                id="reg-teamname"
+                type="text"
+                required={isTeamMode}
+                placeholder="e.g. CyberVanguard"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                className={inputCls}
+              />
+            </div>
+
+            {/* Team Members Section */}
+            <div className="pt-2 border-t border-sidebar-border">
+              <div className="flex items-center justify-between mb-2">
+                <div>
+                  <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block">
+                    Team Members (By Email)
+                  </label>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Members must have a registered Notexia account.
+                  </p>
+                </div>
+                <span className="text-[10px] font-mono text-muted-foreground">
+                  {memberRows.length + 1} / {event.maxTeamSize as number}
+                </span>
+              </div>
+
+              {/* Dynamic Member Rows */}
+              <div className="space-y-2.5 mt-3">
+                {memberRows.map((member, idx) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-background border border-sidebar-border rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="email"
+                          required
+                          placeholder="member@notexia.com"
+                          value={member.email}
+                          onChange={(e) => handleMemberEmailChange(idx, e.target.value)}
+                          className={`${inputCls} pr-9 text-xs`}
+                        />
+                        <div className="absolute right-2.5 top-1/2 -translate-y-1/2">
+                          {member.checking ? (
+                            <Loader2 className="size-3.5 animate-spin text-muted-foreground" />
+                          ) : member.exists === true && !member.alreadyRegistered && !member.error ? (
+                            <CheckCircle2 className="size-3.5 text-emerald-400" />
+                          ) : member.exists === false || member.alreadyRegistered || member.error ? (
+                            <AlertCircle className="size-3.5 text-destructive" />
+                          ) : (
+                            <Mail className="size-3.5 text-muted-foreground/50" />
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMemberRow(idx)}
+                        className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+                        title="Remove member"
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
+
+                    {/* Member Verified Card */}
+                    {member.user && !member.alreadyRegistered && !member.error && (
+                      <div className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg text-xs">
+                        {member.user.image ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={member.user.image}
+                            alt=""
+                            className="size-5 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="size-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-[10px]">
+                            {(member.user.name || member.user.username || "U")[0].toUpperCase()}
+                          </div>
+                        )}
+                        <span className="font-semibold text-foreground truncate">
+                          {member.user.name || member.user.username}
+                        </span>
+                        <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 ml-auto shrink-0">
+                          <ShieldCheck className="size-3" /> Notexia Verified
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Member Error / Unregistered Notice */}
+                    {member.error && (
+                      <p className="text-[10px] text-destructive flex items-center gap-1 px-1">
+                        <AlertCircle className="size-3 shrink-0" />
+                        {member.error}
+                      </p>
+                    )}
+                  </div>
+                ))}
+
+                {memberRows.length < maxAllowedMembers && (
+                  <button
+                    type="button"
+                    onClick={handleAddMemberRow}
+                    className="w-full py-2 bg-sidebar border border-dashed border-sidebar-border hover:border-primary/50 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Plus className="size-3.5 text-primary" /> Add Team Member by Email
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            This is your public alias — your real name stays private.
-          </p>
-          {codenameAvailable === false && (
-            <p className="text-[10px] text-destructive mt-1">
-              This codename is taken. Choose another.
+        )}
+
+        {/* Leader Profile Details Section */}
+        <div className="border border-sidebar-border bg-sidebar/50 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center gap-2">
+            <User className="size-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">
+              {isTeamMode ? "Team Leader Details (You)" : "Participant Details"}
+            </h2>
+          </div>
+
+          {/* Codename */}
+          <div>
+            <label
+              htmlFor="reg-codename"
+              className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block"
+            >
+              Public Codename / Alias <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <input
+                id="reg-codename"
+                type="text"
+                required
+                minLength={3}
+                maxLength={30}
+                placeholder="e.g. shadow_runner"
+                value={codename}
+                onChange={(e) => setCodename(e.target.value.replace(/\s/g, "-").toLowerCase())}
+                className={`${inputCls} pr-10`}
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {checkingCodename ? (
+                  <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                ) : codenameAvailable === true ? (
+                  <CheckCircle2 className="size-4 text-emerald-400" />
+                ) : codenameAvailable === false ? (
+                  <AlertCircle className="size-4 text-destructive" />
+                ) : null}
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Your public handle on the event leaderboard.
             </p>
-          )}
-          {codenameAvailable === true && (
-            <p className="text-[10px] text-emerald-400 mt-1">Available!</p>
-          )}
+            {codenameAvailable === false && (
+              <p className="text-[10px] text-destructive mt-1">
+                This codename is taken. Choose another.
+              </p>
+            )}
+            {codenameAvailable === true && (
+              <p className="text-[10px] text-emerald-400 mt-1">Available!</p>
+            )}
+          </div>
+
+          {/* Real Name */}
+          <div>
+            <label
+              htmlFor="reg-realname"
+              className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block"
+            >
+              Real Name <span className="text-destructive">*</span>
+            </label>
+            <input
+              id="reg-realname"
+              type="text"
+              required
+              placeholder="Your full name"
+              value={realName}
+              onChange={(e) => setRealName(e.target.value)}
+              className={inputCls}
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">
+              Used strictly for verification & certificate generation.
+            </p>
+          </div>
         </div>
 
-        {/* Real Name */}
-        <div>
-          <label
-            htmlFor="reg-realname"
-            className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground mb-1.5 block"
-          >
-            <User className="size-3 inline mr-1" />
-            Real Name <span className="text-destructive">*</span>
-          </label>
-          <input
-            id="reg-realname"
-            type="text"
-            required
-            placeholder="Your full name"
-            value={realName}
-            onChange={(e) => setRealName(e.target.value)}
-            className={inputCls}
-          />
-          <p className="text-[10px] text-muted-foreground mt-1">
-            Used only for certificates — never shown publicly.
-          </p>
-        </div>
-
-        {/* Code of Conduct */}
+        {/* Code of Conduct Acceptance */}
         <div className="flex items-start gap-3 bg-sidebar border border-sidebar-border rounded-xl p-4">
           <button
             type="button"
@@ -605,13 +720,13 @@ export default function RegisterEventPage() {
           </button>
           <div>
             <p className="text-xs text-foreground font-medium">
-              I accept the Code of Conduct
+              I accept the Code of Conduct and event rules
             </p>
             {Boolean(event.codeOfConductUrl) && (
               <Link
                 href={event.codeOfConductUrl as string}
                 target="_blank"
-                className="text-[10px] text-primary hover:underline"
+                className="text-[10px] text-primary hover:underline block mt-0.5"
               >
                 Read the Code of Conduct →
               </Link>
@@ -622,29 +737,29 @@ export default function RegisterEventPage() {
         {error && (
           <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3 text-sm text-destructive">
             <AlertCircle className="size-4 mt-0.5 shrink-0" />
-            {error}
+            <span>{error}</span>
           </div>
         )}
 
         <button
           type="submit"
           disabled={submitting || codenameAvailable === false || !acceptedCoC}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2"
+          className="w-full py-3 bg-primary text-primary-foreground rounded-xl font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
         >
           {submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" />
-              {Boolean(event.isPaid) ? "Creating order..." : "Registering..."}
+              {Boolean(event.isPaid) ? "Creating order..." : "Registering Team..."}
             </>
           ) : Boolean(event.isPaid) ? (
             `Register & Pay ₹${event.price}`
+          ) : isTeamMode ? (
+            "Complete Team Registration"
           ) : (
             "Register for Free"
           )}
         </button>
       </form>
-      {/* suppress unused var warning */}
-      {registrationId && null}
     </div>
   );
 }

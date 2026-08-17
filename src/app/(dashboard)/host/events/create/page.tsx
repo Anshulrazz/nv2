@@ -25,6 +25,8 @@ export default function CreateEventPage() {
     challengeReleaseMode: "all_at_once" as "sequential" | "scheduled" | "all_at_once",
     capacity: "",
     codeOfConductUrl: "",
+    prizePool: 0,
+    isPrizeRevealed: false,
     teamMode: false,
     maxTeamSize: 4,
   });
@@ -256,6 +258,41 @@ export default function CreateEventPage() {
             </div>
           </div>
         )}
+
+        {/* Prize Pool & Reveal */}
+        <div className="border border-sidebar-border bg-sidebar/50 rounded-2xl p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs font-bold text-foreground">Prize Pool & Rewards</p>
+              <p className="text-[10px] text-muted-foreground">Total reward pool for winners.</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono text-muted-foreground">Reveal Now</span>
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, isPrizeRevealed: !p.isPrizeRevealed }))}
+                className={`size-5 rounded border-2 flex items-center justify-center transition-all ${
+                  form.isPrizeRevealed ? "bg-amber-500 border-amber-500" : "border-sidebar-border"
+                }`}
+              >
+                {form.isPrizeRevealed && <Check className="size-3 text-black font-bold" />}
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Total Prize Pool (INR ₹)</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 50000"
+              value={form.prizePool || ""}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, prizePool: parseInt(e.target.value, 10) || 0 }))
+              }
+              className={inputCls}
+            />
+          </div>
+        </div>
 
         {/* Capacity */}
         <div>

@@ -48,6 +48,9 @@ interface EventData {
   challengeReleaseMode: ReleaseMode;
   capacity: number | null;
   codeOfConductUrl: string;
+  prizePool?: number;
+  prizes?: Array<{ place: string; prize: string; amount?: number }>;
+  isPrizeRevealed?: boolean;
   teamMode: boolean;
   maxTeamSize: number;
   scoreFreezeAt: string | null;
@@ -468,6 +471,44 @@ export default function EditEventPage() {
             />
           </div>
         )}
+
+        {/* Prize Pool & Prize Reveal */}
+        <div className="border border-sidebar-border bg-sidebar/50 rounded-2xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-bold text-foreground">Prize Pool & Rewards</p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Configure total prize pool amount and public reveal visibility.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono text-muted-foreground">Reveal Prizes</span>
+              <button
+                type="button"
+                onClick={() => setForm((p) => ({ ...p, isPrizeRevealed: !p.isPrizeRevealed }))}
+                className={`size-6 rounded border-2 flex items-center justify-center transition-all ${
+                  form.isPrizeRevealed ? "bg-amber-500 border-amber-500" : "border-sidebar-border"
+                }`}
+              >
+                {form.isPrizeRevealed && <Check className="size-3.5 text-black font-bold" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelCls}>Total Prize Pool (INR ₹)</label>
+            <input
+              type="number"
+              min="0"
+              placeholder="e.g. 50000"
+              value={form.prizePool ?? 0}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, prizePool: parseInt(e.target.value, 10) || 0 }))
+              }
+              className={inputCls}
+            />
+          </div>
+        </div>
 
         {/* Capacity */}
         <div>

@@ -3,8 +3,28 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
+import { EventTeam } from "@/models/EventTeam";
+import { User } from "@/models/User";
 import { requireEventParticipant } from "@/lib/eventAuth";
 import Razorpay from "razorpay";
+import mongoose from "mongoose";
+
+// Helper to generate a collision-free codename for team members
+async function generateUniqueCodename(eventId: string | mongoose.Types.ObjectId, baseName: string): Promise<string> {
+  const sanitized = baseName.trim().toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 16) || "member";
+  let candidate = sanitized;
+  let attempt = 0;
+  while (attempt < 10) {
+    const exists = await EventRegistration.findOne({
+      eventId,
+      codename: { $regex: `^${candidate}$`, $options: "i" },
+    });
+    if (!exists) return candidate;
+    attempt++;
+    candidate = `${sanitized}_${Math.floor(1000 + Math.random() * 9000)}`;
+  }
+  return `${sanitized}_${Date.now().toString().slice(-4)}`;
+}
 
 // POST /api/events/[id]/register
 export async function POST(
@@ -23,7 +43,14 @@ export async function POST(
     const userId = auth_check.userId;
 
     const body = await req.json();
-    const { codename, realName, acceptedCodeOfConduct } = body;
+    const {
+      codename,
+      realName,
+      acceptedCodeOfConduct,
+      isTeamRegistration,
+      teamName,
+      memberEmails = [],
+    } = body;
 
     // ── Required fields ───────────────────────────────────────────────────
     if (!codename || typeof codename !== "string" || !codename.trim()) {
@@ -41,10 +68,16 @@ export async function POST(
 
     await connectToDatabase();
 
-    const event = await Event.findById(id);
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const event = isObjectId
+      ? await Event.findById(id)
+      : await Event.findOne({ slug: id });
+
     if (!event) {
       return NextResponse.json({ error: "Event not found." }, { status: 404 });
     }
+
+    const eventId = event._id;
 
     // ── Server-side timing check (never trust client) ─────────────────────
     const now = new Date();
@@ -61,8 +94,8 @@ export async function POST(
       return NextResponse.json({ error: "Event is not accepting registrations." }, { status: 400 });
     }
 
-    // ── Duplicate registration check ──────────────────────────────────────
-    const existing = await EventRegistration.findOne({ eventId: id, userId });
+    // ── Duplicate registration check for current user ─────────────────────
+    const existing = await EventRegistration.findOne({ eventId, userId });
     if (existing) {
       return NextResponse.json(
         { error: "You are already registered for this event." },
@@ -73,7 +106,7 @@ export async function POST(
     // ── Codename uniqueness check (case-insensitive) ───────────────────────
     const codenameNormalized = codename.trim().toLowerCase();
     const codenameExists = await EventRegistration.findOne({
-      eventId: id,
+      eventId,
       codename: { $regex: `^${codenameNormalized}$`, $options: "i" },
     });
     if (codenameExists) {
@@ -83,17 +116,127 @@ export async function POST(
       );
     }
 
+    // ── Team Mode & All-at-Once Member Validation ─────────────────────────
+    const registeringAsTeam = Boolean(isTeamRegistration || (event.teamMode && teamName));
+    let memberUsers: Array<{ _id: mongoose.Types.ObjectId; email: string; name?: string; username?: string }> = [];
+
+    if (registeringAsTeam) {
+      if (!teamName || typeof teamName !== "string" || !teamName.trim()) {
+        return NextResponse.json({ error: "Team name is required for team registration." }, { status: 400 });
+      }
+
+      // Check unique team name per event
+      const teamNameNormalized = teamName.trim().toLowerCase();
+      const existingTeam = await EventTeam.findOne({
+        eventId,
+        teamName: { $regex: `^${teamNameNormalized}$`, $options: "i" },
+      });
+      if (existingTeam) {
+        return NextResponse.json({ error: "This team name is already taken in this event." }, { status: 409 });
+      }
+
+      // Validate member emails
+      if (Array.isArray(memberEmails) && memberEmails.length > 0) {
+        // Clean & unique emails
+        const normalizedEmails = Array.from(
+          new Set(
+            memberEmails
+              .filter((e): e is string => typeof e === "string" && !!e.trim())
+              .map((e) => e.trim().toLowerCase())
+          )
+        );
+
+        // Exclude leader's own email if entered
+        const currentUser = await User.findById(userId).select("email").lean();
+        const currentEmail = currentUser?.email?.toLowerCase();
+        const cleanMemberEmails = normalizedEmails.filter((e) => e !== currentEmail);
+
+        // Team size check (Leader + members <= maxTeamSize)
+        const maxTeamSize = event.maxTeamSize || 4;
+        if (1 + cleanMemberEmails.length > maxTeamSize) {
+          return NextResponse.json(
+            { error: `Team exceeds maximum allowed size of ${maxTeamSize} members.` },
+            { status: 400 }
+          );
+        }
+
+        if (cleanMemberEmails.length > 0) {
+          // Look up all member emails in Notexia User database
+          const foundUsers = await User.find({ email: { $in: cleanMemberEmails } })
+            .select("_id name username email image")
+            .lean();
+
+          // Check if any email is not registered on Notexia
+          const foundEmails = new Set(foundUsers.map((u) => u.email.toLowerCase()));
+          const missingEmails = cleanMemberEmails.filter((e) => !foundEmails.has(e));
+
+          if (missingEmails.length > 0) {
+            return NextResponse.json(
+              {
+                error: `The following email(s) are not registered on Notexia: ${missingEmails.join(
+                  ", "
+                )}. All team members must have a Notexia account before registration.`,
+              },
+              { status: 400 }
+            );
+          }
+
+          // Check if any of these members are already registered for this event
+          const memberUserIds = foundUsers.map((u) => u._id);
+          const alreadyRegisteredMembers = await EventRegistration.find({
+            eventId,
+            userId: { $in: memberUserIds },
+          })
+            .populate("userId", "name username email")
+            .lean();
+
+          if (alreadyRegisteredMembers.length > 0) {
+            const names = alreadyRegisteredMembers
+              .map((r) => {
+                const u = r.userId as unknown as { name?: string; username?: string; email?: string } | null;
+                return u?.name || u?.username || u?.email || "Team member";
+              })
+              .join(", ");
+            return NextResponse.json(
+              { error: `${names} is already registered for this event.` },
+              { status: 409 }
+            );
+          }
+
+          memberUsers = foundUsers as unknown as typeof memberUsers;
+        }
+      }
+    }
+
     // ── Capacity check ────────────────────────────────────────────────────
     let isWaitlisted = false;
     if (event.capacity) {
+      const neededSpots = registeringAsTeam ? 1 + memberUsers.length : 1;
       const activeCount = await EventRegistration.countDocuments({
-        eventId: id,
+        eventId,
         paymentStatus: { $in: ["not_required", "paid"] },
         isDisqualified: false,
       });
-      if (activeCount >= event.capacity) {
+      if (activeCount + neededSpots > event.capacity) {
         isWaitlisted = true;
       }
+    }
+
+    // ── Create Team if registering as team ─────────────────────────────────
+    let createdTeam = null;
+    if (registeringAsTeam) {
+      const allMemberUserIds = [
+        new mongoose.Types.ObjectId(userId),
+        ...memberUsers.map((u) => new mongoose.Types.ObjectId(u._id)),
+      ];
+
+      createdTeam = await EventTeam.create({
+        eventId,
+        teamName: teamName.trim(),
+        leaderUserId: userId,
+        memberUserIds: allMemberUserIds,
+        lookingForMembers: false,
+      });
     }
 
     // ── Payment handling ──────────────────────────────────────────────────
@@ -114,23 +257,45 @@ export async function POST(
       const order = await razorpay.orders.create({
         amount: amountPaise,
         currency: event.currency || "INR",
-        receipt: `ev_${id.slice(-6)}_${userId.slice(-6)}_${Date.now()}`,
-        notes: { eventId: id, userId, type: "event_registration" },
+        receipt: `ev_${String(eventId).slice(-6)}_${userId.slice(-6)}_${Date.now()}`,
+        notes: { eventId: String(eventId), userId, type: "event_registration" },
       });
 
+      // Leader registration
       const registration = await EventRegistration.create({
-        eventId: id,
+        eventId,
         userId,
         codename: codename.trim(),
         realName: realName.trim(),
+        teamId: createdTeam?._id ?? null,
         paymentStatus: "pending",
         razorpayOrderId: order.id,
         acceptedCodeOfConduct: true,
       });
 
+      // Team members registration
+      if (createdTeam && memberUsers.length > 0) {
+        for (const member of memberUsers) {
+          const memberCodename = await generateUniqueCodename(
+            eventId,
+            member.username || member.name || "member"
+          );
+          await EventRegistration.create({
+            eventId,
+            userId: member._id,
+            codename: memberCodename,
+            realName: member.name || member.username || "Team Member",
+            teamId: createdTeam._id,
+            paymentStatus: "pending",
+            acceptedCodeOfConduct: true,
+          });
+        }
+      }
+
       return NextResponse.json(
         {
           registration,
+          team: createdTeam,
           requiresPayment: true,
           order: {
             id: order.id,
@@ -145,18 +310,52 @@ export async function POST(
 
     // Free event (or waitlisted)
     const registration = await EventRegistration.create({
-      eventId: id,
+      eventId,
       userId,
       codename: codename.trim(),
       realName: realName.trim(),
+      teamId: createdTeam?._id ?? null,
       paymentStatus: isWaitlisted ? "waitlisted" : "not_required",
       acceptedCodeOfConduct: true,
     });
 
-    return NextResponse.json({ registration, requiresPayment: false }, { status: 201 });
+    // Register all team members concurrently
+    if (createdTeam && memberUsers.length > 0) {
+      for (const member of memberUsers) {
+        const memberCodename = await generateUniqueCodename(
+          eventId,
+          member.username || member.name || "member"
+        );
+        await EventRegistration.create({
+          eventId,
+          userId: member._id,
+          codename: memberCodename,
+          realName: member.name || member.username || "Team Member",
+          teamId: createdTeam._id,
+          paymentStatus: isWaitlisted ? "waitlisted" : "not_required",
+          acceptedCodeOfConduct: true,
+        });
+      }
+    }
+
+    const populatedTeam = createdTeam
+      ? await EventTeam.findById(createdTeam._id)
+          .populate("leaderUserId", "name username email image")
+          .populate("memberUserIds", "name username email image")
+          .lean()
+      : null;
+
+    return NextResponse.json(
+      {
+        registration,
+        team: populatedTeam || createdTeam,
+        requiresPayment: false,
+      },
+      { status: 201 }
+    );
   } catch (err: unknown) {
     console.error("[POST /api/events/[id]/register]", err);
-    // Catch Mongo duplicate key (race condition on codename)
+    // Catch Mongo duplicate key (race condition on codename or team name)
     if (
       typeof err === "object" &&
       err !== null &&
@@ -164,7 +363,7 @@ export async function POST(
       (err as { code: number }).code === 11000
     ) {
       return NextResponse.json(
-        { error: "Registration conflict. Please try a different codename." },
+        { error: "Registration conflict. Please try a different codename or team name." },
         { status: 409 }
       );
     }
@@ -187,14 +386,32 @@ export async function GET(
     }
 
     await connectToDatabase();
+
+    const isObjectId = mongoose.Types.ObjectId.isValid(id);
+    const event = isObjectId
+      ? await Event.findById(id).select("_id").lean()
+      : await Event.findOne({ slug: id }).select("_id").lean();
+
+    if (!event) {
+      return NextResponse.json({ registered: false });
+    }
+
     const reg = await EventRegistration.findOne({
-      eventId: id,
+      eventId: event._id,
       userId: auth_check.userId,
     })
-      .select("paymentStatus codename isDisqualified finalScore finalRank")
+      .select("paymentStatus codename teamId isDisqualified finalScore finalRank")
       .lean();
 
-    return NextResponse.json({ registered: !!reg, registration: reg });
+    let team = null;
+    if (reg?.teamId) {
+      team = await EventTeam.findById(reg.teamId)
+        .populate("leaderUserId", "name username email image")
+        .populate("memberUserIds", "name username email image")
+        .lean();
+    }
+
+    return NextResponse.json({ registered: !!reg, registration: reg, team });
   } catch (err) {
     console.error("[GET /api/events/[id]/register]", err);
     return NextResponse.json({ error: "Failed to check registration." }, { status: 500 });
