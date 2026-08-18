@@ -1,19 +1,28 @@
 # Notexia (notexia.in)
 
-> Notexia is a modern academic research, note-taking, and knowledge-sharing platform for scholars, developers, and researchers.
+> Notexia is an AI-powered study platform for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE).
 
-## Core Features
-- **Smart AI Notes & Research**: Exhaustive AI paper generation, markdown rendering, and LaTeX formula support (KaTeX).
-- **Public Feed & Articles**: Community-driven research papers, technical blogs, and peer-reviewed study notes.
-- **Smart Revision & Copilot**: AI-assisted study checklists, flashcards, and chat copilot.
-- **Community & Discussions**: Doubts resolution hub, forums, and developer projects.
+## Core Capabilities
+- **AI Study Assistant**: AI Notes Generator, PDF Textbook Summarizer, 24/7 Step-by-Step Doubt Solver, AI Revision Planner, and AI Flashcards.
+- **Digital Study Notes**: Rich markdown note-taking with block LaTeX formulas (KaTeX), code blocks, and instant PDF/Markdown exports.
+- **Free Student Tools**: Interactive formula sheets (Physics, Chemistry, Math, CS) and official university CGPA to Percentage converters.
+- **Academic Community**: Public blog publishing platform, student Q&A forums, online study groups, and gamified batch leaderboards.
 
-## Key Index & Structure
-- [Public Feed](https://notexia.in/feed): Latest research papers, articles, and public notes.
-- [Research Workspace](https://notexia.in/research): AI-powered academic paper generator and editor.
-- [Public Blogs](https://notexia.in/blogs): Published articles by researchers and educators.
-- [Community Hub](https://notexia.in/community): Scholar profiles, rankings, and collaboration.
-- [Leaderboard](https://notexia.in/leaderboard): Community contribution points and rankings.
+## Key Index & Public Structure
+- [AI Study Tools](https://notexia.in/ai-study-tools): AI notes generator, PDF summarizer, doubt solver, and study planner.
+- [Study Notes Directory](https://notexia.in/study-notes): Free digital study notes for Engineering, JEE, NEET, GATE, and CBSE.
+- [Engineering Notes](https://notexia.in/study-notes/engineering): BTech semester notes for Computer Science, Electrical, Mechanical, and Civil.
+- [JEE Study Notes](https://notexia.in/study-notes/jee): JEE Main & Advanced Physics, Chemistry, and Math notes.
+- [NEET Study Notes](https://notexia.in/study-notes/neet): NCERT line-by-line revision notes for Biology, Physics, and Chemistry.
+- [GATE Exam Notes](https://notexia.in/study-notes/gate): Short revision notes and formula sheets for GATE CS, EC, EE, ME, CE.
+- [CBSE Study Material](https://notexia.in/study-notes/cbse): Class 10 & 12 board exam revision notes and NCERT solutions.
+- [Free Tools Hub](https://notexia.in/tools): Calculators and interactive academic formula sheets.
+- [Formula Sheets](https://notexia.in/tools/formula-sheets): Formula sheets for JEE, NEET, GATE, and BTech.
+- [CGPA Converter](https://notexia.in/tools/cgpa-converter): CGPA to percentage converter for CBSE, VTU, KTU, Mumbai University, Anna University.
+- [Public Blogs](https://notexia.in/blogs): Educational articles and research posts by scholars and educators.
+- [Q&A Forums](https://notexia.in/forums): Academic discussion forum and student doubt resolution threads.
+- [Student Community](https://notexia.in/community): Peer learning hub, online study groups, and scholar collaboration.
+- [Leaderboard](https://notexia.in/leaderboard): Community contribution points and scholar rankings.
 
 ## Technology Stack
-- Next.js 15 App Router, TypeScript, Tailwind CSS, TipTap, KaTeX, MongoDB, Anthropic Claude & Google Gemini AI.
+- Next.js 15 App Router, TypeScript, Tailwind CSS, TipTap, KaTeX, MongoDB Mongoose, Anthropic Claude & Google Gemini AI.

@@ -97,8 +97,8 @@ export default function RootLayout({
   const adClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID || "ca-pub-1957290146491296";
 
   return (
-    <html lang="en" className="dark">
-      <head>
+    <html lang="en" className="dark" data-scroll-behavior="smooth">
+      <head suppressHydrationWarning>
         <meta name="google-adsense-account" content={adClientId} />
         <script
           async

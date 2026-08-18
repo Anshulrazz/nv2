@@ -1,7 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
+
+
 export const dynamic = "force-dynamic";
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/auth";
 import nextDynamic from "next/dynamic";
@@ -66,12 +68,10 @@ export default async function DashboardLayout({
     <div suppressHydrationWarning className="relative h-[100dvh] bg-background text-foreground flex overflow-hidden">
       <PusherListener />
       <CallWrapper />
-      {/* ── Fixed Continuous Background & Glow Layer ── */}
+      {/* ── Subtle ambient background ── */}
       <div className="fixed inset-0 pointer-events-none z-0 cyber-grid bg-background" />
-      <div className="fixed top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#8FC3DE]/5 rounded-full filter blur-[120px] pointer-events-none select-none z-0" />
-      <div className="fixed bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-[#F28B6E]/4 rounded-full filter blur-[150px] pointer-events-none select-none z-0" />
-      <div className="fixed top-[30%] right-[20%] w-[400px] h-[400px] bg-[#C9A9E0]/4 rounded-full filter blur-[130px] pointer-events-none select-none z-0" />
-      <div className="fixed bottom-[20%] left-[10%] w-[450px] h-[450px] bg-[#F0C93B]/4 rounded-full filter blur-[140px] pointer-events-none select-none z-0" />
+      <div className="fixed top-[-5%] left-[-5%] w-[400px] h-[400px] bg-[#8FC3DE]/4 rounded-full filter blur-[100px] pointer-events-none select-none z-0" />
+      <div className="fixed bottom-[-5%] right-[-5%] w-[500px] h-[500px] bg-[#F28B6E]/3 rounded-full filter blur-[120px] pointer-events-none select-none z-0" />
 
       {/* ── Mobile sidebar checkbox (CSS hack) ── */}
       <input type="checkbox" id="sidebar-toggle" className="peer hidden" />
@@ -170,10 +170,13 @@ export default async function DashboardLayout({
         <div className="p-4 border-t border-sidebar-border bg-sidebar/50 shrink-0">
           <div className="flex items-center gap-3 px-3 py-2 bg-sidebar-accent rounded-xl border border-sidebar-border mb-3">
             {user.image ? (
-              <img
+              <Image
                 src={user.image}
                 alt={user.name || "User"}
+                width={36}
+                height={36}
                 className="h-9 w-9 rounded-full border border-border object-cover flex-shrink-0"
+                unoptimized={user.image.startsWith("http")}
               />
             ) : (
               <div className="h-9 w-9 rounded-full bg-muted border border-border flex items-center justify-center text-muted-foreground flex-shrink-0">

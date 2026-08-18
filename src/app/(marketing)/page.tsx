@@ -1201,10 +1201,10 @@ export default function MarketingPage() {
                   Built for JEE · NEET · CBSE · GATE aspirants
                 </span>
                 <h1>
-                  Notes that get <em>checked</em> before the exam does.
+                  AI Study Platform for Students — Notes, Doubt Solver &amp; Revision
                 </h1>
                 <p className="lead">
-                  Notexia turns rough lecture notes into an AI-verified study system — LaTeX-perfect formulas, doubt-solving that answers in seconds, and a leaderboard that actually tracks who&apos;s putting in the hours.
+                  Notexia is an AI-powered study platform for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE). Organize digital study notes with LaTeX formulas, solve homework doubts 24/7, access formula sheets, and collaborate with a student community.
                 </p>
                 <div className="hero-ctas">
                   <Link href="/signup" className="btn btn-solid">

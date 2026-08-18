@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { openRazorpayCheckout } from "@/lib/razorpay";
+import { RegisterFormSkeleton } from "@/components/ui/skeleton";
 
 interface VerifiedMember {
   email: string;
@@ -331,11 +332,7 @@ export default function RegisterEventPage() {
   };
 
   if (loadingEvent) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="size-6 animate-spin text-primary" />
-      </div>
-    );
+    return <RegisterFormSkeleton />;
   }
 
   if (!event) {

@@ -3,26 +3,25 @@ import { constructSeoMetadata } from "@/lib/seo/metadata";
 import { buildBreadcrumbSchema } from "@/lib/seo/jsonld";
 
 export const metadata: Metadata = constructSeoMetadata({
-  title: "Student Discussion Forum & Q&A | Notexia",
+  title: "Online Courses & Learning Resources for Students | Notexia",
   description:
-    "Ask study questions, upvote expert answers, and participate in academic discussion forums for JEE, NEET, GATE, CBSE, and engineering subjects on Notexia.",
-  path: "/forums",
+    "Discover online academic courses, structured video lessons, and interactive study modules for engineering, JEE, NEET, GATE, and university exams on Notexia.",
+  path: "/courses",
   keywords: [
-    "student discussion forum",
-    "academic discussion forum",
-    "student doubt forum",
-    "Q&A forum for students",
-    "online study forum",
-    "JEE doubt forum",
-    "NEET discussion forum",
-    "engineering discussion forum",
-    "ask study questions",
+    "online courses for students",
+    "student learning platform",
+    "engineering courses",
+    "JEE online preparation",
+    "NEET online learning",
+    "GATE course modules",
+    "BTech online lectures",
+    "educational resources",
   ],
 });
 
 const breadcrumbs = [
   { name: "Home", item: "/" },
-  { name: "Forums", item: "/forums" },
+  { name: "Courses", item: "/courses" },
 ];
 
 export default function Layout({ children }: { children: React.ReactNode }) {

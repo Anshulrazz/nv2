@@ -85,7 +85,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["jsonwebtoken", "youtubei.js"],
 
   experimental: {
-    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
+    optimizePackageImports: ["lucide-react", "@radix-ui/react-icons", "framer-motion"],
   },
 
   // Ensure the uploads directory is included when using standalone output

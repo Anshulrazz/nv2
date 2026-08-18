@@ -1,61 +1,51 @@
 import type { Metadata } from "next";
-import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo/jsonld";
+import { buildOrganizationSchema, buildWebSiteSchema, buildSoftwareApplicationSchema } from "@/lib/seo/jsonld";
+import { constructSeoMetadata } from "@/lib/seo/metadata";
 
-export const metadata: Metadata = {
-  title: {
-    default: "Notexia: Smart Notes, AI Doubt Solving & Study Groups",
-    template: "%s | Notexia",
-  },
+export const metadata: Metadata = constructSeoMetadata({
+  title: "Notexia — AI Study Platform for Students | Notes, Doubt Solver & Community",
   description:
-    "Notexia is a study platform for students — organize notes, get AI-powered doubt solving, join forums, and learn with a smart study community.",
-  alternates: { canonical: "https://notexia.in" },
-  openGraph: {
-    title: "Notexia: Smart Notes, AI Doubt Solving & Study Groups",
-    description:
-      "Notexia is a study platform for students — organize notes, get AI-powered doubt solving, join forums, and learn with a smart study community.",
-    url: "https://notexia.in",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Notexia: Smart Notes, AI Doubt Solving & Study Groups",
-    description:
-      "Notexia is a study platform for students — organize notes, get AI-powered doubt solving, join forums, and learn with a smart study community.",
-  },
-};
-
-const webAppSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  name: "Notexia",
-  url: "https://notexia.in",
-  description:
-    "Notexia is a smart study platform for students — notes, blogs, forums, AI chat, and community all in one place.",
-  applicationCategory: "EducationalApplication",
-  operatingSystem: "Web",
-  inLanguage: "en",
-  audience: {
-    "@type": "Audience",
-    audienceType: "Students, Researchers, Professionals",
-  },
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "INR",
-  },
-  author: {
-    "@type": "Organization",
-    name: "Notexia",
-    url: "https://notexia.in",
-  },
-};
+    "Notexia is an AI study platform for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE). Generate AI notes, solve doubts 24/7, access formula sheets, publish research, and join an online study community.",
+  path: "/",
+  keywords: [
+    "Notexia",
+    "Notexia app",
+    "Notexia AI",
+    "Notexia study platform",
+    "AI study platform",
+    "AI study app",
+    "AI notes generator",
+    "AI note taking app",
+    "AI study assistant",
+    "AI tutor for students",
+    "AI doubt solver",
+    "AI question solver",
+    "AI study notes",
+    "AI notes summarizer",
+    "AI PDF summarizer for students",
+    "online study notes",
+    "student notes platform",
+    "study notes sharing platform",
+    "student community",
+    "online student community",
+    "JEE study notes",
+    "NEET study notes",
+    "GATE study notes",
+    "CBSE study material",
+    "BTech notes",
+    "engineering notes",
+    "AI study planner",
+    "AI flashcards",
+    "best AI study app for students in India",
+  ],
+});
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(buildSoftwareApplicationSchema()) }}
       />
       <script
         type="application/ld+json"

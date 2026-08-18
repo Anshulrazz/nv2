@@ -109,21 +109,31 @@
 @layer base {
   * {
     @apply border-border/80 outline-ring/50;
-    scroll-behavior: smooth;
   }
   html {
     font-family: var(--font-sans);
-    scroll-behavior: smooth !important;
+    scroll-behavior: smooth;
   }
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-family: var(--font-sans);
-    scroll-behavior: smooth !important;
     overflow-x: hidden;
   }
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
+  }
+}
+
+/* ─── Respect prefers-reduced-motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -384,21 +394,51 @@
 
 /* ─── Ultra-stunning glass card & hover utilities ─── */
 @utility glass-card-interactive {
-  background: rgba(26, 45, 35, 0.65);
+  background: rgba(26, 45, 35, 0.85);
   border: 1.5px dashed rgba(243, 240, 228, 0.18);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border-radius: 20px 22px 18px 24px/15px 20px 15px 20px;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  will-change: transform;
   &:hover {
-    transform: translateY(-3px) scale(1.01);
+    transform: translateY(-2px);
     border-color: rgba(240, 201, 59, 0.45);
-    background: rgba(31, 54, 42, 0.85);
-    box-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.5), 0 0 20px 0 rgba(240, 201, 59, 0.12);
+    background: rgba(31, 54, 42, 0.95);
   }
   &:active {
-    transform: translateY(-1px) scale(0.995);
+    transform: translateY(0);
   }
+}
+
+/* ─── Mobile bottom nav active pill (replaces framer-motion) ─── */
+.nav-active-pill {
+  position: absolute;
+  inset-inline: 4px;
+  inset-block: 6px;
+  background: rgba(240, 201, 59, 0.15);
+  border: 1px solid rgba(240, 201, 59, 0.4);
+  border-radius: 12px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+/* ─── CSS skeleton shimmer ─── */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background: rgba(243, 240, 228, 0.05);
+  border: 1px solid rgba(243, 240, 228, 0.08);
+  border-radius: 0.5rem;
+}
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(243, 240, 228, 0.06) 50%, transparent 100%);
+  animation: shimmer 1.6s ease-in-out infinite;
+  will-change: transform;
 }
 
 /* ─── KaTeX & LaTeX Math Formula Content Styling ─── */

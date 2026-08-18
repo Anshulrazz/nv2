@@ -1,22 +1,21 @@
 import type { Metadata } from "next";
+import { constructSeoMetadata } from "@/lib/seo/metadata";
 import { buildBreadcrumbSchema } from "@/lib/seo/jsonld";
 
-export const metadata: Metadata = {
-  title: "Student Batch Leaderboard & Academic Contribution Ranks",
-  description: "View top student contributors, research rankings, and activity points on Notexia's gamified study leaderboard.",
-  alternates: { canonical: "https://notexia.in/leaderboard" },
-  openGraph: {
-    title: "Student Batch Leaderboard & Academic Contribution Ranks | Notexia",
-    description: "View top student contributors and activity rankings on Notexia.",
-    url: "https://notexia.in/leaderboard",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Student Batch Leaderboard & Academic Contribution Ranks | Notexia",
-    description: "View top student contributors and activity rankings on Notexia.",
-  },
-};
+export const metadata: Metadata = constructSeoMetadata({
+  title: "Student Batch Leaderboard & Academic Ranks | Notexia",
+  description:
+    "Explore top student contributors, academic contribution points, and gamified batch rankings on the Notexia leaderboard.",
+  path: "/leaderboard",
+  keywords: [
+    "student leaderboard",
+    "batch leaderboard",
+    "academic contribution ranks",
+    "student contribution points",
+    "scholar rankings",
+    "gamified learning leaderboard",
+  ],
+});
 
 const breadcrumbs = [
   { name: "Home", item: "/" },

@@ -150,3 +150,51 @@ export function buildPersonSchema(user: { id: string; name: string; image?: stri
     ...(user.bio ? { description: user.bio } : {}),
   };
 }
+
+/**
+ * Builds SoftwareApplication schema for AI study tools & platform features.
+ */
+export function buildSoftwareApplicationSchema(props?: { name?: string; description?: string; url?: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: props?.name || `${SITE_NAME} AI Study Assistant`,
+    applicationCategory: "EducationalApplication",
+    operatingSystem: "Web",
+    url: props?.url || SITE_URL,
+    description: props?.description || "Notexia AI study assistant for note taking, PDF summarization, step-by-step doubt solving, and revision planning.",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "INR",
+    },
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
+  };
+}
+
+/**
+ * Builds Course schema for public courses.
+ */
+export function buildCourseSchema(course: { title: string; description: string; url: string; provider?: string }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    description: course.description,
+    provider: {
+      "@type": "Organization",
+      name: course.provider || SITE_NAME,
+      sameAs: SITE_URL,
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: "online",
+      url: course.url,
+    },
+  };
+}
+

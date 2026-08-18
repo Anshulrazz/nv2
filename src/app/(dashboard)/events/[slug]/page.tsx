@@ -1,6 +1,8 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
+import { Suspense } from "react";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
@@ -298,11 +300,13 @@ export default async function EventDetailPage({
                       className="flex items-center gap-3 bg-background border border-sidebar-border rounded-xl p-3.5 hover:border-primary/40 transition-colors"
                     >
                       {judge.image ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={judge.image}
                           alt={judge.name || "Judge"}
+                          width={44}
+                          height={44}
                           className="size-11 rounded-full object-cover border border-sidebar-border shrink-0"
+                          unoptimized
                         />
                       ) : (
                         <div className="size-11 rounded-full bg-primary/15 text-primary flex items-center justify-center font-bold text-sm border border-primary/20 shrink-0">
@@ -341,7 +345,15 @@ export default async function EventDetailPage({
                   </h2>
                 </div>
                 <div className="max-w-none">
-                  <MarkdownRenderer content={event.rulesMarkdown as string} className="text-sm" />
+                  <Suspense fallback={
+                    <div className="space-y-2 animate-pulse">
+                      <div className="h-4 bg-muted/50 rounded w-full" />
+                      <div className="h-4 bg-muted/50 rounded w-4/5" />
+                      <div className="h-4 bg-muted/50 rounded w-3/5" />
+                    </div>
+                  }>
+                    <MarkdownRenderer content={event.rulesMarkdown as string} className="text-sm" />
+                  </Suspense>
                 </div>
               </div>
             )}

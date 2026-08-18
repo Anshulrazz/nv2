@@ -11,12 +11,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, lastModified: new Date(), changeFrequency: "weekly", priority: 1.0 },
-    { url: `${base}/login`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.4 },
-    { url: `${base}/signup`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.5 },
+    { url: `${base}/ai-study-tools`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/tools`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/tools/cgpa-converter`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/tools/formula-sheets`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/study-notes`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/study-notes/engineering`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/study-notes/btech`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/study-notes/jee`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/study-notes/neet`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/study-notes/gate`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/study-notes/cbse`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/blogs`, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
+    { url: `${base}/courses`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/events`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
     { url: `${base}/forums`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
-    { url: `${base}/leaderboard`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/community`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
+    { url: `${base}/leaderboard`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.6 },
     { url: `${base}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
     { url: `${base}/legal`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
@@ -30,8 +41,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/legal/community-guidelines`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/legal/refund-policy`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
     { url: `${base}/legal/grievance-redressal`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/tools/cgpa-converter`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
-    { url: `${base}/tools/formula-sheets`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
+    { url: `${base}/login`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: `${base}/signup`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
 
   let dynamicRoutes: MetadataRoute.Sitemap = [];
