@@ -723,16 +723,24 @@ export default function AdminPage() {
     }
   }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications, loadWithdrawals, loadRealTelemetry, loadModerationQueue]);
 
-  const handleUserModify = async (targetUserId: string, action: string, role?: string) => {
+  const handleUserModify = async (targetUserId: string, isSuspended: boolean, action: string, role?: string) => {
     try {
+      const act = action === "toggle_suspend" ? (isSuspended ? "unsuspend" : "suspend") : action;
       const res = await fetch("/api/admin/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetUserId, action, role }),
+        body: JSON.stringify({ targetUserId, action: act, role }),
       });
-      if (res.ok) loadUsersList();
+      if (res.ok) {
+        toast.success("User account updated successfully.");
+        loadUsersList();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update user account.");
+      }
     } catch (e) {
       console.error(e);
+      toast.error("Error updating user account.");
     }
   };
 
@@ -1400,19 +1408,40 @@ export default function AdminPage() {
                         <Button
                           size="sm"
                           variant="ghost"
-                          onClick={() => handleUserModify(u._id, "toggle_suspend")}
+                          onClick={() => handleUserModify(u._id, u.isSuspended, "toggle_suspend")}
                           className="h-7 text-[10px] px-2 border border-white/10 hover:border-amber-400"
                         >
                           <Ban className="size-3 mr-1" />
                           {u.isSuspended ? "Unsuspend" : "Suspend"}
                         </Button>
 
+                        {u.role !== "teacher" ? (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleUserModify(u._id, u.isSuspended, "role", "teacher")}
+                            className="h-7 text-[10px] px-2 border border-[#F0C93B]/30 text-[#F0C93B] hover:bg-[#F0C93B]/20"
+                          >
+                            <GraduationCap className="size-3 mr-1" />
+                            Make Teacher
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleUserModify(u._id, u.isSuspended, "role", "user")}
+                            className="h-7 text-[10px] px-2 border border-white/10 text-white/70 hover:border-white/30"
+                          >
+                            Remove Teacher
+                          </Button>
+                        )}
+
                         {u.role !== "admin" && (
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => handleUserModify(u._id, "set_role", "admin")}
-                            className="h-7 text-[10px] px-2 border border-white/10 hover:border-[#00F0FF]"
+                            onClick={() => handleUserModify(u._id, u.isSuspended, "role", "admin")}
+                            className="h-7 text-[10px] px-2 border border-[#00F0FF]/30 text-[#00F0FF] hover:bg-[#00F0FF]/20"
                           >
                             Make Admin
                           </Button>
