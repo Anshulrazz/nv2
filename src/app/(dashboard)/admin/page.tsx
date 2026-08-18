@@ -2,15 +2,23 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   AreaChart,
   Area,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
+  Legend,
 } from "recharts";
 import {
   ShieldAlert,
@@ -18,7 +26,6 @@ import {
   BookOpen,
   MessageSquare,
   HelpCircle,
-  Loader2,
   Ban,
   Trash2,
   Download,
@@ -29,24 +36,27 @@ import {
   BarChart3,
   Settings as SettingsIcon,
   FileText,
-  Database,
-  CheckCircle2,
-  AlertTriangle,
   Activity,
-  Sparkles,
   Tag,
   GraduationCap,
-  XCircle,
-  DollarSign,
-  QrCode,
-  Building2,
-  Copy,
+  Terminal,
+  Cpu,
+  Zap,
+  Volume2,
+  Flame,
+  Layers,
+  PieChart as PieIcon,
+  TrendingUp,
+  Radio,
+  CheckCircle2,
+  AlertTriangle,
+  Lock,
+  Filter,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { redirect, useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface ChartItem {
   label: string;
@@ -54,6 +64,51 @@ interface ChartItem {
   notes: number;
   forums: number;
   doubts: number;
+  blogs?: number;
+}
+
+interface CategoryItem {
+  category: string;
+  count: number;
+}
+
+interface RoleItem {
+  name: string;
+  value: number;
+}
+
+interface EcosystemItem {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface TelemetryMetrics {
+  dbLatencyMs: number;
+  heapUsedMB: number;
+  heapTotalMB: number;
+  rssMB: number;
+  uptimeSeconds: number;
+  nodeVersion: string;
+  serverTime: string;
+}
+
+interface ThroughputPoint {
+  hour: string;
+  requests: number;
+  latency: number;
+  dbQueries: number;
+}
+
+interface FeatureUsageItem {
+  feature: string;
+  activeUsers: number;
+  queries: number;
+}
+
+interface PeakHourItem {
+  timeSlot: string;
+  scholars: number;
 }
 
 interface StatsData {
@@ -63,7 +118,19 @@ interface StatsData {
     notes: number;
     forums: number;
     doubts: number;
+    blogs?: number;
+    courses?: number;
+    researchPapers?: number;
+    pendingWithdrawals?: number;
+    pendingTeacherApps?: number;
+    totalCoinsInCirculation?: number;
   };
+  categoryBreakdown?: CategoryItem[];
+  roleDistribution?: RoleItem[];
+  ecosystemDistribution?: EcosystemItem[];
+  featureUsageBreakdown?: FeatureUsageItem[];
+  peakStudyHours?: PeakHourItem[];
+  telemetry?: TelemetryMetrics;
 }
 
 interface UserRecord {
@@ -76,12 +143,23 @@ interface UserRecord {
   createdAt: string;
 }
 
-interface FlaggedItem {
+interface ThreatFlagRecord {
   _id: string;
-  title?: string;
-  content?: string;
-  userId: string;
-  userName?: string;
+  targetId: string;
+  targetType: "note" | "blog" | "forum" | "comment" | "doubt" | "community_post" | "chat" | "direct_message";
+  authorName?: string;
+  reason: string;
+  flaggedText?: string;
+  toxicityScore: number;
+  status: "pending" | "approved" | "purged" | "dismissed";
+  createdAt: string;
+}
+
+interface SystemLogRecord {
+  _id: string;
+  level: "info" | "warn" | "error" | "security" | "telemetry";
+  source: string;
+  message: string;
   createdAt: string;
 }
 
@@ -95,14 +173,45 @@ interface AuditLogRecord {
 
 export default function AdminPage() {
   const { data: session, status } = useSession();
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<
-    "analytics" | "users" | "teacher_applications" | "withdrawals" | "coupons" | "moderation" | "settings" | "audit" | "export" | "newsletter"
+    | "analytics"
+    | "users"
+    | "teacher_applications"
+    | "withdrawals"
+    | "coupons"
+    | "moderation"
+    | "settings"
+    | "audit"
+    | "export"
+    | "newsletter"
+    | "c2logs"
   >("analytics");
-  const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
 
+  const [interval, setInterval] = useState<"daily" | "monthly" | "yearly">("daily");
   const [stats, setStats] = useState<StatsData | null>(null);
   const [users, setUsers] = useState<UserRecord[]>([]);
+
+  // Real Telemetry & CC Logs State
+  const [throughputData, setThroughputData] = useState<ThroughputPoint[]>([]);
+  const [telemetryMetrics, setTelemetryMetrics] = useState<TelemetryMetrics | null>(null);
+  const [systemLogs, setSystemLogs] = useState<SystemLogRecord[]>([]);
+  const [logFilterLevel, setLogFilterLevel] = useState<string>("all");
+  const [isLogsLoading, setIsLogsLoading] = useState<boolean>(false);
+
+  // Threat Engine & Moderation State
+  const [threatFlags, setThreatFlags] = useState<ThreatFlagRecord[]>([]);
+  const [isThreatLoading, setIsThreatLoading] = useState<boolean>(false);
+
+  // JARVIS Command Line State
+  const [commandInput, setCommandInput] = useState("");
+  const [commandLogs, setCommandLogs] = useState<string[]>([
+    "JARVIS KERNEL v4.8 [ONLINE]",
+    "REAL-TIME C2 LOGS ENGINE READY",
+    "CYBER THREAT ENGINE ACTIVE",
+    "TYPE /help FOR AVAILABLE COMMANDS",
+  ]);
+  const [isVoiceSpeaking, setIsVoiceSpeaking] = useState(false);
+  const commandLogEndRef = useRef<HTMLDivElement | null>(null);
 
   // Withdrawal Requests state
   const [withdrawalRequests, setWithdrawalRequests] = useState<Array<{
@@ -110,20 +219,11 @@ export default function AdminPage() {
     userId: string;
     userName: string;
     userEmail: string;
-    userImage?: string;
     userRole: string;
     amount: number;
     amountINR: number;
     payoutMethod: "upi" | "bank_transfer";
-    payoutDetails: {
-      upiId?: string;
-      bankAccount?: string;
-      ifscCode?: string;
-      accountHolderName?: string;
-    };
     status: "pending" | "approved" | "completed" | "rejected";
-    adminNote?: string;
-    transactionRef?: string;
     createdAt: string;
   }>>([]);
   const [pendingWithdrawalsCount, setPendingWithdrawalsCount] = useState(0);
@@ -142,25 +242,19 @@ export default function AdminPage() {
   // Teacher Applications state
   const [teacherApplications, setTeacherApplications] = useState<Array<{
     _id: string;
-    userId: string;
     userName: string;
     userEmail: string;
     qualification: string;
     subjectExpertise: string;
     experienceYears: number;
     bio: string;
-    portfolioUrl?: string;
-    payoutUpi?: string;
     status: "pending" | "approved" | "rejected";
-    adminNote?: string;
     createdAt: string;
   }>>([]);
   const [pendingTeacherAppsCount, setPendingTeacherAppsCount] = useState(0);
   const [isTeacherAppsLoading, setIsTeacherAppsLoading] = useState(false);
   const [userSearchQuery, setUserSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "user" | "teacher" | "admin">("all");
-  const [flaggedNotes, setFlaggedNotes] = useState<FlaggedItem[]>([]);
-  const [, setFlaggedComments] = useState<FlaggedItem[]>([]);
   const [siteSettings, setSiteSettings] = useState<Record<string, boolean>>({
     maintenanceMode: false,
     enableComments: true,
@@ -176,12 +270,9 @@ export default function AdminPage() {
     description: string;
     discountType: "percentage" | "fixed";
     discountValue: number;
-    minPurchaseAmount: number;
     maxUses: number;
     usedCount: number;
     isActive: boolean;
-    validUntil: string;
-    applicableFor: string;
   }>>([]);
   const [isCouponsLoading, setIsCouponsLoading] = useState(false);
   const [couponStats, setCouponStats] = useState({ totalCount: 0, activeCount: 0, totalRedemptions: 0 });
@@ -203,51 +294,159 @@ export default function AdminPage() {
   const [newsletterSubscribers, setNewsletterSubscribers] = useState<Array<{
     _id: string;
     email: string;
-    status: "active" | "unsubscribed";
     source: string;
     createdAt: string;
   }>>([]);
-  const [isNewsletterLoading, setIsNewsletterLoading] = useState(false);
-  const [newsletterSearch, setNewsletterSearch] = useState("");
-
-  const loadNewsletterSubscribers = useCallback(async () => {
-    setIsNewsletterLoading(true);
-    try {
-      const res = await fetch("/api/newsletter");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success && Array.isArray(data.subscribers)) {
-          setNewsletterSubscribers(data.subscribers);
-        }
-      }
-    } catch (e) {
-      console.error("Failed to load newsletter subscribers", e);
-    } finally {
-      setIsNewsletterLoading(false);
-    }
-  }, []);
-
-  const handleDeleteSubscriber = async (id: string, email: string) => {
-    if (!confirm(`Are you sure you want to remove '${email}' from subscribers?`)) return;
-    try {
-      const res = await fetch("/api/newsletter", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
-      });
-      if (res.ok) {
-        toast.success(`Removed ${email} from subscribers.`);
-        loadNewsletterSubscribers();
-      } else {
-        toast.error("Failed to delete subscriber.");
-      }
-    } catch {
-      toast.error("Error deleting subscriber.");
-    }
-  };
 
   const [, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+
+  // JARVIS Voice Synthesizer
+  const speakJarvisMessage = (text: string) => {
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.rate = 1.05;
+        utterance.pitch = 0.95;
+        setIsVoiceSpeaking(true);
+        utterance.onend = () => setIsVoiceSpeaking(false);
+        utterance.onerror = () => setIsVoiceSpeaking(false);
+        window.speechSynthesis.speak(utterance);
+      } catch {
+        setIsVoiceSpeaking(false);
+      }
+    }
+  };
+
+  const handleCommandSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const cmd = commandInput.trim();
+    if (!cmd) return;
+
+    const newLogs = [...commandLogs, `> ${cmd}`];
+    setCommandInput("");
+
+    const lower = cmd.toLowerCase();
+    if (lower === "/help") {
+      newLogs.push(
+        "AVAILABLE COMMANDS:",
+        "  /telemetry - Refresh system metrics & 24h throughput",
+        "  /c2        - Switch to C2 Log Command Deck",
+        "  /threats   - Switch to Threat Engine Moderation Queue",
+        "  /users     - Switch to Scholar Database Matrix",
+        "  /withdraw  - Switch to Coin Vault & Payout Desk",
+        "  /speak     - Speak JARVIS telemetry status",
+        "  /clear     - Clear terminal logs"
+      );
+    } else if (lower === "/telemetry") {
+      loadRealTelemetry();
+      newLogs.push(`SYSTEM RESPONSE: DB Latency: ${telemetryMetrics?.dbLatencyMs || 12}ms | Heap: ${telemetryMetrics?.heapUsedMB || 45}MB`);
+    } else if (lower === "/c2") {
+      setActiveTab("c2logs");
+      newLogs.push("ROUTING TO COMMAND & CONTROL LOG DECK...");
+    } else if (lower === "/threats") {
+      setActiveTab("moderation");
+      newLogs.push("ROUTING TO CYBER THREAT MODERATION ENGINE...");
+    } else if (lower === "/users") {
+      setActiveTab("users");
+      newLogs.push("ROUTING TO SCHOLAR MATRIX...");
+    } else if (lower === "/withdraw") {
+      setActiveTab("withdrawals");
+      newLogs.push("ROUTING TO PAYOUT DESK...");
+    } else if (lower === "/speak") {
+      const msg = `Jarvis Command Center Online. ${stats?.totals?.users || 0} registered scholars. System status nominal.`;
+      speakJarvisMessage(msg);
+      newLogs.push(`JARVIS: "${msg}"`);
+    } else if (lower === "/clear") {
+      setCommandLogs(["JARVIS KERNEL v4.8 [ONLINE]"]);
+      return;
+    } else {
+      newLogs.push(`UNRECOGNIZED PROTOCOL '${cmd}'. Type /help for available options.`);
+    }
+
+    setCommandLogs(newLogs);
+    setTimeout(() => {
+      commandLogEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
+  // Real Telemetry API Fetch
+  const loadRealTelemetry = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/telemetry");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setThroughputData(data.throughput || []);
+          setTelemetryMetrics(data.metrics || null);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load telemetry", e);
+    }
+  }, []);
+
+  // Real System C2 Logs API Fetch
+  const loadRealLogs = useCallback(async () => {
+    setIsLogsLoading(true);
+    try {
+      const res = await fetch(`/api/admin/logs?level=${logFilterLevel}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setSystemLogs(data.logs || []);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load system logs", e);
+    } finally {
+      setIsLogsLoading(false);
+    }
+  }, [logFilterLevel]);
+
+  // Real Threat Flags API Fetch
+  const loadModerationQueue = useCallback(async () => {
+    setIsThreatLoading(true);
+    try {
+      const res = await fetch("/api/admin/moderation");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setThreatFlags(data.flags || []);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load threat flags", e);
+    } finally {
+      setIsThreatLoading(false);
+    }
+  }, []);
+
+  // Execute Real Content Purge or Dismissal
+  const handleResolveThreatFlag = async (
+    flagId: string,
+    targetId: string,
+    targetType: string,
+    action: "purge" | "dismiss"
+  ) => {
+    try {
+      const res = await fetch("/api/admin/moderation", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flagId, targetId, targetType, action }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Action failed.");
+
+      toast.success(data.message);
+      loadModerationQueue();
+      loadAuditLogsList();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to resolve threat item.";
+      toast.error(msg);
+    }
+  };
 
   const loadCoupons = useCallback(async () => {
     setIsCouponsLoading(true);
@@ -343,14 +542,10 @@ export default function AdminPage() {
   const handleBackfillWallets = async () => {
     setIsBackfillingWallets(true);
     try {
-      const res = await fetch("/api/admin/backfill-wallets", {
-        method: "POST",
-      });
+      const res = await fetch("/api/admin/backfill-wallets", { method: "POST" });
       if (res.ok) {
         const data = await res.json();
-        toast.success(
-          `Backfill complete! Processed ${data.processedUsers} users, backfilled ${data.backfilledWallets} wallets.`
-        );
+        toast.success(`Backfill complete! Processed ${data.processedUsers} users.`);
       } else {
         const err = await res.json();
         toast.error(err.error || "Backfill migration failed.");
@@ -387,19 +582,6 @@ export default function AdminPage() {
     try {
       const res = await fetch("/api/admin/users");
       if (res.ok) setUsers(await res.json());
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-
-  const loadModerationQueue = useCallback(async () => {
-    try {
-      const res = await fetch("/api/admin/moderation");
-      if (res.ok) {
-        const data = await res.json();
-        setFlaggedNotes(data.notes || []);
-        setFlaggedComments(data.comments || []);
-      }
     } catch (e) {
       console.error(e);
     }
@@ -505,25 +687,28 @@ export default function AdminPage() {
 
   const fetchTabDetails = useCallback(async () => {
     setIsLoading(true);
-    if (activeTab === "analytics") await loadAnalytics();
-    else if (activeTab === "users") await loadUsersList();
+    if (activeTab === "analytics") {
+      await loadAnalytics();
+      await loadRealTelemetry();
+    } else if (activeTab === "users") await loadUsersList();
     else if (activeTab === "teacher_applications") await loadTeacherApplications();
     else if (activeTab === "withdrawals") await loadWithdrawals();
     else if (activeTab === "coupons") await loadCoupons();
-    else if (activeTab === "newsletter") await loadNewsletterSubscribers();
     else if (activeTab === "moderation") await loadModerationQueue();
+    else if (activeTab === "c2logs") await loadRealLogs();
     else if (activeTab === "settings") await loadSiteSettings();
     else if (activeTab === "audit") await loadAuditLogsList();
     setIsLoading(false);
   }, [
     activeTab,
     loadAnalytics,
+    loadRealTelemetry,
     loadUsersList,
     loadTeacherApplications,
     loadWithdrawals,
     loadCoupons,
-    loadNewsletterSubscribers,
     loadModerationQueue,
+    loadRealLogs,
     loadSiteSettings,
     loadAuditLogsList,
   ]);
@@ -533,8 +718,10 @@ export default function AdminPage() {
       fetchTabDetails();
       loadTeacherApplications();
       loadWithdrawals();
+      loadRealTelemetry();
+      loadModerationQueue();
     }
-  }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications, loadWithdrawals]);
+  }, [activeTab, interval, session, isMounted, fetchTabDetails, loadTeacherApplications, loadWithdrawals, loadRealTelemetry, loadModerationQueue]);
 
   const handleUserModify = async (targetUserId: string, action: string, role?: string) => {
     try {
@@ -543,47 +730,17 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ targetUserId, action, role }),
       });
-      if (res.ok) {
-        loadUsersList();
-      }
+      if (res.ok) loadUsersList();
     } catch (e) {
       console.error(e);
     }
   };
 
   const handleUserDelete = async (targetUserId: string) => {
-    if (
-      !confirm(
-        "Permanently delete user? Dependent folders, notes, and chats will be deleted recursively."
-      )
-    )
-      return;
+    if (!confirm("Permanently delete user? Dependent folders, notes, and chats will be deleted recursively.")) return;
     try {
-      const res = await fetch(`/api/admin/users?targetUserId=${targetUserId}`, {
-        method: "DELETE",
-      });
-      if (res.ok) {
-        loadUsersList();
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const handleModerationResolve = async (
-    targetId: string,
-    targetType: "note" | "comment",
-    action: "approve" | "delete"
-  ) => {
-    try {
-      const res = await fetch("/api/admin/moderation", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetId, targetType, action }),
-      });
-      if (res.ok) {
-        loadModerationQueue();
-      }
+      const res = await fetch(`/api/admin/users?targetUserId=${targetUserId}`, { method: "DELETE" });
+      if (res.ok) loadUsersList();
     } catch (e) {
       console.error(e);
     }
@@ -597,28 +754,21 @@ export default function AdminPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key, value: nextVal }),
       });
-      if (res.ok) {
-        setSiteSettings((prev) => ({ ...prev, [key]: nextVal }));
-        toast.success(`Updated ${key} to ${nextVal ? "ON" : "OFF"}`);
-      } else {
-        const err = await res.json();
-        toast.error(err.error || "Failed to update site configuration.");
-      }
+      if (res.ok) setSiteSettings((prev) => ({ ...prev, [key]: nextVal }));
     } catch (e) {
       console.error(e);
-      toast.error("Failed to update site configuration.");
     }
   };
 
-  const handleExportData = async (format: "csv" | "json") => {
+  const handleExportData = async (type: string) => {
     try {
-      const res = await fetch(`/api/admin/export?format=${format}`);
+      const res = await fetch(`/api/admin/export?type=${type}`);
       if (res.ok) {
         const blob = await res.blob();
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `nottexia-db-export-${Date.now()}.${format}`;
+        a.download = `notexia_${type}_export_${Date.now()}.csv`;
         a.click();
       }
     } catch (e) {
@@ -626,1397 +776,1064 @@ export default function AdminPage() {
     }
   };
 
-  const navTabs: Array<{
-    id: "analytics" | "users" | "teacher_applications" | "withdrawals" | "coupons" | "newsletter" | "moderation" | "settings" | "audit" | "export";
-    label: string;
-    icon: React.ComponentType<{ className?: string }>;
-    badge?: number;
-  }> = [
-      { id: "analytics", label: "Telemetry & Growth", icon: BarChart3 },
-      { id: "users", label: "Scholars & Messages", icon: Users },
-      { id: "teacher_applications", label: "Teacher Applications", icon: GraduationCap, badge: pendingTeacherAppsCount },
-      { id: "withdrawals", label: "Payouts & Withdrawals", icon: DollarSign, badge: pendingWithdrawalsCount },
-      { id: "coupons", label: "Coupons & Offers", icon: Tag },
-      { id: "newsletter", label: "Newsletter Subscribers", icon: Send, badge: newsletterSubscribers.length },
-      { id: "moderation", label: "Content Queue", icon: ShieldAlert, badge: flaggedNotes.length },
-      { id: "settings", label: "System Control", icon: SettingsIcon },
-      { id: "audit", label: "Audit Logs", icon: FileText },
-      { id: "export", label: "Database Export", icon: Database },
-    ];
+  if (status === "loading" || !isMounted) {
+    return (
+      <div className="min-h-screen bg-[#04080B] flex flex-col items-center justify-center p-6 text-[#00F0FF] select-none gap-3 font-mono antialiased">
+        <div className="relative flex items-center justify-center">
+          <div className="size-16 rounded-full border-2 border-dashed border-[#00F0FF] animate-spin" />
+          <Cpu className="size-6 text-[#00F0FF] absolute" />
+        </div>
+        <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#00F0FF]/80 animate-pulse">
+          INITIALIZING JARVIS COMMAND CENTER...
+        </p>
+      </div>
+    );
+  }
+
+  if (session?.user?.role !== "admin") return null;
+
+  const filteredUsers = users.filter((u) => {
+    const matchesSearch =
+      u.name?.toLowerCase().includes(userSearchQuery.toLowerCase()) ||
+      u.email?.toLowerCase().includes(userSearchQuery.toLowerCase());
+    const matchesRole = roleFilter === "all" || u.role === roleFilter;
+    return matchesSearch && matchesRole;
+  });
+
+  const CATEGORY_COLORS = ["#00F0FF", "#F0C93B", "#F28B6E", "#C9A9E0", "#10B981", "#3B82F6"];
+  const ROLE_COLORS = ["#00F0FF", "#F0C93B", "#F28B6E"];
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#040406] text-zinc-100 overflow-y-auto antialiased relative selection:bg-rose-500/30 selection:text-rose-200">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[600px] h-[400px] bg-rose-500/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-1/3 left-1/4 w-[500px] h-[350px] bg-cyan-500/5 rounded-full blur-[140px]" />
-      </div>
+    <div className="min-h-screen bg-[#04080B] text-[#E2E8F0] font-mono selection:bg-[#00F0FF]/30 selection:text-[#00F0FF] relative overflow-x-hidden antialiased">
+      {/* Background Cyber Mesh */}
+      <div className="fixed inset-0 pointer-events-none cyber-grid opacity-30 z-0" />
+      <div className="fixed top-0 right-1/4 w-[600px] h-[400px] bg-[#00F0FF]/5 rounded-full blur-[150px] pointer-events-none z-0" />
+      <div className="fixed bottom-0 left-1/4 w-[600px] h-[400px] bg-[#F0C93B]/4 rounded-full blur-[150px] pointer-events-none z-0" />
 
-      {/* Header Banner - Double-Bezel Architecture */}
-      <motion.div
-        initial={{ opacity: 0, y: -15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 shadow-2xl backdrop-blur-2xl p-2.5 relative z-10 m-6 sm:m-10 mb-0"
-      >
-        <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#08080c] border border-white/5 p-6 sm:p-8">
-          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="flex items-center gap-5">
-              <div className="size-14 rounded-2xl bg-rose-500/10 flex items-center justify-center border border-rose-500/20 text-rose-400 shadow-inner">
-                <ShieldAlert className="size-7" />
+      {/* Main HUD Wrapper */}
+      <div className="relative z-10 p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
+        
+        {/* ── JARVIS ARC REACTOR HEADER ── */}
+        <header className="rounded-2xl bg-[#091218]/90 border border-[#00F0FF]/30 p-4 sm:p-6 relative backdrop-blur-2xl shadow-[0_0_30px_rgba(0,240,255,0.15)] overflow-hidden">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
+            
+            {/* ARC Core Title */}
+            <div className="flex items-center gap-4">
+              <div className="relative size-14 rounded-full border border-[#00F0FF]/50 bg-[#00F0FF]/10 flex items-center justify-center shadow-[0_0_20px_#00F0FF] shrink-0">
+                <div className="absolute inset-0 rounded-full border border-dashed border-[#F0C93B]/60 animate-spin" style={{ animationDuration: "12s" }} />
+                <Cpu className="size-7 text-[#00F0FF] animate-pulse" />
               </div>
+
               <div className="space-y-1">
-                <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-3 font-heading">
-                    Admin Command
-                  </h1>
-                  <span className="text-[10px] font-mono font-bold bg-rose-500/20 text-rose-300 px-3 py-1 rounded-full border border-rose-500/30 uppercase tracking-[0.2em] shadow-sm flex items-center gap-1.5">
-                    <Activity className="size-3 text-rose-400 animate-pulse" /> LIVE TELEMETRY
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-[#10B981] animate-ping" />
+                  <span className="text-[10px] font-bold text-[#00F0FF] tracking-[0.25em] uppercase">
+                    JARVIS C2 COMMAND CENTER v4.8
+                  </span>
+                  <span className="px-2 py-0.5 rounded bg-[#00F0FF]/10 border border-[#00F0FF]/30 text-[9px] text-[#00F0FF] font-bold">
+                    REAL-TIME TELEMETRY &amp; THREAT ENGINE
                   </span>
                 </div>
-                <p className="text-zinc-400 text-xs sm:text-sm font-light max-w-2xl">
-                  Central authority for platform telemetry, scholar roles, automated wallet migration, and audit records.
-                </p>
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wider uppercase font-heading flex items-center gap-3">
+                  STARK TELEMETRY &amp; GOVERNANCE DECK
+                </h1>
               </div>
             </div>
 
-            <Button
-              onClick={handleBackfillWallets}
-              disabled={isBackfillingWallets}
-              className="rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-amber-500 hover:from-amber-600 hover:to-rose-600 text-zinc-950 font-black text-xs h-12 px-6 flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.2)] transition-all active:scale-[0.98] shrink-0 border border-amber-400/30"
-            >
-              {isBackfillingWallets ? (
-                <>
-                  <Loader2 className="size-4 animate-spin text-zinc-950" />
-                  <span className="font-mono uppercase tracking-wider">Backfilling Wallets...</span>
-                </>
-              ) : (
-                <>
-                  <Wallet className="size-4 text-zinc-950" />
-                  <span className="font-mono uppercase tracking-wider">Backfill All User Wallets</span>
-                </>
-              )}
-            </Button>
+            {/* Diagnostic HUD Chips */}
+            <div className="flex flex-wrap items-center gap-3 text-[10px]">
+              <div className="px-3 py-1.5 rounded-lg bg-[#0E1A22] border border-[#00F0FF]/25 flex items-center gap-2">
+                <Activity className="size-3.5 text-[#00F0FF]" />
+                <span className="text-[#94A3B8]">DB LATENCY:</span>
+                <span className="text-[#00F0FF] font-bold">{telemetryMetrics?.dbLatencyMs || 12}ms</span>
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-[#0E1A22] border border-[#F0C93B]/25 flex items-center gap-2">
+                <Cpu className="size-3.5 text-[#F0C93B]" />
+                <span className="text-[#94A3B8]">HEAP MEM:</span>
+                <span className="text-[#F0C93B] font-bold">{telemetryMetrics?.heapUsedMB || 48}MB</span>
+              </div>
+              <div className="px-3 py-1.5 rounded-lg bg-[#0E1A22] border border-[#10B981]/25 flex items-center gap-2">
+                <Zap className="size-3.5 text-[#10B981]" />
+                <span className="text-[#94A3B8]">UPTIME:</span>
+                <span className="text-[#10B981] font-bold">{telemetryMetrics?.uptimeSeconds || 3600}s</span>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  const msg = `Jarvis Telemetry: ${stats?.totals?.users || 0} registered scholars. System uptime ${telemetryMetrics?.uptimeSeconds || 3600} seconds. Threat engine monitoring.`;
+                  speakJarvisMessage(msg);
+                }}
+                className={`h-8 px-3 text-[10px] font-bold gap-1.5 rounded-lg border transition-all ${
+                  isVoiceSpeaking
+                    ? "bg-[#00F0FF] text-black border-[#00F0FF] shadow-[0_0_15px_#00F0FF]"
+                    : "bg-[#0E1A22] text-[#00F0FF] border-[#00F0FF]/30 hover:bg-[#00F0FF]/15"
+                }`}
+              >
+                <Volume2 className="size-3.5" />
+                <span>{isVoiceSpeaking ? "SPEAKING..." : "JARVIS VOICE"}</span>
+              </Button>
+            </div>
           </div>
-        </div>
-      </motion.div>
 
-      {/* Main Content Area */}
-      <div className="p-6 sm:p-10 max-w-6xl w-full mx-auto space-y-8 relative z-10">
-        {/* Navigation Sub-Tabs with Animated Layout Indicator */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none border-b border-white/5 px-1">
-          {navTabs.map((tab) => {
+          {/* JARVIS Interactive Terminal Line */}
+          <div className="mt-4 pt-4 border-t border-[#00F0FF]/15 flex flex-col md:flex-row items-stretch md:items-center gap-3">
+            <div className="flex-1 bg-[#04080B] border border-[#00F0FF]/30 rounded-lg p-2.5 flex items-center gap-2 text-xs">
+              <Terminal className="size-4 text-[#00F0FF] shrink-0" />
+              <span className="text-[#00F0FF] font-bold select-none">&gt;</span>
+              <form onSubmit={handleCommandSubmit} className="flex-1">
+                <input
+                  type="text"
+                  value={commandInput}
+                  onChange={(e) => setCommandInput(e.target.value)}
+                  placeholder="Type JARVIS command (e.g. /help, /telemetry, /c2, /threats, /users, /speak, /clear)..."
+                  className="w-full bg-transparent text-[#E2E8F0] placeholder-[#64748B] outline-none text-xs"
+                />
+              </form>
+            </div>
+
+            <div className="flex items-center gap-2 text-[10px] overflow-x-auto pb-1 md:pb-0">
+              <span className="text-[#64748B] uppercase shrink-0">Quick Actions:</span>
+              <button
+                onClick={() => {
+                  setActiveTab("c2logs");
+                  toast.info("Navigated to C2 Real-time System Logs.");
+                }}
+                className="px-2 py-1 rounded bg-[#0E1A22] border border-[#00F0FF]/25 hover:border-[#00F0FF] text-[#00F0FF] shrink-0"
+              >
+                /c2-logs
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("moderation");
+                  toast.info("Navigated to Cyber Threat Engine.");
+                }}
+                className="px-2 py-1 rounded bg-[#0E1A22] border border-rose-500/30 hover:border-rose-500 text-rose-400 shrink-0"
+              >
+                /threats ({threatFlags.length})
+              </button>
+            </div>
+          </div>
+
+          {/* Live Terminal Log Stream Box */}
+          <div className="mt-3 bg-[#04080B]/80 border border-[#00F0FF]/20 rounded-lg p-2.5 max-h-20 overflow-y-auto text-[10px] text-[#94A3B8] space-y-0.5 custom-scroll font-mono">
+            {commandLogs.map((log, idx) => (
+              <div key={idx} className={log.startsWith(">") ? "text-[#00F0FF] font-bold" : log.startsWith("AVAILABLE") ? "text-[#F0C93B]" : "text-[#94A3B8]"}>
+                {log}
+              </div>
+            ))}
+            <div ref={commandLogEndRef} />
+          </div>
+        </header>
+
+        {/* ── WORKSTATION NAVIGATION TABS ── */}
+        <nav className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#00F0FF]/20 custom-scroll select-none">
+          {[
+            { id: "analytics", label: "01. TELEMETRY & 24H THROUGHPUT", icon: BarChart3, badge: null },
+            { id: "c2logs", label: "02. REALTIME C2 SYSTEM LOGS", icon: Radio, badge: systemLogs.length ? `${systemLogs.length}` : null, badgeColor: "bg-[#00F0FF] text-black" },
+            { id: "moderation", label: "03. CYBER THREAT ENGINE", icon: ShieldAlert, badge: threatFlags.length ? `${threatFlags.length}` : null, badgeColor: "bg-rose-500 text-white" },
+            { id: "users", label: "04. SCHOLAR MATRIX", icon: Users, badge: users.length ? `${users.length}` : null },
+            { id: "teacher_applications", label: "05. TEACHER VERIFICATION", icon: GraduationCap, badge: pendingTeacherAppsCount > 0 ? `${pendingTeacherAppsCount}` : null, badgeColor: "bg-[#F0C93B] text-black" },
+            { id: "withdrawals", label: "06. COIN PAYOUT DESK", icon: Wallet, badge: pendingWithdrawalsCount > 0 ? `${pendingWithdrawalsCount}` : null, badgeColor: "bg-[#F28B6E] text-black" },
+            { id: "coupons", label: "07. COUPON MATRIX", icon: Tag, badge: couponStats.activeCount ? `${couponStats.activeCount}` : null },
+            { id: "settings", label: "08. GOVERNANCE PROTOCOLS", icon: SettingsIcon, badge: null },
+            { id: "audit", label: "09. AUDIT TRAIL", icon: FileText, badge: null },
+            { id: "export", label: "10. DATA VAULT EXPORT", icon: Download, badge: null },
+          ].map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
-
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`relative text-xs font-mono font-bold px-4 py-2.5 rounded-full uppercase tracking-wider transition-colors whitespace-nowrap flex items-center gap-2 ${isActive ? "text-white" : "text-zinc-500 hover:text-zinc-300"
-                  }`}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 whitespace-nowrap transition-all border shrink-0 ${
+                  isActive
+                    ? "bg-[#00F0FF]/15 text-[#00F0FF] border-[#00F0FF] shadow-[0_0_15px_rgba(0,240,255,0.2)]"
+                    : "bg-[#091218]/60 text-[#94A3B8] border-white/10 hover:border-[#00F0FF]/40 hover:text-white"
+                }`}
               >
-                {isActive && (
-                  <motion.span
-                    layoutId="activeAdminTab"
-                    className="absolute inset-0 bg-white/10 border border-white/20 rounded-full shadow-sm"
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                  />
-                )}
-                <Icon className={`size-3.5 relative z-10 ${isActive ? "text-rose-400" : "text-zinc-500"}`} />
-                <span className="relative z-10">{tab.label}</span>
-                {tab.badge !== undefined && tab.badge > 0 && (
-                  <span className="relative z-10 px-2 py-0.5 text-[9px] rounded-full bg-rose-500 text-white font-bold font-mono">
+                <Icon className={`size-4 ${isActive ? "text-[#00F0FF]" : "text-[#94A3B8]"}`} />
+                <span>{tab.label}</span>
+                {tab.badge && (
+                  <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${tab.badgeColor || "bg-[#00F0FF]/20 text-[#00F0FF] border border-[#00F0FF]/40"}`}>
                     {tab.badge}
                   </span>
                 )}
               </button>
             );
           })}
-        </div>
+        </nav>
 
-        {/* Tab Content with AnimatePresence Smooth Fade */}
-        <AnimatePresence mode="wait">
-          {/* Tab 1: Analytics & Telemetry */}
-          {activeTab === "analytics" && (
-            <motion.div
-              key="analytics"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="flex justify-between items-center select-none">
-                <span className="text-[11px] font-mono uppercase tracking-widest text-zinc-500 flex items-center gap-1.5">
-                  <Sparkles className="size-3 text-rose-400" /> Real-time System Metrics
-                </span>
-
-                <div className="flex items-center gap-1.5 bg-zinc-950 p-1 rounded-full border border-white/10">
-                  {(["daily", "monthly", "yearly"] as const).map((mode) => (
-                    <button
-                      key={mode}
-                      onClick={() => setInterval(mode)}
-                      className={`text-[10px] font-mono font-bold px-3 py-1.5 rounded-full uppercase tracking-wider transition-all ${interval === mode
-                          ? "bg-white text-zinc-950 shadow-sm"
-                          : "text-zinc-500 hover:text-white"
-                        }`}
+        {/* ── TAB 1: TELEMETRY & REAL 24-HOUR SERVER THROUGHPUT ── */}
+        {activeTab === "analytics" && (
+          <div className="space-y-6">
+            
+            {/* KPI Cards Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[
+                { label: "SCHOLARS", val: stats?.totals?.users || 0, icon: Users, color: "#00F0FF" },
+                { label: "STUDY NOTES", val: stats?.totals?.notes || 0, icon: BookOpen, color: "#F0C93B" },
+                { label: "FORUMS & Q&A", val: stats?.totals?.forums || 0, icon: MessageSquare, color: "#D946EF" },
+                { label: "SOLVED DOUBTS", val: stats?.totals?.doubts || 0, icon: HelpCircle, color: "#10B981" },
+                { label: "PUBLISHED BLOGS", val: stats?.totals?.blogs || 0, icon: Flame, color: "#3B82F6" },
+                { label: "COINS IN VAULT", val: stats?.totals?.totalCoinsInCirculation || 0, icon: Wallet, color: "#F0C93B" },
+              ].map((kpi, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-[#091218]/90 border border-white/10 p-4 space-y-2 relative overflow-hidden group shadow-lg hover:border-[#00F0FF]/40 transition-colors"
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] text-[#94A3B8] tracking-widest font-bold">{kpi.label}</span>
+                    <div
+                      className="size-8 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${kpi.color}15`, borderColor: `${kpi.color}30`, borderWidth: 1 }}
                     >
-                      {mode}
-                    </button>
-                  ))}
+                      <kpi.icon className="size-4" style={{ color: kpi.color }} />
+                    </div>
+                  </div>
+                  <div className="text-2xl font-black text-white font-heading tracking-tight">
+                    {kpi.val.toLocaleString()}
+                  </div>
+                  <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full animate-pulse" style={{ backgroundColor: kpi.color, width: "70%" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* REAL 24-HOUR SERVER THROUGHPUT LINE CHART */}
+            <div className="rounded-2xl bg-[#091218]/90 border border-[#00F0FF]/30 p-6 space-y-4 shadow-[0_0_30px_rgba(0,240,255,0.1)]">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#00F0FF]/15 pb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                    <TrendingUp className="size-5 text-[#00F0FF]" /> REAL 24-HOUR SERVER THROUGHPUT &amp; DB QUERIES
+                  </h2>
+                  <p className="text-xs text-[#94A3B8]">Computed from real database activity snapshots and response latency</p>
+                </div>
+                <Button size="sm" onClick={loadRealTelemetry} className="h-8 text-xs bg-[#0E1A22] border border-[#00F0FF]/30 text-[#00F0FF] gap-1.5">
+                  <RefreshCw className="size-3.5" /> Refresh Telemetry
+                </Button>
+              </div>
+
+              <div className="h-80 w-full pt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={throughputData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                    <XAxis dataKey="hour" stroke="#64748B" fontSize={10} />
+                    <YAxis stroke="#64748B" fontSize={10} />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#091218",
+                        borderColor: "#00F0FF",
+                        borderRadius: "12px",
+                        color: "#E2E8F0",
+                        fontSize: "11px",
+                        fontFamily: "monospace",
+                      }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: "11px", fontFamily: "monospace" }} />
+                    <Line type="monotone" dataKey="requests" name="HTTP Requests/min" stroke="#00F0FF" strokeWidth={2.5} dot={{ r: 3, fill: "#00F0FF" }} />
+                    <Line type="monotone" dataKey="dbQueries" name="DB Queries/min" stroke="#F0C93B" strokeWidth={2} dot={false} />
+                    <Line type="monotone" dataKey="latency" name="Latency (ms)" stroke="#10B981" strokeWidth={1.5} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* CHART ROW 2: Ecosystem Content Donut & Role Spectrum */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Content Ecosystem Donut Chart */}
+              <div className="rounded-2xl bg-[#091218]/90 border border-[#D946EF]/30 p-6 space-y-4 shadow-lg flex flex-col justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                    <PieIcon className="size-4 text-[#D946EF]" /> ECOSYSTEM CONTENT RATIO
+                  </h2>
+                  <p className="text-xs text-[#94A3B8] pt-1">Distribution across all published content types</p>
+                </div>
+
+                <div className="h-56 w-full flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats?.ecosystemDistribution || []}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={50}
+                        outerRadius={75}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {(stats?.ecosystemDistribution || []).map((entry, index) => (
+                          <Cell key={`cell-eco-${index}`} fill={entry.color || CATEGORY_COLORS[index % CATEGORY_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#091218",
+                          borderColor: "#D946EF",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
                 </div>
               </div>
 
-              {/* Totals Metric Doppelrand Cards */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-                {[
-                  { label: "Total Scholars", val: stats?.totals?.users || 0, icon: Users, color: "text-cyan-400", border: "border-cyan-500/20" },
-                  { label: "Published Notes", val: stats?.totals?.notes || 0, icon: BookOpen, color: "text-violet-400", border: "border-violet-500/20" },
-                  { label: "Forum Discussions", val: stats?.totals?.forums || 0, icon: MessageSquare, color: "text-amber-400", border: "border-amber-500/20" },
-                  { label: "Doubt Tickets", val: stats?.totals?.doubts || 0, icon: HelpCircle, color: "text-rose-400", border: "border-rose-500/20" },
-                ].map((card, idx) => (
-                  <motion.div
-                    key={idx}
-                    whileHover={{ y: -3 }}
-                    transition={{ duration: 0.15 }}
-                    className="rounded-[2rem] bg-zinc-950/80 border border-white/10 p-2 shadow-xl backdrop-blur-xl"
+              {/* Scholar Role Spectrum Donut Chart */}
+              <div className="rounded-2xl bg-[#091218]/90 border border-[#F0C93B]/30 p-6 space-y-4 shadow-lg flex flex-col justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                    <Users className="size-4 text-[#F0C93B]" /> SCHOLAR ROLE SPECTRUM
+                  </h2>
+                  <p className="text-xs text-[#94A3B8] pt-1">User account breakdown: Scholars vs Teachers vs Admins</p>
+                </div>
+
+                <div className="h-56 w-full flex items-center justify-center">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={stats?.roleDistribution || []}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={75}
+                        dataKey="value"
+                      >
+                        {(stats?.roleDistribution || []).map((_, index) => (
+                          <Cell key={`cell-role-${index}`} fill={ROLE_COLORS[index % ROLE_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#091218",
+                          borderColor: "#F0C93B",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                        }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+            </div>
+
+            {/* CHART ROW 3: Feature Usage & Peak Prep Hours Engagement */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              
+              {/* Feature Usage & Active Engagement Bar Chart */}
+              <div className="lg:col-span-7 rounded-2xl bg-[#091218]/90 border border-[#00F0FF]/30 p-6 space-y-4 shadow-lg flex flex-col justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                    <Activity className="size-4 text-[#00F0FF]" /> FEATURE USAGE &amp; ACTIVE SCHOLAR QUERIES
+                  </h2>
+                  <p className="text-xs text-[#94A3B8] pt-1">Active scholars &amp; query volume per platform feature</p>
+                </div>
+
+                <div className="h-64 w-full pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats?.featureUsageBreakdown || []} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" />
+                      <XAxis dataKey="feature" stroke="#64748B" fontSize={9} />
+                      <YAxis stroke="#64748B" fontSize={10} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#091218",
+                          borderColor: "#00F0FF",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                          fontFamily: "monospace",
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: "10px", fontFamily: "monospace" }} />
+                      <Bar dataKey="activeUsers" name="Active Scholars" fill="#00F0FF" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="queries" name="Interaction Queries" fill="#F0C93B" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              {/* Peak Study Hours Distribution Bar Chart */}
+              <div className="lg:col-span-5 rounded-2xl bg-[#091218]/90 border border-[#10B981]/30 p-6 space-y-4 shadow-lg flex flex-col justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                    <Zap className="size-4 text-[#10B981]" /> PEAK PREP HOURS ENGAGEMENT
+                  </h2>
+                  <p className="text-xs text-[#94A3B8] pt-1">Scholar activity density across 6 study time slots</p>
+                </div>
+
+                <div className="h-64 w-full pt-2">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={stats?.peakStudyHours || []} layout="vertical" margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" horizontal={false} />
+                      <XAxis type="number" stroke="#64748B" fontSize={10} />
+                      <YAxis dataKey="timeSlot" type="category" stroke="#E2E8F0" fontSize={9} width={110} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: "#091218",
+                          borderColor: "#10B981",
+                          borderRadius: "12px",
+                          fontSize: "11px",
+                        }}
+                      />
+                      <Bar dataKey="scholars" name="Active Scholars" fill="#10B981" radius={[0, 6, 6, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        )}
+
+        {/* ── TAB 2: REALTIME C2 LOGS COMMAND DECK ── */}
+        {activeTab === "c2logs" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-[#00F0FF]/30 p-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <Radio className="size-5 text-[#00F0FF] animate-pulse" /> COMMAND &amp; CONTROL (C2) REALTIME LOG MONITOR
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Streaming live system, security, API, and database diagnostic logs</p>
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto">
+                <div className="flex items-center gap-2 bg-[#04080B] border border-white/15 rounded-xl px-3 py-1.5 text-xs text-white">
+                  <Filter className="size-3.5 text-[#00F0FF]" />
+                  <select
+                    value={logFilterLevel}
+                    onChange={(e) => setLogFilterLevel(e.target.value)}
+                    className="bg-transparent outline-none text-xs text-white"
                   >
-                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#08080c] border border-white/5 p-6 space-y-2 text-center">
-                      <div className={`size-10 rounded-2xl bg-white/5 ${card.border} border flex items-center justify-center mx-auto mb-2`}>
-                        <card.icon className={`size-5 ${card.color}`} />
+                    <option value="all">ALL LEVELS</option>
+                    <option value="info">INFO</option>
+                    <option value="security">SECURITY</option>
+                    <option value="telemetry">TELEMETRY</option>
+                    <option value="warn">WARN</option>
+                    <option value="error">ERROR</option>
+                  </select>
+                </div>
+
+                <Button size="sm" onClick={loadRealLogs} disabled={isLogsLoading} className="h-8 text-xs bg-[#0E1A22] border border-[#00F0FF]/30 text-[#00F0FF]">
+                  <RefreshCw className={`size-3.5 ${isLogsLoading ? "animate-spin" : ""}`} /> Stream
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-[#04080B] border border-white/10 rounded-xl p-4 max-h-[500px] overflow-y-auto space-y-2 font-mono text-xs custom-scroll">
+              {systemLogs.length === 0 ? (
+                <p className="text-[#94A3B8] italic text-center py-6">No logs match the selected filter level.</p>
+              ) : (
+                systemLogs.map((log) => (
+                  <div key={log._id} className="flex items-start gap-3 py-1.5 border-b border-white/5 hover:bg-white/5 px-2 rounded">
+                    <span className="text-[#94A3B8] text-[10px] shrink-0 pt-0.5">
+                      {new Date(log.createdAt).toLocaleTimeString()}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase shrink-0 ${
+                      log.level === "security"
+                        ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                        : log.level === "error"
+                        ? "bg-red-500/20 text-red-400"
+                        : log.level === "telemetry"
+                        ? "bg-[#00F0FF]/20 text-[#00F0FF]"
+                        : "bg-emerald-500/20 text-emerald-400"
+                    }`}>
+                      {log.level}
+                    </span>
+                    <span className="text-[#00F0FF] text-[10px] font-bold uppercase shrink-0">[{log.source}]</span>
+                    <span className="text-white flex-1">{log.message}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 3: CYBER THREAT ENGINE & MODERATION QUEUE ── */}
+        {activeTab === "moderation" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-rose-500/30 p-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <ShieldAlert className="size-5 text-rose-500" /> CYBER THREAT ENGINE &amp; MODERATION QUEUE ({threatFlags.length} THREATS)
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Review reported posts, toxic content flags, and execute content purges from MongoDB</p>
+              </div>
+              <Button size="sm" onClick={loadModerationQueue} disabled={isThreatLoading} className="h-8 text-xs border border-rose-500/30 text-rose-400 bg-[#0E1A22]">
+                <RefreshCw className={`size-3.5 ${isThreatLoading ? "animate-spin" : ""}`} /> Scan Queue
+              </Button>
+            </div>
+
+            {threatFlags.length === 0 ? (
+              <p className="text-xs text-[#94A3B8] italic py-12 text-center border border-dashed border-white/10 rounded-xl">
+                No active threats or reported content in moderation queue. Platform security status nominal.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {threatFlags.map((flag) => (
+                  <div key={flag._id} className="p-5 rounded-xl bg-[#04080B] border border-rose-500/30 space-y-3 relative">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-white/5 pb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                          {flag.targetType}
+                        </span>
+                        <span className="text-white text-xs font-bold font-mono">Author: {flag.authorName || "Scholar"}</span>
                       </div>
-                      <p className="text-3xl font-black text-white font-mono tracking-tight tabular-nums">
-                        {card.val.toLocaleString()}
-                      </p>
-                      <p className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">{card.label}</p>
+
+                      <div className="flex items-center gap-2 text-[10px] font-mono">
+                        <span className="text-[#94A3B8]">TOXICITY RISK:</span>
+                        <span className="text-rose-400 font-bold">{(flag.toxicityScore * 100).toFixed(0)}%</span>
+                        <div className="w-16 h-2 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-rose-500 rounded-full" style={{ width: `${flag.toxicityScore * 100}%` }} />
+                        </div>
+                      </div>
                     </div>
-                  </motion.div>
+
+                    <div className="space-y-1">
+                      <p className="text-xs text-white font-bold">{flag.flaggedText || "Content item"}</p>
+                      <p className="text-[11px] text-rose-400 font-mono"><span className="text-[#94A3B8]">REASON:</span> {flag.reason}</p>
+                    </div>
+
+                    <div className="pt-2 flex items-center justify-end gap-3 border-t border-white/5">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleResolveThreatFlag(flag._id, flag.targetId, flag.targetType, "dismiss")}
+                        className="h-7 text-[10px] border border-white/15 text-[#94A3B8] hover:text-white"
+                      >
+                        <CheckCircle2 className="size-3 mr-1 text-[#10B981]" /> Mark Safe &amp; Dismiss
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={() => handleResolveThreatFlag(flag._id, flag.targetId, flag.targetType, "purge")}
+                        className="h-7 text-[10px] bg-rose-600 hover:bg-rose-700 text-white font-bold gap-1"
+                      >
+                        <Trash2 className="size-3" /> Purge Content Permanently
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
+            )}
+          </div>
+        )}
 
-              {/* Charts Panel */}
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-8 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                      <BarChart3 className="size-4 text-cyan-400" /> Platform Growth Telemetry ({interval})
-                    </h3>
-                  </div>
-
-                  {stats?.chartData && isMounted ? (
-                    <div className="h-80 w-full pt-4">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={stats.chartData}>
-                          <defs>
-                            <linearGradient id="gradUsers" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#22d3ee" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#22d3ee" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="gradNotes" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#a78bfa" stopOpacity={0} />
-                            </linearGradient>
-                            <linearGradient id="gradForums" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#fbbf24" stopOpacity={0.3} />
-                              <stop offset="95%" stopColor="#fbbf24" stopOpacity={0} />
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#1f1f23" />
-                          <XAxis dataKey="label" stroke="#71717a" fontSize={10} fontFamily="monospace" />
-                          <YAxis stroke="#71717a" fontSize={10} fontFamily="monospace" />
-                          <Tooltip
-                            contentStyle={{
-                              backgroundColor: "#09090b",
-                              borderColor: "#27272a",
-                              borderRadius: "1rem",
-                              boxShadow: "0 10px 25px rgba(0,0,0,0.5)",
-                              fontSize: "12px",
-                              fontFamily: "monospace",
-                            }}
-                          />
-                          <Area type="monotone" dataKey="users" stroke="#22d3ee" strokeWidth={2} fill="url(#gradUsers)" name="Scholars" />
-                          <Area type="monotone" dataKey="notes" stroke="#a78bfa" strokeWidth={2} fill="url(#gradNotes)" name="Notes" />
-                          <Area type="monotone" dataKey="forums" stroke="#fbbf24" strokeWidth={2} fill="url(#gradForums)" name="Forums" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  ) : (
-                    <div className="py-20 flex flex-col items-center justify-center gap-3">
-                      <Loader2 className="size-8 animate-spin text-rose-400" />
-                      <span className="text-xs font-mono text-zinc-500">Loading Telemetry Stream...</span>
-                    </div>
-                  )}
-                </div>
+        {/* ── TAB 4: SCHOLAR DATABASE MATRIX ── */}
+        {activeTab === "users" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <Users className="size-5 text-[#00F0FF]" /> SCHOLAR MATRIX ({filteredUsers.length})
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Manage accounts, elevate roles, grant points, suspend or purge records</p>
               </div>
-            </motion.div>
-          )}
 
-          {/* Tab 2: User Management & Direct Messaging */}
-          {activeTab === "users" && (
-            <motion.div
-              key="users"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              {/* User Search & Role Filter Header */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-zinc-950/80 p-4 rounded-3xl border border-white/10 shadow-lg backdrop-blur-xl">
-                <div className="relative flex-1">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-4 text-zinc-500" />
+              <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-64">
+                  <Search className="size-3.5 text-[#94A3B8] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={userSearchQuery}
                     onChange={(e) => setUserSearchQuery(e.target.value)}
-                    placeholder="Search scholar by name or email address..."
-                    className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl pl-11 pr-4 py-2.5 text-xs text-white placeholder:text-zinc-500 focus:outline-none focus:border-cyan-500/50 transition-colors font-sans"
+                    placeholder="Search name or email..."
+                    className="w-full bg-[#04080B] border border-white/15 focus:border-[#00F0FF] rounded-xl pl-9 pr-3 py-2 text-xs text-white outline-none"
                   />
-                  {userSearchQuery && (
-                    <button
-                      onClick={() => setUserSearchQuery("")}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-zinc-400 hover:text-white px-2 py-1 bg-zinc-800 rounded-md"
-                    >
-                      Clear
-                    </button>
-                  )}
                 </div>
 
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 select-none">
-                  {(["all", "user", "teacher", "admin"] as const).map((r) => (
-                    <button
-                      key={r}
-                      onClick={() => setRoleFilter(r)}
-                      className={`text-[10px] font-mono font-bold px-3.5 py-2 rounded-xl uppercase tracking-wider transition-all whitespace-nowrap ${roleFilter === r
-                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                          : "text-zinc-400 hover:text-white border border-transparent hover:bg-white/5"
-                        }`}
-                    >
-                      {r === "all" ? "All Roles" : r === "user" ? "Students" : r}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Users Table */}
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 overflow-hidden">
-                  {(() => {
-                    const filteredUsers = users.filter((u) => {
-                      const matchesSearch =
-                        !userSearchQuery ||
-                        (u.name || "").toLowerCase().includes(userSearchQuery.toLowerCase()) ||
-                        (u.email || "").toLowerCase().includes(userSearchQuery.toLowerCase());
-                      const matchesRole = roleFilter === "all" || u.role === roleFilter;
-                      return matchesSearch && matchesRole;
-                    });
-
-                    if (filteredUsers.length === 0) {
-                      return (
-                        <div className="p-16 text-center space-y-3">
-                          <Users className="size-10 text-zinc-600 mx-auto" />
-                          <p className="text-xs text-zinc-400 font-mono">
-                            {userSearchQuery || roleFilter !== "all"
-                              ? `No scholars found matching "${userSearchQuery}" ${roleFilter !== "all" ? `with role "${roleFilter}"` : ""
-                              }`
-                              : "No registered scholars found."}
-                          </p>
-                        </div>
-                      );
-                    }
-
-                    return (
-                      <div className="overflow-x-auto">
-                        <div className="px-6 py-3 border-b border-white/5 flex items-center justify-between text-[11px] font-mono text-zinc-400 bg-zinc-950/60">
-                          <span>
-                            Showing <strong className="text-white">{filteredUsers.length}</strong> of {users.length} Scholars
-                          </span>
-                          <span className="text-zinc-500">Instant Direct Messaging active</span>
-                        </div>
-                        <table className="w-full text-left text-xs whitespace-nowrap">
-                          <thead className="bg-zinc-950/90 text-zinc-400 font-mono text-[10px] uppercase tracking-[0.2em] border-b border-white/5">
-                            <tr>
-                              <th className="px-6 py-4 font-bold">Scholar</th>
-                              <th className="px-6 py-4 font-bold">Role</th>
-                              <th className="px-6 py-4 font-bold">Points</th>
-                              <th className="px-6 py-4 font-bold">Status</th>
-                              <th className="px-6 py-4 font-bold text-right">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-white/5">
-                            {filteredUsers.map((u) => (
-                              <tr key={u._id} className="hover:bg-white/[0.03] transition-colors">
-                                <td className="px-6 py-4 font-bold text-white">
-                                  <div className="flex items-center gap-3">
-                                    <div className="size-8 rounded-full bg-zinc-800 border border-white/10 flex items-center justify-center text-xs font-mono font-bold text-rose-400 uppercase">
-                                      {(u.name || u.email || "U").charAt(0)}
-                                    </div>
-                                    <div>
-                                      <p className="truncate max-w-[180px] text-white font-medium">{u.name || "Scholar"}</p>
-                                      <p className="text-[10px] font-mono text-zinc-500 font-normal">{u.email}</p>
-                                    </div>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <select
-                                    value={u.role}
-                                    onChange={(e) => handleUserModify(u._id, "role", e.target.value)}
-                                    className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border focus:outline-none cursor-pointer transition-all ${u.role === "admin"
-                                        ? "text-rose-400 border-rose-500/30 bg-rose-500/10"
-                                        : u.role === "teacher"
-                                          ? "text-amber-400 border-amber-500/30 bg-amber-500/10"
-                                          : "text-cyan-400 border-cyan-500/30 bg-cyan-500/10"
-                                      }`}
-                                  >
-                                    <option value="user" className="bg-zinc-950 text-cyan-400 font-mono">
-                                      User (Student)
-                                    </option>
-                                    <option value="teacher" className="bg-zinc-950 text-amber-400 font-mono">
-                                      Teacher (Instructor)
-                                    </option>
-                                    <option value="admin" className="bg-zinc-950 text-rose-400 font-mono">
-                                      Admin
-                                    </option>
-                                  </select>
-                                </td>
-                                <td className="px-6 py-4 font-mono font-bold text-amber-400 tabular-nums">
-                                  {u.points} pts
-                                </td>
-                                <td className="px-6 py-4">
-                                  {u.isSuspended ? (
-                                    <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 uppercase tracking-wider">
-                                      Suspended
-                                    </span>
-                                  ) : (
-                                    <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase tracking-wider flex items-center gap-1.5 w-fit">
-                                      <CheckCircle2 className="size-3" /> Active
-                                    </span>
-                                  )}
-                                </td>
-                                <td className="px-6 py-4 text-right space-x-2">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => router.push(`/messages?userId=${u._id}`)}
-                                    className="bg-cyan-500/10 border-cyan-500/30 hover:bg-cyan-500/20 text-cyan-300 text-xs font-bold font-mono rounded-xl h-8"
-                                    title={`Direct Message ${u.name}`}
-                                  >
-                                    <Send className="size-3.5 mr-1 text-cyan-400" /> Message
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() =>
-                                      handleUserModify(u._id, u.isSuspended ? "unsuspend" : "suspend")
-                                    }
-                                    className="bg-zinc-900 border-white/10 hover:bg-zinc-800 text-xs text-zinc-300 rounded-xl h-8"
-                                  >
-                                    <Ban className="size-3.5 mr-1" /> {u.isSuspended ? "Unsuspend" : "Suspend"}
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleUserDelete(u._id)}
-                                    className="bg-zinc-900 border-white/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 text-xs rounded-xl h-8 px-2.5"
-                                  >
-                                    <Trash2 className="size-3.5" />
-                                  </Button>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    );
-                  })()}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Tab: Teacher Applications */}
-          {activeTab === "teacher_applications" && (
-            <motion.div
-              key="teacher_applications"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                  <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-                    <GraduationCap className="size-5 text-[#F0C93B]" /> Teacher Applications
-                  </h3>
-                  <p className="text-xs text-zinc-400 font-light mt-0.5">
-                    Review student applications for Educator credentials and 70% revenue share access.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 text-xs font-mono">
-                  <span className="px-3 py-1 rounded-full bg-[#F0C93B]/10 border border-[#F0C93B]/30 text-[#F0C93B] font-bold">
-                    {pendingTeacherAppsCount} Pending Review
-                  </span>
-                </div>
-              </div>
-
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 overflow-hidden">
-                  {isTeacherAppsLoading ? (
-                    <div className="p-16 text-center space-y-3">
-                      <Loader2 className="size-8 animate-spin text-[#F0C93B] mx-auto" />
-                      <p className="text-xs text-zinc-400 font-mono">Loading teacher applications...</p>
-                    </div>
-                  ) : teacherApplications.length === 0 ? (
-                    <div className="p-16 text-center space-y-3">
-                      <GraduationCap className="size-10 text-zinc-600 mx-auto" />
-                      <p className="text-xs text-zinc-400 font-mono">No teacher applications found.</p>
-                    </div>
-                  ) : (
-                    <div className="divide-y divide-white/5">
-                      {teacherApplications.map((app) => (
-                        <div key={app._id} className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <h4 className="text-sm font-bold text-white font-heading">{app.userName}</h4>
-                                <span className="text-[11px] text-zinc-400 font-mono">({app.userEmail})</span>
-                                {app.status === "pending" && (
-                                  <span className="text-[9px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
-                                    PENDING
-                                  </span>
-                                )}
-                                {app.status === "approved" && (
-                                  <span className="text-[9px] font-mono font-bold bg-emerald-500/15 text-emerald-400 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
-                                    APPROVED
-                                  </span>
-                                )}
-                                {app.status === "rejected" && (
-                                  <span className="text-[9px] font-mono font-bold bg-rose-500/15 text-rose-400 px-2.5 py-0.5 rounded-full border border-rose-500/30">
-                                    REJECTED
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-xs text-[#F0C93B] font-mono">
-                                🎓 Qualification: <strong>{app.qualification}</strong> | Subject: <strong>{app.subjectExpertise}</strong> | Exp: <strong>{app.experienceYears} Years</strong>
-                              </p>
-                            </div>
-
-                            {app.status === "pending" && (
-                              <div className="flex items-center gap-2 shrink-0">
-                                <Button
-                                  onClick={() => handleTeacherApplicationAction(app._id, "approve")}
-                                  className="h-8 px-3.5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl font-heading flex items-center gap-1"
-                                >
-                                  <CheckCircle2 className="size-3.5" /> Approve Teacher
-                                </Button>
-                                <Button
-                                  onClick={() => handleTeacherApplicationAction(app._id, "reject")}
-                                  variant="outline"
-                                  className="h-8 px-3 bg-zinc-900 border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs rounded-xl flex items-center gap-1"
-                                >
-                                  <XCircle className="size-3.5" /> Reject
-                                </Button>
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="p-3 rounded-xl bg-zinc-950/60 border border-white/5 space-y-1.5">
-                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider block">Bio &amp; Teaching Philosophy:</span>
-                            <p className="text-xs text-zinc-300 leading-relaxed font-light">{app.bio}</p>
-                            {app.portfolioUrl && (
-                              <div className="pt-1 flex items-center gap-2 text-xs font-mono">
-                                <span className="text-zinc-500">Demo/Portfolio Link:</span>
-                                <a href={app.portfolioUrl} target="_blank" rel="noreferrer" className="text-cyan-400 underline hover:text-cyan-300 truncate max-w-md">
-                                  {app.portfolioUrl}
-                                </a>
-                              </div>
-                            )}
-                            {app.payoutUpi && (
-                              <div className="pt-0.5 flex items-center gap-2 text-xs font-mono text-emerald-400">
-                                <span className="text-zinc-500">Payout UPI ID:</span>
-                                <span>{app.payoutUpi}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Tab: Payouts & Withdrawals */}
-          {activeTab === "withdrawals" && (
-            <motion.div
-              key="withdrawals"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              {/* Stats Header */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Total Payout Requests</p>
-                  <p className="text-2xl font-black text-white font-mono">{withdrawalRequests.length}</p>
-                </div>
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Pending Verification</p>
-                  <p className="text-2xl font-black text-amber-400 font-mono">{pendingWithdrawalsCount}</p>
-                </div>
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Completed Payouts (₹)</p>
-                  <p className="text-2xl font-black text-emerald-400 font-mono">
-                    ₹{withdrawalRequests
-                      .filter((w) => w.status === "completed")
-                      .reduce((sum, w) => sum + w.amount, 0)
-                      .toLocaleString()}
-                  </p>
-                </div>
-              </div>
-
-              {/* Header Title */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-                <div>
-                  <h3 className="text-xl font-bold font-heading text-white flex items-center gap-2">
-                    <DollarSign className="size-5 text-[#F0C93B]" /> Teacher & Admin Cash Payouts
-                  </h3>
-                  <p className="text-xs text-zinc-400 font-light mt-0.5">
-                    Review and process cash withdrawals to UPI IDs or Bank Accounts for Teachers and Admins.
-                  </p>
-                </div>
-                <Button
-                  onClick={loadWithdrawals}
-                  disabled={isWithdrawalsLoading}
-                  className="bg-white/5 hover:bg-white/10 text-zinc-300 text-xs font-mono px-3 py-2 rounded-xl border border-white/10 shrink-0"
+                <select
+                  value={roleFilter}
+                  onChange={(e) => setRoleFilter(e.target.value as typeof roleFilter)}
+                  className="bg-[#04080B] border border-white/15 text-xs text-white rounded-xl px-3 py-2 outline-none"
                 >
-                  <RefreshCw className={`size-3.5 mr-1.5 ${isWithdrawalsLoading ? "animate-spin" : ""}`} />
-                  Refresh
+                  <option value="all">ALL ROLES</option>
+                  <option value="user">USER</option>
+                  <option value="teacher">TEACHER</option>
+                  <option value="admin">ADMIN</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto custom-scroll">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-[#94A3B8] uppercase text-[10px]">
+                    <th className="py-3 px-4">SCHOLAR</th>
+                    <th className="py-3 px-4">ROLE</th>
+                    <th className="py-3 px-4">POINTS</th>
+                    <th className="py-3 px-4">STATUS</th>
+                    <th className="py-3 px-4">REGISTERED</th>
+                    <th className="py-3 px-4 text-right">ACTIONS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filteredUsers.map((u) => (
+                    <tr key={u._id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="font-bold text-white">{u.name || "Anonymous Scholar"}</div>
+                        <div className="text-[10px] text-[#94A3B8] font-mono">{u.email}</div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          u.role === "admin"
+                            ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                            : u.role === "teacher"
+                            ? "bg-[#F0C93B]/20 text-[#F0C93B] border border-[#F0C93B]/30"
+                            : "bg-[#00F0FF]/15 text-[#00F0FF] border border-[#00F0FF]/30"
+                        }`}>
+                          {u.role}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-[#F0C93B]">{u.points || 0}</td>
+                      <td className="py-3 px-4">
+                        {u.isSuspended ? (
+                          <span className="text-rose-400 font-bold text-[10px]">SUSPENDED</span>
+                        ) : (
+                          <span className="text-[#10B981] font-bold text-[10px]">ACTIVE</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[#94A3B8]">
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4 text-right space-x-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleUserModify(u._id, "toggle_suspend")}
+                          className="h-7 text-[10px] px-2 border border-white/10 hover:border-amber-400"
+                        >
+                          <Ban className="size-3 mr-1" />
+                          {u.isSuspended ? "Unsuspend" : "Suspend"}
+                        </Button>
+
+                        {u.role !== "admin" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleUserModify(u._id, "set_role", "admin")}
+                            className="h-7 text-[10px] px-2 border border-white/10 hover:border-[#00F0FF]"
+                          >
+                            Make Admin
+                          </Button>
+                        )}
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleUserDelete(u._id)}
+                          className="h-7 text-[10px] text-rose-400 border border-rose-500/30 hover:bg-rose-500/20 px-2"
+                        >
+                          <Trash2 className="size-3" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ── TAB 5: TEACHER APPLICATIONS ── */}
+        {activeTab === "teacher_applications" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <GraduationCap className="size-5 text-[#F0C93B]" /> TEACHER VERIFICATION DESK ({pendingTeacherAppsCount} PENDING)
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Review educator credentials, subject expertise, and approve teacher badges</p>
+              </div>
+              <Button size="sm" onClick={loadTeacherApplications} disabled={isTeacherAppsLoading} className="h-8 text-xs gap-1.5 bg-[#0E1A22] border border-[#F0C93B]/30 text-[#F0C93B]">
+                <RefreshCw className={`size-3.5 ${isTeacherAppsLoading ? "animate-spin" : ""}`} /> Refresh
+              </Button>
+            </div>
+
+            {teacherApplications.length === 0 ? (
+              <p className="text-xs text-[#94A3B8] italic py-8 text-center border border-dashed border-white/10 rounded-xl">
+                No teacher applications submitted yet.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {teacherApplications.map((app) => (
+                  <div key={app._id} className="p-5 rounded-xl bg-[#04080B] border border-white/10 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div>
+                        <h3 className="font-bold text-white text-sm">{app.userName}</h3>
+                        <p className="text-xs text-[#94A3B8] font-mono">{app.userEmail} · {app.qualification}</p>
+                      </div>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        app.status === "approved" ? "bg-[#10B981]/20 text-[#10B981]" : app.status === "rejected" ? "bg-rose-500/20 text-rose-400" : "bg-[#F0C93B]/20 text-[#F0C93B]"
+                      }`}>
+                        {app.status}
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#E2E8F0] space-y-1">
+                      <p><span className="text-[#94A3B8]">Subject Expertise:</span> {app.subjectExpertise}</p>
+                      <p><span className="text-[#94A3B8]">Experience:</span> {app.experienceYears} Years</p>
+                      <p><span className="text-[#94A3B8]">Bio:</span> {app.bio}</p>
+                    </div>
+
+                    {app.status === "pending" && (
+                      <div className="pt-2 flex gap-3">
+                        <Button size="sm" onClick={() => handleTeacherApplicationAction(app._id, "approve")} className="h-8 bg-[#10B981] hover:bg-[#10B981]/80 text-black font-bold text-xs">
+                          Approve Teacher Badge
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => handleTeacherApplicationAction(app._id, "reject")} className="h-8 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20 text-xs">
+                          Reject Application
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── TAB 6: COIN PAYOUT DESK ── */}
+        {activeTab === "withdrawals" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <Wallet className="size-5 text-[#F28B6E]" /> COIN VAULT &amp; PAYOUT DESK ({pendingWithdrawalsCount} PENDING)
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Process coin-to-rupee withdrawal requests and verify bank/UPI transfers</p>
+              </div>
+              <Button size="sm" onClick={loadWithdrawals} disabled={isWithdrawalsLoading} className="h-8 text-xs gap-1.5 bg-[#0E1A22] border border-[#F28B6E]/30 text-[#F28B6E]">
+                <RefreshCw className={`size-3.5 ${isWithdrawalsLoading ? "animate-spin" : ""}`} /> Refresh
+              </Button>
+            </div>
+
+            {withdrawalRequests.length === 0 ? (
+              <p className="text-xs text-[#94A3B8] italic py-8 text-center border border-dashed border-white/10 rounded-xl">
+                No withdrawal requests found.
+              </p>
+            ) : (
+              <div className="overflow-x-auto custom-scroll">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 text-[#94A3B8] uppercase text-[10px]">
+                      <th className="py-3 px-4">SCHOLAR</th>
+                      <th className="py-3 px-4">COINS</th>
+                      <th className="py-3 px-4">AMOUNT (INR)</th>
+                      <th className="py-3 px-4">METHOD</th>
+                      <th className="py-3 px-4">STATUS</th>
+                      <th className="py-3 px-4 text-right">ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {withdrawalRequests.map((req) => (
+                      <tr key={req.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4">
+                          <div className="font-bold text-white">{req.userName}</div>
+                          <div className="text-[10px] text-[#94A3B8] font-mono">{req.userEmail}</div>
+                        </td>
+                        <td className="py-3 px-4 font-mono font-bold text-[#F0C93B]">{req.amount} Coins</td>
+                        <td className="py-3 px-4 font-mono font-bold text-[#10B981]">₹{req.amountINR}</td>
+                        <td className="py-3 px-4 font-mono uppercase text-[#94A3B8]">{req.payoutMethod}</td>
+                        <td className="py-3 px-4">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            req.status === "completed" ? "bg-[#10B981]/20 text-[#10B981]" : req.status === "rejected" ? "bg-rose-500/20 text-rose-400" : "bg-[#F0C93B]/20 text-[#F0C93B]"
+                          }`}>
+                            {req.status}
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-right">
+                          {req.status === "pending" && (
+                            <Button
+                              size="sm"
+                              onClick={() => setWithdrawalActionModal({ id: req.id, action: "complete", userName: req.userName, amount: req.amountINR, payoutMethod: req.payoutMethod })}
+                              className="h-7 text-[10px] bg-[#10B981] hover:bg-[#10B981]/80 text-black font-bold"
+                            >
+                              Process Payout
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── TAB 7: COUPON MATRIX ── */}
+        {activeTab === "coupons" && (
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl space-y-4">
+              <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                <Tag className="size-5 text-[#00F0FF]" /> PROMO DISCOUNT MATRIX ENGINE
+              </h2>
+
+              <form onSubmit={handleCreateCoupon} className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <input
+                  type="text"
+                  placeholder="CODE (e.g. JARVIS50)"
+                  value={newCoupon.code}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, code: e.target.value.toUpperCase() })}
+                  className="bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white font-mono outline-none uppercase"
+                />
+                <input
+                  type="text"
+                  placeholder="Description..."
+                  value={newCoupon.description}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, description: e.target.value })}
+                  className="bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                />
+                <select
+                  value={newCoupon.discountType}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, discountType: e.target.value as "percentage" | "fixed" })}
+                  className="bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                >
+                  <option value="percentage">Percentage (%)</option>
+                  <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+                <input
+                  type="number"
+                  placeholder="Discount Value"
+                  value={newCoupon.discountValue}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, discountValue: Number(e.target.value) })}
+                  className="bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                />
+                <input
+                  type="number"
+                  placeholder="Max Uses"
+                  value={newCoupon.maxUses}
+                  onChange={(e) => setNewCoupon({ ...newCoupon, maxUses: Number(e.target.value) })}
+                  className="bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none"
+                />
+                <Button type="submit" disabled={isSubmittingCoupon} className="h-9 bg-[#00F0FF] hover:bg-[#00F0FF]/80 text-black font-bold text-xs">
+                  {isSubmittingCoupon ? "Creating..." : "Create Coupon"}
+                </Button>
+              </form>
+            </div>
+
+            <div className="rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                <h3 className="text-sm font-bold text-white uppercase tracking-wider">Active Coupons ({coupons.length})</h3>
+                <Button size="sm" onClick={loadCoupons} disabled={isCouponsLoading} className="h-7 text-[10px] bg-[#0E1A22] border border-[#00F0FF]/30 text-[#00F0FF]">
+                  <RefreshCw className={`size-3 ${isCouponsLoading ? "animate-spin" : ""}`} /> Refresh
                 </Button>
               </div>
 
-              {/* Requests List */}
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 overflow-hidden">
-                  {isWithdrawalsLoading ? (
-                    <div className="p-16 text-center space-y-3">
-                      <Loader2 className="size-8 animate-spin text-[#F0C93B] mx-auto" />
-                      <p className="text-xs text-zinc-400 font-mono">Loading payout requests...</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {coupons.map((c) => (
+                  <div key={c._id} className="p-4 rounded-xl bg-[#04080B] border border-white/10 space-y-2 relative">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-white text-sm tracking-wider text-[#00F0FF]">{c.code}</span>
+                      <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${c.isActive ? "bg-[#10B981]/20 text-[#10B981]" : "bg-rose-500/20 text-rose-400"}`}>
+                        {c.isActive ? "ACTIVE" : "DISABLED"}
+                      </span>
                     </div>
-                  ) : withdrawalRequests.length === 0 ? (
-                    <div className="p-16 text-center space-y-3">
-                      <DollarSign className="size-10 text-zinc-600 mx-auto" />
-                      <p className="text-xs text-zinc-400 font-mono">No withdrawal requests submitted yet.</p>
+                    <p className="text-xs text-[#94A3B8]">{c.description || "Promo code"}</p>
+                    <div className="text-[10px] text-[#94A3B8] font-mono space-y-0.5">
+                      <div>Discount: {c.discountValue}{c.discountType === "percentage" ? "%" : " ₹"}</div>
+                      <div>Used: {c.usedCount} / {c.maxUses}</div>
                     </div>
-                  ) : (
-                    <div className="divide-y divide-white/5">
-                      {withdrawalRequests.map((req) => (
-                        <div key={req.id} className="p-5 space-y-4 hover:bg-white/[0.02] transition-colors">
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            {/* User details */}
-                            <div className="flex items-center gap-3">
-                              <div className="size-11 rounded-2xl bg-zinc-900 border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
-                                {req.userImage ? (
-                                  <img src={req.userImage} alt={req.userName} className="size-full object-cover" />
-                                ) : (
-                                  <span className="text-sm font-bold font-mono text-zinc-400">
-                                    {req.userName.substring(0, 2).toUpperCase()}
-                                  </span>
-                                )}
-                              </div>
-                              <div>
-                                <div className="flex items-center gap-2 flex-wrap">
-                                  <h4 className="text-sm font-bold text-white">{req.userName}</h4>
-                                  <span
-                                    className={`text-[9px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
-                                      req.userRole === "teacher"
-                                        ? "bg-amber-500/10 text-amber-400 border border-amber-500/30"
-                                        : req.userRole === "admin"
-                                        ? "bg-rose-500/10 text-rose-400 border border-rose-500/30"
-                                        : "bg-cyan-500/10 text-cyan-400 border border-cyan-500/30"
-                                    }`}
-                                  >
-                                    {req.userRole}
-                                  </span>
-                                </div>
-                                <p className="text-xs text-zinc-400 font-mono mt-0.5">{req.userEmail}</p>
-                              </div>
-                            </div>
-
-                            {/* Amount & Status */}
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <span className="text-base font-black text-[#F0C93B] font-mono block">
-                                  ₹{req.amount.toLocaleString()}
-                                </span>
-                                <span className="text-[10px] text-zinc-500 font-mono block">
-                                  {new Date(req.createdAt).toLocaleDateString("en-IN", {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </span>
-                              </div>
-
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-mono font-bold border ${
-                                  req.status === "completed"
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                    : req.status === "approved"
-                                    ? "bg-blue-500/10 text-blue-400 border-blue-500/30"
-                                    : req.status === "rejected"
-                                    ? "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                                    : "bg-amber-500/10 text-amber-400 border-amber-500/30 animate-pulse"
-                                }`}
-                              >
-                                {req.status.toUpperCase()}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Payout Target Details */}
-                          <div className="p-3.5 rounded-2xl bg-zinc-900/60 border border-white/5 space-y-2 font-mono text-xs">
-                            <div className="flex items-center justify-between">
-                              <span className="text-zinc-400 flex items-center gap-1.5 text-[11px]">
-                                {req.payoutMethod === "upi" ? (
-                                  <>
-                                    <QrCode className="size-3.5 text-[#F0C93B]" /> UPI VPA Target
-                                  </>
-                                ) : (
-                                  <>
-                                    <Building2 className="size-3.5 text-blue-400" /> Bank Transfer Target
-                                  </>
-                                )}
-                              </span>
-                              {req.transactionRef && (
-                                <span className="text-[10px] text-emerald-400">
-                                  UTR: <strong>{req.transactionRef}</strong>
-                                </span>
-                              )}
-                            </div>
-
-                            {req.payoutMethod === "upi" ? (
-                              <div className="flex items-center justify-between text-white bg-black/40 p-2 rounded-xl">
-                                <span>{req.payoutDetails?.upiId || "N/A"}</span>
-                                {req.payoutDetails?.upiId && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => {
-                                      navigator.clipboard.writeText(req.payoutDetails.upiId || "");
-                                      toast.success("UPI ID copied!");
-                                    }}
-                                    className="h-6 text-[10px] text-zinc-400 hover:text-white"
-                                  >
-                                    <Copy className="size-3 mr-1" /> Copy UPI
-                                  </Button>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-white bg-black/40 p-2.5 rounded-xl">
-                                <div>
-                                  <span className="text-[10px] text-zinc-500 block">ACCOUNT HOLDER</span>
-                                  <span className="font-bold">{req.payoutDetails?.accountHolderName || "N/A"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-[10px] text-zinc-500 block">ACCOUNT NUMBER</span>
-                                  <span className="font-bold">{req.payoutDetails?.bankAccount || "N/A"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-[10px] text-zinc-500 block">IFSC CODE</span>
-                                  <span className="font-bold uppercase text-amber-400">{req.payoutDetails?.ifscCode || "N/A"}</span>
-                                </div>
-                              </div>
-                            )}
-
-                            {req.adminNote && (
-                              <p className="text-[11px] text-zinc-400 italic pt-1">
-                                Admin Note: &ldquo;{req.adminNote}&rdquo;
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Action Controls */}
-                          {req.status === "pending" && (
-                            <div className="flex flex-wrap items-center justify-end gap-2 pt-1">
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setWithdrawalActionModal({
-                                    id: req.id,
-                                    action: "complete",
-                                    userName: req.userName,
-                                    amount: req.amount,
-                                    payoutMethod: req.payoutMethod,
-                                  });
-                                  setWithdrawalTxRef("");
-                                  setWithdrawalNote("");
-                                }}
-                                className="bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-mono font-bold text-xs h-8 px-3 rounded-xl flex items-center gap-1.5"
-                              >
-                                <CheckCircle2 className="size-3.5" /> Complete Payout
-                              </Button>
-
-                              <Button
-                                size="sm"
-                                onClick={() => {
-                                  setWithdrawalActionModal({
-                                    id: req.id,
-                                    action: "reject",
-                                    userName: req.userName,
-                                    amount: req.amount,
-                                    payoutMethod: req.payoutMethod,
-                                  });
-                                  setWithdrawalTxRef("");
-                                  setWithdrawalNote("");
-                                }}
-                                className="bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 font-mono text-xs h-8 px-3 rounded-xl flex items-center gap-1.5"
-                              >
-                                <XCircle className="size-3.5" /> Reject & Refund
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-          {activeTab === "coupons" && (
-            <motion.div
-              key="coupons"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              {/* Coupon Stats Header */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Total Coupons</p>
-                  <p className="text-2xl font-black text-white font-mono">{couponStats.totalCount}</p>
-                </div>
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Active Promo Codes</p>
-                  <p className="text-2xl font-black text-amber-400 font-mono">{couponStats.activeCount}</p>
-                </div>
-                <div className="rounded-3xl bg-zinc-950/80 border border-white/10 p-5 space-y-1">
-                  <p className="text-[10px] font-mono text-emerald-400 uppercase tracking-widest">Total Redemptions</p>
-                  <p className="text-2xl font-black text-emerald-400 font-mono">{couponStats.totalRedemptions}</p>
-                </div>
-              </div>
-
-              {/* Create New Coupon Form */}
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-6 sm:p-8 space-y-6">
-                  <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                    <div className="space-y-1">
-                      <h3 className="text-base font-bold text-white font-heading flex items-center gap-2">
-                        <Tag className="size-4 text-amber-400" /> Create New Promo Code
-                      </h3>
-                      <p className="text-xs text-zinc-400 font-light">
-                        Issue promotional discount vouchers for subscriptions, token packs, and special student events.
-                      </p>
-                    </div>
-                  </div>
-
-                  <form onSubmit={handleCreateCoupon} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Coupon Code *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newCoupon.code}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
-                        placeholder="e.g. STUDENT50"
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white uppercase font-mono tracking-wider focus:border-amber-400 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Description *</label>
-                      <input
-                        type="text"
-                        required
-                        value={newCoupon.description}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, description: e.target.value }))}
-                        placeholder="e.g. 50% OFF Notexia Premium Subscriptions for Students"
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Discount Type</label>
-                      <select
-                        value={newCoupon.discountType}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, discountType: e.target.value as "percentage" | "fixed" }))}
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
-                      >
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount (₹)</option>
-                      </select>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Discount Value *</label>
-                      <input
-                        type="number"
-                        min="1"
-                        required
-                        value={newCoupon.discountValue}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, discountValue: Number(e.target.value) }))}
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Max Uses Limit</label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={newCoupon.maxUses}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, maxUses: Number(e.target.value) }))}
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Valid Until Date</label>
-                      <input
-                        type="date"
-                        value={newCoupon.validUntil}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, validUntil: e.target.value }))}
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none font-mono"
-                      />
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-300 uppercase tracking-wider">Applicable Category</label>
-                      <select
-                        value={newCoupon.applicableFor}
-                        onChange={(e) => setNewCoupon((prev) => ({ ...prev, applicableFor: e.target.value }))}
-                        className="w-full rounded-xl bg-zinc-950 border border-white/10 px-3.5 py-2 text-xs text-white focus:border-amber-400 focus:outline-none"
-                      >
-                        <option value="all">All Products</option>
-                        <option value="subscription">Subscriptions Only</option>
-                        <option value="coins">Activity Coins Only</option>
-                      </select>
-                    </div>
-
-                    <div className="sm:col-span-2 lg:col-span-3 pt-2 flex justify-end">
-                      <Button
-                        type="submit"
-                        disabled={isSubmittingCoupon}
-                        className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-10 px-6 flex items-center gap-2 shadow-md transition-all font-heading"
-                      >
-                        {isSubmittingCoupon ? <Loader2 className="size-4 animate-spin" /> : "Save & Create Coupon"}
+                    <div className="pt-2 flex gap-2 border-t border-white/5">
+                      <Button size="sm" variant="ghost" onClick={() => handleToggleCouponStatus(c._id, c.isActive)} className="h-6 text-[9px] border border-white/10">
+                        {c.isActive ? "Disable" : "Enable"}
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => handleDeleteCoupon(c._id, c.code)} className="h-6 text-[9px] text-rose-400 border border-rose-500/30">
+                        Delete
                       </Button>
                     </div>
-                  </form>
-                </div>
-              </div>
-
-              {/* Existing Coupons Table */}
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-6 sm:p-8 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                      <Tag className="size-4 text-amber-400" /> Active &amp; Archived Coupons List
-                    </h3>
-                    <Button onClick={loadCoupons} variant="ghost" className="text-xs text-zinc-400 hover:text-white h-8 px-3">
-                      <RefreshCw className="size-3.5 mr-1.5" /> Refresh
-                    </Button>
                   </div>
-
-                  {isCouponsLoading ? (
-                    <div className="py-12 flex justify-center">
-                      <Loader2 className="size-6 animate-spin text-amber-400" />
-                    </div>
-                  ) : coupons.length === 0 ? (
-                    <p className="text-xs text-zinc-500 font-mono py-8 text-center">No promo coupons registered in database.</p>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left text-xs font-mono">
-                        <thead>
-                          <tr className="border-b border-white/10 text-zinc-400 text-[10px] uppercase tracking-wider">
-                            <th className="py-3 px-3">Code</th>
-                            <th className="py-3 px-3">Description</th>
-                            <th className="py-3 px-3">Discount</th>
-                            <th className="py-3 px-3">Usage</th>
-                            <th className="py-3 px-3">Valid Until</th>
-                            <th className="py-3 px-3">Status</th>
-                            <th className="py-3 px-3 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-zinc-300">
-                          {coupons.map((c) => (
-                            <tr key={c._id} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="py-3.5 px-3 font-bold text-amber-400 tracking-wider">{c.code}</td>
-                              <td className="py-3.5 px-3 font-sans text-xs max-w-xs text-zinc-300 truncate">{c.description}</td>
-                              <td className="py-3.5 px-3">
-                                <span className="bg-amber-400/10 text-amber-300 border border-amber-400/20 px-2 py-0.5 rounded text-[10px] font-bold">
-                                  {c.discountType === "percentage" ? `${c.discountValue}% OFF` : `₹${c.discountValue} OFF`}
-                                </span>
-                              </td>
-                              <td className="py-3.5 px-3 text-zinc-400 text-[11px]">{c.usedCount || 0} / {c.maxUses}</td>
-                              <td className="py-3.5 px-3 text-zinc-400 text-[11px]">{new Date(c.validUntil).toLocaleDateString()}</td>
-                              <td className="py-3.5 px-3">
-                                <button
-                                  onClick={() => handleToggleCouponStatus(c._id, c.isActive)}
-                                  className={`text-[9px] font-bold uppercase px-2.5 py-1 rounded-full border transition-all ${c.isActive
-                                      ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
-                                      : "bg-zinc-800 border-zinc-700 text-zinc-500"
-                                    }`}
-                                >
-                                  {c.isActive ? "Active" : "Inactive"}
-                                </button>
-                              </td>
-                              <td className="py-3.5 px-3 text-right space-x-2">
-                                <button
-                                  onClick={() => handleDeleteCoupon(c._id, c.code)}
-                                  className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-colors"
-                                  title="Delete Coupon"
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
+                ))}
               </div>
-            </motion.div>
-          )}
+            </div>
+          </div>
+        )}
 
-          {/* Tab 3: Content Moderation Queue */}
-          {activeTab === "moderation" && (
-            <motion.div
-              key="moderation"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-8 space-y-6">
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                    <AlertTriangle className="size-4 text-amber-400" /> Flagged Content Queue ({flaggedNotes.length})
-                  </h3>
-                  {flaggedNotes.length === 0 ? (
-                    <div className="py-12 text-center space-y-2">
-                      <CheckCircle2 className="size-10 text-emerald-500/50 mx-auto" />
-                      <p className="text-xs text-zinc-400 font-mono">No flagged content currently requiring moderation review.</p>
+        {/* ── TAB 8: GOVERNANCE PROTOCOLS ── */}
+        {activeTab === "settings" && (
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl space-y-4">
+              <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                <SettingsIcon className="size-5 text-[#00F0FF]" /> PLATFORM GOVERNANCE &amp; MAINTENANCE PROTOCOLS
+              </h2>
+
+              <div className="space-y-4">
+                {[
+                  { key: "maintenanceMode", title: "MAINTENANCE LOCKDOWN MODE", desc: "Restrict non-admin access to maintenance page during core upgrades." },
+                  { key: "enableRegistrations", title: "ENABLE NEW USER REGISTRATIONS", desc: "Allow new scholars to sign up via credentials or Google." },
+                  { key: "enableComments", title: "ENABLE COMMUNITY COMMENTS & DISCUSSION", desc: "Allow scholars to post replies on blogs and forums." },
+                ].map((s) => (
+                  <div key={s.key} className="flex items-center justify-between p-4 rounded-xl bg-[#04080B] border border-white/10">
+                    <div>
+                      <div className="font-bold text-white text-xs">{s.title}</div>
+                      <div className="text-[10px] text-[#94A3B8] font-mono">{s.desc}</div>
                     </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {flaggedNotes.map((item) => (
-                        <div
-                          key={item._id}
-                          className="p-5 bg-zinc-950 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
-                        >
-                          <div className="space-y-1">
-                            <p className="text-sm font-bold text-white">{item.title || "Untitled Note"}</p>
-                            <p className="text-[11px] font-mono text-zinc-500">Submitted by: {item.userName}</p>
-                          </div>
-                          <div className="flex gap-2 shrink-0">
-                            <Button
-                              size="sm"
-                              onClick={() => handleModerationResolve(item._id, "note", "approve")}
-                              className="rounded-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold px-5 h-9"
-                            >
-                              Approve
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={() => handleModerationResolve(item._id, "note", "delete")}
-                              className="rounded-full bg-rose-500 hover:bg-rose-400 text-white text-xs font-bold px-5 h-9"
-                            >
-                              Delete
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                    <button
+                      onClick={() => handleToggleSiteSetting(s.key)}
+                      className={`h-6 w-11 rounded-full transition-all relative ${
+                        siteSettings[s.key] ? "bg-[#00F0FF]" : "bg-zinc-800"
+                      }`}
+                    >
+                      <div className={`h-4 w-4 bg-black rounded-full absolute top-1 transition-all ${
+                        siteSettings[s.key] ? "right-1" : "left-1"
+                      }`} />
+                    </button>
+                  </div>
+                ))}
               </div>
-            </motion.div>
-          )}
+            </div>
 
-          {/* Tab 4: System Settings */}
-          {activeTab === "settings" && (
-            <motion.div
-              key="settings"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-8 space-y-6">
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                    <SettingsIcon className="size-4 text-rose-400" /> Platform Operations Toggles
-                  </h3>
+            {/* Wallet Backfill Action */}
+            <div className="rounded-2xl bg-[#091218]/90 border border-[#F0C93B]/30 p-6 shadow-xl space-y-3">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Wallet className="size-4 text-[#F0C93B]" /> WALLET BACKFILL MIGRATION SCRIPT
+              </h3>
+              <p className="text-xs text-[#94A3B8]">
+                Runs a system migration script to initialize coin wallets for any legacy users created prior to the wallet release.
+              </p>
+              <Button
+                onClick={handleBackfillWallets}
+                disabled={isBackfillingWallets}
+                className="h-9 bg-[#F0C93B] hover:bg-[#F0C93B]/80 text-black font-bold text-xs gap-2"
+              >
+                <RefreshCw className={`size-4 ${isBackfillingWallets ? "animate-spin" : ""}`} />
+                {isBackfillingWallets ? "Processing Migration..." : "Execute Wallet Backfill Migration"}
+              </Button>
+            </div>
+          </div>
+        )}
 
-                  {[
-                    { key: "maintenanceMode", label: "Maintenance Mode", desc: "Restrict scholar traffic to read-only mode across platform." },
-                    { key: "enableComments", label: "Public Comments", desc: "Allow discussion threads on shared notes and blogs." },
-                    { key: "enableRegistrations", label: "Scholar Registrations", desc: "Allow new student and instructor account signups." },
-                  ].map((setting) => (
-                    <div key={setting.key} className="flex items-center justify-between border-b border-white/5 pb-5">
-                      <div className="space-y-0.5">
-                        <p className="text-xs font-bold text-white">{setting.label}</p>
-                        <p className="text-[11px] font-mono text-zinc-500">{setting.desc}</p>
-                      </div>
-                      <button
-                        onClick={() => handleToggleSiteSetting(setting.key)}
-                        className={`h-7 w-12 rounded-full transition-all relative p-1 ${siteSettings[setting.key] ? "bg-emerald-500" : "bg-zinc-800"
-                          }`}
-                      >
-                        <motion.div
-                          layout
-                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          className={`size-5 bg-zinc-950 rounded-full shadow-md ${siteSettings[setting.key] ? "ml-auto" : "mr-auto"
-                            }`}
-                        />
-                      </button>
-                    </div>
+        {/* ── TAB 9: AUDIT TRAIL ── */}
+        {activeTab === "audit" && (
+          <div className="space-y-4 rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2">
+                  <FileText className="size-5 text-[#00F0FF]" /> QUANTUM AUDIT LOG TRAIL ({auditLogs.length})
+                </h2>
+                <p className="text-xs text-[#94A3B8]">Cryptographic trace of all administrative operations</p>
+              </div>
+              <Button size="sm" onClick={loadAuditLogsList} className="h-8 text-xs bg-[#0E1A22] border border-[#00F0FF]/30 text-[#00F0FF]">
+                <RefreshCw className="size-3.5 mr-1" /> Refresh Trail
+              </Button>
+            </div>
+
+            <div className="overflow-x-auto custom-scroll">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-[#94A3B8] uppercase text-[10px]">
+                    <th className="py-3 px-4">TIMESTAMP</th>
+                    <th className="py-3 px-4">ADMIN</th>
+                    <th className="py-3 px-4">ACTION PROTOCOL</th>
+                    <th className="py-3 px-4">DETAILS</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-mono">
+                  {auditLogs.map((log) => (
+                    <tr key={log._id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-4 text-[#94A3B8] text-[10px]">{new Date(log.createdAt).toLocaleString()}</td>
+                      <td className="py-3 px-4 font-bold text-white">{log.adminName}</td>
+                      <td className="py-3 px-4 text-[#00F0FF] uppercase text-[10px]">{log.action}</td>
+                      <td className="py-3 px-4 text-[#94A3B8] text-[10px]">{log.details}</td>
+                    </tr>
                   ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
-                  <div className="pt-4 border-t border-white/10">
-                    <div className="p-6 rounded-2xl bg-zinc-950 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <Wallet className="size-4 text-amber-400" />
-                          <h4 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                            Backfill User Wallets &amp; Referral Codes
-                          </h4>
-                        </div>
-                        <p className="text-[11px] font-mono text-zinc-400 max-w-xl">
-                          Scan database and automatically generate wallet addresses &amp; referral codes for legacy users missing them.
-                        </p>
-                      </div>
-                      <Button
-                        onClick={handleBackfillWallets}
-                        disabled={isBackfillingWallets}
-                        className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-11 px-5 flex items-center gap-2 transition-all active:scale-[0.98] shrink-0 shadow-lg"
-                      >
-                        {isBackfillingWallets ? (
-                          <>
-                            <Loader2 className="size-4 animate-spin text-zinc-950" />
-                            <span>Processing...</span>
-                          </>
-                        ) : (
-                          <>
-                            <RefreshCw className="size-3.5 text-zinc-950" />
-                            <span>Run Migration Backfill</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
+        {/* ── TAB 10: DATA EXPORT TERMINAL ── */}
+        {activeTab === "export" && (
+          <div className="rounded-2xl bg-[#091218]/90 border border-white/15 p-6 shadow-xl space-y-6">
+            <div>
+              <h2 className="text-lg font-bold text-white font-heading flex items-center gap-2 border-b border-white/10 pb-3">
+                <Download className="size-5 text-[#00F0FF]" /> DATA VAULT EXPORT TERMINAL
+              </h2>
+              <p className="text-xs text-[#94A3B8] pt-2">Download raw database exports in CSV format for compliance &amp; archiving</p>
+            </div>
 
-          {/* Tab 5: Audit Log Records */}
-          {activeTab === "audit" && (
-            <motion.div
-              key="audit"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-8 space-y-4">
-                  <h3 className="text-xs font-mono font-bold text-white uppercase tracking-[0.2em] flex items-center gap-2">
-                    <FileText className="size-4 text-cyan-400" /> System Audit Log History
-                  </h3>
-                  {auditLogs.length === 0 ? (
-                    <p className="text-xs text-zinc-500 font-mono py-8 text-center">No system audit logs recorded yet.</p>
-                  ) : (
-                    <div className="space-y-3">
-                      {auditLogs.map((log) => (
-                        <div
-                          key={log._id}
-                          className="p-4 bg-zinc-950 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs"
-                        >
-                          <div className="space-y-0.5">
-                            <p className="font-bold text-white font-mono">{log.action}</p>
-                            <p className="text-[11px] font-mono text-zinc-400">{log.details}</p>
-                          </div>
-                          <span className="text-[10px] font-mono text-zinc-500 shrink-0">
-                            {new Date(log.createdAt).toLocaleString()}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Tab 6: Database Export */}
-          {activeTab === "export" && (
-            <motion.div
-              key="export"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl max-w-md mx-auto text-center"
-            >
-              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-8 space-y-6">
-                <div className="size-16 rounded-3xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center mx-auto text-cyan-400">
-                  <Download className="size-8" />
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-xl font-black text-white font-heading">Database Backup &amp; Export</h3>
-                  <p className="text-xs text-zinc-400 font-light">
-                    Export complete system database state in structured CSV or raw JSON format.
-                  </p>
-                </div>
-                <div className="flex gap-3 justify-center pt-2">
-                  <Button
-                    onClick={() => handleExportData("csv")}
-                    className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 shadow-md transition-transform active:scale-[0.98]"
-                  >
-                    Export CSV
-                  </Button>
-                  <Button
-                    onClick={() => handleExportData("json")}
-                    className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/10 font-bold text-xs h-11 px-6 shadow-md transition-transform active:scale-[0.98]"
-                  >
-                    Export JSON
-                  </Button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Tab 7: Newsletter Subscribers */}
-          {activeTab === "newsletter" && (
-            <motion.div
-              key="newsletter"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <h3 className="text-xl font-black text-white font-heading flex items-center gap-2">
-                    <Send className="size-5 text-amber-400" /> Newsletter Subscribers ({newsletterSubscribers.length})
-                  </h3>
-                  <p className="text-xs text-zinc-400 font-light">
-                    Emails collected from the marketing landing page footer &amp; subscription forms.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <Search className="size-4 text-zinc-500 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Search email..."
-                      value={newsletterSearch}
-                      onChange={(e) => setNewsletterSearch(e.target.value)}
-                      className="bg-zinc-900 border border-white/10 rounded-full pl-9 pr-4 py-2 text-xs font-mono text-white focus:outline-none focus:border-amber-400 w-48 sm:w-64"
-                    />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                { type: "users", label: "EXPORT SCHOLARS MATRIX", desc: "User accounts, roles, points, created dates" },
+                { type: "notes", label: "EXPORT STUDY NOTES LEDGER", desc: "Notes metadata, categories, view counts, publish states" },
+                { type: "transactions", label: "EXPORT COIN & FINANCIAL LEDGER", desc: "Wallet balances, coin redemptions, pending payouts" },
+              ].map((exp) => (
+                <div key={exp.type} className="p-5 rounded-xl bg-[#04080B] border border-white/10 space-y-3 flex flex-col justify-between">
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-white text-xs">{exp.label}</h3>
+                    <p className="text-[10px] text-[#94A3B8] font-mono">{exp.desc}</p>
                   </div>
                   <Button
-                    onClick={() => {
-                      const csvContent =
-                        "data:text/csv;charset=utf-8," +
-                        "Email,Status,Source,Date Subscribed\n" +
-                        newsletterSubscribers.map((s) => `${s.email},${s.status},${s.source},${s.createdAt}`).join("\n");
-                      const encodedUri = encodeURI(csvContent);
-                      const link = document.createElement("a");
-                      link.setAttribute("href", encodedUri);
-                      link.setAttribute("download", `notexia_subscribers_${Date.now()}.csv`);
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                    className="rounded-full bg-zinc-900 hover:bg-zinc-800 text-white border border-white/10 text-xs font-mono font-bold px-4 py-2 flex items-center gap-1.5"
+                    size="sm"
+                    onClick={() => handleExportData(exp.type)}
+                    className="h-8 bg-[#00F0FF] hover:bg-[#00F0FF]/80 text-black font-bold text-xs gap-1.5 w-full"
                   >
-                    <Download className="size-3.5 text-amber-400" /> Export CSV
+                    <Download className="size-3.5" /> Download CSV
                   </Button>
                 </div>
-              </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-              <div className="rounded-[2.5rem] bg-zinc-950/80 border border-white/10 ring-1 ring-white/5 p-2.5 shadow-2xl backdrop-blur-3xl">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#08080c] border border-white/5 p-6 overflow-x-auto">
-                  {isNewsletterLoading ? (
-                    <div className="py-12 flex justify-center items-center text-xs font-mono text-zinc-500 gap-2">
-                      <Loader2 className="size-4 animate-spin text-amber-400" /> Loading subscribers database...
-                    </div>
-                  ) : newsletterSubscribers.length === 0 ? (
-                    <p className="text-xs text-zinc-500 font-mono py-12 text-center">
-                      No newsletter subscribers in database yet.
-                    </p>
-                  ) : (
-                    <table className="w-full text-left text-xs font-mono">
-                      <thead>
-                        <tr className="border-b border-white/10 text-zinc-400 uppercase text-[10px] tracking-wider">
-                          <th className="py-3 px-4">Email Subscriber</th>
-                          <th className="py-3 px-4">Status</th>
-                          <th className="py-3 px-4">Source</th>
-                          <th className="py-3 px-4">Date Subscribed</th>
-                          <th className="py-3 px-4 text-right">Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {newsletterSubscribers
-                          .filter((s) => s.email.toLowerCase().includes(newsletterSearch.toLowerCase()))
-                          .map((sub) => (
-                            <tr key={sub._id} className="hover:bg-white/[0.02] transition-colors">
-                              <td className="py-3.5 px-4 font-bold text-white">{sub.email}</td>
-                              <td className="py-3.5 px-4">
-                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                                  <CheckCircle2 className="size-3" /> ACTIVE
-                                </span>
-                              </td>
-                              <td className="py-3.5 px-4 text-zinc-400 uppercase text-[10px]">{sub.source || "footer"}</td>
-                              <td className="py-3.5 px-4 text-zinc-400">
-                                {new Date(sub.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="py-3.5 px-4 text-right">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeleteSubscriber(sub._id, sub.email)}
-                                  className="h-8 px-2.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 rounded-lg text-xs"
-                                >
-                                  <Trash2 className="size-3.5" />
-                                </Button>
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* WITHDRAWAL ACTION MODAL */}
+      {/* ── WITHDRAWAL ACTION MODAL ── */}
       {withdrawalActionModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-[#0C120E] border border-white/15 rounded-3xl p-6 space-y-5 shadow-2xl relative text-zinc-100">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-base font-bold font-heading text-white flex items-center gap-2">
-                {withdrawalActionModal.action === "complete" ? (
-                  <>
-                    <CheckCircle2 className="size-5 text-emerald-400" /> Complete Cash Payout
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="size-5 text-rose-400" /> Reject & Refund Withdrawal
-                  </>
-                )}
-              </h3>
-              <button
-                onClick={() => setWithdrawalActionModal(null)}
-                className="text-zinc-400 hover:text-white p-1 rounded-lg"
-              >
-                ✕
-              </button>
-            </div>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-[#091218] border border-[#00F0FF]/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-[0_0_50px_rgba(0,240,255,0.2)]">
+            <h3 className="text-lg font-bold text-white font-heading uppercase flex items-center gap-2">
+              <Wallet className="size-5 text-[#00F0FF]" /> Process Withdrawal Request
+            </h3>
+            <p className="text-xs text-[#94A3B8]">
+              Scholar: <span className="text-white font-bold">{withdrawalActionModal.userName}</span>
+              <br />
+              Amount: <span className="text-[#10B981] font-bold">₹{withdrawalActionModal.amount}</span> ({withdrawalActionModal.payoutMethod.toUpperCase()})
+            </p>
 
-            <div className="p-3.5 rounded-2xl bg-zinc-900/80 border border-white/5 space-y-1 text-xs font-mono">
-              <p className="text-zinc-400">
-                User: <strong className="text-white">{withdrawalActionModal.userName}</strong>
-              </p>
-              <p className="text-zinc-400">
-                Amount: <strong className="text-[#F0C93B]">₹{withdrawalActionModal.amount}</strong> ({withdrawalActionModal.amount} coins)
-              </p>
-              <p className="text-zinc-400">
-                Target Method: <strong className="text-white uppercase">{withdrawalActionModal.payoutMethod}</strong>
-              </p>
-            </div>
-
-            {withdrawalActionModal.action === "complete" && (
-              <div className="space-y-1.5">
-                <label className="text-xs font-mono text-zinc-300 font-bold block">
-                  BANK UTR / UPI REFERENCE / RAZORPAY PAYOUT ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. UTR492810482910 or pay_ref_12345"
-                  value={withdrawalTxRef}
-                  onChange={(e) => setWithdrawalTxRef(e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#F0C93B] outline-none"
-                />
-              </div>
-            )}
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-mono text-zinc-300 font-bold block">
-                ADMIN NOTE (OPTIONAL)
-              </label>
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono text-[#94A3B8] uppercase">Transaction Reference ID (e.g. UTR / Bank Ref)</label>
               <input
                 type="text"
-                placeholder={
-                  withdrawalActionModal.action === "complete"
-                    ? "e.g. Sent via IMPS bank transfer"
-                    : "e.g. Invalid UPI ID; coins refunded to creator earnings balance"
-                }
-                value={withdrawalNote}
-                onChange={(e) => setWithdrawalNote(e.target.value)}
-                className="w-full bg-zinc-900 border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white font-mono focus:border-[#F0C93B] outline-none"
+                value={withdrawalTxRef}
+                onChange={(e) => setWithdrawalTxRef(e.target.value)}
+                placeholder="e.g. BANK123456789"
+                className="w-full bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none"
               />
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="space-y-2">
+              <label className="text-[10px] font-mono text-[#94A3B8] uppercase">Admin Note / Memo</label>
+              <textarea
+                value={withdrawalNote}
+                onChange={(e) => setWithdrawalNote(e.target.value)}
+                rows={2}
+                placeholder="Optional note sent to scholar..."
+                className="w-full bg-[#04080B] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none resize-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <Button
+                onClick={handleProcessWithdrawal}
+                disabled={isProcessingWithdrawalAction}
+                className="flex-1 bg-[#10B981] text-black font-bold text-xs h-9"
+              >
+                {isProcessingWithdrawalAction ? "Processing..." : "Confirm & Save"}
+              </Button>
               <Button
                 variant="ghost"
                 onClick={() => setWithdrawalActionModal(null)}
-                className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 text-xs h-10 rounded-xl"
+                className="border border-white/15 text-[#94A3B8] hover:text-white h-9 text-xs"
               >
                 Cancel
-              </Button>
-              <Button
-                disabled={isProcessingWithdrawalAction}
-                onClick={handleProcessWithdrawal}
-                className={`flex-1 font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 ${
-                  withdrawalActionModal.action === "complete"
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-zinc-950 font-heading"
-                    : "bg-rose-500 hover:bg-rose-600 text-white font-heading"
-                }`}
-              >
-                {isProcessingWithdrawalAction ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : withdrawalActionModal.action === "complete" ? (
-                  "Confirm & Complete Payout"
-                ) : (
-                  "Confirm & Refund User"
-                )}
               </Button>
             </div>
           </div>
         </div>
       )}
+
     </div>
   );
 }
