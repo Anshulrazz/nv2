@@ -1436,7 +1436,7 @@ export default function AdminPage() {
                           </Button>
                         )}
 
-                        {u.role !== "admin" && (
+                        {u.role !== "admin" ? (
                           <Button
                             size="sm"
                             variant="ghost"
@@ -1445,6 +1445,17 @@ export default function AdminPage() {
                           >
                             Make Admin
                           </Button>
+                        ) : (
+                          u._id !== session?.user?.id && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleUserModify(u._id, u.isSuspended, "role", "user")}
+                              className="h-7 text-[10px] px-2 border border-rose-500/30 text-rose-400 hover:bg-rose-500/20"
+                            >
+                              Remove Admin
+                            </Button>
+                          )
                         )}
 
                         <Button

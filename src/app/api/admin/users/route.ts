@@ -69,6 +69,9 @@ export const PATCH = auth(async function PATCH(req) {
       if (!role || !["admin", "user", "teacher"].includes(role)) {
         return NextResponse.json({ error: "Invalid role." }, { status: 400 });
       }
+      if (targetUserId === session.user.id && role !== "admin") {
+        return NextResponse.json({ error: "You cannot remove your own admin privileges." }, { status: 400 });
+      }
       targetUser.role = role;
       logDetail = `Updated user role to ${role}: ${targetUser.email}`;
     }
