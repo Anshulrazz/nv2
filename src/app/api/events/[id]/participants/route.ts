@@ -4,10 +4,11 @@ import { auth } from "@/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 import { Event } from "@/models/Event";
 import { EventRegistration } from "@/models/EventRegistration";
+import { EventTeam } from "@/models/EventTeam";
 import { EventSubmission } from "@/models/EventSubmission";
 import { requireAdminOrHost } from "@/lib/eventAuth";
 
-// GET /api/events/[id]/participants — host/admin only, full participant list with scores
+// GET /api/events/[id]/participants — host/admin only, full participant list with scores and team details
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -32,14 +33,17 @@ export async function GET(
     const limit = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 100);
     const skip = (page - 1) * limit;
 
-    const [registrations, total] = await Promise.all([
+    const [registrations, total, teams] = await Promise.all([
       EventRegistration.find({ eventId: id })
         .sort({ registeredAt: 1 })
         .skip(skip)
         .limit(limit)
         .lean(),
       EventRegistration.countDocuments({ eventId: id }),
+      EventTeam.find({ eventId: id }).lean(),
     ]);
+
+    const teamMap = new Map(teams.map((t) => [t._id.toString(), t]));
 
     // Aggregate scores for all participants
     const userIds = registrations.map((r) => r.userId.toString());
@@ -61,9 +65,7 @@ export async function GET(
       },
     ]);
 
-    const scoreMap = new Map(
-      scoreAgg.map((a) => [a._id.toString(), a])
-    );
+    const scoreMap = new Map(scoreAgg.map((a) => [a._id.toString(), a]));
 
     // Attempt frequency for cheating signal
     const attemptAgg = await EventSubmission.aggregate([
@@ -78,9 +80,7 @@ export async function GET(
         },
       },
     ]);
-    const attemptMap = new Map(
-      attemptAgg.map((a) => [a._id.toString(), a])
-    );
+    const attemptMap = new Map(attemptAgg.map((a) => [a._id.toString(), a]));
 
     const participants = registrations
       .filter((r) => userIds.includes(r.userId.toString()))
@@ -88,6 +88,8 @@ export async function GET(
         const uid = r.userId.toString();
         const score = scoreMap.get(uid);
         const attempts = attemptMap.get(uid);
+        const teamObj = r.teamId ? teamMap.get(r.teamId.toString()) : null;
+
         return {
           userId: uid,
           codename: r.codename,
@@ -101,10 +103,21 @@ export async function GET(
           lastSolveAt: score?.lastSolveAt ?? null,
           totalAttempts: attempts?.totalAttempts ?? 0,
           wrongAttempts: attempts?.wrongAttempts ?? 0,
+          teamId: r.teamId ? r.teamId.toString() : null,
+          teamName: teamObj ? teamObj.teamName : null,
+          isTeamLeader: teamObj ? teamObj.leaderUserId.toString() === uid : false,
         };
       });
 
-    return NextResponse.json({ participants, total, page, limit });
+    return NextResponse.json({
+      participants,
+      teams: event.type === "hackathon" ? teams : [],
+      eventType: event.type,
+      teamMode: event.teamMode,
+      total,
+      page,
+      limit,
+    });
   } catch (err) {
     console.error("[GET /api/events/[id]/participants]", err);
     return NextResponse.json({ error: "Failed to fetch participants." }, { status: 500 });
