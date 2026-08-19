@@ -525,7 +525,6 @@ updateCounter();
 </html>`;
 }
 
-}
 
 function cleanJSON(raw: string): string {
   let s = raw.replace(/```json/gi, "").replace(/```/gi, "").trim();
@@ -573,8 +572,8 @@ export async function POST(req: Request) {
       audience === "student"
         ? "Audience: students — use clear language, analogies, relatable examples."
         : audience === "professional"
-        ? "Audience: professionals — focus on applied knowledge, industry context, business value, metrics."
-        : "Audience: general — balanced mix of concepts, examples, and real-world relevance.";
+          ? "Audience: professionals — focus on applied knowledge, industry context, business value, metrics."
+          : "Audience: general — balanced mix of concepts, examples, and real-world relevance.";
 
     // ── Phase 1: Research ────────────────────────────────────────────────
     const researchRaw = await generateGeminiContent({
