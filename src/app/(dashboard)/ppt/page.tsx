@@ -765,14 +765,7 @@ export default function PPTMakerPage() {
 
   const theme = THEMES.find((t) => t.id === themeId) || THEMES[0];
 
-  // Reset phase state when loading starts
-  useEffect(() => {
-    if (stage === "loading") {
-      setCurrentPhase("research");
-      setCompletedPhases([]);
-      setPhaseMessage("Starting AI research…");
-    }
-  }, [stage]);
+  // No useEffect needed — phase state resets inside handleGenerate
 
   // Keyboard nav
   useEffect(() => {
@@ -818,7 +811,27 @@ export default function PPTMakerPage() {
     if (!topic.trim()) return;
     setError("");
     setResearchSummary("");
+    setCurrentPhase("research");
+    setCompletedPhases([]);
+    setPhaseMessage("Gathering facts, stats & examples…");
     setStage("loading");
+
+    // ── Timed phase ticker (visual only, matches real AI timing) ──────
+    const phaseTimings: { delay: number; phase: string; done: string[]; msg: string }[] = [
+      { delay: 8000,  phase: "structuring", done: ["research"],    msg: "Planning slide flow & narrative…" },
+      { delay: 14000, phase: "generating",  done: ["research", "structuring"], msg: "Writing slides from research…" },
+      { delay: 22000, phase: "polishing",   done: ["research", "structuring", "generating"], msg: "Final polish & review…" },
+    ];
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    phaseTimings.forEach(({ delay, phase, done, msg }) => {
+      timers.push(
+        setTimeout(() => {
+          setCurrentPhase(phase);
+          setCompletedPhases(done);
+          setPhaseMessage(msg);
+        }, delay)
+      );
+    });
 
     try {
       const res = await fetch("/api/ppt/generate", {
@@ -827,73 +840,31 @@ export default function PPTMakerPage() {
         body: JSON.stringify({ topic, slideCount, theme: theme.label, audience, extraContext }),
       });
 
-      if (!res.ok || !res.body) {
-        const errData = await res.json().catch(() => ({}));
-        setError((errData as { error?: string }).error || "Failed to generate. Please try again.");
+      // Clear phase timers — we're done
+      timers.forEach(clearTimeout);
+
+      const data = await res.json();
+      if (!res.ok || !data.slides) {
+        setError(data.error || "Failed to generate. Please try again.");
         setStage("form");
         return;
       }
 
-      // Consume SSE stream
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = "";
+      // Mark all phases done briefly before showing viewer
+      setCompletedPhases(PHASES.map((p) => p.id));
+      setPhaseMessage("Done! Loading your presentation…");
+      if (data.researchSummary) setResearchSummary(data.researchSummary);
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-
-        // Process each complete SSE line
-        const lines = buffer.split("\n");
-        buffer = lines.pop() || ""; // keep incomplete last line
-
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const event = JSON.parse(line.slice(6)) as {
-              type: string;
-              phase?: string;
-              message?: string;
-              slides?: Slide[];
-              researchSummary?: string;
-              error?: string;
-            };
-
-            if (event.type === "phase") {
-              const prevPhaseIdx = PHASES.findIndex((p) => p.id === currentPhase);
-              const newPhaseIdx = PHASES.findIndex((p) => p.id === event.phase);
-              if (newPhaseIdx > prevPhaseIdx) {
-                setCompletedPhases((prev) => [
-                  ...prev,
-                  ...PHASES.slice(prevPhaseIdx, newPhaseIdx).map((p) => p.id),
-                ]);
-              }
-              setCurrentPhase(event.phase || "research");
-              setPhaseMessage(event.message || "");
-            } else if (event.type === "done") {
-              setCompletedPhases(PHASES.map((p) => p.id));
-              if (event.researchSummary) setResearchSummary(event.researchSummary);
-              if (event.slides && event.slides.length > 0) {
-                setSlides(event.slides);
-                setCurrentSlide(0);
-                setAnimKey(0);
-                setStage("viewer");
-              } else {
-                setError("No slides were generated. Please try again.");
-                setStage("form");
-              }
-            } else if (event.type === "error") {
-              setError(event.error || "Failed to generate. Please try again.");
-              setStage("form");
-            }
-          } catch {
-            // skip malformed SSE lines
-          }
-        }
-      }
-    } catch {
-      setError("Network error. Please try again.");
+      setTimeout(() => {
+        setSlides(data.slides);
+        setCurrentSlide(0);
+        setAnimKey(0);
+        setStage("viewer");
+      }, 600);
+    } catch (err) {
+      timers.forEach(clearTimeout);
+      console.error("[ppt] fetch error:", err);
+      setError("Failed to connect to the server. Please try again.");
       setStage("form");
     }
   };
