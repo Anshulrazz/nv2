@@ -25,6 +25,7 @@ import {
   FolderOpen,
   Wallet,
   Flag,
+  Monitor,
 } from "lucide-react";
 
 interface SidebarNavigationProps {
@@ -131,6 +132,7 @@ export function SidebarNavigation({
         <NavLink href="/revision" icon={<Sparkles className="size-4" />} label="Smart Revision" accent="violet" />
         <NavLink href="/youtube-summarizer" icon={<Play className="size-4" />} label="YouTube Summarizer" accent="violet" />
         <NavLink href="/planner" icon={<Calendar className="size-4" />} label="AI Daily Planner" accent="violet" />
+        <NavLink href="/ppt" icon={<Monitor className="size-4" />} label="AI PPT Maker" accent="violet" />
       </NavGroup>
 
       {/* ── GROUP 3: COMMUNITY & SOCIAL ── */}
