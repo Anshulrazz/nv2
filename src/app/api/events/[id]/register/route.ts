@@ -370,7 +370,7 @@ export async function POST(
 
     return NextResponse.json(
       {
-        registration,
+        registration: leaderReg,
         team: populatedTeam || createdTeam,
         requiresPayment: false,
       },
