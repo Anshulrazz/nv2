@@ -123,3 +123,4 @@ export async function GET(
     return NextResponse.json({ error: "Failed to fetch participants." }, { status: 500 });
   }
 }
+//git fetch origin &&  git reset --hard origin/main && npm run build  && pm2 restart 0

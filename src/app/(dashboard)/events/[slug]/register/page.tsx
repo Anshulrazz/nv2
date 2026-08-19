@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   Loader2,
   CheckCircle2,
@@ -51,6 +51,7 @@ interface TeamData {
 
 export default function RegisterEventPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
 
   const [event, setEvent] = useState<Record<string, unknown> | null>(null);
   const [loadingEvent, setLoadingEvent] = useState(true);
@@ -313,6 +314,8 @@ export default function RegisterEventPage() {
           order_id: data.order.id,
           handler: () => {
             setSuccess(true);
+            // Redirect to event page after payment success
+            setTimeout(() => router.push(`/events/${slug}`), 2500);
           },
           modal: {
             ondismiss: () => {
@@ -324,6 +327,8 @@ export default function RegisterEventPage() {
       }
 
       setSuccess(true);
+      // Redirect to event page after a brief success display
+      setTimeout(() => router.push(`/events/${slug}`), 2500);
     } catch {
       setError("Registration failed. Please try again.");
     } finally {
@@ -365,6 +370,10 @@ export default function RegisterEventPage() {
                 Payment confirmed. Spot secured!
               </p>
             )}
+            <p className="text-xs text-muted-foreground/60 mt-2 flex items-center justify-center gap-1.5">
+              <Loader2 className="size-3 animate-spin" />
+              Redirecting to event page…
+            </p>
           </div>
         </div>
 

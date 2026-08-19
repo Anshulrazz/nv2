@@ -15,20 +15,25 @@ function escapeRegex(str: string): string {
 }
 
 // Helper to generate a collision-free codename for team members or fallback codenames
+// Pass `reserved` set to avoid collisions within a batch (not yet in DB)
 async function generateUniqueCodename(
   eventId: string | mongoose.Types.ObjectId,
-  baseName: string
+  baseName: string,
+  reserved: Set<string> = new Set()
 ): Promise<string> {
   const sanitized = baseName.trim().toLowerCase().replace(/[^a-z0-9]/g, "_").slice(0, 16) || "participant";
   let candidate = sanitized;
   let attempt = 0;
   while (attempt < 10) {
-    const escapedCandidate = escapeRegex(candidate);
-    const exists = await EventRegistration.findOne({
-      eventId,
-      codename: { $regex: `^${escapedCandidate}$`, $options: "i" },
-    });
-    if (!exists) return candidate;
+    const lower = candidate.toLowerCase();
+    if (!reserved.has(lower)) {
+      const escapedCandidate = escapeRegex(lower);
+      const exists = await EventRegistration.findOne({
+        eventId,
+        codename: { $regex: `^${escapedCandidate}$`, $options: "i" },
+      });
+      if (!exists) return candidate;
+    }
     attempt++;
     candidate = `${sanitized}_${Math.floor(1000 + Math.random() * 9000)}`;
   }
@@ -41,6 +46,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   let createdTeamId: mongoose.Types.ObjectId | null = null;
+  let leaderRegistrationId: mongoose.Types.ObjectId | null = null;
   try {
     const { id } = await params;
     const session = await auth();
@@ -245,6 +251,22 @@ export async function POST(
       createdTeamId = createdTeam._id;
     }
 
+    // ── Pre-generate all codenames upfront to avoid batch collisions ─────
+    const reservedCodenames = new Set<string>([finalCodename.toLowerCase()]);
+    const memberCodenames: string[] = [];
+
+    if (createdTeam && memberUsers.length > 0) {
+      for (const member of memberUsers) {
+        const mc = await generateUniqueCodename(
+          eventId,
+          member.username || member.name || "member",
+          reservedCodenames
+        );
+        reservedCodenames.add(mc.toLowerCase());
+        memberCodenames.push(mc);
+      }
+    }
+
     // ── Payment handling ──────────────────────────────────────────────────
     if (event.isPaid && !isWaitlisted) {
       const keyId = process.env.RAZORPAY_KEY_ID;
@@ -266,7 +288,7 @@ export async function POST(
       });
 
       // Leader registration
-      const registration = await EventRegistration.create({
+      const leaderReg = await EventRegistration.create({
         eventId,
         userId,
         codename: finalCodename,
@@ -276,21 +298,20 @@ export async function POST(
         razorpayOrderId: order.id,
         acceptedCodeOfConduct: true,
       });
+      leaderRegistrationId = leaderReg._id;
 
       // Team members registration
       if (createdTeam && memberUsers.length > 0) {
-        for (const member of memberUsers) {
-          const memberCodename = await generateUniqueCodename(
-            eventId,
-            member.username || member.name || "member"
-          );
+        for (let i = 0; i < memberUsers.length; i++) {
+          const member = memberUsers[i];
           await EventRegistration.create({
             eventId,
             userId: member._id,
-            codename: memberCodename,
+            codename: memberCodenames[i],
             realName: member.name || member.username || "Team Member",
             teamId: createdTeam._id,
             paymentStatus: "pending",
+            razorpayOrderId: order.id,
             acceptedCodeOfConduct: true,
           });
         }
@@ -298,7 +319,7 @@ export async function POST(
 
       return NextResponse.json(
         {
-          registration,
+          registration: leaderReg,
           team: createdTeam,
           requiresPayment: true,
           order: {
@@ -313,7 +334,7 @@ export async function POST(
     }
 
     // Free event (or waitlisted)
-    const registration = await EventRegistration.create({
+    const leaderReg = await EventRegistration.create({
       eventId,
       userId,
       codename: finalCodename,
@@ -322,18 +343,16 @@ export async function POST(
       paymentStatus: isWaitlisted ? "waitlisted" : "not_required",
       acceptedCodeOfConduct: true,
     });
+    leaderRegistrationId = leaderReg._id;
 
-    // Register all team members concurrently
+    // Register all team members
     if (createdTeam && memberUsers.length > 0) {
-      for (const member of memberUsers) {
-        const memberCodename = await generateUniqueCodename(
-          eventId,
-          member.username || member.name || "member"
-        );
+      for (let i = 0; i < memberUsers.length; i++) {
+        const member = memberUsers[i];
         await EventRegistration.create({
           eventId,
           userId: member._id,
-          codename: memberCodename,
+          codename: memberCodenames[i],
           realName: member.name || member.username || "Team Member",
           teamId: createdTeam._id,
           paymentStatus: isWaitlisted ? "waitlisted" : "not_required",
@@ -360,7 +379,14 @@ export async function POST(
   } catch (err: unknown) {
     console.error("[POST /api/events/[id]/register]", err);
 
-    // Rollback orphaned team if created prior to failure
+    // Rollback: delete orphaned team and leader registration if created before the failure
+    if (leaderRegistrationId) {
+      try {
+        await EventRegistration.findByIdAndDelete(leaderRegistrationId);
+      } catch (rollbackErr) {
+        console.error("Failed to rollback leader registration:", rollbackErr);
+      }
+    }
     if (createdTeamId) {
       try {
         await EventTeam.findByIdAndDelete(createdTeamId);
