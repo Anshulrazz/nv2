@@ -387,13 +387,116 @@ ${closingSectionHtml}
 
 </div>
 
+<!-- Floating nav controls -->
+<div class="ctrl-bar" id="ctrlBar">
+  <button class="key-btn" id="prevBtn" title="Previous slide (↑)">
+    <span class="key-cap">↑</span>
+  </button>
+  <div class="slide-counter" id="slideCounter">1 / 1</div>
+  <button class="key-btn" id="nextBtn" title="Next slide (↓ / Space)">
+    <span class="key-cap">↓</span>
+  </button>
+  <div class="ctrl-divider"></div>
+  <button class="key-btn key-wide" id="fsBtn" title="Fullscreen (F)">
+    <span class="key-cap">F</span>
+    <span class="key-label">full</span>
+  </button>
+</div>
+
+<style>
+.ctrl-bar{
+  position:fixed;bottom:28px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  background:rgba(10,8,20,0.82);backdrop-filter:blur(14px);
+  border:1px solid rgba(246,244,239,0.10);border-radius:16px;
+  padding:10px 14px;z-index:200;
+  box-shadow:0 8px 32px rgba(0,0,0,0.5),0 0 0 1px rgba(246,244,239,0.04);
+  transition:opacity .3s ease;
+}
+.ctrl-bar.hidden{opacity:0;pointer-events:none;}
+.key-btn{
+  background:rgba(246,244,239,0.06);
+  border:1px solid rgba(246,244,239,0.14);
+  border-bottom:3px solid rgba(246,244,239,0.22);
+  border-radius:9px;
+  color:var(--cream);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  font-family:'JetBrains Mono',monospace;
+  min-width:42px;height:42px;padding:0 10px;
+  transition:all .12s ease;
+  user-select:none;
+}
+.key-btn:hover{
+  background:rgba(246,244,239,0.11);
+  border-color:rgba(246,244,239,0.22);
+  border-bottom-color:rgba(246,244,239,0.36);
+  transform:translateY(-1px);
+}
+.key-btn:active{
+  transform:translateY(1px);
+  border-bottom-width:1px;
+  background:rgba(246,244,239,0.04);
+}
+.key-btn.key-wide{min-width:64px;}
+.key-cap{font-size:14px;font-weight:500;line-height:1;}
+.key-label{font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--cream-dim);}
+.slide-counter{
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--cream-dim);min-width:48px;text-align:center;
+  letter-spacing:0.06em;
+}
+.ctrl-divider{width:1px;height:28px;background:rgba(246,244,239,0.12);margin:0 4px;}
+@media(max-width:480px){
+  .ctrl-bar{bottom:16px;padding:8px 10px;gap:6px;}
+  .key-btn{min-width:38px;height:38px;}
+}
+</style>
+
 <script>
 const links=document.querySelectorAll('.rail a');
-const slides=document.querySelectorAll('.slide');
+const slides=Array.from(document.querySelectorAll('.slide'));
+const deck=document.getElementById('deck');
+const counter=document.getElementById('slideCounter');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
+const fsBtn=document.getElementById('fsBtn');
+let currentIdx=0;
+
+function updateCounter(){
+  if(counter)counter.textContent=(currentIdx+1)+' / '+slides.length;
+}
+function scrollToSlide(idx){
+  if(!deck||idx<0||idx>=slides.length)return;
+  currentIdx=idx;
+  deck.scrollTo({top:idx*deck.clientHeight,behavior:'smooth'});
+  updateCounter();
+}
+function next(){scrollToSlide(Math.min(currentIdx+1,slides.length-1));}
+function prev(){scrollToSlide(Math.max(currentIdx-1,0));}
+
+if(prevBtn)prevBtn.addEventListener('click',prev);
+if(nextBtn)nextBtn.addEventListener('click',next);
+
+if(fsBtn){
+  fsBtn.addEventListener('click',()=>{
+    if(!document.fullscreenElement){
+      document.documentElement.requestFullscreen();
+      fsBtn.querySelector('.key-label').textContent='exit';
+    }else{
+      document.exitFullscreen();
+      fsBtn.querySelector('.key-label').textContent='full';
+    }
+  });
+}
+
+// Track current slide via IntersectionObserver
 const observer=new IntersectionObserver(entries=>{
   entries.forEach(entry=>{
     if(entry.isIntersecting){
       const id=entry.target.getAttribute('id');
+      const idx=slides.indexOf(entry.target);
+      if(idx>=0){currentIdx=idx;updateCounter();}
       links.forEach(l=>l.classList.remove('active'));
       const match=document.querySelector('.rail a[href="#'+id+'"]');
       if(match)match.classList.add('active');
@@ -401,16 +504,27 @@ const observer=new IntersectionObserver(entries=>{
   });
 },{threshold:0.5});
 slides.forEach(s=>observer.observe(s));
+
+// Keyboard
 document.addEventListener('keydown',e=>{
-  const deck=document.getElementById('deck');
   if(!deck)return;
-  const h=deck.clientHeight;
-  if(e.key==='ArrowDown'||e.key===' ')deck.scrollBy({top:h,behavior:'smooth'});
-  if(e.key==='ArrowUp')deck.scrollBy({top:-h,behavior:'smooth'});
+  if(e.key==='ArrowDown'||e.key===' '){e.preventDefault();next();}
+  if(e.key==='ArrowUp'){e.preventDefault();prev();}
+  if(e.key==='f'||e.key==='F'){fsBtn&&fsBtn.click();}
 });
+
+// Hide bar when fullscreen
+document.addEventListener('fullscreenchange',()=>{
+  const bar=document.getElementById('ctrlBar');
+  if(bar)bar.style.display=document.fullscreenElement?'none':'flex';
+});
+
+updateCounter();
 </script>
 </body>
 </html>`;
+}
+
 }
 
 function cleanJSON(raw: string): string {
