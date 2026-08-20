@@ -6,7 +6,9 @@ import Credentials from "next-auth/providers/credentials";
 import { User } from "@/models/User";
 import bcrypt from "bcryptjs";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+import { verifyAccessToken } from "@/lib/auth/jwt";
+
+const nextAuthResult = NextAuth({
   adapter: MongoDBAdapter(clientPromise),
   ...authConfig,
   providers: [
@@ -77,3 +79,39 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 });
+
+export const { handlers, signIn, signOut } = nextAuthResult;
+
+const baseAuth = nextAuthResult.auth;
+
+export const auth: typeof baseAuth = ((...args: any[]) => {
+  // If invoked as a route handler wrapper: export const GET = auth(async (req) => { ... })
+  if (typeof args[0] === "function") {
+    const handler = args[0];
+    return baseAuth(async (req: any, ctx: any) => {
+      if (!req.auth?.user?.id) {
+        // Fallback to Mobile Bearer Token authentication
+        const authHeader = req.headers?.get("authorization");
+        if (authHeader && authHeader.startsWith("Bearer ")) {
+          const token = authHeader.substring(7).trim();
+          try {
+            const decoded = verifyAccessToken(token);
+            req.auth = {
+              user: {
+                id: decoded.userId,
+                email: decoded.email,
+                role: decoded.role,
+              },
+            };
+          } catch {
+            // Invalid or expired token
+          }
+        }
+      }
+      return handler(req, ctx);
+    });
+  }
+
+  // Direct call: await auth()
+  return (baseAuth as any)(...args);
+}) as any;
