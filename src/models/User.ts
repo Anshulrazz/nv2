@@ -24,6 +24,10 @@ export interface IUser extends Document {
   premiumSince?: Date | null;
   premiumPlan?: "monthly" | "yearly" | null;
   premiumExpiresAt?: Date | null;
+  // changed by ravi - added subscription tracking fields
+  subscriptionId?: string | null;       // e.g. sub_TT5Y1breIHPLTs
+  razorpayPlanId?: string | null;       // e.g. plan_TT5V5vOaLSgVtl
+  subscriptionStatus?: "active" | "halted" | "cancelled" | "pending" | null;
   bio?: string;
   bannerImage?: string;
   isSuspended: boolean;
@@ -65,6 +69,10 @@ const UserSchema = new Schema<IUser>(
     premiumSince: { type: Date, default: null },
     premiumPlan: { type: String, enum: ["monthly", "yearly", null], default: null },
     premiumExpiresAt: { type: Date, default: null },
+    // changed by ravi - added subscription fields to schema
+    subscriptionId: { type: String, default: null, index: true },
+    razorpayPlanId: { type: String, default: null },
+    subscriptionStatus: { type: String, enum: ["active", "halted", "cancelled", "pending", null], default: null },
     bio: { type: String, default: "" },
     bannerImage: { type: String, default: "" },
     isSuspended: { type: Boolean, default: false },

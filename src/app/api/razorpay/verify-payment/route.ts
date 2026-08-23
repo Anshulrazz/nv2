@@ -9,6 +9,7 @@ import { Coupon } from "@/models/Coupon";
 import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet } from "@/lib/wallet";
 
+// changed by ravi - support subscription and order verification
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -25,9 +26,10 @@ export async function POST(req: Request) {
       );
     }
 
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = await req.json();
+    const body = await req.json();
+    const { razorpay_order_id, razorpay_subscription_id, razorpay_payment_id, razorpay_signature } = body || {};
 
-    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    if (!razorpay_payment_id || !razorpay_signature || (!razorpay_order_id && !razorpay_subscription_id)) {
       return NextResponse.json(
         { error: "Missing required payment verification parameters." },
         { status: 400 }
@@ -35,7 +37,11 @@ export async function POST(req: Request) {
     }
 
     // Verify Razorpay HMAC-SHA256 signature
-    const bodyToSign = `${razorpay_order_id}|${razorpay_payment_id}`;
+    // changed by ravi - signature format differs for subscriptions vs orders
+    const bodyToSign = razorpay_subscription_id
+      ? `${razorpay_payment_id}|${razorpay_subscription_id}`
+      : `${razorpay_order_id}|${razorpay_payment_id}`;
+
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(bodyToSign)
@@ -45,7 +51,23 @@ export async function POST(req: Request) {
 
     await connectToDatabase();
 
-    const paymentOrder = await PaymentOrder.findOne({ razorpayOrderId: razorpay_order_id });
+    let paymentOrder = razorpay_subscription_id
+      ? await PaymentOrder.findOne({ razorpaySubscriptionId: razorpay_subscription_id })
+      : await PaymentOrder.findOne({ razorpayOrderId: razorpay_order_id });
+
+    if (!paymentOrder && razorpay_subscription_id) {
+      // Create record if initiated on client with plan ID plan_TT5V5vOaLSgVtl
+      paymentOrder = await PaymentOrder.create({
+        userId,
+        razorpaySubscriptionId: razorpay_subscription_id,
+        razorpayPlanId: process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl",
+        amountINR: 149,
+        coinsDelivered: 500,
+        type: "subscription",
+        plan: "monthly",
+        status: "created",
+      });
+    }
 
     if (!paymentOrder) {
       return NextResponse.json(
@@ -64,7 +86,7 @@ export async function POST(req: Request) {
     }
 
     // Idempotency: check if already processed
-    if (paymentOrder.status === "paid") {
+    if (paymentOrder.status === "paid" || paymentOrder.status === "active") {
       const user = await User.findById(userId);
       const wallet = user ? await getOrCreateUserWallet(user._id) : null;
 
@@ -108,6 +130,12 @@ export async function POST(req: Request) {
           user.premiumSince = now;
           user.premiumPlan = paymentOrder.plan || "monthly";
           user.premiumExpiresAt = expiryDate;
+          // changed by ravi - record subscription tracking on user
+          if (paymentOrder.razorpaySubscriptionId || razorpay_subscription_id) {
+            user.subscriptionId = paymentOrder.razorpaySubscriptionId || razorpay_subscription_id;
+            user.razorpayPlanId = paymentOrder.razorpayPlanId || process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl";
+            user.subscriptionStatus = "active";
+          }
 
           if (coinsToDeliver > 0) {
             user.coins = (user.coins || 0) + coinsToDeliver;
@@ -197,6 +225,12 @@ export async function POST(req: Request) {
         user.premiumSince = now;
         user.premiumPlan = paymentOrder.plan || "monthly";
         user.premiumExpiresAt = expiryDate;
+        // changed by ravi - record subscription tracking on user in fallback
+        if (paymentOrder.razorpaySubscriptionId || razorpay_subscription_id) {
+          user.subscriptionId = paymentOrder.razorpaySubscriptionId || razorpay_subscription_id;
+          user.razorpayPlanId = paymentOrder.razorpayPlanId || process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl";
+          user.subscriptionStatus = "active";
+        }
 
         if (coinsToDeliver > 0) {
           user.coins = (user.coins || 0) + coinsToDeliver;

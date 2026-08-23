@@ -52,18 +52,21 @@ export function loadRazorpayScript(): Promise<boolean> {
   });
 }
 
+// changed by ravi - added subscription_id and recurring payment support
 export interface RazorpayOptions {
   key: string;
-  amount: number; // in paise
-  currency: string;
+  amount?: number; // in paise (optional when using subscription_id)
+  currency?: string;
   name: string;
   description?: string;
   image?: string;
-  order_id: string;
+  order_id?: string; // for one-time payments
+  subscription_id?: string; // changed by ravi: for recurring monthly subscriptions (e.g. sub_TT5Y1breIHPLTs)
   handler: (response: {
     razorpay_payment_id: string;
-    razorpay_order_id: string;
+    razorpay_order_id?: string;
     razorpay_signature: string;
+    razorpay_subscription_id?: string; // changed by ravi
   }) => void;
   prefill?: {
     name?: string;

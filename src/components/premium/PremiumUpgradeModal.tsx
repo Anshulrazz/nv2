@@ -37,8 +37,9 @@ export function PremiumUpgradeModal({
 
   if (!isOpen) return null;
 
+  // changed by ravi - monthly plan starting from 149 INR
   const basePlanCoins = selectedPlan === "monthly" ? 500 : 5000;
-  const basePlanInr = selectedPlan === "monthly" ? 49 : 399;
+  const basePlanInr = selectedPlan === "monthly" ? 149 : 399;
 
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const finalPlanCostCoins = Math.max(0, basePlanCoins - discountAmount);
@@ -85,63 +86,125 @@ export function PremiumUpgradeModal({
     toast.info("Coupon removed.");
   };
 
+  // changed by ravi - support monthly recurring subscription (plan_TT5V5vOaLSgVtl / sub_TT5Y1breIHPLTs) & annual orders
   const handleRazorpayUpgrade = async () => {
     try {
       setIsUpgrading(true);
-      const res = await fetch("/api/razorpay/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "subscription",
-          plan: selectedPlan,
-          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-        }),
-      });
 
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.error || "Failed to create payment order.");
-        setIsUpgrading(false);
-        return;
-      }
+      if (selectedPlan === "monthly") {
+        // Recurring subscription endpoint
+        const res = await fetch("/api/razorpay/create-subscription", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            planId: "plan_TT5V5vOaLSgVtl",
+            subscriptionId: "sub_TT5Y1breIHPLTs",
+          }),
+        });
 
-      await openRazorpayCheckout({
-        key: json.keyId,
-        amount: json.amount,
-        currency: json.currency || "INR",
-        name: "Notexia Premium Pass",
-        description: `${selectedPlan === "yearly" ? "Annual" : "Monthly"} Premium Subscription`,
-        order_id: json.orderId,
-        theme: { color: "#F0C93B" },
-        handler: async (response) => {
-          try {
-            const verifyRes = await fetch("/api/razorpay/verify-payment", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(response),
-            });
-            const verifyData = await verifyRes.json();
-            if (verifyRes.ok && verifyData.success) {
-              toast.success(verifyData.message || "Upgraded to Premium successfully! ✨");
-              if (onSuccess) onSuccess();
-              onClose();
-            } else {
-              toast.error(verifyData.error || "Payment verification failed.");
-            }
-          } catch (verifyErr) {
-            console.error(verifyErr);
-            toast.error("Payment verification error.");
-          } finally {
-            setIsUpgrading(false);
-          }
-        },
-        modal: {
-          ondismiss: () => {
-            setIsUpgrading(false);
-            toast.info("Payment cancelled.");
+        const json = await res.json();
+        if (!res.ok) {
+          toast.error(json.error || "Failed to initiate recurring subscription.");
+          setIsUpgrading(false);
+          return;
+        }
+
+        await openRazorpayCheckout({
+          key: json.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_fallback",
+          name: "Notexia Premium Subscription",
+          description: "Monthly Recurring Plan (₹149/mo)",
+          subscription_id: json.subscriptionId || "sub_TT5Y1breIHPLTs",
+          theme: { color: "#F0C93B" },
+          prefill: {
+            name: json.user?.name,
+            email: json.user?.email,
           },
-        },
-      });
+          handler: async (response) => {
+            try {
+              const verifyRes = await fetch("/api/razorpay/verify-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(response),
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyRes.ok && verifyData.success) {
+                toast.success(verifyData.message || "Monthly subscription activated successfully! ✨");
+                if (onSuccess) onSuccess();
+                onClose();
+              } else {
+                toast.error(verifyData.error || "Subscription verification failed.");
+              }
+            } catch (verifyErr) {
+              console.error(verifyErr);
+              toast.error("Subscription verification error.");
+            } finally {
+              setIsUpgrading(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsUpgrading(false);
+              toast.info("Subscription setup cancelled.");
+            },
+          },
+        });
+      } else {
+        // Yearly Pass order
+        const res = await fetch("/api/razorpay/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "subscription",
+            plan: selectedPlan,
+            couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+          }),
+        });
+
+        const json = await res.json();
+        if (!res.ok) {
+          toast.error(json.error || "Failed to create payment order.");
+          setIsUpgrading(false);
+          return;
+        }
+
+        await openRazorpayCheckout({
+          key: json.keyId,
+          amount: json.amount,
+          currency: json.currency || "INR",
+          name: "Notexia Premium Pass",
+          description: "Annual Premium Subscription",
+          order_id: json.orderId,
+          theme: { color: "#F0C93B" },
+          handler: async (response) => {
+            try {
+              const verifyRes = await fetch("/api/razorpay/verify-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(response),
+              });
+              const verifyData = await verifyRes.json();
+              if (verifyRes.ok && verifyData.success) {
+                toast.success(verifyData.message || "Upgraded to Premium successfully! ✨");
+                if (onSuccess) onSuccess();
+                onClose();
+              } else {
+                toast.error(verifyData.error || "Payment verification failed.");
+              }
+            } catch (verifyErr) {
+              console.error(verifyErr);
+              toast.error("Payment verification error.");
+            } finally {
+              setIsUpgrading(false);
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              setIsUpgrading(false);
+              toast.info("Payment cancelled.");
+            },
+          },
+        });
+      }
     } catch (err: unknown) {
       console.error(err);
       const message = err instanceof Error ? err.message : "Payment initiation failed.";

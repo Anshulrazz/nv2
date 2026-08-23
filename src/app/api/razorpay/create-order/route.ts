@@ -5,8 +5,9 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { Coupon } from "@/models/Coupon";
 import { PaymentOrder } from "@/models/PaymentOrder";
 
+// changed by ravi - updated monthly plan pricing starting from 149 INR
 const PLAN_PRICING_INR = {
-  monthly: 49,
+  monthly: 149,
   yearly: 399,
 } as const;
 

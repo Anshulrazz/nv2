@@ -115,3 +115,6 @@ export const auth: typeof baseAuth = ((...args: any[]) => {
   // Direct call: await auth()
   return (baseAuth as any)(...args);
 }) as any;
+
+
+// changed by ravi - configured razorpay monthly subscription support
