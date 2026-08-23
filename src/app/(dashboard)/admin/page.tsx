@@ -812,17 +812,16 @@ export default function AdminPage() {
   const ROLE_COLORS = ["#00F0FF", "#F0C93B", "#F28B6E"];
 
   return (
-    <div className="min-h-screen bg-[#04080B] text-[#E2E8F0] font-mono selection:bg-[#00F0FF]/30 selection:text-[#00F0FF] relative overflow-x-hidden antialiased">
-      {/* Background Cyber Mesh */}
-      <div className="fixed inset-0 pointer-events-none cyber-grid opacity-30 z-0" />
-      <div className="fixed top-0 right-1/4 w-[600px] h-[400px] bg-[#00F0FF]/5 rounded-full blur-[150px] pointer-events-none z-0" />
-      <div className="fixed bottom-0 left-1/4 w-[600px] h-[400px] bg-[#F0C93B]/4 rounded-full blur-[150px] pointer-events-none z-0" />
+    <div className="min-h-screen bg-transparent text-[#FAFAF8] font-mono selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] relative overflow-x-hidden antialiased">
+      {/* Background Atmosphere */}
+      <div className="fixed top-0 right-1/4 w-[600px] h-[400px] bg-[#F5B429]/10 rounded-full blur-[150px] pointer-events-none z-0" />
+      <div className="fixed bottom-0 left-1/4 w-[600px] h-[400px] bg-[#F5941D]/8 rounded-full blur-[150px] pointer-events-none z-0" />
 
       {/* Main HUD Wrapper */}
       <div className="relative z-10 p-4 sm:p-6 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
         
         {/* ── JARVIS ARC REACTOR HEADER ── */}
-        <header className="rounded-2xl bg-[#091218]/90 border border-[#00F0FF]/30 p-4 sm:p-6 relative backdrop-blur-2xl shadow-[0_0_30px_rgba(0,240,255,0.15)] overflow-hidden">
+        <header className="rounded-2xl bg-[#150F0B]/90 border border-[#2E2118] p-4 sm:p-6 relative backdrop-blur-2xl shadow-[0_0_30px_rgba(245,148,29,0.12)] overflow-hidden">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
             
             {/* ARC Core Title */}

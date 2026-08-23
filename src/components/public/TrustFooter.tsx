@@ -5,17 +5,17 @@ import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton
 
 export function TrustFooter() {
   return (
-    <footer className="border-t border-[#F3F0E4]/10 bg-[#121F18] py-12 text-xs text-[#9FAEA1] relative z-10">
+    <footer className="border-t border-[#2E2118] bg-[#0A0806] py-12 text-xs text-[#B8AFA6] relative z-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-[#F3F0E4]/10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-[#2E2118]">
           <div className="space-y-3 md:col-span-1">
             <div className="flex items-center gap-2 font-bold text-white tracking-wider text-base">
-              <span className="size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+              <span className="size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
                 N
               </span>
-              <span className="font-heading text-[#F3F0E4]">NOTEXIA</span>
+              <span className="font-display text-[#FAFAF8] tracking-wider font-bold">NOTEXIA</span>
             </div>
-            <p className="text-xs text-[#9FAEA1] leading-relaxed font-light">
+            <p className="text-xs text-[#8A8078] leading-relaxed">
               Smart study platform for Indian students &amp; engineers. AI doubt resolution, collaborative markdown notes, and peer study groups.
             </p>
 
@@ -25,32 +25,32 @@ export function TrustFooter() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-heading uppercase tracking-wider text-[11px] font-bold text-[#F3F0E4]">
+            <h4 className="font-display uppercase tracking-wider text-[11px] font-bold text-[#FAFAF8]">
               Trust &amp; Legal
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/legal/privacy-policy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/privacy-policy" className="hover:text-[#FAFAF8] transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link href="/legal/terms" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/terms" className="hover:text-[#FAFAF8] transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link href="/legal/cookie-policy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/cookie-policy" className="hover:text-[#FAFAF8] transition-colors">
                   Cookie Policy
                 </Link>
               </li>
               <li>
-                <Link href="/legal/data-retention" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/data-retention" className="hover:text-[#FAFAF8] transition-colors">
                   Data Retention
                 </Link>
               </li>
               <li>
-                <Link href="/legal/ai-usage-policy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/ai-usage-policy" className="hover:text-[#FAFAF8] transition-colors">
                   AI Usage Policy
                 </Link>
               </li>
@@ -58,32 +58,32 @@ export function TrustFooter() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-heading uppercase tracking-wider text-[11px] font-bold text-[#F3F0E4]">
+            <h4 className="font-display uppercase tracking-wider text-[11px] font-bold text-[#FAFAF8]">
               Policies &amp; Governance
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/legal/security-policy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/security-policy" className="hover:text-[#FAFAF8] transition-colors">
                   Security Policy
                 </Link>
               </li>
               <li>
-                <Link href="/legal/refund-policy" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/refund-policy" className="hover:text-[#FAFAF8] transition-colors">
                   Refund Policy
                 </Link>
               </li>
               <li>
-                <Link href="/legal/community-guidelines" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/community-guidelines" className="hover:text-[#FAFAF8] transition-colors">
                   Community Guidelines
                 </Link>
               </li>
               <li>
-                <Link href="/legal/copyright-dmca" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/copyright-dmca" className="hover:text-[#FAFAF8] transition-colors">
                   Copyright &amp; DMCA
                 </Link>
               </li>
               <li>
-                <Link href="/legal/grievance-redressal" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/legal/grievance-redressal" className="hover:text-[#FAFAF8] transition-colors">
                   Grievance Redressal
                 </Link>
               </li>
@@ -91,22 +91,22 @@ export function TrustFooter() {
           </div>
 
           <div className="space-y-3">
-            <h4 className="font-heading uppercase tracking-wider text-[11px] font-bold text-[#F3F0E4]">
+            <h4 className="font-display uppercase tracking-wider text-[11px] font-bold text-[#FAFAF8]">
               Student Tools
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/tools/cgpa-converter" className="hover:text-[#F3F0E4] transition-colors inline-flex items-center gap-1">
-                  CGPA Converter <ArrowUpRight className="size-3 text-[#F0C93B]" />
+                <Link href="/tools/cgpa-converter" className="hover:text-[#FAFAF8] transition-colors inline-flex items-center gap-1">
+                  CGPA Converter <ArrowUpRight className="size-3 text-[#F5B429]" />
                 </Link>
               </li>
               <li>
-                <Link href="/tools/formula-sheets" className="hover:text-[#F3F0E4] transition-colors inline-flex items-center gap-1">
-                  Formula Sheets <ArrowUpRight className="size-3 text-[#8FC3DE]" />
+                <Link href="/tools/formula-sheets" className="hover:text-[#FAFAF8] transition-colors inline-flex items-center gap-1">
+                  Formula Sheets <ArrowUpRight className="size-3 text-[#F5941D]" />
                 </Link>
               </li>
               <li>
-                <Link href="/blogs" className="hover:text-[#F3F0E4] transition-colors">
+                <Link href="/blogs" className="hover:text-[#FAFAF8] transition-colors">
                   Student Blogs
                 </Link>
               </li>
@@ -116,10 +116,10 @@ export function TrustFooter() {
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2.5">
-            <div className="size-2 rounded-full bg-[#8FC3DE] animate-pulse" />
-            <span className="font-mono text-[#8FC3DE] text-[11px]">All Trust &amp; Verification Standards Active</span>
+            <div className="size-2 rounded-full bg-[#22C55E] animate-pulse" />
+            <span className="font-mono text-[#F5B429] text-[11px]">All Trust &amp; Verification Standards Active</span>
           </div>
-          <div className="text-[#9FAEA1] text-[11px] text-center">
+          <div className="text-[#8A8078] text-[11px] text-center">
             &copy; {new Date().getFullYear()} Notexia Inc. All rights reserved. Empowering Indian Students &amp; Researchers.
           </div>
         </div>

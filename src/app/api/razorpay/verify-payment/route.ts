@@ -1,3 +1,4 @@
+// changed by ravi - verify Razorpay payment: signature-first, premium only on confirmed payment
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import crypto from "crypto";
@@ -10,7 +11,6 @@ import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet } from "@/lib/wallet";
 import { memoryCache } from "@/lib/cache";
 
-// changed by ravi - support subscription and order verification
 export async function POST(req: Request) {
   try {
     const session = await auth();
@@ -37,8 +37,9 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify Razorpay HMAC-SHA256 signature
-    // changed by ravi - signature format differs for subscriptions vs orders
+    // changed by ravi - STEP 1: Verify HMAC-SHA256 signature FIRST before any DB writes
+    // Subscription uses: payment_id|subscription_id
+    // Order uses:        order_id|payment_id
     const bodyToSign = razorpay_subscription_id
       ? `${razorpay_payment_id}|${razorpay_subscription_id}`
       : `${razorpay_order_id}|${razorpay_payment_id}`;
@@ -48,16 +49,27 @@ export async function POST(req: Request) {
       .update(bodyToSign)
       .digest("hex");
 
-    const isSignatureValid = expectedSignature === razorpay_signature;
+    // Reject immediately if signature is invalid - never activate premium without valid signature
+    if (expectedSignature !== razorpay_signature) {
+      console.warn(
+        `[verify-payment] Invalid Razorpay signature. payment_id=${razorpay_payment_id} subscription_id=${razorpay_subscription_id} order_id=${razorpay_order_id}`
+      );
+      return NextResponse.json(
+        { error: "Payment signature verification failed. This transaction is invalid and has been rejected." },
+        { status: 400 }
+      );
+    }
 
+    // changed by ravi - STEP 2: Signature is valid. Now look up the payment order.
     await connectToDatabase();
 
     let paymentOrder = razorpay_subscription_id
       ? await PaymentOrder.findOne({ razorpaySubscriptionId: razorpay_subscription_id })
       : await PaymentOrder.findOne({ razorpayOrderId: razorpay_order_id });
 
+    // If paymentOrder not found (edge case: subscription initiated without DB record), create it now
+    // This is safe because signature is already verified above.
     if (!paymentOrder && razorpay_subscription_id) {
-      // Create record if initiated on client with plan ID plan_TT5V5vOaLSgVtl (changed by ravi)
       paymentOrder = await PaymentOrder.create({
         userId,
         razorpayOrderId: `sub_order_${razorpay_subscription_id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -73,28 +85,18 @@ export async function POST(req: Request) {
 
     if (!paymentOrder) {
       return NextResponse.json(
-        { error: "Payment order record not found." },
+        { error: "Payment order record not found. Cannot activate premium without a valid order." },
         { status: 404 }
       );
     }
 
-    if (!isSignatureValid) {
-      paymentOrder.status = "failed";
-      await paymentOrder.save();
-      return NextResponse.json(
-        { error: "Payment signature verification failed. Invalid transaction." },
-        { status: 400 }
-      );
-    }
-
-    // Idempotency: check if already processed
+    // Idempotency: if already processed, return success without re-processing
     if (paymentOrder.status === "paid" || paymentOrder.status === "active") {
       const user = await User.findById(userId);
       const wallet = user ? await getOrCreateUserWallet(user._id) : null;
-
       return NextResponse.json({
         success: true,
-        message: "Payment verified successfully (Already processed).",
+        message: "Payment already verified and processed.",
         isPremium: Boolean(user?.isPremium),
         coins: user?.coins ?? 0,
         walletBalance: wallet?.balance ?? 0,
@@ -107,10 +109,10 @@ export async function POST(req: Request) {
     }
 
     const wallet = await getOrCreateUserWallet(user._id);
-
     const now = new Date();
     const coinsToDeliver = paymentOrder.coinsDelivered || 0;
 
+    // changed by ravi - STEP 3: Activate premium / deliver coins inside transaction
     const dbSession = await mongoose.startSession();
     try {
       await dbSession.withTransaction(async () => {
@@ -120,7 +122,12 @@ export async function POST(req: Request) {
         await paymentOrder.save({ session: dbSession });
 
         if (paymentOrder.type === "subscription") {
-          const expiryDate = new Date(now);
+          // Calculate expiry: extend from current expiry if already active (autopay renewal)
+          const expiryBase = user.premiumExpiresAt && new Date(user.premiumExpiresAt) > now
+            ? new Date(user.premiumExpiresAt)
+            : new Date(now);
+
+          const expiryDate = new Date(expiryBase);
           if (paymentOrder.plan === "yearly") {
             expiryDate.setDate(expiryDate.getDate() + 365);
           } else {
@@ -129,10 +136,11 @@ export async function POST(req: Request) {
 
           user.isPremium = true;
           user.isPremiumUser = true;
-          user.premiumSince = now;
+          user.premiumSince = user.premiumSince || now;
           user.premiumPlan = paymentOrder.plan || "monthly";
           user.premiumExpiresAt = expiryDate;
-          // changed by ravi - record subscription tracking on user
+
+          // Record subscription tracking on user for autopay identification
           if (paymentOrder.razorpaySubscriptionId || razorpay_subscription_id) {
             user.subscriptionId = paymentOrder.razorpaySubscriptionId || razorpay_subscription_id;
             user.razorpayPlanId = paymentOrder.razorpayPlanId || process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl";
@@ -148,24 +156,23 @@ export async function POST(req: Request) {
           await wallet.save({ session: dbSession });
 
           await CoinTransaction.create(
-            [
-              {
-                fromWalletAddress: "RAZORPAY_INR_GATEWAY",
-                toWalletAddress: wallet.address,
-                amount: coinsToDeliver,
-                type: "premium_purchase",
-                status: "completed",
-                metadata: {
-                  razorpayOrderId: razorpay_order_id,
-                  razorpayPaymentId: razorpay_payment_id,
-                  amountINR: paymentOrder.amountINR,
-                  plan: paymentOrder.plan,
-                  premiumExpiresAt: expiryDate,
-                  couponCode: paymentOrder.appliedCoupon,
-                  note: `Paid ₹${paymentOrder.amountINR} via Razorpay for ${paymentOrder.plan} premium subscription`,
-                },
+            [{
+              fromWalletAddress: "RAZORPAY_INR_GATEWAY",
+              toWalletAddress: wallet.address,
+              amount: coinsToDeliver,
+              type: "premium_purchase",
+              status: "completed",
+              metadata: {
+                razorpayOrderId: razorpay_order_id || paymentOrder.razorpayOrderId,
+                razorpayPaymentId: razorpay_payment_id,
+                razorpaySubscriptionId: razorpay_subscription_id || paymentOrder.razorpaySubscriptionId,
+                amountINR: paymentOrder.amountINR,
+                plan: paymentOrder.plan,
+                premiumExpiresAt: expiryDate,
+                couponCode: paymentOrder.appliedCoupon,
+                note: `Signature-verified payment ₹${paymentOrder.amountINR} via Razorpay for ${paymentOrder.plan} premium subscription`,
               },
-            ],
+            }],
             { session: dbSession }
           );
         } else {
@@ -177,27 +184,24 @@ export async function POST(req: Request) {
           await wallet.save({ session: dbSession });
 
           await CoinTransaction.create(
-            [
-              {
-                fromWalletAddress: "RAZORPAY_INR_GATEWAY",
-                toWalletAddress: wallet.address,
-                amount: coinsToDeliver,
-                type: "buy_coins",
-                status: "completed",
-                metadata: {
-                  razorpayOrderId: razorpay_order_id,
-                  razorpayPaymentId: razorpay_payment_id,
-                  amountINR: paymentOrder.amountINR,
-                  couponCode: paymentOrder.appliedCoupon,
-                  note: `Paid ₹${paymentOrder.amountINR} via Razorpay to buy ${coinsToDeliver} coins`,
-                },
+            [{
+              fromWalletAddress: "RAZORPAY_INR_GATEWAY",
+              toWalletAddress: wallet.address,
+              amount: coinsToDeliver,
+              type: "buy_coins",
+              status: "completed",
+              metadata: {
+                razorpayOrderId: razorpay_order_id,
+                razorpayPaymentId: razorpay_payment_id,
+                amountINR: paymentOrder.amountINR,
+                couponCode: paymentOrder.appliedCoupon,
+                note: `Signature-verified payment ₹${paymentOrder.amountINR} via Razorpay to buy ${coinsToDeliver} coins`,
               },
-            ],
+            }],
             { session: dbSession }
           );
         }
 
-        // Increment coupon count if coupon was used
         if (paymentOrder.appliedCoupon) {
           const coupon = await Coupon.findOne({ code: paymentOrder.appliedCoupon });
           if (coupon) {
@@ -207,7 +211,8 @@ export async function POST(req: Request) {
         }
       });
     } catch (txError) {
-      console.warn("MongoDB transaction fallback for Razorpay payment verification:", txError);
+      // Fallback: transaction failed (e.g. replica set not available) — execute sequentially
+      console.warn("[verify-payment] MongoDB transaction fallback:", txError);
 
       paymentOrder.status = "paid";
       paymentOrder.razorpayPaymentId = razorpay_payment_id;
@@ -215,7 +220,11 @@ export async function POST(req: Request) {
       await paymentOrder.save();
 
       if (paymentOrder.type === "subscription") {
-        const expiryDate = new Date(now);
+        const expiryBase = user.premiumExpiresAt && new Date(user.premiumExpiresAt) > now
+          ? new Date(user.premiumExpiresAt)
+          : new Date(now);
+
+        const expiryDate = new Date(expiryBase);
         if (paymentOrder.plan === "yearly") {
           expiryDate.setDate(expiryDate.getDate() + 365);
         } else {
@@ -224,10 +233,10 @@ export async function POST(req: Request) {
 
         user.isPremium = true;
         user.isPremiumUser = true;
-        user.premiumSince = now;
+        user.premiumSince = user.premiumSince || now;
         user.premiumPlan = paymentOrder.plan || "monthly";
         user.premiumExpiresAt = expiryDate;
-        // changed by ravi - record subscription tracking on user in fallback
+
         if (paymentOrder.razorpaySubscriptionId || razorpay_subscription_id) {
           user.subscriptionId = paymentOrder.razorpaySubscriptionId || razorpay_subscription_id;
           user.razorpayPlanId = paymentOrder.razorpayPlanId || process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl";
@@ -249,13 +258,12 @@ export async function POST(req: Request) {
           type: "premium_purchase",
           status: "completed",
           metadata: {
-            razorpayOrderId: razorpay_order_id,
+            razorpayOrderId: razorpay_order_id || paymentOrder.razorpayOrderId,
             razorpayPaymentId: razorpay_payment_id,
+            razorpaySubscriptionId: razorpay_subscription_id || paymentOrder.razorpaySubscriptionId,
             amountINR: paymentOrder.amountINR,
             plan: paymentOrder.plan,
-            premiumExpiresAt: expiryDate,
-            couponCode: paymentOrder.appliedCoupon,
-            note: `Paid ₹${paymentOrder.amountINR} via Razorpay for ${paymentOrder.plan} premium subscription`,
+            note: `Signature-verified payment ₹${paymentOrder.amountINR} via Razorpay (fallback tx) for ${paymentOrder.plan} subscription`,
           },
         });
       } else {
@@ -275,8 +283,7 @@ export async function POST(req: Request) {
             razorpayOrderId: razorpay_order_id,
             razorpayPaymentId: razorpay_payment_id,
             amountINR: paymentOrder.amountINR,
-            couponCode: paymentOrder.appliedCoupon,
-            note: `Paid ₹${paymentOrder.amountINR} via Razorpay to buy ${coinsToDeliver} coins`,
+            note: `Signature-verified payment ₹${paymentOrder.amountINR} via Razorpay to buy ${coinsToDeliver} coins`,
           },
         });
       }
@@ -292,7 +299,7 @@ export async function POST(req: Request) {
       await dbSession.endSession();
     }
 
-    // Invalidate premium status memory cache
+    // Invalidate premium status memory cache so UI reflects premium instantly
     memoryCache.delete(`user:premium:${userId}`);
 
     return NextResponse.json({
@@ -309,11 +316,8 @@ export async function POST(req: Request) {
       walletBalance: wallet.balance,
     });
   } catch (error: unknown) {
-    console.error("Error verifying Razorpay payment:", error);
+    console.error("[verify-payment] Error:", error);
     const message = error instanceof Error ? error.message : "Failed to verify payment.";
-    return NextResponse.json(
-      { error: message },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

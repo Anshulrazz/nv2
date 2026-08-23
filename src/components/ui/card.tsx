@@ -9,7 +9,7 @@ function Card({
     <div
       data-slot="card"
       className={cn(
-        "cyber-panel bg-card p-6",
+        "bg-[#150F0B] text-card-foreground rounded-2xl border border-[#2E2118] shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)] p-6 transition-all",
         className
       )}
       {...props}

@@ -36,27 +36,28 @@ import {
 const GH_CSS = `
 /* ── Base ── */
 .gh-md {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-  font-size: 16px;
-  line-height: 1.5;
+  font-family: var(--font-ui), system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
   word-wrap: break-word;
-  color: #e6edf3;
+  color: #FAFAF8;
 }
 
 /* ── Headings ── */
 .gh-md h1, .gh-md h2, .gh-md h3, .gh-md h4, .gh-md h5, .gh-md h6 {
+  font-family: var(--font-display), "Playfair Display", Georgia, serif;
   margin-top: 24px;
   margin-bottom: 16px;
-  font-weight: 600;
-  line-height: 1.25;
-  color: #e6edf3;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #FAFAF8;
 }
-.gh-md h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid #30363d; }
-.gh-md h2 { font-size: 1.5em; padding-bottom: 0.3em; border-bottom: 1px solid #30363d; }
-.gh-md h3 { font-size: 1.25em; }
+.gh-md h1 { font-size: 1.85em; padding-bottom: 0.3em; border-bottom: 1px solid #2E2118; }
+.gh-md h2 { font-size: 1.45em; padding-bottom: 0.3em; border-bottom: 1px solid #2E2118; }
+.gh-md h3 { font-size: 1.2em; color: #F5B429; }
 .gh-md h4 { font-size: 1em; }
 .gh-md h5 { font-size: 0.875em; }
-.gh-md h6 { font-size: 0.85em; color: #8b949e; }
+.gh-md h6 { font-size: 0.85em; color: #8A8078; }
 
 .gh-md h1:first-child, .gh-md h2:first-child, .gh-md h3:first-child {
   margin-top: 0;
@@ -79,21 +80,21 @@ const GH_CSS = `
 .gh-md h6:hover .gh-anchor {
   opacity: 1;
 }
-.gh-md .gh-anchor svg { vertical-align: middle; fill: #58a6ff; }
+.gh-md .gh-anchor svg { vertical-align: middle; fill: #F5B429; }
 
 /* ── Paragraph ── */
-.gh-md p { margin-top: 0; margin-bottom: 16px; }
+.gh-md p { margin-top: 0; margin-bottom: 16px; color: #E8E6E3; }
 
 /* ── Bold / Italic / Strikethrough ── */
-.gh-md strong { font-weight: 600; color: #e6edf3; }
-.gh-md em { font-style: italic; }
-.gh-md del { text-decoration: line-through; color: #8b949e; }
+.gh-md strong { font-weight: 700; color: #FAFAF8; }
+.gh-md em { font-style: italic; color: #FCD34D; }
+.gh-md del { text-decoration: line-through; color: #8A8078; }
 
 /* ── Lists ── */
 .gh-md ul, .gh-md ol { padding-left: 2em; margin-top: 0; margin-bottom: 16px; }
 .gh-md ul { list-style-type: disc; }
 .gh-md ol { list-style-type: decimal; }
-.gh-md li { margin-top: 0.25em; }
+.gh-md li { margin-top: 0.25em; color: #E8E6E3; }
 .gh-md li > p { margin-top: 16px; }
 .gh-md li + li { margin-top: 0.25em; }
 .gh-md ul ul, .gh-md ol ol, .gh-md ul ol, .gh-md ol ul { margin-top: 0; margin-bottom: 0; }
@@ -107,15 +108,15 @@ const GH_CSS = `
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  border: 1px solid #30363d;
-  border-radius: 3px;
-  background: #0d1117;
+  border: 1px solid #2E2118;
+  border-radius: 4px;
+  background: #150F0B;
   cursor: default;
   position: relative;
 }
 .gh-md .task-list-item input[type="checkbox"]:checked {
-  background: #238636;
-  border-color: #238636;
+  background: #F5B429;
+  border-color: #F5B429;
 }
 .gh-md .task-list-item input[type="checkbox"]:checked::after {
   content: '';
@@ -124,44 +125,46 @@ const GH_CSS = `
   top: 1px;
   width: 5px;
   height: 9px;
-  border: solid #fff;
+  border: solid #150F0B;
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
 
 /* ── Links ── */
-.gh-md a { color: #58a6ff; text-decoration: none; }
-.gh-md a:hover { text-decoration: underline; }
+.gh-md a { color: #F5B429; text-decoration: underline; text-underline-offset: 3px; }
+.gh-md a:hover { color: #FCD34D; }
 
 /* ── Blockquote ── */
 .gh-md blockquote {
   margin: 0 0 16px 0;
-  padding: 0 1em;
-  color: #8b949e;
-  border-left: 0.25em solid #30363d;
+  padding: 0.5em 1em;
+  color: #8A8078;
+  border-left: 0.25em solid #F5B429;
+  background: rgba(21, 15, 11, 0.6);
+  border-radius: 0 8px 8px 0;
 }
 .gh-md blockquote > :first-child { margin-top: 0; }
 .gh-md blockquote > :last-child { margin-bottom: 0; }
 
 /* ── Horizontal rule ── */
 .gh-md hr {
-  height: 0.25em;
+  height: 1px;
   padding: 0;
   margin: 24px 0;
-  background-color: #30363d;
+  background-color: #2E2118;
   border: 0;
-  border-radius: 2px;
 }
 
 /* ── Inline code ── */
 .gh-md code {
-  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
   font-size: 85%;
   padding: 0.2em 0.4em;
   margin: 0;
-  background-color: rgba(110,118,129,0.4);
+  background-color: #241811;
+  border: 1px solid #2E2118;
   border-radius: 6px;
-  color: #e6edf3;
+  color: #FCD34D;
 }
 
 /* ── Code block ── */
@@ -172,9 +175,10 @@ const GH_CSS = `
   overflow: auto;
   font-size: 85%;
   line-height: 1.45;
-  background-color: #161b22;
-  border-radius: 6px;
-  border: 1px solid #30363d;
+  background-color: #0A0806;
+  border-radius: 12px;
+  border: 1px solid #2E2118;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.03), 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 .gh-md pre code {
   padding: 0;
@@ -198,61 +202,66 @@ const GH_CSS = `
   overflow: auto;
   margin-top: 0;
   margin-bottom: 16px;
+  border-radius: 8px;
+  border: 1px solid #2E2118;
 }
 .gh-md table th, .gh-md table td {
-  padding: 6px 13px;
-  border: 1px solid #30363d;
+  padding: 8px 14px;
+  border: 1px solid #2E2118;
 }
 .gh-md table th {
-  font-weight: 600;
-  background-color: #161b22;
+  font-weight: 700;
+  background-color: #150F0B;
+  color: #FAFAF8;
 }
-.gh-md table tr { background-color: #0d1117; border-top: 1px solid #21262d; }
-.gh-md table tr:nth-child(2n) { background-color: #161b22; }
+.gh-md table tr { background-color: #0A0806; border-top: 1px solid #2E2118; }
+.gh-md table tr:nth-child(2n) { background-color: #150F0B; }
 
 /* ── Images ── */
 .gh-md img {
   max-width: 100%;
   box-sizing: content-box;
-  background-color: #0d1117;
-  border-radius: 6px;
+  background-color: #150F0B;
+  border-radius: 8px;
 }
 
 /* ── GitHub Alerts ── */
 .gh-alert {
-  padding: 8px 16px;
+  padding: 10px 16px;
   margin-bottom: 16px;
   border-left: 0.25em solid;
-  border-radius: 6px;
-  background-color: rgba(13,17,23,0.5);
+  border-radius: 8px;
+  background-color: rgba(21, 15, 11, 0.85);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.5);
 }
 .gh-alert > :first-child { margin-top: 0; }
 .gh-alert > :last-child { margin-bottom: 0; }
-.gh-alert p { margin-top: 8px; margin-bottom: 8px; color: #e6edf3; }
+.gh-alert p { margin-top: 6px; margin-bottom: 6px; color: #FAFAF8; }
 
 .gh-alert-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 13px;
   margin-bottom: 4px;
+  font-family: var(--font-display), "Playfair Display", Georgia, serif;
 }
 
-.gh-alert--note    { border-left-color: #58a6ff; }
-.gh-alert--note .gh-alert-title { color: #58a6ff; }
+.gh-alert--note    { border-left-color: #F5B429; }
+.gh-alert--note .gh-alert-title { color: #F5B429; }
 
-.gh-alert--tip     { border-left-color: #3fb950; }
-.gh-alert--tip .gh-alert-title { color: #3fb950; }
+.gh-alert--tip     { border-left-color: #10B981; }
+.gh-alert--tip .gh-alert-title { color: #10B981; }
 
-.gh-alert--important { border-left-color: #a371f7; }
-.gh-alert--important .gh-alert-title { color: #a371f7; }
+.gh-alert--important { border-left-color: #F5941D; }
+.gh-alert--important .gh-alert-title { color: #F5941D; }
 
-.gh-alert--warning { border-left-color: #d29922; }
-.gh-alert--warning .gh-alert-title { color: #d29922; }
+.gh-alert--warning { border-left-color: #FCD34D; }
+.gh-alert--warning .gh-alert-title { color: #FCD34D; }
 
-.gh-alert--caution { border-left-color: #f85149; }
-.gh-alert--caution .gh-alert-title { color: #f85149; }
+.gh-alert--caution { border-left-color: #EF4444; }
+.gh-alert--caution .gh-alert-title { color: #EF4444; }
 
 /* ── Mermaid ── */
 .gh-mermaid-wrapper {

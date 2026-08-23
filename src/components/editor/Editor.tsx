@@ -203,18 +203,18 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
 
         <div className="flex items-center gap-3 ml-4 select-none shrink-0">
           {isSaving ? (
-            <div className="flex items-center gap-1.5 text-zinc-550 text-xs font-semibold">
-              <Loader2 className="h-3 w-3 animate-spin text-indigo-500" />
+            <div className="flex items-center gap-1.5 text-[#8A8078] text-xs font-semibold">
+              <Loader2 className="h-3 w-3 animate-spin text-[#F5B429]" />
               <span>Saving...</span>
             </div>
           ) : (
-            <span className="text-zinc-650 text-xs font-semibold">Saved</span>
+            <span className="text-[#8A8078] text-xs font-semibold">Saved</span>
           )}
         </div>
       </div>
 
       {/* Rich Text Toolbar */}
-      <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-zinc-900 bg-zinc-900/20 shrink-0 select-none relative">
+      <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-[#2E2118] bg-[#150F0B]/40 shrink-0 select-none relative">
         {/* Smart AI Writer Menu Button */}
         <div className="relative">
           <Button
@@ -223,47 +223,47 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
             size="sm"
             onClick={() => setShowAiMenu(!showAiMenu)}
             disabled={isAiWriting}
-            className="h-8 px-2.5 bg-indigo-500/10 border border-indigo-500/20 hover:bg-indigo-500/20 text-indigo-300 font-bold text-xs gap-1.5 rounded-lg transition-all"
+            className="h-8 px-2.5 bg-[#F5B429]/10 border border-[#F5B429]/20 hover:bg-[#F5B429]/20 text-[#FCD34D] font-bold text-xs gap-1.5 rounded-full transition-all"
           >
             {isAiWriting ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-400" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F5B429]" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              <Sparkles className="h-3.5 w-3.5 text-[#F5B429]" />
             )}
             <span>AI Writer</span>
-            <ChevronDown className="h-3 w-3 text-indigo-400" />
+            <ChevronDown className="h-3 w-3 text-[#F5B429]" />
           </Button>
 
           {showAiMenu && (
-            <div className="absolute top-10 left-0 z-50 w-64 bg-zinc-900 border border-zinc-800 rounded-xl p-1.5 shadow-2xl space-y-1">
+            <div className="absolute top-10 left-0 z-50 w-64 bg-[#150F0B] border border-[#2E2118] rounded-2xl p-1.5 shadow-2xl space-y-1">
               <button
                 type="button"
                 onClick={() => {
                   setShowAiMenu(false);
                   setShowTopicModal(true);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-bold bg-cyan-500/10 border border-cyan-500/20 text-cyan-300 hover:bg-cyan-500/20 transition-colors text-left"
+                className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-bold bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#FCD34D] hover:bg-[#F5B429]/25 transition-colors text-left"
               >
                 <div className="flex items-center gap-2">
-                  <Wand2 className="h-3.5 w-3.5 text-cyan-400" />
+                  <Wand2 className="h-3.5 w-3.5 text-[#F5B429]" />
                   <span>Generate Topic Note</span>
                 </div>
-                <span className="text-[9px] font-mono bg-cyan-400 text-zinc-950 px-1.5 py-0.5 rounded font-bold">2,000+ words</span>
+                <span className="text-[9px] font-mono bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] px-1.5 py-0.5 rounded font-bold">2,000+ words</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleAiAction("continue")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors text-left"
               >
-                <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+                <Sparkles className="h-3.5 w-3.5 text-[#F5B429]" />
                 <span>Continue Writing</span>
               </button>
               <button
                 type="button"
                 onClick={() => handleAiAction("summarize")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors text-left"
               >
-                <FileText className="h-3.5 w-3.5 text-cyan-400" />
+                <FileText className="h-3.5 w-3.5 text-[#F5941D]" />
                 <span>Summarize Note</span>
               </button>
               <button

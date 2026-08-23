@@ -747,21 +747,21 @@ export default function MessagesPage() {
   }
 
   return (
-    <div className="messages-page-root flex-1 flex h-full bg-[#16261D] text-[#F3F0E4] overflow-hidden relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+    <div className="messages-page-root flex-1 flex h-full bg-transparent text-[#FAFAF8] overflow-hidden relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+        <div className="absolute top-0 right-1/4 w-[450px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-[#F5941D]/8 rounded-full blur-[140px] animate-float-glow-reverse" />
       </div>
 
       {/* 1. Conversations Column (Left Pane) */}
-      <aside className={`w-full md:w-80 lg:w-96 border-r border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-xl flex flex-col shrink-0 h-full overflow-hidden relative z-10 ${
+      <aside className={`w-full md:w-80 lg:w-96 border-r border-[#2E2118] bg-[#0A0806]/90 backdrop-blur-xl flex flex-col shrink-0 h-full overflow-hidden relative z-10 ${
         activeUser ? "hidden md:flex" : "flex"
       }`}>
         {/* Header */}
-        <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-[#F3F0E4]/15 flex items-center justify-between shrink-0 select-none">
+        <div className="h-14 sm:h-16 px-4 sm:px-6 border-b border-[#2E2118] flex items-center justify-between shrink-0 select-none">
           <div className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4 text-[#F0C93B]" />
+            <MessageSquare className="h-4 w-4 text-[#F5B429]" />
             <h1
               className="text-xs sm:text-sm font-black text-[#F3F0E4] uppercase tracking-widest font-heading"
             >

@@ -11,51 +11,51 @@ import { buildFAQSchema } from "@/lib/seo/jsonld";
 
 function LandingSkeleton() {
   return (
-    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] p-6 space-y-12 animate-pulse selection:bg-[#F0C93B]/30">
+    <div className="min-h-screen bg-[#0A0806] text-[#FAFAF8] p-6 space-y-12 animate-pulse selection:bg-[#F5B429]/30">
       {/* Header Skeleton */}
-      <div className="max-w-6xl mx-auto flex items-center justify-between h-16 border-b border-[#F3F0E4]/10 pb-4">
+      <div className="max-w-6xl mx-auto flex items-center justify-between h-16 border-b border-[#2E2118] pb-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-white/10" />
-          <div className="w-28 h-5 rounded bg-white/10" />
+          <div className="w-8 h-8 rounded-lg bg-[#150F0B] border border-[#2E2118]" />
+          <div className="w-28 h-5 rounded bg-[#150F0B]" />
         </div>
         <div className="hidden md:flex gap-6">
-          <div className="w-16 h-4 rounded-full bg-white/10" />
-          <div className="w-16 h-4 rounded-full bg-white/10" />
-          <div className="w-16 h-4 rounded-full bg-white/10" />
-          <div className="w-16 h-4 rounded-full bg-white/10" />
+          <div className="w-16 h-4 rounded-full bg-[#150F0B]" />
+          <div className="w-16 h-4 rounded-full bg-[#150F0B]" />
+          <div className="w-16 h-4 rounded-full bg-[#150F0B]" />
+          <div className="w-16 h-4 rounded-full bg-[#150F0B]" />
         </div>
         <div className="flex gap-3">
-          <div className="w-20 h-9 rounded-lg bg-white/10" />
-          <div className="w-32 h-9 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/30" />
+          <div className="w-20 h-9 rounded-full bg-[#150F0B] border border-[#2E2118]" />
+          <div className="w-32 h-9 rounded-full bg-[#F5B429]/20 border border-[#F5B429]/30" />
         </div>
       </div>
 
       {/* Hero Skeleton */}
       <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center pt-8">
         <div className="space-y-6">
-          <div className="w-56 h-7 rounded-full bg-[#8FC3DE]/20 border border-[#8FC3DE]/30" />
+          <div className="w-56 h-7 rounded-full bg-[#F5B429]/15 border border-[#F5B429]/30" />
           <div className="space-y-3">
-            <div className="w-full h-12 rounded-2xl bg-white/10" />
-            <div className="w-4/5 h-12 rounded-2xl bg-white/10" />
+            <div className="w-full h-12 rounded-2xl bg-[#150F0B]" />
+            <div className="w-4/5 h-12 rounded-2xl bg-[#150F0B]" />
           </div>
-          <div className="w-3/4 h-5 rounded-lg bg-white/10" />
+          <div className="w-3/4 h-5 rounded-lg bg-[#150F0B]" />
           <div className="flex gap-4 pt-2">
-            <div className="w-44 h-11 rounded-xl bg-[#F0C93B]/30 border border-[#F0C93B]/40" />
-            <div className="w-36 h-11 rounded-xl bg-white/10" />
+            <div className="w-44 h-11 rounded-full bg-[#F5B429]/30 border border-[#F5B429]/40" />
+            <div className="w-36 h-11 rounded-full bg-[#150F0B] border border-[#2E2118]" />
           </div>
         </div>
-        <div className="h-80 bg-[#121F18] border border-white/10 rounded-2xl p-6 space-y-4 shadow-2xl">
-          <div className="flex justify-between items-center pb-4 border-b border-white/10">
-            <div className="w-32 h-4 rounded bg-white/10" />
-            <div className="w-24 h-4 rounded bg-white/10" />
+        <div className="h-80 bg-[#150F0B] border border-[#2E2118] rounded-2xl p-6 space-y-4 shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)]">
+          <div className="flex justify-between items-center pb-4 border-b border-[#2E2118]">
+            <div className="w-32 h-4 rounded bg-[#241811]" />
+            <div className="w-24 h-4 rounded bg-[#241811]" />
           </div>
-          <div className="w-3/4 h-6 rounded bg-white/10" />
-          <div className="w-full h-24 rounded-xl bg-[#16261D] border border-white/10" />
+          <div className="w-3/4 h-6 rounded bg-[#241811]" />
+          <div className="w-full h-24 rounded-xl bg-[#0A0806] border border-[#2E2118]" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4">
-            <div className="h-8 rounded bg-white/5" />
-            <div className="h-8 rounded bg-white/5" />
-            <div className="h-8 rounded bg-white/5" />
-            <div className="h-8 rounded bg-white/5" />
+            <div className="h-8 rounded bg-[#241811]" />
+            <div className="h-8 rounded bg-[#241811]" />
+            <div className="h-8 rounded bg-[#241811]" />
+            <div className="h-8 rounded bg-[#241811]" />
           </div>
         </div>
       </div>
@@ -398,7 +398,7 @@ export default function MarketingPage() {
 
   return (
     // ── STICKY FOOTER: flex column, min-h-screen ──
-    <div className="min-h-screen flex flex-col bg-[#16261D] text-[#F3F0E4] font-sans selection:bg-[#F0C93B]/30 overflow-x-hidden relative antialiased cyber-grid">
+    <div className="min-h-screen flex flex-col bg-[#0A0806] text-[#FAFAF8] font-sans selection:bg-[#F5B429]/30 overflow-x-hidden relative antialiased glowing-bg">
       {/* ── EXTERNAL FONTS & KATEX STYLES ── */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       {/* eslint-disable-next-line @next/next/no-page-custom-font */}
@@ -420,24 +420,24 @@ export default function MarketingPage() {
 
       <style jsx global>{`
         :root {
-          --paper: #16261D;
-          --paper-2: #121F18;
-          --card: #121F18;
-          --ink: #F3F0E4;
-          --ink-soft: #9FAEA1;
-          --ink-faint: #7B8C7E;
-          --rule: rgba(243, 240, 228, 0.15);
-          --rule-soft: rgba(243, 240, 228, 0.08);
-          --red: #F28B6E;
-          --red-deep: #D96B4E;
-          --red-tint: rgba(242, 139, 110, 0.12);
-          --gold: #F0C93B;
-          --gold-tint: rgba(240, 201, 59, 0.12);
-          --cyan: #8FC3DE;
-          --lavender: #C9A9E0;
-          --white: #FFFFFF;
-          --radius: 14px;
-          --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+          --paper: #0A0806;
+          --paper-2: #150F0B;
+          --card: #150F0B;
+          --ink: #FAFAF8;
+          --ink-soft: #B8AFA6;
+          --ink-faint: #8A8078;
+          --rule: #2E2118;
+          --rule-soft: rgba(46, 33, 24, 0.6);
+          --red: #EF4444;
+          --red-deep: #D9720E;
+          --red-tint: rgba(239, 68, 68, 0.12);
+          --gold: #F5B429;
+          --gold-tint: rgba(245, 180, 41, 0.12);
+          --cyan: #F5B429;
+          --lavender: #F5941D;
+          --white: #FAFAF8;
+          --radius: 16px;
+          --shadow: 0 0 30px -10px rgba(245, 148, 29, 0.15);
         }
 
         * { box-sizing: border-box; }
@@ -446,15 +446,20 @@ export default function MarketingPage() {
           margin: 0;
           background: var(--paper);
           color: var(--ink);
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: var(--font-inter), 'Inter', sans-serif;
           line-height: 1.5;
           -webkit-font-smoothing: antialiased;
         }
-        h1, h2, h3, h4 {
-          font-family: 'Space Grotesk', sans-serif;
+        h1, h2 {
+          font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
           font-weight: 700;
           margin: 0;
-          letter-spacing: -0.01em;
+          letter-spacing: -0.02em;
+        }
+        h3, h4 {
+          font-family: var(--font-inter), 'Inter', sans-serif;
+          font-weight: 600;
+          margin: 0;
         }
         p { margin: 0; }
         a { color: inherit; text-decoration: none; }
@@ -482,9 +487,9 @@ export default function MarketingPage() {
         /* Nav */
         header {
           position: sticky; top: 0; z-index: 50;
-          background: rgba(22, 38, 29, 0.9);
+          background: rgba(10, 8, 6, 0.85);
           backdrop-filter: blur(12px);
-          border-bottom: 1px solid var(--rule-soft);
+          border-bottom: 1px solid var(--rule);
           flex-shrink: 0;
         }
         .nav {
@@ -493,8 +498,8 @@ export default function MarketingPage() {
         }
         .nav-links {
           display: flex; align-items: center; gap: 26px;
-          font-size: 14px; color: var(--ink-soft); font-weight: 600;
-          text-transform: uppercase; letter-spacing: 0.04em;
+          font-size: 13px; color: var(--ink-soft); font-weight: 600;
+          text-transform: uppercase; letter-spacing: 0.05em;
         }
         .nav-links a, .nav-links button {
           transition: color .18s ease;
@@ -511,12 +516,11 @@ export default function MarketingPage() {
 
         .btn {
           display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 11px 20px; border-radius: 9px;
-          font-weight: 700; font-size: 14px;
-          border: 1.5px solid transparent;
-          transition: transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+          padding: 10px 22px; border-radius: 9999px;
+          font-weight: 600; font-size: 14px;
+          border: 1px solid transparent;
+          transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
           white-space: nowrap;
-          font-family: 'Space Grotesk', sans-serif;
         }
         .btn:disabled {
           opacity: 0.6;
@@ -524,15 +528,16 @@ export default function MarketingPage() {
           transform: none !important;
         }
         .btn-solid {
-          background: var(--gold); color: #16261D;
-          box-shadow: 0 0 20px rgba(240,201,59,0.3);
+          background: linear-gradient(135deg, #F7C948 0%, #F5941D 100%);
+          color: #150F0B;
+          box-shadow: 0 4px 20px -2px rgba(245,148,29,0.35);
         }
-        .btn-solid:hover:not(:disabled) { background: #E0BA30; transform: translateY(-1px); }
+        .btn-solid:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
         .btn-ghost {
-          background: transparent; color: var(--ink); border-color: var(--rule);
+          background: #150F0B; color: var(--ink); border-color: var(--rule);
         }
-        .btn-ghost:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); background: rgba(240,201,59,0.05); }
-        .btn-sm { padding: 8px 16px; font-size: 13px; }
+        .btn-ghost:hover:not(:disabled) { border-color: var(--gold); color: #FAFAF8; background: #241811; }
+        .btn-sm { padding: 7px 16px; font-size: 13px; }
 
         .btn-link {
           background: none;
@@ -606,7 +611,7 @@ export default function MarketingPage() {
           border: 2px solid var(--paper);
           margin-left: -8px;
           display: flex; align-items: center; justify-content: center;
-          font-size: 10px; font-weight: 700; color: #16261D;
+          font-size: 10px; font-weight: 700; color: #150F0B;
           font-family: 'Space Grotesk';
         }
         .avatars span:nth-child(1){ background: var(--cyan); margin-left: 0; }
@@ -651,7 +656,7 @@ export default function MarketingPage() {
         .sheet-note h4 { font-size: 17px; margin-bottom: 10px; color: var(--ink); }
         .sheet-note .eqn {
           font-family: 'JetBrains Mono'; font-size: 13px;
-          background: #16261D; border-radius: 8px; border: 1px solid var(--rule);
+          background: #0A0806; border-radius: 8px; border: 1px solid var(--rule);
           padding: 12px 14px; color: var(--gold);
           margin-bottom: 10px; line-height: 1.7;
           overflow-x: auto;
@@ -668,7 +673,7 @@ export default function MarketingPage() {
           font-family: 'Space Grotesk'; font-weight: 700; font-size: 11.5px;
           letter-spacing: 0.03em;
           line-height: 1.25;
-          background: rgba(18, 31, 24, 0.85);
+          background: rgba(21, 15, 11, 0.9);
           z-index: 2;
         }
         .margin-note {
@@ -695,7 +700,7 @@ export default function MarketingPage() {
         .ticker-band {
           border-top: 1px solid var(--rule);
           border-bottom: 1px solid var(--rule);
-          background: #121F18;
+          background: #0A0806;
           overflow: hidden;
           padding: 13px 0;
           margin-top: 64px;
@@ -735,7 +740,7 @@ export default function MarketingPage() {
         .demo-top {
           display: flex; align-items: center; justify-content: space-between;
           padding: 16px 22px; border-bottom: 1px solid var(--rule);
-          background: #16261D;
+          background: #150F0B;
         }
         .live-tag {
           display: inline-flex; align-items: center; gap: 7px;
@@ -750,14 +755,14 @@ export default function MarketingPage() {
         .chip {
           font-size: 13px; font-weight: 500; padding: 8px 14px;
           border-radius: 100px; border: 1.5px solid var(--rule);
-          background: #16261D; color: var(--ink-soft);
+          background: #150F0B; color: var(--ink-soft);
           transition: all .16s ease;
         }
         .chip:hover { border-color: var(--gold); color: var(--gold); }
-        .chip.active { background: var(--gold); border-color: var(--gold); color: #16261D; font-weight: 700; }
+        .chip.active { background: var(--gold); border-color: var(--gold); color: #150F0B; font-weight: 700; }
 
         .demo-answer {
-          background: #16261D;
+          background: #0A0806;
           border-radius: 12px; border: 1px solid var(--rule);
           padding: 20px 22px;
           min-height: 140px;
@@ -775,7 +780,7 @@ export default function MarketingPage() {
         .demo-input {
           flex: 1; border: 1.5px solid var(--rule); border-radius: 10px;
           padding: 12px 15px; font-size: 14.5px; font-family: inherit;
-          background: #16261D; color: var(--ink);
+          background: #0A0806; color: var(--ink);
         }
         .demo-input:focus { border-color: var(--gold); outline: none; }
 
@@ -791,7 +796,7 @@ export default function MarketingPage() {
         .feat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--gold); }
         .feat-icon {
           width: 42px; height: 42px; border-radius: 10px;
-          background: #16261D; border: 1px solid var(--rule);
+          background: #0A0806; border: 1px solid var(--rule);
           display: flex; align-items: center; justify-content: center;
           margin-bottom: 16px; color: var(--gold);
         }
@@ -839,13 +844,13 @@ export default function MarketingPage() {
 
         .panel-header {
           display: flex; justify-content: space-between; align-items: center;
-          padding: 12px 16px; border-bottom: 1px solid var(--rule); background: #16261D;
+          padding: 12px 16px; border-bottom: 1px solid var(--rule); background: #150F0B;
           font-family: 'JetBrains Mono'; font-size: 11px; color: var(--cyan); letter-spacing: 0.05em;
         }
 
-        .editor-toolbar { display: flex; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--rule); background: #16261D; }
+        .editor-toolbar { display: flex; gap: 6px; padding: 12px 16px; border-bottom: 1px solid var(--rule); background: #150F0B; }
         .editor-toolbar span {
-          width: 26px; height: 26px; border-radius: 6px; background: #121F18; border: 1px solid var(--rule);
+          width: 26px; height: 26px; border-radius: 6px; background: #0A0806; border: 1px solid var(--rule);
           display: flex; align-items: center; justify-content: center; font-family: 'JetBrains Mono'; font-size: 11px; color: var(--gold);
         }
 
@@ -853,18 +858,18 @@ export default function MarketingPage() {
         .video-input-row { display: flex; gap: 8px; margin-bottom: 16px; }
         .video-input-row input {
           flex: 1; border: 1.5px solid var(--rule); border-radius: 8px; padding: 9px 12px;
-          font-family: 'JetBrains Mono'; font-size: 12.5px; color: var(--ink); background: #16261D;
+          font-family: 'JetBrains Mono'; font-size: 12.5px; color: var(--ink); background: #0A0806;
         }
         .video-input-row input:focus { border-color: var(--gold); outline: none; }
         .video-chapters { display: flex; flex-direction: column; gap: 9px; }
         .video-chapter {
           display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--ink);
-          background: #16261D; border: 1px solid var(--rule-soft); border-radius: 8px; padding: 9px 12px;
+          background: #0A0806; border: 1px solid var(--rule-soft); border-radius: 8px; padding: 9px 12px;
         }
         .video-chapter .ts { font-family: 'JetBrains Mono'; font-size: 11.5px; color: var(--gold); font-weight: 600; flex: none; }
         .xp-badge {
           display: inline-flex; align-items: center; gap: 6px; margin-top: 14px;
-          background: rgba(240, 201, 59, 0.15); color: var(--gold); border: 1px solid rgba(240, 201, 59, 0.3);
+          background: rgba(245, 180, 41, 0.15); color: var(--gold); border: 1px solid rgba(245, 180, 41, 0.3);
           font-family: 'JetBrains Mono'; font-size: 11.5px; font-weight: 600; padding: 6px 12px; border-radius: 100px;
         }
 
@@ -875,16 +880,16 @@ export default function MarketingPage() {
         }
         .leaderboard-row:last-child { border-bottom: none; }
         .rank-badge {
-          width: 26px; height: 26px; border-radius: 50%; background: #16261D; border: 1px solid var(--rule);
+          width: 26px; height: 26px; border-radius: 50%; background: #0A0806; border: 1px solid var(--rule);
           display: flex; align-items: center; justify-content: center;
           font-family: 'Space Grotesk'; font-weight: 700; font-size: 12px; color: var(--ink); flex: none;
         }
-        .leaderboard-row.top .rank-badge { background: var(--gold); color: #16261D; }
+        .leaderboard-row.top .rank-badge { background: var(--gold); color: #150F0B; }
         .lb-name { flex: 1; font-size: 13.5px; font-weight: 600; color: var(--ink); }
         .lb-coins { font-family: 'JetBrains Mono'; font-size: 12px; color: var(--gold); }
         .wallet-chip {
           margin-top: 16px; display: flex; align-items: center;
-          background: #16261D; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px;
+          background: #0A0806; border: 1px solid var(--rule); border-radius: 10px; padding: 12px 14px;
           font-size: 12.5px; color: var(--ink-soft);
         }
         .wallet-chip strong { color: var(--gold); }
@@ -932,7 +937,7 @@ export default function MarketingPage() {
         /* Pricing */
         .price-toggle-row { display: flex; align-items: center; gap: 12px; margin-bottom: 36px; }
         .toggle-switch {
-          width: 46px; height: 26px; border-radius: 100px; background: #16261D; border: 1px solid var(--rule); position: relative;
+          width: 46px; height: 26px; border-radius: 100px; background: #0A0806; border: 1px solid var(--rule); position: relative;
           cursor: pointer; padding: 0; flex: none;
           transition: background .2s ease;
         }
@@ -941,9 +946,9 @@ export default function MarketingPage() {
           background: var(--ink-soft); transition: transform .2s ease, background .2s ease;
         }
         .toggle-switch.on { background: var(--gold); }
-        .toggle-switch.on::after { transform: translateX(20px); background: #16261D; }
+        .toggle-switch.on::after { transform: translateX(20px); background: #150F0B; }
         .toggle-label { font-size: 13.5px; color: var(--ink-soft); }
-        .toggle-save { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--gold); background: rgba(240, 201, 59, 0.15); padding: 3px 8px; border-radius: 100px; font-weight: 600; border: 1px solid rgba(240, 201, 59, 0.3); }
+        .toggle-save { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--gold); background: rgba(245, 180, 41, 0.15); padding: 3px 8px; border-radius: 100px; font-weight: 600; border: 1px solid rgba(245, 180, 41, 0.3); }
 
         .pricing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
         @media(max-width:820px){ .pricing-grid{ grid-template-columns:1fr; } }
@@ -953,7 +958,7 @@ export default function MarketingPage() {
         }
         .price-card.pro { border-color: var(--gold); box-shadow: var(--shadow); }
         .price-badge {
-          position: absolute; top: -13px; left: 32px; background: var(--gold); color: #16261D;
+          position: absolute; top: -13px; left: 32px; background: var(--gold); color: #150F0B;
           font-family: 'JetBrains Mono'; font-size: 10.5px; font-weight: 700; letter-spacing: 0.04em;
           padding: 5px 12px; border-radius: 100px;
         }
@@ -968,20 +973,20 @@ export default function MarketingPage() {
 
         /* Tools */
         .tools-card {
-          background: #121F18; color: var(--ink);
+          background: #0A0806; color: var(--ink);
           border: 1px solid var(--rule);
           border-radius: 20px; padding: 44px 40px;
           display: flex; align-items: center; justify-content: space-between; gap: 32px;
           flex-wrap: wrap; position: relative; overflow: hidden;
         }
         .tools-copy { max-width: 480px; position: relative; z-index: 1; }
-        .tools-copy h3 { color: #F3F0E4; font-size: 24px; margin-bottom: 12px; }
+        .tools-copy h3 { color: #FAFAF8; font-size: 24px; margin-bottom: 12px; font-family: var(--font-display); }
         .tools-copy p { color: var(--ink-soft); font-size: 15px; line-height: 1.65; font-weight: 300; }
         .tools-boards { display: flex; gap: 9px; flex-wrap: wrap; margin-top: 18px; }
         .tools-boards span {
           font-family: 'JetBrains Mono'; font-size: 11.5px;
           border: 1px solid var(--rule); color: var(--cyan);
-          padding: 5px 10px; border-radius: 6px; background: #16261D;
+          padding: 5px 10px; border-radius: 6px; background: #150F0B;
         }
 
         /* Reviews */
@@ -996,14 +1001,14 @@ export default function MarketingPage() {
         .rev-avatar {
           width: 36px; height: 36px; border-radius: 50%;
           background: var(--gold); display: flex; align-items: center; justify-content: center;
-          font-family: 'Space Grotesk'; font-weight: 700; font-size: 13px; color: #16261D;
+          font-family: 'Space Grotesk'; font-weight: 700; font-size: 13px; color: #150F0B;
           flex: none;
         }
         .rev-name { font-size: 14px; font-weight: 700; color: var(--ink); }
         .rev-role { font-size: 12.5px; color: var(--ink-soft); margin-top: 1px; }
 
         /* Stats Strip */
-        .stats-strip { background: #121F18; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 52px 0; }
+        .stats-strip { background: #0A0806; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); padding: 52px 0; }
         .stats-strip-inner { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 28px; }
         .stat-block { text-align: center; flex: 1; min-width: 130px; }
         .stat-block .num { font-family: 'Space Grotesk'; font-weight: 700; font-size: clamp(26px,3vw,36px); color: var(--gold); }
@@ -1029,7 +1034,7 @@ export default function MarketingPage() {
 
         /* Final CTA */
         .cta-band {
-          background: #121F18;
+          background: #0A0806;
           border: 1px solid var(--rule);
           border-radius: 22px;
           padding: 64px 40px;
@@ -1042,7 +1047,7 @@ export default function MarketingPage() {
           width: 220px; height: 3px; background: var(--gold);
           border-radius: 0 0 4px 4px;
         }
-        .cta-band h2 { color: #F3F0E4; font-size: clamp(26px,3.4vw,38px); max-width: 620px; margin: 0 auto; }
+        .cta-band h2 { color: #FAFAF8; font-size: clamp(26px,3.4vw,38px); max-width: 620px; margin: 0 auto; font-family: var(--font-display); }
         .cta-band p { color: var(--ink-soft); margin-top: 14px; font-size: 15.5px; font-weight: 300; }
         .cta-band .hero-ctas { justify-content: center; margin-top: 28px; }
 
@@ -1050,7 +1055,7 @@ export default function MarketingPage() {
         footer {
           border-top: 1px solid var(--rule);
           padding: 32px 0 0 0;
-          background: #16261D;
+          background: #0A0806;
           margin-top: auto;
           margin-bottom: 0;
           padding-bottom: 0;
@@ -1070,7 +1075,7 @@ export default function MarketingPage() {
         .newsletter-row { display: flex; gap: 8px; max-width: 340px; }
         .newsletter-row input {
           flex: 1; border: 1.5px solid var(--rule); border-radius: 8px; padding: 9px 12px; font-size: 13px; font-family: inherit;
-          background: #16261D; color: var(--ink);
+          background: #150F0B; color: var(--ink);
         }
         .newsletter-row input:focus { border-color: var(--gold); outline: none; }
         .newsletter-msg { font-size: 12.5px; margin-top: 8px; min-height: 16px; font-family: 'JetBrains Mono'; }
@@ -1084,29 +1089,29 @@ export default function MarketingPage() {
         .space-y-2 > * + * { margin-top: 8px; }
         .text-sm { font-size: 14px; }
         .leading-relaxed { line-height: 1.75; }
-        .text-[#F3F0E4] { color: #F3F0E4; }
+        .text-[#F3F0E4] { color: #FAFAF8; }
         .mb-2 { margin-bottom: 8px; }
         .text-xs { font-size: 12px; }
         .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .text-[#8FC3DE] { color: #8FC3DE; }
+        .text-[#8FC3DE] { color: #FCD34D; }
         .font-bold { font-weight: 700; }
         .flex-col { flex-direction: column; }
         .items-start { align-items: flex-start; }
         .gap-1 { gap: 4px; }
         .w-full { width: 100%; }
         .text-[11px] { font-size: 11px; }
-        .text-[#9FAEA1] { color: #9FAEA1; }
+        .text-[#9FAEA1] { color: #8A8078; }
         .font-light { font-weight: 300; }
         .pl-11 { padding-left: 44px; }
         .justify-between { justify-content: space-between; }
         .mt-3 { margin-top: 12px; }
         .pt-2 { padding-top: 8px; }
         .border-t { border-top-width: 1px; }
-        .border-[#F3F0E4]/10 { border-color: rgba(243, 240, 228, 0.1); }
+        .border-[#F3F0E4]/10 { border-color: rgba(46, 33, 24, 0.6); }
         .text-[10px] { font-size: 10px; }
-        .text-[#7B8C7E] { color: #7B8C7E; }
+        .text-[#7B8C7E] { color: #8A8078; }
         .mb-3 { margin-bottom: 12px; }
-        .text-[#F0C93B] { color: #F0C93B; }
+        .text-[#F0C93B] { color: #F5B429; }
         .font-semibold { font-weight: 600; }
         .coin-icon { 
           display: inline-block;
@@ -1337,7 +1342,7 @@ export default function MarketingPage() {
                   ) : (
                     <div className="space-y-2">
                       {formattedAiLines.map((line, idx) => (
-                        <p key={idx} className="text-sm leading-relaxed text-[#F3F0E4]">
+                        <p key={idx} className="text-sm leading-relaxed text-[#FAFAF8]">
                           {line}
                         </p>
                       ))}
@@ -1587,14 +1592,14 @@ export default function MarketingPage() {
                       <div key={idx} className="video-chapter flex-col items-start gap-1">
                         <div className="flex items-center gap-2 w-full">
                           <span className="ts">{ch.timestamp}</span>
-                          <span className="font-bold text-[#F3F0E4]">{ch.title}</span>
+                          <span className="font-bold text-[#FAFAF8]">{ch.title}</span>
                         </div>
-                        <p className="text-[11px] text-[#9FAEA1] font-light pl-11">{ch.summary}</p>
+                        <p className="text-[11px] text-[#8A8078] font-light pl-11">{ch.summary}</p>
                       </div>
                     ))}
                   </div>
 
-                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#F3F0E4]/10">
+                  <div className="flex items-center justify-between mt-3 pt-2 border-t border-[#2E2118]">
                     <span className="xp-badge">+{videoSummaryData.xpEarned} XP earned from this summary</span>
                     <span className="text-[10px] font-mono text-[#7B8C7E]">{videoSummaryData.engine}</span>
                   </div>

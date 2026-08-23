@@ -136,9 +136,9 @@ export function BlogSideChat({ blogTitle, blogContentText }: BlogSideChatProps) 
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-zinc-950 font-bold px-4 py-3 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.4)] flex items-center gap-2 transition-all hover:scale-105 active:scale-95 text-xs select-none animate-in fade-in"
+          className="fixed bottom-6 right-6 z-50 btn-premium-primary px-4 py-3 text-xs select-none animate-in fade-in"
         >
-          <Sparkles className="size-4 text-zinc-950" />
+          <Sparkles className="size-4" />
           <span>Ask AI about this Post</span>
         </button>
       )}
@@ -147,15 +147,15 @@ export function BlogSideChat({ blogTitle, blogContentText }: BlogSideChatProps) 
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 bg-black/60 z-50 transition-opacity backdrop-blur-sm"
+            className="fixed inset-0 bg-black/70 z-50 transition-opacity backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
 
-          <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#07070a] border-l border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
+          <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-[#0A0806] border-l border-[#2E2118] flex flex-col shadow-2xl animate-in slide-in-from-right duration-200">
             {/* Header */}
-            <div className="p-4 border-b border-white/10 bg-zinc-950/90 backdrop-blur-md flex items-center justify-between shrink-0">
+            <div className="p-4 border-b border-[#2E2118] bg-[#150F0B]/90 backdrop-blur-md flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="size-8 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
+                <div className="size-8 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/30 flex items-center justify-center text-[#F5B429] shrink-0">
                   <Sparkles className="size-4" />
                 </div>
                 <div className="min-w-0">

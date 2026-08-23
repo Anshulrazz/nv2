@@ -26,11 +26,11 @@ export function NavLink({
     (href === "/blogs" && pathname?.startsWith("/blog"));
 
   const accentMap: Record<Accent, string> = {
-    cyan: "group-hover:text-cyan-400",
-    violet: "group-hover:text-violet-400",
-    amber: "group-hover:text-amber-400",
-    yellow: "group-hover:text-yellow-400",
-    red: "group-hover:text-rose-400",
+    cyan: "group-hover:text-[#F5B429]",
+    violet: "group-hover:text-[#F5941D]",
+    amber: "group-hover:text-[#F5B429]",
+    yellow: "group-hover:text-[#FCD34D]",
+    red: "group-hover:text-[#EF4444]",
   };
 
   const handleLinkClick = () => {
@@ -46,18 +46,18 @@ export function NavLink({
       onClick={handleLinkClick}
       className={`group flex items-center justify-between px-3 py-2 text-xs rounded-xl transition-all duration-200 active:scale-[0.98] ${
         isActive
-          ? "bg-white/10 border border-white/10 text-white font-bold shadow-sm"
-          : "text-zinc-400 hover:text-white hover:bg-white/5 font-medium"
+          ? "bg-gradient-to-r from-[#F5B429]/15 to-[#F5941D]/10 border border-[#F5B429]/30 text-[#FAFAF8] font-semibold shadow-[0_0_15px_-3px_rgba(245,180,41,0.15)]"
+          : "text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#150F0B] font-medium"
       }`}
     >
       <div className="flex items-center gap-3">
-        <span className={`transition-colors ${isActive ? "text-cyan-400" : `text-zinc-500 ${accentMap[accent]}`}`}>
+        <span className={`transition-colors ${isActive ? "text-[#F5B429]" : `text-[#8A8078] ${accentMap[accent]}`}`}>
           {icon}
         </span>
         <span>{label}</span>
       </div>
       {badge !== undefined && badge > 0 && (
-        <span className="text-[9px] font-mono bg-cyan-500/20 text-cyan-300 font-extrabold px-2 py-0.5 rounded-full border border-cyan-500/30">
+        <span className="text-[9px] font-mono bg-[#F5B429]/20 text-[#FCD34D] font-extrabold px-2 py-0.5 rounded-full border border-[#F5B429]/30">
           {badge}
         </span>
       )}

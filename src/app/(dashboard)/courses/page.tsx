@@ -48,20 +48,20 @@ export default function CoursesPage() {
   }, []);
 
   return (
-    <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-[#030305] text-zinc-100 antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 overflow-y-auto p-6 lg:p-10 space-y-8 bg-transparent text-[#FAFAF8] antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
       </div>
 
       {/* Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl">
+      <div className="border-b border-[#2E2118] bg-[#150F0B]/80 p-8 rounded-[2rem] border border-[#2E2118] relative z-10 backdrop-blur-2xl shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)]">
         <div className="flex items-center gap-4">
-          <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+          <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/20 text-[#F5B429]">
             <Presentation className="size-7" />
           </div>
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+            <h1 className="text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-3 font-display">
               Interactive Courses
               <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
                 VERIFIED TRACKS

@@ -284,9 +284,9 @@ export default function CourseViewerPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-10 gap-3 bg-[#030305]">
-        <Loader2 className="size-8 animate-spin text-amber-400" />
-        <span className="font-mono text-xs text-zinc-400 tracking-widest uppercase">
+      <div className="flex-1 flex flex-col items-center justify-center p-10 gap-3 bg-transparent text-[#8A8078]">
+        <Loader2 className="size-8 animate-spin text-[#F5B429]" />
+        <span className="font-mono text-xs text-[#8A8078] tracking-widest uppercase">
           Loading course curriculum...
         </span>
       </div>
@@ -295,13 +295,13 @@ export default function CourseViewerPage() {
 
   if (error || !course) {
     return (
-      <div className="flex-1 p-10 flex flex-col items-center justify-center gap-4 bg-[#030305]">
-        <AlertCircle className="size-10 text-rose-400" />
-        <h2 className="text-xl font-bold text-white">Error Loading Course</h2>
-        <p className="text-zinc-400 text-xs font-mono">{error || "Course not found"}</p>
+      <div className="flex-1 p-10 flex flex-col items-center justify-center gap-4 bg-transparent">
+        <AlertCircle className="size-10 text-[#EF4444]" />
+        <h2 className="text-xl font-bold text-[#FAFAF8] font-display">Error Loading Course</h2>
+        <p className="text-[#8A8078] text-xs font-mono">{error || "Course not found"}</p>
         <Button
           onClick={() => router.push("/courses")}
-          className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs"
+          className="btn-premium-primary rounded-full text-xs"
         >
           Back to Courses
         </Button>
@@ -315,7 +315,7 @@ export default function CourseViewerPage() {
   const isLockedCourse = !course.isEnrolled && basePrice > 0;
 
   return (
-    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-[#030305] text-zinc-100 antialiased relative">
+    <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-transparent text-[#FAFAF8] antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Sidebar Curriculum Drawer */}
       <div className="w-full lg:w-80 border-r border-white/5 bg-zinc-950/60 backdrop-blur-2xl flex flex-col h-[40vh] lg:h-auto overflow-hidden shrink-0">
         <div className="p-6 border-b border-white/5 shrink-0 space-y-3">

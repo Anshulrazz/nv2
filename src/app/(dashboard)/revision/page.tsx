@@ -330,24 +330,24 @@ export default function RevisionPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#05080E] text-[#E2E8F0] selection:bg-cyan-500/30 selection:text-cyan-300 relative font-sans antialiased overflow-x-hidden p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen flex flex-col bg-transparent text-[#FAFAF8] selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] relative font-sans antialiased overflow-x-hidden p-4 sm:p-6 lg:p-8">
       {/* Dynamic Background Cyber Gradients */}
-      <div className="fixed top-0 left-1/4 w-[700px] h-[400px] bg-cyan-500/5 rounded-full blur-[160px] pointer-events-none z-0" />
-      <div className="fixed bottom-0 right-1/4 w-[700px] h-[400px] bg-violet-500/5 rounded-full blur-[160px] pointer-events-none z-0" />
+      <div className="fixed top-0 left-1/4 w-[700px] h-[400px] bg-[#F5B429]/10 rounded-full blur-[160px] pointer-events-none z-0" />
+      <div className="fixed bottom-0 right-1/4 w-[700px] h-[400px] bg-[#F5941D]/8 rounded-full blur-[160px] pointer-events-none z-0" />
 
       {/* ── HEADER BANNER ── */}
-      <header className="relative z-10 mb-8 rounded-2xl bg-[#0B121C]/90 border border-cyan-500/20 p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(0,240,255,0.08)] flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <header className="relative z-10 mb-8 rounded-2xl bg-[#150F0B]/90 border border-[#2E2118] p-6 backdrop-blur-xl shadow-[0_0_30px_rgba(245,148,29,0.08)] flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full bg-cyan-400 animate-ping" />
-            <span className="text-[10px] font-bold text-cyan-400 tracking-[0.2em] font-mono uppercase">
+            <span className="size-2 rounded-full bg-[#F5B429] animate-ping" />
+            <span className="text-[10px] font-bold text-[#F5B429] tracking-[0.2em] font-mono uppercase">
               SMART REVISION ENGINE v3.0
             </span>
-            <span className="px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30 text-[9px] text-cyan-300 font-bold font-mono uppercase flex items-center gap-1">
-              <Sparkles className="size-3 text-cyan-400" /> GEMINI PRO INTEGRATED
+            <span className="px-2 py-0.5 rounded bg-[#F5B429]/10 border border-[#F5B429]/30 text-[9px] text-[#FCD34D] font-bold font-mono uppercase flex items-center gap-1">
+              <Sparkles className="size-3 text-[#F5B429]" /> GEMINI PRO INTEGRATED
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider font-heading flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-bold text-[#FAFAF8] tracking-wider font-display flex items-center gap-3">
             AI REVISION WORKSTATION
           </h1>
           <p className="text-xs text-[#94A3B8] max-w-2xl leading-relaxed">

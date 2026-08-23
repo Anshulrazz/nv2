@@ -27,12 +27,12 @@ export function CustomAlertDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) closeAlert(); }}>
-      <DialogContent className="bg-neutral-900 border border-neutral-800 text-neutral-100 max-w-sm cyber-panel z-[9999]">
+      <DialogContent className="bg-[#150F0B]/95 border border-[#2E2118] text-[#FAFAF8] max-w-sm backdrop-blur-2xl shadow-[0_0_50px_-10px_rgba(245,148,29,0.25)] rounded-[2rem] z-[9999]">
         <DialogHeader>
-          <DialogTitle className="text-neutral-105 font-bold text-sm tracking-wide font-space-grotesk">
+          <DialogTitle className="text-[#FAFAF8] font-bold text-sm tracking-wide font-display">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-neutral-400 text-xs mt-1 leading-normal">
+          <DialogDescription className="text-[#8A8078] text-xs mt-1 leading-normal">
             {message}
           </DialogDescription>
         </DialogHeader>
@@ -41,14 +41,14 @@ export function CustomAlertDialog() {
             <Button
               variant="outline"
               onClick={handleCancel}
-              className="border-neutral-800 text-neutral-400 hover:text-white bg-neutral-950 hover:bg-neutral-900 text-xs h-8"
+              className="border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] bg-[#0A0806] hover:bg-[#150F0B] text-xs h-8 rounded-full"
             >
               Cancel
             </Button>
           )}
           <Button
             onClick={handleConfirm}
-            className="bg-cyan-500 hover:bg-cyan-400 text-neutral-955 font-bold text-xs h-8 px-4 shadow-[0_0_10px_rgba(6,182,212,0.2)]"
+            className="btn-premium-primary text-xs h-8 px-4 font-bold font-display"
           >
             Confirm
           </Button>

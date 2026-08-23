@@ -47,19 +47,19 @@ function NavGroup({ label, icon, expanded, onToggle, children }: NavGroupProps) 
     <div className="space-y-1">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-left hover:bg-white/5 transition-colors group cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-1.5 rounded-xl text-left hover:bg-[#150F0B] transition-colors group cursor-pointer"
         aria-expanded={expanded}
       >
         <div className="flex items-center gap-2">
           <span className={`transition-opacity duration-150 ${expanded ? "opacity-100" : "opacity-60"}`}>
             {icon}
           </span>
-          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-zinc-400 group-hover:text-white transition-colors">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#8A8078] group-hover:text-[#FAFAF8] transition-colors">
             {label}
           </span>
         </div>
         <ChevronDown
-          className={`size-3 text-zinc-500 group-hover:text-zinc-300 transition-transform duration-200 ${
+          className={`size-3 text-[#8A8078] group-hover:text-[#FAFAF8] transition-transform duration-200 ${
             expanded ? "rotate-0" : "-rotate-90"
           }`}
         />
@@ -72,7 +72,7 @@ function NavGroup({ label, icon, expanded, onToggle, children }: NavGroupProps) 
         }`}
       >
         <div className="overflow-hidden">
-          <div className="pl-2.5 space-y-0.5 border-l border-white/5 ml-4 pb-0.5">
+          <div className="pl-2.5 space-y-0.5 border-l border-[#2E2118] ml-4 pb-0.5">
             {children}
           </div>
         </div>
@@ -105,7 +105,7 @@ export function SidebarNavigation({
       {/* ── GROUP 1: WORKSPACE ── */}
       <NavGroup
         label="Workspace"
-        icon={<FolderOpen className="size-3.5 text-cyan-400" />}
+        icon={<FolderOpen className="size-3.5 text-[#F5B429]" />}
         expanded={expanded.workspace}
         onToggle={() => toggleGroup("workspace")}
       >
@@ -125,7 +125,7 @@ export function SidebarNavigation({
       {/* ── GROUP 2: AI STUDY TOOLS ── */}
       <NavGroup
         label="AI Tools"
-        icon={<Sparkles className="size-3.5 text-violet-400" />}
+        icon={<Sparkles className="size-3.5 text-[#F5941D]" />}
         expanded={expanded.aiTools}
         onToggle={() => toggleGroup("aiTools")}
       >
@@ -138,7 +138,7 @@ export function SidebarNavigation({
       {/* ── GROUP 3: COMMUNITY & SOCIAL ── */}
       <NavGroup
         label="Community & Feed"
-        icon={<Users className="size-3.5 text-cyan-400" />}
+        icon={<Users className="size-3.5 text-[#F5B429]" />}
         expanded={expanded.social}
         onToggle={() => toggleGroup("social")}
       >
@@ -153,7 +153,7 @@ export function SidebarNavigation({
       {/* ── GROUP 4: GROWTH & SETTINGS ── */}
       <NavGroup
         label="Growth & Settings"
-        icon={<GraduationCap className="size-3.5 text-amber-400" />}
+        icon={<GraduationCap className="size-3.5 text-[#FCD34D]" />}
         expanded={expanded.academics}
         onToggle={() => toggleGroup("academics")}
       >

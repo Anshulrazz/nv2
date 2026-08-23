@@ -66,22 +66,22 @@ export default function LeaderboardPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F0C93B]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] animate-float-glow" />
+        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#F5941D]/8 rounded-full blur-[140px] animate-float-glow-reverse" />
       </div>
 
       {/* Top Banner */}
       <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
-        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="border border-[#2E2118] bg-[#150F0B]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
           <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-[#F0C93B]/10 flex items-center justify-center border border-[#F0C93B]/30 text-[#F0C93B] shadow-[2px_2px_0_0_#F28B6E] shrink-0">
+            <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429] shrink-0">
               <Trophy className="size-7" />
             </div>
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-2.5 flex-wrap font-display">
                 Student Batch Leaderboard &amp; Academic Ranks
                 <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
                   LIVE STANDINGS

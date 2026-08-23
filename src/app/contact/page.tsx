@@ -83,7 +83,13 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] font-sans selection:bg-[#F0C93B]/30 flex flex-col antialiased">
+    <div className="min-h-screen bg-transparent text-[#FAFAF8] font-sans selection:bg-[#F5B429]/30 flex flex-col antialiased relative">
+      {/* Background Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
+      </div>
       <TrustHeader title="CONTACT US" />
 
       <main className="max-w-5xl w-full mx-auto px-4 sm:px-6 py-12 sm:py-16 space-y-12 flex-1">

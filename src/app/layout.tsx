@@ -2,12 +2,24 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import { Suspense } from "react";
+import { Inter, Playfair_Display } from "next/font/google";
 import { Providers } from "@/components/providers";
-import { Toaster } from "sonner";
 import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
 import { RouteLoadingProgress } from "@/components/common/RouteLoadingProgress";
 import { FB_PIXEL_ID } from "@/lib/metaPixel";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  variable: "--font-playfair",
+  display: "swap",
+});
 
 import { buildOrganizationSchema, buildWebSiteSchema } from "@/lib/seo/jsonld";
 
@@ -97,12 +109,20 @@ export default function RootLayout({
   const adClientId = process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_ID || "ca-pub-1957290146491296";
 
   return (
-    <html lang="en" className="dark" data-scroll-behavior="smooth">
-      <head suppressHydrationWarning>
-        <meta name="google-adsense-account" content={adClientId} />
-        <script
-          async
+    <html
+      lang="en"
+      className={`dark bg-[#0A0806] text-[#FAFAF8] ${inter.variable} ${playfair.variable}`}
+      data-scroll-behavior="smooth"
+      suppressHydrationWarning
+    >
+      <body
+        suppressHydrationWarning
+        className="antialiased bg-[#0A0806] text-[#FAFAF8] min-h-screen selection:bg-[#F5B429]/20 selection:text-[#FAFAF8]"
+      >
+        <Script
+          id="google-adsense"
           src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adClientId}`}
+          strategy="afterInteractive"
           crossOrigin="anonymous"
         />
         <script
@@ -113,8 +133,6 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(buildWebSiteSchema()) }}
         />
-      </head>
-      <body className="antialiased bg-background text-foreground">
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
@@ -143,17 +161,21 @@ export default function RootLayout({
             alt=""
           />
         </noscript>
+        {/* Global Glowing Background Atmosphere */}
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
+          <div className="ambient-glow-orb-1" />
+          <div className="ambient-glow-orb-2" />
+          <div className="ambient-glow-orb-3" />
+        </div>
+
         <Suspense fallback={null}>
           <MetaPixelRouteTracker />
           <RouteLoadingProgress />
         </Suspense>
-        <Providers>{children}</Providers>
-        <Toaster
-          theme="dark"
-          position="top-center"
-          richColors
-          visibleToasts={5}
-        />
+
+        <div className="relative z-10 min-h-screen flex flex-col">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   );

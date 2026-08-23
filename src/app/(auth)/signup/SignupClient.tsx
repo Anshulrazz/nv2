@@ -97,27 +97,27 @@ function SignupForm() {
   return (
     <div className="w-full max-w-md relative z-10">
       {/* Doppelrand (Double-Bezel) Hardware Shell */}
-      <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)]">
-        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-5 sm:p-8 space-y-6">
+      <div className="rounded-[2.5rem] bg-[#150F0B]/80 border border-[#2E2118] p-2.5 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)]">
+        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-5 sm:p-8 space-y-6">
           {/* Header */}
           <div className="text-center space-y-3">
             <div className="flex items-center justify-center gap-2.5 mb-2">
               <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
-              <span className="text-xl font-extrabold tracking-tight text-white">
+              <span className="text-xl font-extrabold tracking-tight text-[#FAFAF8] font-display">
                 Notexia
               </span>
             </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-[#FAFAF8] tracking-tight font-display">
               Create your account
             </h1>
-            <p className="text-zinc-400 text-xs font-light">
+            <p className="text-[#8A8078] text-xs font-light">
               Start organizing your ideas with AI-powered notes
             </p>
           </div>
 
           {/* Error message */}
           {error && (
-            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-medium">
+            <div className="p-3.5 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444] text-xs font-medium">
               {error}
             </div>
           )}
@@ -130,17 +130,17 @@ function SignupForm() {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                    <FormLabel className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest">
                       Display Name
                     </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="John Doe"
-                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
+                        className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-rose-400 text-xs" />
+                    <FormMessage className="text-[#EF4444] text-xs" />
                   </FormItem>
                 )}
               />
@@ -150,18 +150,18 @@ function SignupForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                    <FormLabel className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest">
                       Email Address
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="you@example.com"
-                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
+                        className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-rose-400 text-xs" />
+                    <FormMessage className="text-[#EF4444] text-xs" />
                   </FormItem>
                 )}
               />
@@ -171,18 +171,18 @@ function SignupForm() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                    <FormLabel className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest">
                       Password
                     </FormLabel>
                     <FormControl>
                       <Input
                         type="password"
                         placeholder="••••••••"
-                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
+                        className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-rose-400 text-xs" />
+                    <FormMessage className="text-[#EF4444] text-xs" />
                   </FormItem>
                 )}
               />
@@ -192,17 +192,17 @@ function SignupForm() {
                 name="referralCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest">
+                    <FormLabel className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest">
                       Referral Code (Optional)
                     </FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="REF-XXXXXX"
-                        className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out font-mono"
+                        placeholder="e.g. JOIN2026"
+                        className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-11 text-xs rounded-xl transition-[border-color,box-shadow] duration-150 ease-out uppercase"
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className="text-rose-400 text-xs" />
+                    <FormMessage className="text-[#EF4444] text-xs" />
                   </FormItem>
                 )}
               />
@@ -211,7 +211,7 @@ function SignupForm() {
                 control={form.control}
                 name="acceptTerms"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl bg-zinc-950/40 p-3 border border-white/5">
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl bg-[#150F0B]/60 p-3 border border-[#2E2118]">
                     <FormControl>
                       <Checkbox
                         id="signup-accept-terms"
@@ -222,13 +222,13 @@ function SignupForm() {
                     <div className="space-y-1 leading-tight">
                       <label
                         htmlFor="signup-accept-terms"
-                        className="text-xs text-zinc-300 font-normal cursor-pointer select-none leading-relaxed block"
+                        className="text-xs text-[#8A8078] font-light leading-relaxed cursor-pointer select-none"
                       >
-                        I accept the{" "}
+                        I agree to Notexia&apos;s{" "}
                         <Link
                           href="/terms"
                           target="_blank"
-                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                          className="text-[#F5B429] hover:text-[#FCD34D] font-semibold underline underline-offset-2 transition-colors"
                         >
                           Terms of Use
                         </Link>
@@ -236,7 +236,7 @@ function SignupForm() {
                         <Link
                           href="/privacy"
                           target="_blank"
-                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                          className="text-[#F5B429] hover:text-[#FCD34D] font-semibold underline underline-offset-2 transition-colors"
                         >
                           Privacy Policy
                         </Link>{" "}
@@ -244,32 +244,32 @@ function SignupForm() {
                         <Link
                           href="/privacy#data-compliance"
                           target="_blank"
-                          className="text-cyan-400 hover:text-cyan-300 font-semibold underline underline-offset-2 transition-colors"
+                          className="text-[#F5B429] hover:text-[#FCD34D] font-semibold underline underline-offset-2 transition-colors"
                         >
                           Data Compliance
                         </Link>
                       </label>
-                      <FormMessage className="text-rose-400 text-[11px]" />
+                      <FormMessage className="text-[#EF4444] text-[11px]" />
                     </div>
                   </FormItem>
                 )}
               />
 
-              {/* Button-in-Button CTA Architecture */}
+              {/* Primary CTA Button */}
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="group w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 mt-2 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(255,255,255,0.2)]"
+                className="btn-premium-primary group w-full text-xs h-11 mt-2 flex items-center justify-center gap-2 font-display"
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-zinc-950" />
+                    <Loader2 className="h-4 w-4 animate-spin text-[#150F0B]" />
                     <span>Initializing node...</span>
                   </div>
                 ) : (
                   <>
                     <span>Create Account</span>
-                    <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    <ArrowUpRight className="size-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </>
                 )}
               </Button>
@@ -278,8 +278,8 @@ function SignupForm() {
 
           {/* Separator */}
           <div className="relative flex items-center justify-center my-4">
-            <span className="absolute w-full h-px bg-white/5" />
-            <span className="relative px-3 bg-[#07070a] text-zinc-500 text-[10px] font-mono font-bold uppercase tracking-widest">
+            <span className="absolute w-full h-px bg-[#2E2118]" />
+            <span className="relative px-3 bg-[#0A0806] text-[#8A8078] text-[10px] font-mono font-bold uppercase tracking-widest">
               Or continue with
             </span>
           </div>
@@ -289,7 +289,7 @@ function SignupForm() {
             type="button"
             variant="outline"
             onClick={handleGoogleSignIn}
-            className="w-full rounded-full border-white/10 bg-zinc-950 hover:bg-zinc-900 text-zinc-300 hover:text-white h-11 flex items-center justify-center gap-3 font-medium text-xs transition-colors"
+            className="w-full rounded-full border-[#2E2118] bg-[#150F0B] hover:bg-[#241811] text-[#FAFAF8] h-11 flex items-center justify-center gap-3 font-medium text-xs transition-colors"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
               <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -302,9 +302,9 @@ function SignupForm() {
 
           {/* Footer */}
           <div className="pt-2 text-center">
-            <p className="text-zinc-500 text-xs">
+            <p className="text-[#8A8078] text-xs">
               Already have an account?{" "}
-              <Link href="/login" className="text-cyan-400 hover:text-cyan-300 font-semibold hover:underline transition-colors">
+              <Link href="/login" className="text-[#F5B429] hover:text-[#FCD34D] font-semibold hover:underline transition-colors">
                 Log in
               </Link>
             </p>
@@ -317,16 +317,17 @@ function SignupForm() {
 
 export default function SignupClient() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#030305] p-4 relative overflow-hidden selection:bg-cyan-500/30 selection:text-cyan-200 antialiased">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-gradient-to-b from-violet-500/15 via-cyan-600/10 to-transparent blur-[140px] opacity-70" />
+    <div className="min-h-screen flex items-center justify-center bg-transparent p-4 relative overflow-hidden selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] antialiased">
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
       </div>
 
       <Suspense
         fallback={
-          <div className="flex items-center justify-center text-zinc-100 gap-2 bg-zinc-900/80 p-8 rounded-2xl border border-white/10">
-            <Loader2 className="h-6 w-6 animate-spin text-cyan-400" />
+          <div className="flex items-center justify-center text-[#FAFAF8] gap-2 bg-[#150F0B] p-8 rounded-2xl border border-[#2E2118]">
+            <Loader2 className="h-6 w-6 animate-spin text-[#F5B429]" />
             <span className="text-xs font-mono">Loading signup form...</span>
           </div>
         }

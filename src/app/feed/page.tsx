@@ -405,36 +405,36 @@ export default function PublicFeedPage() {
           const hasDownvoted = comment.downvotes.includes(currentUserId);
           return (
             <div key={comment._id} className="space-y-2" style={{ marginLeft: `${depth > 0 ? Math.min(depth * 14, 28) : 0}px` }}>
-              <div className="bg-[#121F18] border border-[#F3F0E4]/10 rounded-2xl p-4 space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-mono text-[#9FAEA1] select-none font-bold">
+              <div className="bg-[#150F0B] border border-[#2E2118] rounded-2xl p-4 space-y-2 shadow-[0_0_20px_-5px_rgba(245,148,29,0.08)]">
+                <div className="flex items-center justify-between text-[10px] font-mono text-[#8A8078] select-none font-bold">
                   <div className="flex items-center gap-2 min-w-0">
                     {comment.userImage ? (
-                      <img src={comment.userImage} alt={comment.userName} className="size-5 rounded-full object-cover border border-[#F3F0E4]/10 shrink-0" />
+                      <img src={comment.userImage} alt={comment.userName} className="size-5 rounded-full object-cover border border-[#2E2118] shrink-0" />
                     ) : (
-                      <div className="size-5 rounded-full bg-[#16261D] border border-[#F3F0E4]/10 flex items-center justify-center text-[#F0C93B] font-bold shrink-0">
+                      <div className="size-5 rounded-full bg-[#241811] border border-[#2E2118] flex items-center justify-center text-[#F5B429] font-bold shrink-0">
                         {comment.userName?.[0]?.toUpperCase()}
                       </div>
                     )}
-                    <span className="font-bold text-white truncate">{comment.userName}</span>
+                    <span className="font-bold text-[#FAFAF8] truncate">{comment.userName}</span>
                     <span className="hidden sm:inline">{new Date(comment.createdAt).toLocaleDateString()}</span>
                   </div>
-                  <button onClick={() => handleFlagComment(comment._id)} className="hover:text-[#F28B6E] transition-colors uppercase shrink-0">
+                  <button onClick={() => handleFlagComment(comment._id)} className="hover:text-[#EF4444] transition-colors uppercase shrink-0">
                     Report
                   </button>
                 </div>
 
-                <p className="text-xs text-[#F3F0E4] leading-relaxed font-light">{comment.content}</p>
+                <p className="text-xs text-[#FAFAF8] leading-relaxed font-light">{comment.content}</p>
 
-                <div className="flex items-center gap-4 text-[10px] font-mono text-[#9FAEA1] font-bold select-none pt-1">
+                <div className="flex items-center gap-4 text-[10px] font-mono text-[#8A8078] font-bold select-none pt-1">
                   <button
                     onClick={() => handleVoteComment(comment._id, "upvote")}
-                    className={`hover:text-white flex items-center gap-1 transition-colors ${hasUpvoted ? "text-[#8FC3DE]" : ""}`}
+                    className={`hover:text-[#FAFAF8] flex items-center gap-1 transition-colors ${hasUpvoted ? "text-[#F5B429]" : ""}`}
                   >
                     Upvote ({comment.upvotes.length})
                   </button>
                   <button
                     onClick={() => handleVoteComment(comment._id, "downvote")}
-                    className={`hover:text-white flex items-center gap-1 transition-colors ${hasDownvoted ? "text-[#F28B6E]" : ""}`}
+                    className={`hover:text-[#FAFAF8] flex items-center gap-1 transition-colors ${hasDownvoted ? "text-[#EF4444]" : ""}`}
                   >
                     Downvote ({comment.downvotes.length})
                   </button>
@@ -444,7 +444,7 @@ export default function PublicFeedPage() {
                       const text = prompt("Write your reply:") || "";
                       if (text.trim()) handleAddComment(comment._id, text.trim());
                     }}
-                    className="hover:text-white transition-colors"
+                    className="hover:text-[#FAFAF8] transition-colors"
                   >
                     Reply
                   </button>
@@ -460,39 +460,39 @@ export default function PublicFeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 flex flex-col antialiased pb-20 lg:pb-0">
+    <div className="min-h-screen bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 flex flex-col antialiased pb-20 lg:pb-0 glowing-bg">
       {/* Top Bar Header Navigation */}
       {session?.user ? (
-        <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
+        <header className="border-b border-[#2E2118] bg-[#0A0806]/85 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-3 sm:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <Link
                 href="/dashboard"
-                className="p-1.5 sm:p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors"
+                className="p-1.5 sm:p-2 rounded-xl bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] border border-[#2E2118] transition-colors"
                 title="Back to Dashboard"
               >
                 <ChevronLeft className="size-4" />
               </Link>
               <Link href="/feed" className="flex items-center gap-1.5 sm:gap-2 font-bold text-white tracking-wider text-xs sm:text-sm">
-                <span className="size-6 sm:size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-[10px] sm:text-xs">
+                <span className="size-6 sm:size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-[10px] sm:text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
                   N
                 </span>
-                <span className="font-heading text-[#F3F0E4] truncate">PUBLIC FEED</span>
+                <span className="font-display text-[#FAFAF8] truncate tracking-wider">PUBLIC FEED</span>
               </Link>
             </div>
 
             {/* Right: Coins balance widget with Convert button */}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               {userCoins !== null && (
-                <div className="flex items-center gap-1.5 sm:gap-2 bg-[#16261D] border border-[#F0C93B]/30 rounded-full pl-2.5 pr-1 py-0.5 sm:py-1 text-xs font-mono">
-                  <div className="flex items-center gap-1 text-[#F0C93B] font-bold text-[11px] sm:text-xs">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-[#150F0B] border border-[#F5B429]/30 rounded-full pl-2.5 pr-1 py-0.5 sm:py-1 text-xs font-mono">
+                  <div className="flex items-center gap-1 text-[#F5B429] font-bold text-[11px] sm:text-xs">
                     <Coins className="size-3.5" />
                     <span>{userCoins.toLocaleString()}</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setShowCoinConverter(true)}
-                    className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-[10px] px-2 sm:px-2.5 py-0.5 sm:py-1 inline-flex items-center gap-0.5 transition-all font-heading"
+                    className="rounded-full bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold text-[10px] px-2 sm:px-2.5 py-0.5 sm:py-1 inline-flex items-center gap-0.5 transition-all font-display cursor-pointer"
                   >
                     <Plus className="size-3" />
                     <span className="hidden sm:inline">Convert</span>
@@ -502,14 +502,14 @@ export default function PublicFeedPage() {
 
               <Link
                 href="/notifications"
-                className="p-1.5 sm:p-2 rounded-xl bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-colors relative"
+                className="p-1.5 sm:p-2 rounded-xl bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] border border-[#2E2118] transition-colors relative"
               >
                 <Bell className="size-4" />
               </Link>
 
               <Link
                 href={`/user/${session.user.id}`}
-                className="size-7 sm:size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 overflow-hidden flex items-center justify-center text-[#F0C93B] shrink-0"
+                className="size-7 sm:size-8 rounded-full bg-[#F5B429]/20 border border-[#F5B429]/40 overflow-hidden flex items-center justify-center text-[#F5B429] shrink-0"
               >
                 {session.user.image ? (
                   <img src={session.user.image} alt="User" className="size-full object-cover" />
@@ -521,25 +521,25 @@ export default function PublicFeedPage() {
           </div>
         </header>
       ) : (
-        <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50">
+        <header className="border-b border-[#2E2118] bg-[#0A0806]/85 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
-              <span className="size-7 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+              <span className="size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
                 N
               </span>
-              <span className="font-heading text-[#F3F0E4]">NOTEXIA PUBLIC FEED</span>
+              <span className="font-display text-[#FAFAF8] tracking-wider">NOTEXIA PUBLIC FEED</span>
             </Link>
 
             <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] px-3 py-1.5 transition-colors font-heading uppercase"
+                className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] px-3 py-1.5 transition-colors font-display uppercase tracking-wider"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs px-5 py-2 inline-flex items-center gap-1 transition-all shadow-md font-heading"
+                className="rounded-full bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold text-xs px-5 py-2 inline-flex items-center gap-1 transition-all shadow-[0_0_15px_rgba(245,180,41,0.25)] font-display"
               >
                 Get Started Free
               </Link>
@@ -548,36 +548,37 @@ export default function PublicFeedPage() {
         </header>
       )}
 
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px]" />
+      {/* Background Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
       </div>
 
       {/* Responsive Header Banner */}
       <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10 space-y-4 max-w-7xl w-full mx-auto">
         {/* Guest Mode Notification Banner */}
         {!session?.user && (
-          <div className="rounded-2xl bg-[#1A2D23]/90 border border-[#F0C93B]/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-lg">
-            <div className="flex items-center gap-3 text-xs text-[#F3F0E4]">
-              <div className="size-8 rounded-full bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] shrink-0 font-mono text-xs font-bold">
+          <div className="rounded-2xl bg-[#150F0B]/90 border border-[#F5B429]/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_30px_rgba(245,148,29,0.12)] backdrop-blur-xl">
+            <div className="flex items-center gap-3 text-xs text-[#FAFAF8]">
+              <div className="size-8 rounded-full bg-[#F5B429]/20 border border-[#F5B429]/40 flex items-center justify-center text-[#F5B429] shrink-0 font-mono text-xs font-bold">
                 ⚡
               </div>
               <p className="leading-relaxed">
-                <strong className="text-[#F0C93B]">Guest Mode:</strong> You are browsing the Public Study Feed.{" "}
-                <span className="text-[#9FAEA1]">Sign in or create a free account to upvote, comment, and bookmark study notes.</span>
+                <strong className="text-[#F5B429]">Guest Mode:</strong> You are browsing the Public Study Feed.{" "}
+                <span className="text-[#8A8078]">Sign in or create a free account to upvote, comment, and bookmark study notes.</span>
               </p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <Link
                 href="/login"
-                className="px-4 py-1.5 rounded-full text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] border border-[#F3F0E4]/20 transition-colors"
+                className="px-4 py-1.5 rounded-full text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] border border-[#2E2118] bg-[#0A0806] hover:bg-[#150F0B] transition-colors"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="px-4 py-1.5 rounded-full text-xs font-bold bg-[#F0C93B] text-[#2A2118] hover:bg-[#F0C93B]/90 transition-colors shadow-sm font-heading"
+                className="px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] shadow-[0_0_12px_rgba(245,180,41,0.25)] transition-colors font-display"
               >
                 Sign Up Free
               </Link>
@@ -585,27 +586,27 @@ export default function PublicFeedPage() {
           </div>
         )}
 
-        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="border border-[#2E2118] bg-[#150F0B]/85 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_0_35px_-5px_rgba(245,148,29,0.12)]">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
-              <div className="size-12 sm:size-14 rounded-2xl bg-[#F0C93B]/10 flex items-center justify-center border border-[#F0C93B]/30 text-[#F0C93B] shrink-0 shadow-[2px_2px_0_0_#F28B6E]">
-                <Compass className="size-6 sm:size-7" />
+              <div className="size-12 sm:size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429] shrink-0 shadow-[0_0_15px_rgba(245,180,41,0.15)]">
+                <Compass className="size-6 sm:size-7 text-[#F5B429]" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-2.5 flex-wrap font-display">
                   Public Study Notes, Research Papers &amp; Academic Articles
-                  <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest">
+                  <span className="text-[10px] font-mono font-bold bg-[#F5B429]/15 text-[#F5B429] px-3 py-1 rounded-full border border-[#F5B429]/30 uppercase tracking-widest">
                     LIVE STREAM
                   </span>
                 </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-0.5 sm:mt-1 max-w-2xl leading-relaxed">
+                <p className="text-[#8A8078] text-xs sm:text-sm font-light mt-0.5 sm:mt-1 max-w-2xl leading-relaxed">
                   Discover free student study notes, research papers, and technical articles published on Notexia. Explore formula sheets, step-by-step code blueprints, and peer discussions.
                 </p>
               </div>
             </div>
 
             <div className="relative w-full md:w-72">
-              <Search className="absolute left-3.5 top-3 size-4 text-[#9FAEA1]" />
+              <Search className="absolute left-3.5 top-3 size-4 text-[#8A8078]" />
               <Input
                 type="text"
                 autoComplete="off"
@@ -616,7 +617,7 @@ export default function PublicFeedPage() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search feed topics..."
-                className="bg-[#121F18] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs pl-10 rounded-xl w-full"
+                className="bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078]/60 h-10 text-xs pl-10 rounded-xl w-full"
               />
             </div>
           </div>
@@ -630,16 +631,16 @@ export default function PublicFeedPage() {
         <div className="col-span-1 lg:col-span-8 space-y-6 w-full min-w-0">
           
           {/* Responsive Sort Tabs */}
-          <div className="flex items-center gap-2 border-b border-[#F3F0E4]/10 pb-4 select-none overflow-x-auto scrollbar-none w-full">
-            <Filter className="size-4 text-[#9FAEA1] shrink-0 mr-1 hidden sm:block" />
+          <div className="flex items-center gap-2 border-b border-[#2E2118] pb-4 select-none overflow-x-auto scrollbar-none w-full">
+            <Filter className="size-4 text-[#8A8078] shrink-0 mr-1 hidden sm:block" />
             {(["new", "top", "trending", "following"] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setSort(mode)}
-                className={`text-[10px] font-mono font-bold px-3.5 py-1.5 rounded-full uppercase tracking-widest transition-all whitespace-nowrap ${
+                className={`text-[10px] font-mono font-bold px-3.5 py-1.5 rounded-full uppercase tracking-widest transition-all whitespace-nowrap cursor-pointer ${
                   sort === mode
-                    ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
-                    : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18]"
+                    ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_0_15px_rgba(245,180,41,0.3)]"
+                    : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B]"
                 }`}
               >
                 {mode}
@@ -648,7 +649,7 @@ export default function PublicFeedPage() {
           </div>
 
           {posts.length === 0 && !isLoading ? (
-            <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-10 text-center text-[#9FAEA1] italic select-none">
+            <div className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-10 text-center text-[#8A8078] italic select-none backdrop-blur-xl">
               No feed posts matching active filters found.
             </div>
           ) : (
@@ -665,42 +666,42 @@ export default function PublicFeedPage() {
                       key={post._id}
                       whileHover={{ y: -3 }}
                       transition={{ type: "spring", stiffness: 350, damping: 22 }}
-                      className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl w-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                      className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 backdrop-blur-xl w-full shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)]"
                     >
-                      <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-5 sm:p-6 space-y-4 sm:space-y-5">
+                      <div className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] border border-[#2E2118] p-5 sm:p-6 space-y-4 sm:space-y-5">
                         <div className="flex items-center gap-3 select-none">
                           {post.userImage ? (
-                            <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
+                            <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-[#2E2118] bg-[#150F0B] shrink-0" />
                           ) : (
-                            <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold shrink-0">
+                            <div className="size-9 rounded-full bg-[#150F0B] border border-[#2E2118] flex items-center justify-center text-[#F5B429] text-xs font-bold shrink-0">
                               {post.userName?.[0]?.toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
                             <Link href={`/user/${post.userId}`}>
-                              <p className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors leading-tight truncate font-heading">
+                              <p className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors leading-tight truncate font-display">
                                 {post.userName}
                               </p>
                             </Link>
-                            <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
+                            <p className="text-[10px] font-mono text-[#8A8078] mt-0.5">
                               {new Date(post.createdAt).toLocaleDateString()}
                             </p>
                           </div>
                           <div className="ml-auto shrink-0">
-                            <span className="text-[9px] font-mono bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] font-bold px-2.5 py-0.5 rounded-full uppercase">
+                            <span className="text-[9px] font-mono bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] font-bold px-2.5 py-0.5 rounded-full uppercase">
                               #Community
                             </span>
                           </div>
                         </div>
                         
-                        <p className="text-[#F3F0E4] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
+                        <p className="text-[#FAFAF8] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
 
                         {post.mediaUrl && (
                           <div className="flex items-center justify-start w-full overflow-hidden">
                             {post.mediaType === "image" ? (
-                              <img src={post.mediaUrl} alt="Post content" className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
+                              <img src={post.mediaUrl} alt="Post content" className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#2E2118] bg-[#150F0B]" />
                             ) : (
-                              <video src={post.mediaUrl} controls className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
+                              <video src={post.mediaUrl} controls className="max-h-[320px] object-contain w-auto rounded-2xl border border-[#2E2118] bg-[#150F0B]" />
                             )}
                           </div>
                         )}
@@ -725,24 +726,24 @@ export default function PublicFeedPage() {
                     key={post._id}
                     whileHover={{ y: -3 }}
                     transition={{ type: "spring", stiffness: 350, damping: 22 }}
-                    className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl w-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                    className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 backdrop-blur-xl w-full shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)]"
                   >
-                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-5 sm:p-6 space-y-4 sm:space-y-5">
+                    <div className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] border border-[#2E2118] p-5 sm:p-6 space-y-4 sm:space-y-5">
                       {/* Card Header */}
                       <div className="flex items-center justify-between select-none">
                         <Link href={`/user/${post.author?._id || post.userId}`} className="flex items-center gap-3 hover:opacity-80 transition-opacity min-w-0">
                           {post.author?.image || post.userImage ? (
-                            <img src={post.author?.image || post.userImage} alt={post.author?.name || post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D] shrink-0" />
+                            <img src={post.author?.image || post.userImage} alt={post.author?.name || post.userName} className="size-9 rounded-full object-cover border border-[#2E2118] bg-[#150F0B] shrink-0" />
                           ) : (
-                            <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold shrink-0">
+                            <div className="size-9 rounded-full bg-[#150F0B] border border-[#2E2118] flex items-center justify-center text-[#F5B429] text-xs font-bold shrink-0">
                               {(post.author?.name || post.userName || "U")?.[0]?.toUpperCase()}
                             </div>
                           )}
                           <div className="min-w-0">
-                            <p className="text-xs font-bold text-[#F3F0E4] leading-tight truncate font-heading">
+                            <p className="text-xs font-bold text-[#FAFAF8] leading-tight truncate font-display">
                               {post.author?.name || post.userName}
                             </p>
-                            <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
+                            <p className="text-[10px] font-mono text-[#8A8078] mt-0.5">
                               {new Date(post.createdAt).toLocaleDateString()}
                             </p>
                           </div>
@@ -751,10 +752,10 @@ export default function PublicFeedPage() {
                         {post.author?._id !== currentUserId && (
                           <button
                             onClick={() => handleFollowToggle(post.author?._id || post.userId || "")}
-                            className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full transition-all border uppercase tracking-wider shrink-0 ml-2 ${
+                            className={`text-[10px] font-mono font-bold px-3 py-1 rounded-full transition-all border uppercase tracking-wider shrink-0 ml-2 cursor-pointer ${
                               following
-                                ? "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1]"
-                                : "bg-[#F0C93B] border-[#F0C93B] text-[#2A2118] font-extrabold hover:bg-[#F0C93B]/90 shadow-[2px_2px_0_0_#F28B6E]"
+                                ? "bg-[#150F0B] border-[#2E2118] text-[#8A8078]"
+                                : "bg-gradient-to-r from-[#F7C948] to-[#F5941D] border-[#F5B429] text-[#150F0B] font-bold shadow-[0_0_12px_rgba(245,180,41,0.2)]"
                             }`}
                           >
                             {following ? "Following" : "Follow"}
@@ -765,13 +766,13 @@ export default function PublicFeedPage() {
                       {/* Card Body */}
                       <div className="space-y-3">
                         <Link href={viewUrl}>
-                          <h2 className="text-base sm:text-lg font-bold text-white hover:text-cyan-400 tracking-tight leading-snug cursor-pointer transition-colors">
+                          <h2 className="text-base sm:text-lg font-bold text-[#FAFAF8] hover:text-[#F5B429] tracking-tight leading-snug cursor-pointer transition-colors font-display">
                             {post.title}
                           </h2>
                         </Link>
                         {post.coverImage && (
                           <Link href={viewUrl}>
-                            <img src={post.coverImage} alt={post.title} className="w-full h-44 sm:h-52 object-cover rounded-2xl border border-white/10 shadow-md hover:opacity-90 transition-opacity cursor-pointer" />
+                            <img src={post.coverImage} alt={post.title} className="w-full h-44 sm:h-52 object-cover rounded-2xl border border-[#2E2118] shadow-md hover:opacity-90 transition-opacity cursor-pointer" />
                           </Link>
                         )}
                         <div className="flex flex-wrap gap-1.5 select-none pt-1">
@@ -779,7 +780,7 @@ export default function PublicFeedPage() {
                             <span
                               key={t}
                               onClick={() => setTag(t)}
-                              className="text-[9px] font-mono bg-cyan-500/10 border border-cyan-500/20 hover:border-cyan-400 text-cyan-400 font-bold px-2.5 py-0.5 rounded-full cursor-pointer transition-colors"
+                              className="text-[9px] font-mono bg-[#F5B429]/10 border border-[#F5B429]/20 hover:border-[#F5B429] text-[#F5B429] font-bold px-2.5 py-0.5 rounded-full cursor-pointer transition-colors"
                             >
                               #{t}
                             </span>
@@ -788,12 +789,12 @@ export default function PublicFeedPage() {
                       </div>
 
                       {/* Engagement Actions */}
-                      <div className="flex items-center justify-between border-t border-white/5 pt-4 select-none">
-                        <div className="flex items-center gap-3 sm:gap-5 text-[11px] text-zinc-400 font-medium flex-wrap">
+                      <div className="flex items-center justify-between border-t border-[#2E2118] pt-4 select-none">
+                        <div className="flex items-center gap-3 sm:gap-5 text-[11px] text-[#8A8078] font-medium flex-wrap">
                           <button
                             onClick={() => handleUpvote(post._id)}
-                            className={`hover:text-white flex items-center gap-1.5 transition-colors ${
-                              userHasUpvoted ? "text-cyan-400 font-bold" : ""
+                            className={`hover:text-[#FAFAF8] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              userHasUpvoted ? "text-[#F5B429] font-bold" : ""
                             }`}
                           >
                             <Heart className="size-4" />
@@ -802,25 +803,25 @@ export default function PublicFeedPage() {
 
                           <button
                             onClick={() => handleToggleComments(post._id)}
-                            className={`hover:text-white flex items-center gap-1.5 transition-colors ${
-                              activeCommentsPostId === post._id ? "text-cyan-400 font-bold" : ""
+                            className={`hover:text-[#FAFAF8] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              activeCommentsPostId === post._id ? "text-[#F5B429] font-bold" : ""
                             }`}
                           >
                             <MessageSquare className="size-4" />
                             <span>{post.commentsCount}</span>
                           </button>
 
-                          <button onClick={() => { if (!requireAuth("reshare posts")) return; setResharePost(post); }} className="hover:text-white flex items-center gap-1.5 transition-colors">
+                          <button onClick={() => { if (!requireAuth("reshare posts")) return; setResharePost(post); }} className="hover:text-[#FAFAF8] flex items-center gap-1.5 transition-colors cursor-pointer">
                             <Share2 className="size-4" />
                             <span className="hidden sm:inline">Reshare</span>
                           </button>
 
-                          <button onClick={() => handleShare(post)} className="hover:text-white flex items-center gap-1.5 transition-colors">
+                          <button onClick={() => handleShare(post)} className="hover:text-[#FAFAF8] flex items-center gap-1.5 transition-colors cursor-pointer">
                             <ArrowUpRight className="size-4" />
                             <span className="hidden sm:inline">Share</span>
                           </button>
 
-                          <button onClick={() => handleBookmark(post)} className="hover:text-white flex items-center gap-1.5 transition-colors text-cyan-400">
+                          <button onClick={() => handleBookmark(post)} className="hover:text-[#FAFAF8] flex items-center gap-1.5 transition-colors text-[#F5B429] cursor-pointer">
                             <Bookmark className="size-4" />
                             <span className="hidden sm:inline">Save</span>
                           </button>
@@ -828,7 +829,7 @@ export default function PublicFeedPage() {
 
                         <button
                           onClick={() => handleFlagPost(post._id)}
-                          className="text-[9px] font-mono text-zinc-500 hover:text-rose-400 font-bold uppercase transition-colors shrink-0"
+                          className="text-[9px] font-mono text-[#8A8078] hover:text-[#EF4444] font-bold uppercase transition-colors shrink-0 cursor-pointer"
                         >
                           Report
                         </button>
@@ -836,7 +837,7 @@ export default function PublicFeedPage() {
 
                       {/* Expandable comments drawer */}
                       {activeCommentsPostId === post._id && (
-                        <div className="border-t border-[#F3F0E4]/10 pt-4 space-y-4">
+                        <div className="border-t border-[#2E2118] pt-4 space-y-4">
                           <div className="flex gap-2">
                             <Input
                               type="text"
@@ -848,11 +849,11 @@ export default function PublicFeedPage() {
                               value={newCommentText}
                               onChange={(e) => setNewCommentText(e.target.value)}
                               placeholder="Add your public comment..."
-                              className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl"
+                              className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078]/60 h-10 text-xs rounded-xl"
                             />
                             <Button
                               onClick={() => handleAddComment(null)}
-                              className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs h-10 px-5 font-bold cursor-pointer transition-all shrink-0 shadow-[2px_2px_0_0_#F28B6E]"
+                              className="rounded-xl bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] text-xs h-10 px-5 font-bold cursor-pointer transition-all shrink-0 shadow-[0_0_15px_rgba(245,180,41,0.25)] font-display"
                             >
                               Comment
                             </Button>
@@ -860,7 +861,7 @@ export default function PublicFeedPage() {
 
                           {isCommentsLoading ? (
                             <div className="py-6 flex justify-center select-none">
-                              <Loader2 className="size-5 animate-spin text-[#8FC3DE]" />
+                              <Loader2 className="size-5 animate-spin text-[#F5B429]" />
                             </div>
                           ) : (
                             renderCommentNodes(null)
@@ -877,29 +878,29 @@ export default function PublicFeedPage() {
           {hasMore && (
             <Button
               onClick={() => fetchPosts()}
-              className="w-full rounded-2xl bg-[#1A2D23] hover:bg-[#1F362A] border border-[#F3F0E4]/15 text-[#F3F0E4] hover:text-[#F0C93B] font-mono text-xs h-11 uppercase tracking-widest cursor-pointer transition-all font-heading"
+              className="w-full rounded-2xl bg-[#150F0B] hover:bg-[#241811] border border-[#2E2118] text-[#FAFAF8] hover:text-[#F5B429] font-mono text-xs h-11 uppercase tracking-widest cursor-pointer transition-all font-display"
             >
-              {isLoading ? <Loader2 className="size-4 animate-spin text-[#F0C93B]" /> : "LOAD MORE POSTS"}
+              {isLoading ? <Loader2 className="size-4 animate-spin text-[#F5B429]" /> : "LOAD MORE POSTS"}
             </Button>
           )}
         </div>
 
         {/* Right Responsive Sidebar */}
         <div className="col-span-1 lg:col-span-4 space-y-6 select-none w-full">
-          <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-            <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-4">
-              <h3 className="text-xs font-mono font-bold text-[#F3F0E4] uppercase tracking-widest flex items-center gap-2 font-heading">
-                <TrendingUp className="size-4 text-[#F0C93B]" /> Trending Topics
+          <div className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 backdrop-blur-xl shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)]">
+            <div className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] border border-[#2E2118] p-6 space-y-4">
+              <h3 className="text-xs font-mono font-bold text-[#FAFAF8] uppercase tracking-widest flex items-center gap-2 font-display">
+                <TrendingUp className="size-4 text-[#F5B429]" /> Trending Topics
               </h3>
               <div className="flex flex-wrap lg:flex-col gap-2">
                 {["Forum", "Community", "Blog", "Note", "Education", "Technology"].map((tagItem) => (
                   <button
                     key={tagItem}
                     onClick={() => setCategory(category === tagItem ? "" : tagItem)}
-                    className={`text-left text-xs font-semibold px-4 py-2.5 rounded-xl border transition-all ${
+                    className={`text-left text-xs font-semibold px-4 py-2.5 rounded-xl border transition-all cursor-pointer ${
                       category === tagItem
-                        ? "bg-[#F0C93B]/15 border-[#F0C93B]/40 text-[#F0C93B]"
-                        : "bg-[#16261D] border-[#F3F0E4]/10 text-[#9FAEA1] hover:text-[#F3F0E4] hover:border-[#F3F0E4]/20"
+                        ? "bg-[#F5B429]/15 border-[#F5B429]/40 text-[#F5B429]"
+                        : "bg-[#150F0B] border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] hover:border-[#2E2118]"
                     }`}
                   >
                     {tagItem}
@@ -914,17 +915,17 @@ export default function PublicFeedPage() {
       {/* Reshare Dialog */}
       {resharePost && (
         <Dialog open={!!resharePost} onOpenChange={() => setResharePost(null)}>
-          <DialogContent className="sm:max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-5 sm:p-6 space-y-4">
+          <DialogContent className="sm:max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-[#150F0B]/95 border-[#2E2118] text-[#FAFAF8] rounded-[2rem] p-5 sm:p-6 space-y-4 backdrop-blur-2xl shadow-[0_0_50px_rgba(245,148,29,0.2)]">
             <DialogHeader>
-              <DialogTitle className="text-lg font-bold text-white font-heading">Reshare to Public Feed</DialogTitle>
+              <DialogTitle className="text-lg font-bold text-[#FAFAF8] font-display">Reshare to Public Feed</DialogTitle>
             </DialogHeader>
 
             <div className="space-y-3">
-              <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-1">
-                <span className="text-[10px] font-mono text-[#8FC3DE]">
+              <div className="p-3.5 rounded-2xl bg-[#0A0806] border border-[#2E2118] space-y-1">
+                <span className="text-[10px] font-mono text-[#FCD34D]">
                   Original by {resharePost.author?.name || resharePost.userName}
                 </span>
-                <h4 className="text-xs font-bold text-white truncate">{resharePost.title}</h4>
+                <h4 className="text-xs font-bold text-[#FAFAF8] truncate font-display">{resharePost.title}</h4>
               </div>
 
               <textarea
@@ -932,7 +933,7 @@ export default function PublicFeedPage() {
                 onChange={(e) => setReshareCommentary(e.target.value)}
                 placeholder="Write your custom reshare commentary..."
                 rows={4}
-                className="w-full bg-[#16261D] border border-[#F3F0E4]/15 rounded-2xl p-3.5 text-xs text-white placeholder-[#9FAEA1]/50 focus:outline-none focus:border-[#F0C93B] resize-none transition-colors"
+                className="w-full bg-[#0A0806] border border-[#2E2118] rounded-2xl p-3.5 text-xs text-[#FAFAF8] placeholder-[#8A8078]/50 focus:outline-none focus:border-[#F5B429] resize-none transition-colors"
               />
             </div>
 
@@ -940,16 +941,16 @@ export default function PublicFeedPage() {
               <Button
                 variant="ghost"
                 onClick={() => setResharePost(null)}
-                className="text-xs text-[#9FAEA1] hover:text-white rounded-full px-4"
+                className="text-xs text-[#8A8078] hover:text-[#FAFAF8] rounded-full px-4"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleReshareSubmit}
                 disabled={isResharing}
-                className="rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs font-bold h-9 px-5 transition-all font-heading"
+                className="rounded-full bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] text-xs font-bold h-9 px-5 transition-all font-display shadow-[0_0_15px_rgba(245,180,41,0.25)]"
               >
-                {isResharing ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post to Feed"}
+                {isResharing ? <Loader2 className="size-4 animate-spin text-[#150F0B]" /> : "Post to Feed"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -958,15 +959,15 @@ export default function PublicFeedPage() {
 
       {/* Auth Prompt Modal for Unauthenticated Guests */}
       <Dialog open={showAuthModal} onOpenChange={setShowAuthModal}>
-        <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] rounded-[2rem] p-5 sm:p-6 space-y-5">
+        <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto custom-scroll bg-[#150F0B]/95 border-[#2E2118] text-[#FAFAF8] rounded-[2rem] p-5 sm:p-6 space-y-5 backdrop-blur-2xl shadow-[0_0_50px_rgba(245,148,29,0.2)]">
           <DialogHeader className="space-y-3 text-center sm:text-left">
-            <div className="size-12 rounded-2xl bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] mx-auto sm:mx-0">
-              <Compass className="size-6" />
+            <div className="size-12 rounded-2xl bg-[#F5B429]/15 border border-[#F5B429]/30 flex items-center justify-center text-[#F5B429] mx-auto sm:mx-0 shadow-[0_0_15px_rgba(245,180,41,0.2)]">
+              <Compass className="size-6 text-[#F5B429]" />
             </div>
-            <DialogTitle className="text-xl font-bold text-white font-heading">
+            <DialogTitle className="text-xl font-bold text-[#FAFAF8] font-display">
               Sign In Required to {authModalAction.toUpperCase()}
             </DialogTitle>
-            <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
+            <p className="text-xs text-[#8A8078] font-light leading-relaxed">
               Create a free account or sign in to {authModalAction}, participate in peer study discussions, bookmark formula sheets, and climb university batch leaderboards!
             </p>
           </DialogHeader>
@@ -974,13 +975,13 @@ export default function PublicFeedPage() {
           <DialogFooter className="flex flex-col sm:flex-row gap-2 pt-2">
             <Link
               href="/signup"
-              className="w-full rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs py-3 text-center transition-all font-heading shadow-md"
+              className="w-full rounded-full bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold text-xs py-3 text-center transition-all font-display shadow-[0_0_15px_rgba(245,180,41,0.25)]"
             >
               Create Free Account
             </Link>
             <Link
               href="/login"
-              className="w-full rounded-full bg-[#16261D] hover:bg-[#16261D]/80 border border-[#F3F0E4]/20 text-[#F3F0E4] font-bold text-xs py-3 text-center transition-all font-heading"
+              className="w-full rounded-full bg-[#0A0806] hover:bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8] font-bold text-xs py-3 text-center transition-all font-display"
             >
               Sign In
             </Link>

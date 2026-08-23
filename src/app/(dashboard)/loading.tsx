@@ -2,11 +2,11 @@ import { Loader2 } from "lucide-react";
 
 export default function DashboardLoading() {
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-hidden antialiased p-4 sm:p-8 lg:p-10 space-y-8 relative">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-hidden antialiased p-4 sm:p-8 lg:p-10 space-y-8 relative">
       {/* Background Ambient Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
-        <div className="absolute bottom-0 left-1/3 w-[450px] h-[300px] bg-amber-500/10 rounded-full blur-[130px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
+        <div className="absolute bottom-0 left-1/3 w-[450px] h-[300px] bg-[#F5941D]/8 rounded-full blur-[130px]" />
       </div>
 
       {/* Header Skeleton */}

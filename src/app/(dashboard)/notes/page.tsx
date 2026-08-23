@@ -303,9 +303,9 @@ export default function NotesPage() {
   /* Loading state */
   if (activeNoteId && !activeNote) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-[#030305] text-zinc-500 select-none gap-2">
-        <Loader2 className="h-5 w-5 animate-spin text-cyan-400" />
-        <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+      <div className="flex-1 flex items-center justify-center bg-transparent text-[#8A8078] select-none gap-2">
+        <Loader2 className="h-5 w-5 animate-spin text-[#F5B429]" />
+        <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#8A8078]">
           Loading note content...
         </span>
       </div>
@@ -315,7 +315,7 @@ export default function NotesPage() {
   /* Active note: editor view */
   if (activeNote) {
     return (
-      <div className="flex-1 flex h-full bg-[#030305] text-zinc-100 overflow-hidden relative antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+      <div className="flex-1 flex h-full bg-transparent text-[#FAFAF8] overflow-hidden relative antialiased selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
         {/* Main editor area */}
         <div className="flex-1 flex flex-col h-full overflow-hidden">
           {/* Editor toolbar */}
@@ -770,9 +770,9 @@ export default function NotesPage() {
               setPanelTab("chat");
               setShowPanel(true);
             }}
-            className="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-zinc-950 font-bold px-4 py-3 rounded-full shadow-[0_0_30px_rgba(6,182,212,0.4)] flex items-center gap-2 transition-all hover:scale-105 active:scale-95 text-xs select-none animate-in fade-in"
+            className="fixed bottom-6 right-6 z-50 btn-premium-primary px-4 py-3 text-xs select-none animate-in fade-in"
           >
-            <Sparkles className="size-4 text-zinc-950" />
+            <Sparkles className="size-4" />
             <span>Ask AI about this Note</span>
           </button>
         )}
@@ -782,22 +782,22 @@ export default function NotesPage() {
 
   /* Empty state: no active note */
   return (
-    <div className="flex-1 flex flex-col items-center justify-center bg-[#030305] text-center px-8 select-none relative overflow-hidden antialiased">
+    <div className="flex-1 flex flex-col items-center justify-center bg-[#0A0806] text-center px-8 select-none relative overflow-hidden antialiased">
       {/* Background Ambient Mesh Glow Orbs */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#F5B429]/5 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Doppelrand Hardware Empty State Box */}
-      <div className="relative z-10 w-full max-w-md rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-6">
-          <div className="size-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+      <div className="relative z-10 w-full max-w-md rounded-[2.5rem] bg-[#150F0B]/80 border border-[#2E2118] p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
+        <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-8 flex flex-col items-center gap-6">
+          <div className="size-16 rounded-2xl bg-[#F5B429]/10 border border-[#F5B429]/20 flex items-center justify-center text-[#F5B429]">
             <BookOpen className="size-8" />
           </div>
 
           <div className="space-y-2">
-            <h2 className="text-xl font-extrabold text-white tracking-tight">
+            <h2 className="text-xl font-bold text-[#FAFAF8] font-display">
               No note selected
             </h2>
-            <p className="text-zinc-400 text-xs font-light leading-relaxed">
+            <p className="text-[#8A8078] text-xs font-light leading-relaxed">
               Select a note from the sidebar tree or generate a 2,000+ word note from any topic.
             </p>
           </div>
@@ -805,18 +805,18 @@ export default function NotesPage() {
           <div className="flex flex-col gap-3 items-center w-full">
             <Button
               onClick={() => setShowTopicModal(true)}
-              className="group w-full rounded-full bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-zinc-950 font-bold text-xs h-11 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_25px_rgba(6,182,212,0.3)]"
+              className="btn-premium-primary group w-full text-xs h-11 flex items-center justify-center gap-2 font-display"
             >
-              <Wand2 className="size-4 text-zinc-950" />
+              <Wand2 className="size-4" />
               <span>AI Generate Note (2,000+ Words)</span>
-              <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+              <ArrowUpRight className="size-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
 
             <Button
               onClick={() => createNote("Untitled Note", null)}
-              className="w-full rounded-full bg-zinc-900 border border-white/10 hover:bg-zinc-800 text-zinc-200 font-bold text-xs h-10 flex items-center justify-center gap-2 transition-all"
+              className="w-full rounded-full bg-[#150F0B] border border-[#2E2118] hover:bg-[#241811] text-[#FAFAF8] font-semibold text-xs h-10 flex items-center justify-center gap-2 transition-all"
             >
-              <Plus className="size-4 text-zinc-400" />
+              <Plus className="size-4 text-[#8A8078]" />
               <span>New Blank Note</span>
             </Button>
 

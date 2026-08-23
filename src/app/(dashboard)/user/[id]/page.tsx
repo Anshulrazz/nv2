@@ -176,7 +176,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   ]);
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(personSchema) }}
@@ -187,7 +187,7 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
       />
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
       </div>
 
       {/* Header */}

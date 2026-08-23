@@ -52,11 +52,11 @@ export default function HostAnnouncementsPage() {
     };
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold mb-4">Send Announcement</h1>
+        <div className="p-6 bg-[#0A0806] text-[#FAFAF8] min-h-full">
+            <h1 className="text-2xl font-bold mb-4 font-display text-[#FAFAF8]">Send Announcement</h1>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-[#B8AFA6] mb-1">
                         Announcement Content
                     </label>
                     {/* Using your existing SimpleEditor for rich text */}
@@ -64,32 +64,32 @@ export default function HostAnnouncementsPage() {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
                             checked={isPinned}
                             onChange={(e) => setIsPinned(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 rounded border-[#2E2118] bg-[#150F0B] text-[#F5B429] focus:ring-[#F5B429]"
                         />
-                        <span className="ml-2 text-sm text-gray-900">Pin this announcement</span>
+                        <span className="ml-2 text-sm text-[#FAFAF8]">Pin this announcement</span>
                     </label>
-                    <label className="flex items-center">
+                    <label className="flex items-center cursor-pointer">
                         <input
                             type="checkbox"
                             checked={sendPush}
                             onChange={(e) => setSendPush(e.target.checked)}
-                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                            className="h-4 w-4 rounded border-[#2E2118] bg-[#150F0B] text-[#F5B429] focus:ring-[#F5B429]"
                         />
-                        <span className="ml-2 text-sm text-gray-900">Send as push notification</span>
+                        <span className="ml-2 text-sm text-[#FAFAF8]">Send as push notification</span>
                     </label>
                 </div>
 
-                <button type="submit" disabled={isSubmitting} className="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 disabled:bg-gray-400">
+                <button type="submit" disabled={isSubmitting} className="btn-premium-primary px-5 py-2.5 text-sm">
                     {isSubmitting ? 'Sending...' : 'Send Announcement'}
                 </button>
 
-                {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-                {success && <p className="text-green-500 text-sm mt-2">{success}</p>}
+                {error && <p className="text-[#EF4444] text-sm mt-2">{error}</p>}
+                {success && <p className="text-[#22C55E] text-sm mt-2">{success}</p>}
             </form>
         </div>
     );

@@ -309,19 +309,18 @@ export default async function PublicBlogPostPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      {/* Dynamic gradients decoration background */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[300px] bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute inset-0 cyber-grid opacity-30 pointer-events-none" />
+      {/* Dynamic ambient glowing background */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[400px] bg-[#F5B429]/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[400px] bg-[#F5941D]/8 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Top Header */}
-      <header className="border-b border-neutral-900 bg-neutral-950/80 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-[#2E2118] bg-[#0A0806]/85 backdrop-blur-md sticky top-0 z-50">
         <div className="w-full px-6 md:px-12 h-16 flex items-center justify-between">
-          <Link href="/feed" className="text-neutral-400 hover:text-white flex items-center gap-2 text-xs font-semibold select-none transition-colors">
-            <ArrowLeft className="h-4 w-4 text-cyan-400" /> Back to Feed
+          <Link href="/feed" className="text-[#8A8078] hover:text-[#FAFAF8] flex items-center gap-2 text-xs font-semibold select-none transition-colors">
+            <ArrowLeft className="h-4 w-4 text-[#F5941D]" /> Back to Feed
           </Link>
           <span
-            className="text-sm font-bold bg-gradient-to-r from-cyan-400 via-indigo-400 to-violet-400 bg-clip-text text-transparent tracking-widest"
-            style={{ fontFamily: "var(--font-space-grotesk)" }}
+            className="text-sm font-bold bg-gradient-to-r from-[#F7C948] to-[#F5941D] bg-clip-text text-transparent tracking-widest font-display"
           >
             NOTEXIA BLOGS
           </span>

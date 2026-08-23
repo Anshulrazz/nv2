@@ -125,26 +125,26 @@ export function WithdrawEarningsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll rounded-[2rem] sm:rounded-[2.5rem] bg-[#121F18] border border-[#F3F0E4]/15 shadow-2xl p-5 sm:p-8 space-y-5 text-[#F3F0E4]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll rounded-[2rem] sm:rounded-[2.5rem] bg-[#150F0B] border border-[#2E2118] shadow-2xl p-5 sm:p-8 space-y-5 text-[#FAFAF8]">
         {/* CLOSE BUTTON */}
         <button
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 rounded-full bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-all"
+          className="absolute right-4 top-4 p-2 rounded-full bg-[#0A0806] text-[#8A8078] hover:text-[#FAFAF8] border border-[#2E2118] transition-all"
         >
           <X className="size-4" />
         </button>
 
         {/* MODAL HEADER */}
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F5B429] bg-[#F5B429]/10 px-3 py-1 rounded-full border border-[#F5B429]/30">
             <DollarSign className="size-3.5" />{" "}
             {isTeacherOrAdmin ? `${userRole.toUpperCase()} CASH PAYOUT` : "WITHDRAWABLE EARNINGS"}
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-white">
+          <h2 className="text-xl sm:text-2xl font-bold font-display text-[#FAFAF8]">
             {isTeacherOrAdmin ? "Request Cash Payout" : "Withdraw Creator Earnings"}
           </h2>
-          <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
+          <p className="text-xs text-[#8A8078] font-light leading-relaxed">
             {isTeacherOrAdmin
               ? "Withdraw your course sales, platform earnings, or teacher revenue directly to UPI or Bank Account."
               : "Convert your 70% Course Sales revenue into direct cash payout via UPI or Bank Transfer."}
@@ -152,48 +152,48 @@ export function WithdrawEarningsModal({
         </div>
 
         {/* BALANCE BANNER */}
-        <div className="rounded-2xl bg-[#16261D] border border-[#F0C93B]/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="rounded-2xl bg-[#0A0806] border border-[#F5B429]/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
           <div className="space-y-0.5">
-            <span className="text-[11px] font-mono text-[#9FAEA1] uppercase tracking-wider">
+            <span className="text-[11px] font-mono text-[#8A8078] uppercase tracking-wider">
               {isTeacherOrAdmin ? "Total Withdrawable Balance" : "Withdrawable Earnings Balance"}
             </span>
-            <div className="text-2xl font-black text-[#F0C93B] font-mono flex items-center gap-1.5">
+            <div className="text-2xl font-black text-[#F5B429] font-mono flex items-center gap-1.5">
               <Coins className="size-5" />
               <span>{availableBalance.toLocaleString()}</span>
-              <span className="text-xs text-[#9FAEA1] font-normal">Coins (₹{availableBalance})</span>
+              <span className="text-xs text-[#8A8078] font-normal">Coins (₹{availableBalance})</span>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/30">
+            <span className="text-[10px] font-mono text-[#22C55E] bg-[#22C55E]/10 px-2.5 py-1 rounded-full border border-[#22C55E]/30 font-bold">
               WITHDRAWABLE CASH
             </span>
           </div>
         </div>
 
         {/* IMPORTANT DISCLOSURE ALERT */}
-        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-light space-y-1">
-          <div className="font-bold flex items-center gap-1.5 text-amber-400 font-mono">
+        <div className="p-3 rounded-xl bg-[#241811] border border-[#F5941D]/30 text-[#FCD34D] text-xs font-light space-y-1">
+          <div className="font-bold flex items-center gap-1.5 text-[#F5941D] font-mono">
             <ShieldCheck className="size-3.5" /> Earnings Protection Policy
           </div>
-          <p className="text-[11px] leading-relaxed">
+          <p className="text-[11px] text-[#B8AFA6] leading-relaxed">
             Only 70% Creator Course Sales revenue can be withdrawn. Activity, promotional, and referral bonus coins are non-withdrawable.
           </p>
         </div>
 
         {isSuccess ? (
           <div className="space-y-5 text-center py-6">
-            <div className="size-14 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto">
+            <div className="size-14 rounded-full bg-[#22C55E]/20 border border-[#22C55E]/40 text-[#22C55E] flex items-center justify-center mx-auto">
               <CheckCircle2 className="size-8" />
             </div>
             <div className="space-y-1">
-              <h3 className="text-xl font-bold text-white font-heading">Withdrawal Requested!</h3>
-              <p className="text-xs text-[#9FAEA1] max-w-sm mx-auto">
+              <h3 className="text-xl font-bold text-[#FAFAF8] font-display">Withdrawal Requested!</h3>
+              <p className="text-xs text-[#8A8078] max-w-sm mx-auto">
                 Your payout request has been queued for verification. Funds will be transferred to your account within 24–48 hours.
               </p>
             </div>
             <Button
               onClick={onClose}
-              className="w-full rounded-full bg-[#F0C93B] text-[#2A2118] font-bold text-xs py-3 hover:bg-[#F0C93B]/90 font-heading"
+              className="w-full btn-premium-primary text-xs py-3 font-display"
             >
               Done
             </Button>
@@ -201,7 +201,7 @@ export function WithdrawEarningsModal({
         ) : (
           <form onSubmit={handleWithdrawSubmit} className="space-y-5">
             {errorMsg && (
-              <div className="p-3 rounded-xl bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-medium flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-[#EF4444]/10 border border-[#EF4444]/30 text-[#EF4444] text-xs font-medium flex items-center gap-2">
                 <AlertCircle className="size-4 shrink-0" />
                 <span>{errorMsg}</span>
               </div>
@@ -209,12 +209,12 @@ export function WithdrawEarningsModal({
 
             {/* WITHDRAW AMOUNT INPUT */}
             <div className="space-y-1.5">
-              <label className="text-xs font-mono font-bold text-[#F3F0E4] flex items-center justify-between">
+              <label className="text-xs font-mono font-bold text-[#FAFAF8] flex items-center justify-between">
                 <span>WITHDRAWAL AMOUNT (COINS / ₹)</span>
                 <button
                   type="button"
                   onClick={() => setAmount(String(availableBalance))}
-                  className="text-[10px] text-[#F0C93B] hover:underline font-mono"
+                  className="text-[10px] text-[#F5B429] hover:underline font-mono"
                 >
                   Withdraw Max ({availableBalance})
                 </button>

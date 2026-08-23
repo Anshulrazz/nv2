@@ -124,20 +124,18 @@ export default function DashboardOverviewPage() {
 
   return (
     <div
-      className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto overflow-x-hidden antialiased relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B] custom-scroll animate-in fade-in duration-200"
+      className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto overflow-x-hidden antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] custom-scroll animate-in fade-in duration-200"
     >
-        {/* Background removed — handled by layout.tsx */}
-
         {/* Header Banner */}
         <div className="p-4 sm:p-8 lg:p-10 pb-0">
-          <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-10 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden group">
-            <div className="absolute -top-24 -right-24 size-64 bg-[#F0C93B]/10 rounded-full blur-3xl group-hover:bg-[#F0C93B]/20 transition-all duration-700 pointer-events-none" />
+          <div className="border border-[#2E2118] bg-[#150F0B]/80 p-6 sm:p-10 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] overflow-hidden group">
+            <div className="absolute -top-24 -right-24 size-64 bg-[#F5B429]/10 rounded-full blur-3xl group-hover:bg-[#F5B429]/20 transition-all duration-700 pointer-events-none" />
 
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative z-10">
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <span className="size-2.5 rounded-full bg-[#F0C93B] animate-pulse shadow-[0_0_10px_#F0C93B]" />
-                  <span className="text-[10px] font-mono font-bold text-[#F0C93B] uppercase tracking-[0.25em]">
+                  <span className="size-2.5 rounded-full bg-[#F5B429] animate-pulse shadow-[0_0_10px_#F5B429]" />
+                  <span className="text-[10px] font-mono font-bold text-[#F5B429] uppercase tracking-[0.25em]">
                     COMMAND CENTER OVERVIEW
                   </span>
                   {premiumInfo?.isPremium ? (

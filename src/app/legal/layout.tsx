@@ -21,5 +21,17 @@ export const metadata: Metadata = {
 };
 
 export default function LegalLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <div className="relative min-h-screen bg-transparent text-[#FAFAF8] overflow-x-hidden antialiased selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
+      {/* Background Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
+      </div>
+      <div className="relative z-10 min-h-screen flex flex-col">
+        {children}
+      </div>
+    </div>
+  );
 }

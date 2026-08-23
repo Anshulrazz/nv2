@@ -313,10 +313,10 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex-1 flex h-full bg-[#030305] text-zinc-100 overflow-hidden relative antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex h-full bg-transparent text-[#FAFAF8] overflow-hidden relative antialiased selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Ambient background glows */}
-      <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-violet-500/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-0 left-1/4 w-[400px] h-[300px] bg-[#F5941D]/8 rounded-full blur-[140px] pointer-events-none" />
 
       {/* Mobile chat-sidebar checkbox toggle */}
       <input type="checkbox" id="chat-sidebar-toggle" className="peer hidden" />
@@ -418,7 +418,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main chat window */}
-      <div className="flex-1 flex flex-col h-full bg-[#030305] overflow-hidden z-10 relative">
+      <div className="flex-1 flex flex-col h-full bg-transparent overflow-hidden z-10 relative">
         {/* Chat header */}
         <div className="h-16 border-b border-white/5 px-4 sm:px-8 flex items-center justify-between shrink-0 bg-zinc-950/60 backdrop-blur-2xl">
           <div className="flex items-center gap-3">

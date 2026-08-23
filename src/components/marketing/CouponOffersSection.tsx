@@ -72,13 +72,13 @@ export function CouponOffersSection() {
     <section id="offers" className="max-w-[1400px] mx-auto px-4 sm:px-6 relative z-10 space-y-12">
       {/* SECTION HEADER */}
       <div className="text-center space-y-4 max-w-3xl mx-auto">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] text-xs font-mono font-bold uppercase tracking-wider">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] text-xs font-mono font-bold uppercase tracking-wider">
           <Tag className="size-3.5" /> STUDENT DISCOUNTS &amp; OFFERS
         </div>
-        <h2 className="text-3xl sm:text-5xl font-black text-[#F3F0E4] font-heading">
+        <h2 className="text-3xl sm:text-5xl font-bold text-[#FAFAF8] font-display">
           Exclusive Student Promo Codes
         </h2>
-        <p className="text-sm sm:text-base text-[#9FAEA1] font-light leading-relaxed">
+        <p className="text-sm sm:text-base text-[#8A8078] font-light leading-relaxed">
           Copy an active promotional discount code below to apply flat savings on Notexia Premium subscriptions and AI token packages.
         </p>
       </div>
@@ -88,33 +88,33 @@ export function CouponOffersSection() {
         {coupons.map((c, idx) => (
           <div
             key={idx}
-            className="rounded-[2rem] bg-[#1A2D23]/90 border border-[#F3F0E4]/15 p-2 shadow-xl hover:border-[#F0C93B]/40 transition-colors flex flex-col justify-between"
+            className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)] hover:border-[#F5B429]/50 transition-all backdrop-blur-xl flex flex-col justify-between"
           >
-            <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] p-6 space-y-4 h-full flex flex-col justify-between">
+            <div className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] p-6 space-y-4 h-full flex flex-col justify-between">
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="size-9 rounded-xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] font-bold">
+                  <span className="size-9 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/30 flex items-center justify-center text-[#F5B429] font-bold">
                     {c.discountType === "percentage" ? <Percent className="size-4" /> : <Gift className="size-4" />}
                   </span>
-                  <span className="text-[10px] font-mono font-bold text-[#8FC3DE] bg-[#8FC3DE]/10 px-2.5 py-0.5 rounded-full border border-[#8FC3DE]/20 uppercase">
+                  <span className="text-[10px] font-mono font-bold text-[#FCD34D] bg-[#FCD34D]/10 px-2.5 py-0.5 rounded-full border border-[#FCD34D]/20 uppercase">
                     {c.discountType === "percentage" ? `${c.discountValue}% OFF` : `+${c.discountValue} BONUS`}
                   </span>
                 </div>
 
                 <div className="space-y-1">
-                  <div className="font-mono text-lg font-black text-[#F0C93B] tracking-wider">
+                  <div className="font-mono text-lg font-bold text-[#F5B429] tracking-wider">
                     {c.code}
                   </div>
-                  <p className="text-xs text-[#9FAEA1] font-light leading-relaxed min-h-[40px]">
+                  <p className="text-xs text-[#8A8078] font-light leading-relaxed min-h-[40px]">
                     {c.description}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#F3F0E4]/10 space-y-2">
+              <div className="pt-3 border-t border-[#2E2118] space-y-2">
                 <button
                   onClick={() => handleCopyCode(c.code)}
-                  className="w-full rounded-full bg-[#16261D] hover:bg-[#F0C93B] text-[#F3F0E4] hover:text-[#2A2118] border border-[#F3F0E4]/15 font-bold text-xs py-2.5 px-4 inline-flex items-center justify-center gap-2 transition-all font-heading"
+                  className="w-full rounded-full bg-[#150F0B] hover:bg-gradient-to-r hover:from-[#F5B429] hover:to-[#F5941D] text-[#FAFAF8] hover:text-[#150F0B] border border-[#2E2118] font-bold text-xs py-2.5 px-4 inline-flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
                 >
                   {copiedCode === c.code ? (
                     <>

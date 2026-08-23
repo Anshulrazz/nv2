@@ -27,11 +27,11 @@ export default async function WalletPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-amber-500/30 selection:text-amber-200">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[600px] h-[400px] bg-amber-500/10 rounded-full blur-[150px]" />
-        <div className="absolute bottom-0 left-1/3 w-[500px] h-[350px] bg-emerald-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[600px] h-[400px] bg-[#F5B429]/10 rounded-full blur-[150px]" />
+        <div className="absolute bottom-0 left-1/3 w-[500px] h-[350px] bg-[#F5941D]/8 rounded-full blur-[140px]" />
       </div>
 
       {/* Header */}

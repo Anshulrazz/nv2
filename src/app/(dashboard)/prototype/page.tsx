@@ -178,7 +178,7 @@ export default function DesignPrototypePage() {
           bgMuted: "bg-cyan-500/10",
           glow: "shadow-[0_0_15px_rgba(6,182,212,0.35)]",
           borderActive: "border-cyan-400",
-          accentLine: "from-cyan-400 via-indigo-500 to-violet-500",
+          accentLine: "from-[#F7C948] via-[#F5B429] to-[#F5941D]",
         };
     }
   };
@@ -266,8 +266,7 @@ export default function DesignPrototypePage() {
         }
       `}</style>
 
-      {/* Cybernetic Grid Overlay Background */}
-      <div className="absolute inset-0 cyber-grid pointer-events-none opacity-60 z-0" />
+
 
       {/* LEFT DRAWER CONTROL SIDEBAR (Spec details viewer) */}
       <aside className="w-80 border-r border-neutral-900 bg-neutral-950/90 backdrop-blur-md z-10 flex flex-col justify-between select-none shrink-0 font-jakarta">

@@ -20,37 +20,37 @@ export function TrustHeader({ title }: { title: string }) {
   ];
 
   return (
-    <header className="border-b border-[#F3F0E4]/15 bg-[#121F18]/90 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
+    <header className="border-b border-[#2E2118] bg-[#0A0806]/85 backdrop-blur-md sticky top-0 z-50 transition-all duration-300">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 shrink-0">
           <Link
             href="/"
-            className="text-[#9FAEA1] hover:text-[#F3F0E4] flex items-center gap-2 text-xs font-semibold transition-colors py-1.5 px-3 rounded-full hover:bg-white/5 border border-transparent hover:border-[#F3F0E4]/10"
+            className="text-[#B8AFA6] hover:text-[#FAFAF8] flex items-center gap-2 text-xs font-semibold transition-colors py-1.5 px-3 rounded-full hover:bg-[#150F0B] border border-transparent hover:border-[#2E2118]"
           >
-            <ArrowLeft className="size-4 text-[#8FC3DE]" />
+            <ArrowLeft className="size-4 text-[#F5941D]" />
             <span className="hidden sm:inline">Back to Notexia</span>
           </Link>
-          <div className="h-4 w-px bg-[#F3F0E4]/15 hidden sm:block" />
+          <div className="h-4 w-px bg-[#2E2118] hidden sm:block" />
           <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
-            <span className="size-6 rounded-lg bg-[#F0C93B]/20 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] font-mono text-xs">
+            <span className="size-6 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
               N
             </span>
-            <span className="font-heading hidden md:inline text-[#F3F0E4]">NOTEXIA</span>
+            <span className="font-display hidden md:inline text-[#FAFAF8] font-bold tracking-widest">NOTEXIA</span>
           </Link>
         </div>
 
         {/* Navigation items for desktop */}
-        <nav className="hidden lg:flex items-center gap-1 bg-[#1A2D23]/60 p-1 rounded-full border border-[#F3F0E4]/10 text-xs font-heading">
+        <nav className="hidden lg:flex items-center gap-1 bg-[#150F0B] p-1 rounded-full border border-[#2E2118] text-xs font-medium">
           {trustLinks.map((link) => {
             const isActive = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`px-3 py-1.5 rounded-full transition-all duration-200 ${
+                className={`px-3.5 py-1.5 rounded-full uppercase tracking-wider text-[11px] transition-all duration-200 ${
                   isActive
-                    ? "bg-[#F0C93B] text-[#2A2118] font-bold shadow-sm"
-                    : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-white/5"
+                    ? "bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_2px_12px_rgba(245,148,29,0.3)]"
+                    : "text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#241811]"
                 }`}
               >
                 {link.label}
@@ -60,24 +60,24 @@ export function TrustHeader({ title }: { title: string }) {
         </nav>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold tracking-widest text-[#F0C93B] uppercase font-mono bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
+          <span className="text-xs font-bold tracking-widest text-[#F5B429] uppercase font-mono bg-[#241811] px-3 py-1 rounded-full border border-[#2E2118]">
             {title}
           </span>
         </div>
       </div>
 
       {/* Secondary horizontal scrolling tab strip for mobile/tablet */}
-      <div className="flex lg:hidden overflow-x-auto no-scrollbar border-t border-[#F3F0E4]/10 px-4 py-2 gap-2 bg-[#0E1A14]">
+      <div className="flex lg:hidden overflow-x-auto no-scrollbar border-t border-[#2E2118] px-4 py-2 gap-2 bg-[#150F0B]">
         {trustLinks.map((link) => {
           const isActive = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className={`shrink-0 text-xs px-3.5 py-1.5 min-h-[36px] flex items-center justify-center rounded-full font-medium transition-all ${
+              className={`shrink-0 text-xs px-3.5 py-1.5 min-h-[36px] flex items-center justify-center rounded-full uppercase tracking-wider text-[11px] font-medium transition-all ${
                 isActive
-                  ? "bg-[#F0C93B] text-[#2A2118] font-bold"
-                  : "text-[#9FAEA1] hover:text-white bg-[#1A2D23]/40 border border-[#F3F0E4]/5"
+                  ? "bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold"
+                  : "text-[#B8AFA6] hover:text-[#FAFAF8] bg-[#241811] border border-[#2E2118]"
               }`}
             >
               {link.label}

@@ -304,17 +304,17 @@ export default function ResearchPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-violet-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
       </div>
 
       {/* Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+      <div className="border-b border-[#2E2118] bg-[#150F0B]/80 p-8 rounded-[2rem] border border-[#2E2118] relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0 shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-violet-500/10 flex items-center justify-center border border-violet-500/20 text-violet-400">
+            <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/20 text-[#F5B429]">
               <GraduationCap className="size-7" />
             </div>
             <div>

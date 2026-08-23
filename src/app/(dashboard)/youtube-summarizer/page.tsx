@@ -411,16 +411,16 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
           <button
             type="submit"
             disabled={isLoading || !urlInput.trim()}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-violet-600/25 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            className="flex items-center justify-center gap-2 px-6 py-3 rounded-full btn-premium-primary text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
             {isLoading ? (
               <>
-                <Loader2 className="size-4 animate-spin text-white" />
+                <Loader2 className="size-4 animate-spin text-[#150F0B]" />
                 Analyzing Video...
               </>
             ) : (
               <>
-                <Sparkles className="size-4 text-violet-200" />
+                <Sparkles className="size-4 text-[#150F0B]" />
                 Summarize & Generate Notes
               </>
             )}
@@ -429,17 +429,17 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
 
         {/* Pipeline Progress Indicator */}
         {isLoading && (
-          <div className="p-4 rounded-xl bg-violet-950/30 border border-violet-500/30 space-y-3 animate-in fade-in duration-300">
-            <div className="flex items-center justify-between text-xs font-mono text-violet-300">
+          <div className="p-4 rounded-xl bg-[#150F0B] border border-[#F5B429]/30 space-y-3 animate-in fade-in duration-300">
+            <div className="flex items-center justify-between text-xs font-mono text-[#F5B429]">
               <span className="flex items-center gap-2">
                 <Loader2 className="size-3.5 animate-spin" />
                 {PIPELINE_STEPS[currentStepIdx]}
               </span>
               <span>Step {currentStepIdx + 1} of 5</span>
             </div>
-            <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden">
+            <div className="w-full bg-[#0A0806] h-1.5 rounded-full overflow-hidden">
               <div
-                className="bg-gradient-to-r from-violet-500 to-indigo-500 h-full transition-all duration-500"
+                className="bg-gradient-to-r from-[#F7C948] to-[#F5941D] h-full transition-all duration-500"
                 style={{ width: `${((currentStepIdx + 1) / PIPELINE_STEPS.length) * 100}%` }}
               />
             </div>
@@ -482,37 +482,37 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
             <div className="flex flex-wrap items-center gap-2 shrink-0">
               <button
                 onClick={handleOpenSaveModal}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white text-xs font-semibold flex items-center gap-2 transition-all shadow-lg shadow-violet-600/30 cursor-pointer"
+                className="px-3.5 py-2 rounded-full btn-premium-primary text-xs font-semibold flex items-center gap-2 cursor-pointer"
               >
                 <FileText className="size-3.5" /> Save & Publish Note
               </button>
               <button
                 onClick={handleCopyNotes}
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3.5 py-2 rounded-full bg-[#150F0B] hover:bg-[#241811] border border-[#2E2118] text-xs text-[#FAFAF8] flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                {isCopied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5 text-violet-400" />}
+                {isCopied ? <Check className="size-3.5 text-[#22C55E]" /> : <Copy className="size-3.5 text-[#F5B429]" />}
                 {isCopied ? "Copied!" : "Copy"}
               </button>
               <a
                 href={activeSummary.url}
                 target="_blank"
                 rel="noreferrer"
-                className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-zinc-300 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2 rounded-full bg-[#150F0B] hover:bg-[#241811] border border-[#2E2118] text-xs text-[#FAFAF8] flex items-center gap-1.5 transition-colors"
               >
-                <Play className="size-3.5 text-rose-500" /> Watch
+                <Play className="size-3.5 text-[#EF4444]" /> Watch
               </a>
             </div>
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-zinc-900/60 border border-white/10 backdrop-blur-xl">
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
-              <div className="p-2 rounded-lg bg-violet-500/10 text-violet-400">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-4 rounded-2xl bg-[#150F0B] border border-[#2E2118] backdrop-blur-xl">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0A0806] border border-[#2E2118]">
+              <div className="p-2 rounded-lg bg-[#F5B429]/10 text-[#F5B429]">
                 <Clock className="size-4" />
               </div>
               <div>
-                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Reading Time</div>
-                <div className="text-xs sm:text-sm font-bold text-white">
+                <div className="text-[10px] uppercase font-mono text-[#8A8078] tracking-wider">Reading Time</div>
+                <div className="text-xs sm:text-sm font-bold text-[#FAFAF8]">
                   {Math.max(
                     1,
                     Math.ceil(
@@ -527,13 +527,13 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-black/40 border border-white/5">
-              <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
+            <div className="flex items-center gap-3 p-2.5 rounded-xl bg-[#0A0806] border border-[#2E2118]">
+              <div className="p-2 rounded-lg bg-[#F5941D]/10 text-[#F5941D]">
                 <FileText className="size-4" />
               </div>
               <div>
-                <div className="text-[10px] uppercase font-mono text-zinc-400 tracking-wider">Word Count</div>
-                <div className="text-xs sm:text-sm font-bold text-white">
+                <div className="text-[10px] uppercase font-mono text-[#8A8078] tracking-wider">Word Count</div>
+                <div className="text-xs sm:text-sm font-bold text-[#FAFAF8]">
                   {(activeSummary.lectures || [])
                     .reduce((acc, l) => acc + (l.wordCount || (l.content || "").split(/\s+/).filter(Boolean).length), 0)
                     .toLocaleString()}{" "}
@@ -1085,15 +1085,15 @@ ${(activeSummary.lectures || []).map((lec) => `### ${lec.title}\n${lec.content}`
                 <button
                   type="submit"
                   disabled={isSavingNote}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-semibold text-xs transition-all shadow-lg shadow-violet-600/30 flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-full btn-premium-primary text-xs font-semibold flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {isSavingNote ? (
                     <>
-                      <Loader2 className="size-4 animate-spin" /> Saving Note...
+                      <Loader2 className="size-4 animate-spin text-[#150F0B]" /> Saving Note...
                     </>
                   ) : (
                     <>
-                      <Zap className="size-4 text-amber-300" /> Save Note
+                      <Zap className="size-4 text-[#150F0B]" /> Save Note
                     </>
                   )}
                 </button>

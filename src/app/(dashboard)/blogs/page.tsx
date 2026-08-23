@@ -53,9 +53,9 @@ export default function BlogsPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 flex items-center justify-center bg-[#030305] text-zinc-500 select-none gap-2">
-          <Loader2 className="size-5 animate-spin text-cyan-400" />
-          <span className="text-xs font-mono font-bold uppercase tracking-widest text-zinc-400">
+        <div className="flex-1 flex items-center justify-center bg-transparent text-[#8A8078] select-none gap-2">
+          <Loader2 className="size-5 animate-spin text-[#F5B429]" />
+          <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#8A8078]">
             Loading blogs...
           </span>
         </div>
@@ -312,30 +312,30 @@ function BlogsPageContent() {
 
   if (editingBlog) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-hidden antialiased relative">
-        <div className="border-b border-[#F3F0E4]/15 bg-[#1A2D23]/90 px-6 py-4 flex items-center justify-between shrink-0 select-none backdrop-blur-xl">
+      <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-hidden antialiased relative">
+        <div className="border-b border-[#2E2118] bg-[#0A0806]/85 px-6 py-4 flex items-center justify-between shrink-0 select-none backdrop-blur-xl">
           <div className="flex items-center gap-4">
             <button
               onClick={() => {
                 setEditingBlog(null);
                 fetchBlogs();
               }}
-              className="flex items-center gap-1.5 text-xs font-mono text-[#9FAEA1] hover:text-[#F3F0E4] transition-colors font-heading"
+              className="flex items-center gap-1.5 text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8] transition-colors font-display cursor-pointer"
             >
               <ChevronLeft className="size-4" /> Back to Blogs
             </button>
-            <div className="h-4 w-px bg-[#F3F0E4]/15" />
-            <span className="text-xs font-mono font-bold text-[#F0C93B] uppercase tracking-widest flex items-center gap-2">
+            <div className="h-4 w-px bg-[#2E2118]" />
+            <span className="text-xs font-mono font-bold text-[#F5B429] uppercase tracking-widest flex items-center gap-2">
               <Edit2 className="size-3.5" /> Blog Editor
             </span>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono font-bold uppercase text-[#9FAEA1]">
+            <span className="text-[10px] font-mono font-bold uppercase text-[#8A8078]">
               {saveState === "saving" ? "Saving..." : saveState === "saved" ? "Saved ✓" : published ? "Published" : "Draft"}
             </span>
 
-            <div className="flex items-center gap-1 bg-[#121F18] border border-[#F3F0E4]/15 p-1 rounded-xl">
+            <div className="flex items-center gap-1 bg-[#150F0B] border border-[#2E2118] p-1 rounded-xl">
               <Button
                 onClick={() => {
                   if (showPanel && editorPanelTab === "chat") {
@@ -347,13 +347,13 @@ function BlogsPageContent() {
                 }}
                 variant="ghost"
                 size="sm"
-                className={`text-xs font-mono font-bold h-7 px-3 rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`text-xs font-mono font-bold h-7 px-3 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                   showPanel && editorPanelTab === "chat"
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
-                    : "text-[#9FAEA1] hover:text-[#F3F0E4]"
+                    ? "bg-[#F5B429]/20 text-[#FCD34D] border border-[#F5B429]/30"
+                    : "text-[#8A8078] hover:text-[#FAFAF8]"
                 }`}
               >
-                <Sparkles className="size-3 text-cyan-400" />
+                <Sparkles className="size-3 text-[#F5B429]" />
                 <span>AI Chat</span>
               </Button>
 
@@ -368,10 +368,10 @@ function BlogsPageContent() {
                 }}
                 variant="ghost"
                 size="sm"
-                className={`text-xs font-mono font-bold h-7 px-3 rounded-lg transition-all flex items-center gap-1.5 ${
+                className={`text-xs font-mono font-bold h-7 px-3 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
                   showPanel && editorPanelTab === "settings"
-                    ? "bg-white/10 text-white border border-white/10"
-                    : "text-[#9FAEA1] hover:text-[#F3F0E4]"
+                    ? "bg-[#241811] text-[#FAFAF8] border border-[#2E2118]"
+                    : "text-[#8A8078] hover:text-[#FAFAF8]"
                 }`}
               >
                 <Settings className="size-3.5" />
@@ -385,8 +385,10 @@ function BlogsPageContent() {
                 setPublished(nextPub);
                 triggerAutosave();
               }}
-              className={`rounded-xl text-xs font-bold px-5 h-9 transition-all shadow-[2px_2px_0_0_#F28B6E] font-heading ${
-                published ? "bg-[#8FC3DE] text-[#2A2118]" : "bg-[#F0C93B] text-[#2A2118]"
+              className={`rounded-xl text-xs font-bold px-5 h-9 transition-all font-display cursor-pointer ${
+                published
+                  ? "bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8] hover:bg-[#241811]"
+                  : "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] shadow-[0_0_15px_rgba(245,180,41,0.25)]"
               }`}
             >
               {published ? "Published ✓" : "Publish Blog"}
@@ -409,41 +411,41 @@ function BlogsPageContent() {
                 triggerAutosave();
               }}
               placeholder="Blog Title..."
-              className="bg-transparent border-none text-2xl sm:text-3xl font-extrabold text-[#F3F0E4] placeholder-[#9FAEA1]/50 focus-visible:ring-0 px-0 h-auto font-heading"
+              className="bg-transparent border-none text-2xl sm:text-3xl font-bold text-[#FAFAF8] placeholder-[#8A8078]/50 focus-visible:ring-0 px-0 h-auto font-display"
             />
 
-            <div className="flex items-center gap-1 border-y border-[#F3F0E4]/10 py-2 select-none flex-wrap">
+            <div className="flex items-center gap-1 border-y border-[#2E2118] py-2 select-none flex-wrap">
               <Button
                 type="button"
                 onClick={() => setShowTopicModal(true)}
-                className="bg-gradient-to-r from-cyan-500/20 via-indigo-500/20 to-violet-500/20 hover:from-cyan-500/30 hover:to-violet-500/30 text-cyan-300 border border-cyan-500/30 text-xs font-bold px-3 py-1.5 h-8 rounded-lg flex items-center gap-1.5 transition-all mr-2"
+                className="bg-gradient-to-r from-[#F5B429]/20 to-[#F5941D]/20 hover:from-[#F5B429]/30 hover:to-[#F5941D]/30 text-[#FCD34D] border border-[#F5B429]/30 text-xs font-bold px-3 py-1.5 h-8 rounded-full flex items-center gap-1.5 transition-all mr-2 cursor-pointer font-display"
               >
-                <Sparkles className="size-3.5 text-cyan-400" />
+                <Sparkles className="size-3.5 text-[#F5B429]" />
                 <span>AI Topic Writer (2000+ words)</span>
               </Button>
 
-              <button onClick={() => insertMarkdown("**", "**")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Bold">
+              <button onClick={() => insertMarkdown("**", "**")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Bold">
                 <Bold className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("*", "*")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Italic">
+              <button onClick={() => insertMarkdown("*", "*")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Italic">
                 <Italic className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("# ")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Heading 1">
+              <button onClick={() => insertMarkdown("# ")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Heading 1">
                 <Heading1 className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("## ")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Heading 2">
+              <button onClick={() => insertMarkdown("## ")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Heading 2">
                 <Heading2 className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("[", "](url)")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Link">
+              <button onClick={() => insertMarkdown("[", "](url)")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Link">
                 <LinkIcon className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("```\n", "\n```")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Code Block">
+              <button onClick={() => insertMarkdown("```\n", "\n```")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Code Block">
                 <Code className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("> ")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Quote">
+              <button onClick={() => insertMarkdown("> ")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Quote">
                 <Quote className="size-4" />
               </button>
-              <button onClick={() => insertMarkdown("- ")} className="p-2 rounded-lg hover:bg-[#1A2D23] text-[#9FAEA1] hover:text-[#F3F0E4]" title="Unordered List">
+              <button onClick={() => insertMarkdown("- ")} className="p-2 rounded-lg hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer" title="Unordered List">
                 <List className="size-4" />
               </button>
             </div>
@@ -461,12 +463,12 @@ function BlogsPageContent() {
                 triggerAutosave();
               }}
               placeholder="Write your article in Markdown..."
-              className="flex-1 w-full bg-transparent text-sm text-[#F3F0E4] placeholder-[#9FAEA1]/50 resize-none outline-none font-mono leading-relaxed min-h-[400px]"
+              className="flex-1 w-full bg-transparent text-sm text-[#FAFAF8] placeholder-[#8A8078]/50 resize-none outline-none font-mono leading-relaxed min-h-[400px]"
             />
           </div>
 
           {showPanel && (
-            <div className="w-80 md:w-96 border-l border-[#F3F0E4]/15 bg-[#121F18]/90 overflow-hidden flex flex-col shrink-0">
+            <div className="w-80 md:w-96 border-l border-[#2E2118] bg-[#0A0806]/95 overflow-hidden flex flex-col shrink-0">
               {editorPanelTab === "chat" ? (
                 <NoteSideChat
                   noteTitle={title || "Untitled Blog"}
@@ -478,10 +480,10 @@ function BlogsPageContent() {
                 />
               ) : (
                 <div className="p-6 space-y-6 overflow-y-auto custom-scroll flex-1">
-                  <h3 className="text-xs font-mono font-bold text-[#F3F0E4] uppercase tracking-widest font-heading">Article Metadata</h3>
+                  <h3 className="text-xs font-mono font-bold text-[#FAFAF8] uppercase tracking-widest font-display">Article Metadata</h3>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Summary</label>
+                    <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest block">Summary</label>
                     <textarea
                       autoComplete="off"
                       autoCorrect="off"
@@ -494,15 +496,15 @@ function BlogsPageContent() {
                         triggerAutosave();
                       }}
                       rows={3}
-                      className="w-full bg-[#16261D] border border-[#F3F0E4]/15 rounded-xl p-3 text-xs text-[#F3F0E4] placeholder-[#9FAEA1]/60 outline-none resize-none"
+                      className="w-full bg-[#150F0B] border border-[#2E2118] rounded-xl p-3 text-xs text-[#FAFAF8] placeholder-[#8A8078]/60 outline-none resize-none"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Cover Image</label>
-                    {coverImage && <img src={coverImage} alt="Cover" className="w-full h-32 object-cover rounded-xl border border-[#F3F0E4]/15" />}
-                    <label className="flex items-center justify-center border border-dashed border-[#F3F0E4]/15 hover:border-[#F0C93B] bg-[#16261D] rounded-xl p-3 cursor-pointer text-xs font-mono text-[#9FAEA1] hover:text-[#F3F0E4] gap-2">
-                      {isUploadingImage ? <Loader2 className="size-4 animate-spin text-[#8FC3DE]" /> : <ImageIcon className="size-4 text-[#8FC3DE]" />}
+                    <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-widest block">Cover Image</label>
+                    {coverImage && <img src={coverImage} alt="Cover" className="w-full h-32 object-cover rounded-xl border border-[#2E2118]" />}
+                    <label className="flex items-center justify-center border border-dashed border-[#2E2118] hover:border-[#F5B429] bg-[#150F0B] rounded-xl p-3 cursor-pointer text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8] gap-2 transition-colors">
+                      {isUploadingImage ? <Loader2 className="size-4 animate-spin text-[#F5B429]" /> : <ImageIcon className="size-4 text-[#F5B429]" />}
                       <span>{coverImage ? "Change Cover" : "Upload Image"}</span>
                       <input type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploadingImage} className="hidden" />
                     </label>
@@ -518,24 +520,26 @@ function BlogsPageContent() {
 
   if (selectedBlog) {
     return (
-      <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
-        {/* Ambient Glow */}
-        <div className="fixed inset-0 pointer-events-none z-0">
-          <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow" />
+      <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
+        {/* Background Ambient Glow Orbs */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+          <div className="ambient-glow-orb-1" />
+          <div className="ambient-glow-orb-2" />
+          <div className="ambient-glow-orb-3" />
         </div>
 
         <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
-          <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+          <div className="border border-[#2E2118] bg-[#150F0B]/85 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_0_35px_-5px_rgba(245,148,29,0.12)]">
             <button
               onClick={() => setSelectedBlog(null)}
-              className="flex items-center gap-1.5 text-xs font-mono text-[#F0C93B] hover:text-[#F0C93B]/80 font-bold uppercase tracking-widest mb-4 font-heading"
+              className="flex items-center gap-1.5 text-xs font-mono text-[#F5B429] hover:text-[#FCD34D] font-bold uppercase tracking-widest mb-4 font-display cursor-pointer"
             >
               <ChevronLeft className="size-4" /> Back to Blog Feed
             </button>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#F3F0E4] tracking-tight leading-tight font-heading">
+            <h1 className="text-2xl sm:text-4xl font-bold text-[#FAFAF8] tracking-tight leading-tight font-display">
               {selectedBlog.title}
             </h1>
-            <div className="flex items-center gap-3 text-xs font-mono text-[#9FAEA1] mt-3">
+            <div className="flex items-center gap-3 text-xs font-mono text-[#8A8078] mt-3">
               <span>By {selectedBlog.userName}</span>
               <span>•</span>
               <span>{new Date(selectedBlog.createdAt).toLocaleDateString()}</span>
@@ -545,7 +549,7 @@ function BlogsPageContent() {
 
         <div className="p-4 sm:p-8 lg:p-10 w-full mx-auto max-w-5xl space-y-8 relative z-10">
           {selectedBlog.coverImage && (
-            <img src={selectedBlog.coverImage} alt={selectedBlog.title} className="w-full max-h-96 object-cover rounded-[2rem] border border-[#F3F0E4]/15 shadow-[0_15px_40px_rgba(0,0,0,0.3)]" />
+            <img src={selectedBlog.coverImage} alt={selectedBlog.title} className="w-full max-h-96 object-cover rounded-[2rem] border border-[#2E2118] shadow-[0_15px_40px_rgba(0,0,0,0.5)]" />
           )}
 
           <div className="w-full">
@@ -557,29 +561,30 @@ function BlogsPageContent() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
+      {/* Background Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
       </div>
 
       {/* Header Banner */}
       <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
-        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="border border-[#2E2118] bg-[#150F0B]/85 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_0_35px_-5px_rgba(245,148,29,0.12)]">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-[#C9A9E0]/10 flex items-center justify-center border border-[#C9A9E0]/30 text-[#C9A9E0] shadow-[2px_2px_0_0_#F28B6E] shrink-0">
-                <Rss className="size-7" />
+              <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429] shadow-[0_0_15px_rgba(245,180,41,0.15)] shrink-0">
+                <Rss className="size-7 text-[#F5B429]" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-2.5 flex-wrap font-display">
                   Scholar Blogs
-                  <span className="text-[10px] font-mono font-bold bg-[#C9A9E0]/15 text-[#C9A9E0] px-3 py-1 rounded-full border border-[#C9A9E0]/30 uppercase tracking-widest">
+                  <span className="text-[10px] font-mono font-bold bg-[#F5B429]/15 text-[#F5B429] px-3 py-1 rounded-full border border-[#F5B429]/30 uppercase tracking-widest">
                     EDITORIAL DISPATCH
                   </span>
                 </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
+                <p className="text-[#8A8078] text-xs sm:text-sm font-light mt-1">
                   Read deep-dive articles, engineering tutorials, and technical research written by student scholars.
                 </p>
               </div>
@@ -610,19 +615,19 @@ function BlogsPageContent() {
                     setIsLoading(false);
                   }
                 }}
-                className="group rounded-xl bg-gradient-to-r from-purple-500/20 via-cyan-500/20 to-indigo-500/20 hover:from-purple-500/30 hover:to-indigo-500/30 text-cyan-300 font-bold text-xs h-11 px-5 flex items-center justify-center gap-2 border border-cyan-500/30 transition-all duration-300 active:scale-[0.97] shadow-[2px_2px_0_0_#C9A9E0] font-heading"
+                className="group rounded-full bg-gradient-to-r from-[#F5B429]/20 to-[#F5941D]/20 hover:from-[#F5B429]/30 hover:to-[#F5941D]/30 text-[#FCD34D] font-bold text-xs h-11 px-5 flex items-center justify-center gap-2 border border-[#F5B429]/30 transition-all duration-300 active:scale-[0.97] shadow-[0_0_15px_rgba(245,180,41,0.15)] font-display cursor-pointer"
               >
-                <Sparkles className="size-4 text-cyan-400" />
+                <Sparkles className="size-4 text-[#F5B429]" />
                 <span>AI Blog Writer (2000+ words)</span>
               </Button>
 
               <Button
                 onClick={handleCreateBlog}
-                className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
+                className="btn-premium-primary h-11 px-6 text-xs gap-2 font-display cursor-pointer"
               >
-                <Plus className="size-4 text-[#2A2118]" />
+                <Plus className="size-4" />
                 <span>Write Blog</span>
-                <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                <ArrowUpRight className="size-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </Button>
             </div>
           </div>
@@ -631,23 +636,23 @@ function BlogsPageContent() {
 
       {/* Content & Tab Filter */}
       <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
-        <div className="flex items-center gap-2 border-b border-[#F3F0E4]/10 pb-4 select-none">
+        <div className="flex items-center gap-2 border-b border-[#2E2118] pb-4 select-none">
           <button
             onClick={() => setActiveTab("feed")}
-            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all cursor-pointer ${
               activeTab === "feed"
-                ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
-                : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-transparent"
+                ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_0_15px_rgba(245,180,41,0.3)]"
+                : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B] border border-transparent"
             }`}
           >
             Public Feed
           </button>
           <button
             onClick={() => setActiveTab("mine")}
-            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
+            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all cursor-pointer ${
               activeTab === "mine"
-                ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
-                : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-transparent"
+                ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_0_15px_rgba(245,180,41,0.3)]"
+                : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B] border border-transparent"
             }`}
           >
             My Written Articles
@@ -656,16 +661,16 @@ function BlogsPageContent() {
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-[#C9A9E0]" />
-            <span className="font-mono text-[#C9A9E0] tracking-widest">LOADING ARTICLES...</span>
+          <div className="py-20 flex flex-col items-center justify-center text-[#8A8078] text-xs gap-3 font-semibold">
+            <Loader2 className="size-8 animate-spin text-[#F5B429]" />
+            <span className="font-mono text-[#F5B429] tracking-widest">LOADING ARTICLES...</span>
           </div>
         ) : blogs.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
-              <Sparkles className="size-10 text-[#9FAEA1]" />
-              <h3 className="text-lg font-bold text-[#F3F0E4] font-heading">No articles published yet</h3>
-              <p className="text-xs text-[#9FAEA1] font-light max-w-xs">
+          <div className="rounded-[2.5rem] bg-[#150F0B]/85 border border-[#2E2118] p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_0_30px_-5px_rgba(245,148,29,0.12)]">
+            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-8 flex flex-col items-center gap-4">
+              <Sparkles className="size-10 text-[#8A8078]" />
+              <h3 className="text-lg font-bold text-[#FAFAF8] font-display">No articles published yet</h3>
+              <p className="text-xs text-[#8A8078] font-light max-w-xs">
                 {activeTab === "mine" ? "You haven't written any blogs yet." : "Be the first scholar to publish a blog article!"}
               </p>
             </div>
@@ -685,41 +690,41 @@ function BlogsPageContent() {
                   key={blog._id}
                   whileHover={{ y: -4, scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl hover:border-[#F0C93B]/40 transition-all duration-300 flex flex-col h-full shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                  className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 backdrop-blur-xl hover:border-[#F5B429]/50 transition-all duration-300 flex flex-col h-full shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)]"
                 >
                   <div
                     onClick={() => setSelectedBlog(blog)}
-                    className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 overflow-hidden flex flex-col h-full cursor-pointer group"
+                    className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] border border-[#2E2118] overflow-hidden flex flex-col h-full cursor-pointer group"
                   >
                     {blog.coverImage && (
-                      <div className="h-44 w-full relative overflow-hidden bg-[#16261D]">
+                      <div className="h-44 w-full relative overflow-hidden bg-[#150F0B]">
                         <img src={blog.coverImage} alt={blog.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
                       </div>
                     )}
                     <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-[#9FAEA1] select-none">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-[#8A8078] select-none">
                           <span>By {blog.userName}</span>
                           <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
                         </div>
-                        <h3 className="text-lg font-bold text-[#F3F0E4] group-hover:text-[#F0C93B] transition-colors line-clamp-1 font-heading">
+                        <h3 className="text-lg font-bold text-[#FAFAF8] group-hover:text-[#F5B429] transition-colors line-clamp-1 font-display">
                           {blog.title}
                         </h3>
-                        <p className="text-xs text-[#9FAEA1] font-light line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-[#8A8078] font-light line-clamp-2 leading-relaxed">
                           {blog.summary}
                         </p>
                       </div>
 
-                      <div className="flex items-center justify-between border-t border-[#F3F0E4]/10 pt-4 select-none">
+                      <div className="flex items-center justify-between border-t border-[#2E2118] pt-4 select-none">
                         <Link
                           href={`/blog/${encodeURIComponent(blog.userName || "author")}/${blog.slug || blog._id}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="text-xs font-mono text-[#8FC3DE] font-bold flex items-center gap-1 hover:text-cyan-300 transition-colors"
+                          className="text-xs font-mono text-[#F5B429] font-bold flex items-center gap-1 hover:text-[#FCD34D] transition-colors"
                         >
                           Read Article <ArrowUpRight className="size-3.5" />
                         </Link>
                         <div className="flex items-center gap-2">
-                          <button onClick={(e) => handleBookmark(blog, e)} className="text-[#9FAEA1] hover:text-[#F0C93B] transition-colors">
+                          <button onClick={(e) => handleBookmark(blog, e)} className="text-[#8A8078] hover:text-[#F5B429] transition-colors cursor-pointer">
                             <Bookmark className="size-4" />
                           </button>
                           {isOwner && (
@@ -728,13 +733,13 @@ function BlogsPageContent() {
                                 e.stopPropagation();
                                 setEditingBlog(blog);
                               }}
-                              className="text-[#9FAEA1] hover:text-[#F3F0E4] transition-colors"
+                              className="text-[#8A8078] hover:text-[#FAFAF8] transition-colors cursor-pointer"
                             >
                               <Edit2 className="size-4" />
                             </button>
                           )}
                           {isOwner && (
-                            <button onClick={(e) => handleDeleteBlog(blog._id, e)} className="text-[#9FAEA1] hover:text-[#F28B6E] transition-colors">
+                            <button onClick={(e) => handleDeleteBlog(blog._id, e)} className="text-[#8A8078] hover:text-[#EF4444] transition-colors cursor-pointer">
                               <Trash2 className="size-4" />
                             </button>
                           )}

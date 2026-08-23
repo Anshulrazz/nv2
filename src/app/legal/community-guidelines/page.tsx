@@ -13,7 +13,7 @@ export const metadata = {
 
 export default function CommunityGuidelinesPage() {
   return (
-    <div className="min-h-screen bg-[#16261D] text-[#F3F0E4] font-sans selection:bg-[#F0C93B]/30 flex flex-col antialiased">
+    <div className="min-h-screen bg-transparent text-[#FAFAF8] font-sans selection:bg-[#F5B429]/30 flex flex-col antialiased">
       <TrustHeader title="COMMUNITY GUIDELINES" />
       <LegalNav />
 

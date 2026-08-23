@@ -149,20 +149,20 @@ export function SidebarTree() {
         <div
           onClick={() => handleSelectFolder(folder._id)}
           style={{ paddingLeft: `${level * 12 + 8}px` }}
-          className={`group flex items-center justify-between py-1.5 pr-2 rounded-lg cursor-pointer transition-[background-color,color,border-color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
+          className={`group flex items-center justify-between py-1.5 pr-2 rounded-lg cursor-pointer transition-all duration-150 ease-out active:scale-[0.98] select-none ${
             isSelected
-              ? "bg-cyan-500/10 text-neutral-100 border-l-2 border-cyan-400"
-              : "text-neutral-400 hover:text-neutral-200 hover:bg-white/5"
+              ? "bg-[#F5B429]/15 text-[#FAFAF8] border-l-2 border-[#F5B429]"
+              : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B]"
           }`}
         >
           <div className="flex items-center gap-1.5 flex-1 min-w-0">
             <button
               onClick={(e) => toggleExpand(folder._id, e)}
-              className="p-0.5 rounded hover:bg-neutral-800 text-neutral-500 hover:text-neutral-300"
+              className="p-0.5 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8]"
             >
               {isExpanded ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
             </button>
-            <Folder className={`h-4 w-4 shrink-0 ${isSelected ? "text-cyan-400" : "text-neutral-500"}`} />
+            <Folder className={`h-4 w-4 shrink-0 ${isSelected ? "text-[#F5B429]" : "text-[#8A8078]"}`} />
 
             {isEditing ? (
               <input
@@ -170,7 +170,7 @@ export function SidebarTree() {
                 value={editingFolderName}
                 onChange={(e) => setEditingFolderName(e.target.value)}
                 onClick={(e) => e.stopPropagation()}
-                className="bg-neutral-950 border border-neutral-800 rounded px-1 text-xs text-neutral-100 max-w-[100px] focus:outline-none focus:border-cyan-400"
+                className="bg-[#0A0806] border border-[#2E2118] rounded px-1 text-xs text-[#FAFAF8] max-w-[100px] focus:outline-none focus:border-[#F5B429]"
               />
             ) : (
               <span className="text-xs font-medium truncate">{folder.name}</span>
@@ -183,7 +183,7 @@ export function SidebarTree() {
               <>
                 <button
                   onClick={(e) => handleSaveRename(folder._id, e)}
-                  className="p-1 rounded hover:bg-neutral-800 text-emerald-400"
+                  className="p-1 rounded hover:bg-[#241811] text-[#22C55E]"
                 >
                   <Check className="h-3 w-3" />
                 </button>
@@ -192,7 +192,7 @@ export function SidebarTree() {
                     e.stopPropagation();
                     setEditingFolderId(null);
                   }}
-                  className="p-1 rounded hover:bg-neutral-800 text-red-400"
+                  className="p-1 rounded hover:bg-[#241811] text-[#EF4444]"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -202,28 +202,28 @@ export function SidebarTree() {
                 <button
                   onClick={(e) => handleCreateNote(folder._id, e)}
                   title="Create note"
-                  className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-neutral-100"
+                  className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8]"
                 >
                   <FilePlus className="h-3 w-3" />
                 </button>
                 <button
                   onClick={(e) => openNewFolderDialog(folder._id, e)}
                   title="Create subfolder"
-                  className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-neutral-100"
+                  className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8]"
                 >
                   <FolderPlus className="h-3 w-3" />
                 </button>
                 <button
                   onClick={(e) => handleStartRename(folder, e)}
                   title="Rename"
-                  className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-neutral-100"
+                  className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8]"
                 >
                   <Edit2 className="h-3 w-3" />
                 </button>
                 <button
                   onClick={(e) => handleDeleteFolder(folder._id, e)}
                   title="Delete"
-                  className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400"
+                  className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#EF4444]"
                 >
                   <Trash2 className="h-3 w-3" />
                 </button>
@@ -242,20 +242,20 @@ export function SidebarTree() {
                   key={note._id}
                   onClick={() => handleSelectNote(note._id)}
                   style={{ paddingLeft: `${(level + 1) * 12 + 18}px` }}
-                  className={`group flex items-center justify-between py-1 pr-2 rounded-lg cursor-pointer transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
+                  className={`group flex items-center justify-between py-1 pr-2 rounded-lg cursor-pointer transition-all duration-150 ease-out active:scale-[0.98] select-none ${
                     isNoteActive
-                      ? "bg-cyan-500/10 text-neutral-100 font-medium border-l-2 border-cyan-400"
-                      : "text-neutral-400 hover:text-neutral-200 hover:bg-white/5"
+                      ? "bg-[#F5B429]/15 text-[#FAFAF8] font-medium border-l-2 border-[#F5B429]"
+                      : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B]"
                   }`}
                 >
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <FileText className={`h-3.5 w-3.5 shrink-0 ${isNoteActive ? "text-cyan-400" : "text-neutral-500"}`} />
+                    <FileText className={`h-3.5 w-3.5 shrink-0 ${isNoteActive ? "text-[#F5B429]" : "text-[#8A8078]"}`} />
                     <span className="text-[11px] truncate">{note.title}</span>
-                    {note.assetUrl && <Paperclip className="h-3 w-3 text-cyan-500 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />}
+                    {note.assetUrl && <Paperclip className="h-3 w-3 text-[#F5941D] shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />}
                   </div>
                   <button
                     onClick={(e) => handleDeleteNote(note._id, e)}
-                    className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity"
                   >
                     <Trash2 className="h-3 w-3" />
                   </button>
@@ -265,7 +265,7 @@ export function SidebarTree() {
             {childFolders.length === 0 && folderNotes.length === 0 && (
               <div
                 style={{ paddingLeft: `${(level + 1) * 12 + 18}px` }}
-                className="py-1 text-[10px] text-neutral-600 italic select-none"
+                className="py-1 text-[10px] text-[#8A8078] italic select-none"
               >
                 Empty folder
               </div>
@@ -283,15 +283,14 @@ export function SidebarTree() {
     <div className="w-full flex flex-col space-y-3">
       <div className="px-3 flex items-center justify-between select-none">
         <span
-          className="text-[9px] font-bold text-neutral-400 uppercase tracking-widest"
-          style={{ fontFamily: "var(--font-space-grotesk)" }}
+          className="text-[9px] font-bold text-[#8A8078] uppercase tracking-widest font-display"
         >
           Folders &amp; Notes
         </span>
         <button
           onClick={() => openNewFolderDialog(null)}
           title="Create root folder"
-          className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-cyan-400 transition-colors"
+          className="p-1 rounded hover:bg-[#150F0B] text-[#8A8078] hover:text-[#F5B429] transition-colors"
         >
           <FolderPlus className="h-3.5 w-3.5" />
         </button>
@@ -306,20 +305,20 @@ export function SidebarTree() {
             <div
               key={note._id}
               onClick={() => handleSelectNote(note._id)}
-              className={`group flex items-center justify-between py-1.5 px-3 rounded-lg cursor-pointer transition-[background-color,color,transform] duration-150 ease-out active:scale-[0.98] select-none ${
+              className={`group flex items-center justify-between py-1.5 px-3 rounded-lg cursor-pointer transition-all duration-150 ease-out active:scale-[0.98] select-none ${
                 isNoteActive
-                  ? "bg-cyan-500/10 text-neutral-100 font-medium border-l-2 border-cyan-400"
-                  : "text-neutral-400 hover:text-neutral-200 hover:bg-white/5"
+                  ? "bg-[#F5B429]/15 text-[#FAFAF8] font-medium border-l-2 border-[#F5B429]"
+                  : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B]"
               }`}
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
-                <FileText className={`h-4 w-4 shrink-0 ${isNoteActive ? "text-cyan-400" : "text-neutral-500"}`} />
+                <FileText className={`h-4 w-4 shrink-0 ${isNoteActive ? "text-[#F5B429]" : "text-[#8A8078]"}`} />
                 <span className="text-xs truncate">{note.title}</span>
-                {note.assetUrl && <Paperclip className="h-3.5 w-3.5 text-cyan-500 shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />}
+                {note.assetUrl && <Paperclip className="h-3.5 w-3.5 text-[#F5941D] shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" />}
               </div>
               <button
                 onClick={(e) => handleDeleteNote(note._id, e)}
-                className="p-1 rounded hover:bg-neutral-800 text-neutral-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                className="p-1 rounded hover:bg-[#241811] text-[#8A8078] hover:text-[#EF4444] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Trash2 className="h-3 w-3" />
               </button>
@@ -328,7 +327,7 @@ export function SidebarTree() {
         })}
 
         {rootFolders.length === 0 && rootNotes.length === 0 && (
-          <div className="text-center py-4 text-[10px] text-neutral-500 border border-dashed border-white/10 rounded-xl">
+          <div className="text-center py-4 text-[10px] text-[#8A8078] border border-dashed border-[#2E2118] rounded-xl">
             No folders or notes yet.
           </div>
         )}
@@ -336,11 +335,10 @@ export function SidebarTree() {
 
       {/* Create folder dialog */}
       <Dialog open={isNewFolderOpen} onOpenChange={setIsNewFolderOpen}>
-        <DialogContent className="bg-neutral-900 border-neutral-800 text-neutral-100 max-w-sm cyber-panel">
+        <DialogContent className="bg-[#150F0B] border-[#2E2118] text-[#FAFAF8] max-w-sm rounded-2xl">
           <DialogHeader>
             <DialogTitle
-              className="text-sm font-bold text-neutral-100"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
+              className="text-sm font-bold text-[#FAFAF8] font-display"
             >
               {activeParentId ? "Create Subfolder" : "Create Root Folder"}
             </DialogTitle>
@@ -350,21 +348,20 @@ export function SidebarTree() {
               placeholder="Folder Name"
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
-              className="bg-neutral-950 border-neutral-800 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-10 text-xs"
+              className="bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-10 text-xs"
             />
           </div>
           <DialogFooter className="gap-2">
             <Button
               variant="outline"
               onClick={() => setIsNewFolderOpen(false)}
-              className="border-neutral-800 text-neutral-400 hover:text-neutral-100 bg-neutral-950 hover:bg-neutral-900 text-xs h-9"
+              className="border-[#2E2118] text-[#B8AFA6] hover:text-[#FAFAF8] bg-[#150F0B] hover:bg-[#241811] text-xs h-9"
             >
               Cancel
             </Button>
             <Button
               onClick={handleCreateFolder}
-              className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold text-xs h-9 px-4 shadow-[0_0_12px_rgba(6,182,212,0.25)] transition-[background-color,transform,box-shadow] duration-150 ease-out active:scale-[0.97]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
+              className="btn-premium-primary text-xs h-9 px-4"
             >
               Create Folder
             </Button>

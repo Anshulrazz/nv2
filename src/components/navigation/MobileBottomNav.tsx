@@ -89,7 +89,7 @@ function MobileBottomNavContent({
   return (
     <div
       id="mobile-bottom-nav"
-      className="lg:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#080E0B]/90 backdrop-blur-xl border border-[#F0C93B]/25 h-14 rounded-2xl flex items-center justify-around px-2 shadow-[0_12px_40px_rgba(0,0,0,0.6)] selection:bg-none select-none"
+      className="lg:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#0A0806]/95 backdrop-blur-xl border border-[#2E2118] h-14 rounded-2xl flex items-center justify-around px-2 shadow-[0_12px_40px_rgba(0,0,0,0.8)] selection:bg-none select-none"
     >
       {navItems.map((item) => {
         const isActive =
@@ -104,14 +104,14 @@ function MobileBottomNavContent({
             <div
               aria-hidden="true"
               className={`absolute pointer-events-none z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2
-                bg-[#0E1B13] border border-[#F0C93B]/40 text-[#F0C93B]
+                bg-[#150F0B] border border-[#F5B429]/40 text-[#F5B429]
                 px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase
-                shadow-[0_4px_20px_rgba(0,0,0,0.5)] whitespace-nowrap flex items-center gap-1.5
+                shadow-[0_4px_20px_rgba(0,0,0,0.7)] whitespace-nowrap flex items-center gap-1.5
                 transition-[opacity,transform] duration-150
                 ${isTooltipOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1.5"}`}
             >
               <span>{item.label}</span>
-              <div className="w-1.5 h-1.5 bg-[#F0C93B] rounded-full animate-pulse" />
+              <div className="w-1.5 h-1.5 bg-[#F5B429] rounded-full animate-pulse" />
             </div>
 
             <Link
@@ -128,7 +128,7 @@ function MobileBottomNavContent({
               <span
                 className={`absolute inset-x-1 inset-y-1.5 rounded-xl border transition-[opacity,background-color] duration-150
                   ${isActive
-                    ? "opacity-100 bg-[#F0C93B]/15 border-[#F0C93B]/40"
+                    ? "opacity-100 bg-[#F5B429]/15 border-[#F5B429]/40"
                     : "opacity-0 bg-transparent border-transparent"
                   }`}
                 aria-hidden="true"
@@ -143,15 +143,15 @@ function MobileBottomNavContent({
                   <IconComponent
                     className={`h-5 w-5 transition-colors duration-150 ${
                       isActive
-                        ? "text-[#F0C93B] drop-shadow-[0_0_8px_rgba(240,201,59,0.5)]"
-                        : "text-[#9FAEA1] hover:text-[#F3F0E4]"
+                        ? "text-[#F5B429] drop-shadow-[0_0_8px_rgba(245,180,41,0.5)]"
+                        : "text-[#8A8078] hover:text-[#FAFAF8]"
                     }`}
                   />
                 </div>
 
                 {/* Badge Indicator */}
                 {item.badge !== undefined && (
-                  <span className="absolute -top-2 -right-2 bg-[#F28B6E] text-[#16261D] text-[9px] font-black flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full border border-[#080E0B] shadow-md">
+                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] text-[9px] font-black flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full border border-[#0A0806] shadow-md">
                     {item.badge}
                   </span>
                 )}

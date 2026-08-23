@@ -30,17 +30,17 @@ export default function ShowcaseLandingPage() {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-[#030305] text-zinc-100 font-sans selection:bg-cyan-500/30 selection:text-cyan-200 overflow-x-hidden antialiased">
+    <div className="min-h-[100dvh] bg-transparent text-[#FAFAF8] font-sans selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] overflow-x-hidden antialiased">
       {/* Background Ambient Mesh Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[1200px] h-[600px] bg-gradient-to-b from-cyan-500/15 via-violet-600/10 to-transparent blur-[140px] opacity-70" />
-        <div className="absolute top-[900px] -right-40 w-[700px] h-[500px] bg-cyan-500/10 blur-[160px]" />
-        <div className="absolute top-[1800px] -left-40 w-[600px] h-[500px] bg-violet-500/10 blur-[160px]" />
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
       </div>
 
       {/* Floating Island Navbar */}
       <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-full max-w-4xl px-4 pointer-events-none">
-        <header className="pointer-events-auto rounded-full bg-zinc-950/80 border border-white/10 backdrop-blur-2xl px-6 py-2.5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        <header className="pointer-events-auto rounded-full bg-[#150F0B]/85 border border-[#2E2118] backdrop-blur-2xl px-6 py-2.5 flex items-center justify-between shadow-[0_20px_50px_rgba(0,0,0,0.8),0_0_30px_-5px_rgba(245,148,29,0.15)]">
           <Link href="/" className="flex items-center gap-3 group">
             <div className="size-8 rounded-full bg-gradient-to-tr from-cyan-500 to-teal-400 flex items-center justify-center text-zinc-950 font-bold shadow-[0_0_20px_rgba(6,182,212,0.4)] transition-transform duration-300 group-hover:scale-105">
               <Zap className="size-4 fill-current text-zinc-950" />

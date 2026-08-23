@@ -97,15 +97,15 @@ export default function NotificationsPage() {
       case "like":
         return <Heart className="size-4 text-rose-400" />;
       case "comment":
-        return <MessageSquare className="size-4 text-indigo-400" />;
+        return <MessageSquare className="size-4 text-[#F5B429]" />;
       case "follow":
         return <UserPlus className="size-4 text-emerald-400" />;
       case "mention":
-        return <Share2 className="size-4 text-cyan-400" />;
+        return <Share2 className="size-4 text-[#F5941D]" />;
       case "message":
-        return <MessageCircle className="size-4 text-cyan-400 animate-pulse" />;
+        return <MessageCircle className="size-4 text-[#F5B429] animate-pulse" />;
       default:
-        return <Bell className="size-4 text-zinc-400" />;
+        return <Bell className="size-4 text-[#8A8078]" />;
     }
   };
 
@@ -127,21 +127,21 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#030305] text-zinc-100 overflow-y-auto antialiased relative selection:bg-cyan-500/30 selection:text-cyan-200">
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-cyan-500/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
       </div>
 
       {/* Header Banner */}
-      <div className="border-b border-white/5 bg-zinc-950/40 p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0">
+      <div className="border-b border-[#2E2118] bg-[#150F0B]/80 p-8 rounded-[2rem] border border-[#2E2118] relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0 shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)]">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20 text-cyan-400">
+            <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/20 text-[#F5B429]">
               <Bell className="size-7" />
             </div>
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
+              <h1 className="text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-3 font-display">
                 Notifications Inbox
                 <span className="text-[10px] font-mono font-bold bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/30 uppercase tracking-widest">
                   LIVE FEED

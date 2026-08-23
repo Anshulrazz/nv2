@@ -126,10 +126,10 @@ function FileTree({ node, onSelectFile, selectedPath, expandedFolders, toggleFol
             <div key={child.path} className="space-y-1">
               <div
                 onClick={() => toggleFolder(child.path)}
-                className="flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900/50 cursor-pointer text-xs transition-all font-semibold font-space select-none"
+                className="flex items-center gap-1.5 py-1 px-1.5 rounded-lg text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B] cursor-pointer text-xs transition-all font-semibold font-display select-none"
               >
-                {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-neutral-500 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-neutral-500 shrink-0" />}
-                <Folder className="h-3.5 w-3.5 text-cyan-500/80 fill-cyan-500/10 shrink-0" />
+                {isExpanded ? <ChevronDown className="h-3.5 w-3.5 text-[#8A8078] shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-[#8A8078] shrink-0" />}
+                <Folder className="h-3.5 w-3.5 text-[#F5B429] fill-[#F5B429]/20 shrink-0" />
                 <span className="truncate">{child.name}</span>
               </div>
               {isExpanded && (
@@ -151,12 +151,12 @@ function FileTree({ node, onSelectFile, selectedPath, expandedFolders, toggleFol
               onClick={() => child.file && onSelectFile(child.file)}
               className={`flex items-center gap-1.5 py-1 px-1.5 rounded-lg cursor-pointer text-xs transition-all font-mono select-none ${
                 isSelected
-                  ? "bg-cyan-500/10 text-cyan-400 font-semibold border-l border-cyan-500 rounded-l-none"
-                  : "text-neutral-450 hover:text-neutral-200 hover:bg-neutral-900/30"
+                  ? "bg-[#F5B429]/15 text-[#FCD34D] font-semibold border-l-2 border-[#F5B429] rounded-l-none"
+                  : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B]"
               }`}
             >
               <span className="w-3.5 shrink-0" />
-              <File className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+              <File className="h-3.5 w-3.5 text-[#8A8078] shrink-0" />
               <span className="truncate">{child.name}</span>
             </div>
           );
@@ -948,70 +948,71 @@ export default function ProjectsPage() {
   const fileLimit = isPremiumUser ? 250 : 50;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#16261D] text-[#F3F0E4] overflow-y-auto custom-scroll relative selection:bg-[#F0C93B]/30 selection:text-[#F0C93B]">
-      {/* Background Ambient Mesh Glow */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#8FC3DE]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#C9A9E0]/10 rounded-full blur-[140px] animate-float-glow-reverse" />
+    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
+      {/* Background Ambient Glow Orbs */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+        <div className="ambient-glow-orb-1" />
+        <div className="ambient-glow-orb-2" />
+        <div className="ambient-glow-orb-3" />
       </div>
 
       {/* Header Banner */}
       <div className="p-4 sm:p-8 lg:p-10 pb-0 shrink-0 select-none relative z-10">
-        <div className="border border-[#F3F0E4]/15 bg-[#1A2D23]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <div className="border border-[#2E2118] bg-[#150F0B]/85 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_0_35px_-5px_rgba(245,148,29,0.12)]">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 relative z-10">
             <div className="space-y-1.5 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span className="h-1.5 w-6 rounded-full bg-[#F0C93B] shrink-0 animate-pulse shadow-[0_0_8px_#F0C93B]" />
-                <span className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-widest font-mono">
+                <span className="h-1.5 w-6 rounded-full bg-[#F5B429] shrink-0 animate-pulse shadow-[0_0_8px_#F5B429]" />
+                <span className="text-[10px] font-bold text-[#F5B429] uppercase tracking-widest font-mono">
                   Project Terminal
                 </span>
               </div>
-              <h1 className="text-2xl sm:text-3xl font-black text-[#F3F0E4] tracking-tight font-heading">
+              <h1 className="text-2xl sm:text-3xl font-bold text-[#FAFAF8] tracking-tight font-display">
                 Premium Projects
               </h1>
-              <p className="text-[#9FAEA1] text-xs sm:text-sm font-light max-w-md">
+              <p className="text-[#8A8078] text-xs sm:text-sm font-light max-w-md">
                 Publish structured repositories with file trees, or spend Coins to unlock premium project files.
               </p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
               {/* Coins Balance */}
-              <div className="bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg">
-                <Coins className="h-4 w-4 text-[#F0C93B] shrink-0" />
+              <div className="bg-[#0A0806] border border-[#2E2118] rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg">
+                <Coins className="h-4 w-4 text-[#F5B429] shrink-0" />
                 <div className="text-left">
-                  <p className="text-[9px] text-[#9FAEA1] uppercase font-bold font-heading">Your Coins</p>
-                  <p className="text-sm font-extrabold text-[#F3F0E4] font-mono">{coins} <span className="text-[10px] text-[#F0C93B]">Coins</span></p>
+                  <p className="text-[9px] text-[#8A8078] uppercase font-bold font-display">Your Coins</p>
+                  <p className="text-sm font-extrabold text-[#FAFAF8] font-mono">{coins} <span className="text-[10px] text-[#F5B429]">Coins</span></p>
                 </div>
               </div>
 
               {/* Premium status indicator */}
               {isPremiumUser ? (
-                <div className="bg-[#C9A9E0]/15 border border-[#C9A9E0]/30 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg select-none">
-                  <Shield className="h-4 w-4 text-[#C9A9E0] fill-[#C9A9E0]/20 shrink-0" />
+                <div className="bg-[#F5B429]/15 border border-[#F5B429]/30 rounded-xl px-3.5 py-2 sm:px-4 flex items-center gap-2 shadow-lg select-none">
+                  <Shield className="h-4 w-4 text-[#F5B429] fill-[#F5B429]/20 shrink-0" />
                   <div className="text-left">
-                    <p className="text-[9px] text-[#C9A9E0] uppercase font-bold font-heading">Plan Tier</p>
-                    <p className="text-xs font-bold text-[#F3F0E4] uppercase tracking-wider whitespace-nowrap">Premium (250 Limit)</p>
+                    <p className="text-[9px] text-[#F5B429] uppercase font-bold font-display">Plan Tier</p>
+                    <p className="text-xs font-bold text-[#FAFAF8] uppercase tracking-wider whitespace-nowrap">Premium (250 Limit)</p>
                   </div>
                 </div>
               ) : (
                 <Button
                   onClick={handleUpgradePremium}
                   disabled={isUpgrading}
-                  className="bg-[#121F18] border border-[#F3F0E4]/20 hover:border-[#C9A9E0]/50 text-[#F3F0E4] font-bold h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 transition-all duration-300 font-heading"
+                  className="bg-[#0A0806] border border-[#2E2118] hover:border-[#F5B429]/50 text-[#FAFAF8] font-bold h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 transition-all duration-300 font-display cursor-pointer"
                 >
-                  <Shield className="h-4 w-4 text-[#C9A9E0] shrink-0" />
+                  <Shield className="h-4 w-4 text-[#F5B429] shrink-0" />
                   <div className="text-left">
-                    <p className="text-[8px] text-[#9FAEA1] uppercase font-bold whitespace-nowrap">Go Premium (500 Coins)</p>
-                    <p className="text-[10px] font-bold text-[#C9A9E0] uppercase whitespace-nowrap">Unlock 250 file limit</p>
+                    <p className="text-[8px] text-[#8A8078] uppercase font-bold whitespace-nowrap">Go Premium (500 Coins)</p>
+                    <p className="text-[10px] font-bold text-[#F5B429] uppercase whitespace-nowrap">Unlock 250 file limit</p>
                   </div>
                 </Button>
               )}
 
               <Button
                 onClick={() => setIsModalOpen(true)}
-                className="bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold transition-all h-11 px-5 rounded-xl flex items-center gap-2 w-full sm:w-auto justify-center shadow-[4px_4px_0_0_#F28B6E] hover:translate-x-0.5 hover:translate-y-0.5 font-heading"
+                className="bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold transition-all h-11 px-5 rounded-xl flex items-center gap-2 w-full sm:w-auto justify-center shadow-[0_0_15px_rgba(245,180,41,0.25)] hover:opacity-90 font-display cursor-pointer"
               >
-                <Plus className="h-4 w-4 shrink-0 text-[#2A2118]" />
+                <Plus className="h-4 w-4 shrink-0 text-[#150F0B]" />
                 <span className="whitespace-nowrap">Create Project</span>
               </Button>
             </div>
@@ -1020,25 +1021,25 @@ export default function ProjectsPage() {
       </div>
 
       {error ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-6 text-neutral-400 space-y-4">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 text-[#8A8078] space-y-4">
           <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-semibold flex items-center gap-2 max-w-full">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="break-words">{error}</span>
           </div>
-          <Button onClick={fetchProfileAndProjects} variant="outline" className="text-xs h-9 font-bold border-neutral-800">
+          <Button onClick={fetchProfileAndProjects} variant="outline" className="text-xs h-9 font-bold border-[#2E2118] hover:bg-[#150F0B] text-[#FAFAF8]">
             Refresh Connection
           </Button>
         </div>
       ) : !viewingProject ? (
         <div className="p-4 sm:p-8 max-w-5xl w-full mx-auto flex-1">
           {projects.length === 0 ? (
-            <div className="py-14 sm:py-20 px-4 text-center select-none border border-dashed border-neutral-900 rounded-3xl bg-neutral-900/10 flex flex-col items-center justify-center">
-              <Sparkles className="h-10 w-10 text-neutral-700 mb-3 opacity-60" />
-              <h3 className="text-sm font-bold text-neutral-400" style={{ fontFamily: "var(--font-space-grotesk)" }}>No Projects Found</h3>
-              <p className="text-xs text-neutral-500 max-w-sm mt-1 mb-6">
+            <div className="py-14 sm:py-20 px-4 text-center select-none border border-dashed border-[#2E2118] rounded-3xl bg-[#150F0B]/50 flex flex-col items-center justify-center">
+              <Sparkles className="h-10 w-10 text-[#8A8078] mb-3 opacity-60" />
+              <h3 className="text-sm font-bold text-[#FAFAF8] font-display">No Projects Found</h3>
+              <p className="text-xs text-[#8A8078] max-w-sm mt-1 mb-6">
                 Be the first to publish a file-structured project! Click &quot;Create Project&quot; to get started.
               </p>
-              <Button onClick={() => setIsModalOpen(true)} variant="outline" className="text-xs border-neutral-850 h-9 rounded-xl hover:bg-neutral-900 font-bold">
+              <Button onClick={() => setIsModalOpen(true)} className="text-xs bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] h-9 rounded-xl font-bold font-display shadow-[0_0_12px_rgba(245,180,41,0.25)]">
                 Deploy First Project
               </Button>
             </div>
@@ -1054,21 +1055,21 @@ export default function ProjectsPage() {
                   key={proj.id}
                   whileHover={{ y: -4, scale: 1.01 }}
                   transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                  className={`bg-[#1A2D23]/80 border flex flex-col justify-between shadow-[0_10px_30px_rgba(0,0,0,0.25)] relative group transition-all duration-300 rounded-2xl overflow-hidden ${
+                  className={`bg-[#150F0B]/85 border flex flex-col justify-between shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)] relative group transition-all duration-300 rounded-2xl overflow-hidden backdrop-blur-xl ${
                     proj.isLocked
-                      ? "border-[#F3F0E4]/15 hover:border-[#F0C93B]/40"
-                      : "border-[#F3F0E4]/15 hover:border-[#8FC3DE]/40"
+                      ? "border-[#2E2118] hover:border-[#F5B429]/50"
+                      : "border-[#2E2118] hover:border-[#F5B429]/50"
                   }`}
                 >
                   {/* Production Screenshot Banner or Gradient abstraction */}
                   {proj.productionImages && proj.productionImages.length > 0 ? (
-                    <div className="w-full h-32 sm:h-36 relative overflow-hidden border-b border-[#F3F0E4]/15 shrink-0">
+                    <div className="w-full h-32 sm:h-36 relative overflow-hidden border-b border-[#2E2118] shrink-0">
                       <img src={proj.productionImages[0]} alt={proj.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#1A2D23] via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#150F0B] via-transparent to-transparent" />
                     </div>
                   ) : (
-                    <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-[#121F18] via-[#1A2D23] to-[#1F362A] border-b border-[#F3F0E4]/15 shrink-0 relative">
-                      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(240,201,59,0.2),rgba(0,0,0,0))]" />
+                    <div className="w-full h-20 sm:h-24 bg-gradient-to-br from-[#0A0806] via-[#150F0B] to-[#241811] border-b border-[#2E2118] shrink-0 relative">
+                      <div className="absolute inset-0 opacity-30 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(245,180,41,0.2),rgba(0,0,0,0))]" />
                     </div>
                   )}
 
@@ -1077,52 +1078,52 @@ export default function ProjectsPage() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex flex-wrap gap-1.5 min-w-0">
                           {proj.isPremium ? (
-                            <span className="text-[9px] font-bold bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Premium
                             </span>
                           ) : (
-                            <span className="text-[9px] font-bold bg-[#121F18] border border-[#F3F0E4]/20 text-[#9FAEA1] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#0A0806] border border-[#2E2118] text-[#8A8078] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Free
                             </span>
                           )}
                           {proj.isOwner && (
-                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Creator
                             </span>
                           )}
                           {!proj.isPremium && (
-                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#F5B429]/10 border border-[#F5B429]/20 text-[#FCD34D] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Unlocked
                             </span>
                           )}
                           {proj.isPremium && !proj.isLocked && !proj.isOwner && (
-                            <span className="text-[9px] font-bold bg-[#8FC3DE]/15 border border-[#8FC3DE]/30 text-[#8FC3DE] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                            <span className="text-[9px] font-bold bg-[#F5B429]/10 border border-[#F5B429]/20 text-[#FCD34D] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                               Unlocked
                             </span>
                           )}
-                          <span className="text-[9px] font-bold bg-[#121F18] border border-[#F3F0E4]/15 text-[#9FAEA1] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
+                          <span className="text-[9px] font-bold bg-[#0A0806] border border-[#2E2118] text-[#8A8078] px-2 py-0.5 rounded-lg font-mono uppercase whitespace-nowrap">
                             {proj.files?.length || 0} Files
                           </span>
                         </div>
 
-                        <span className="text-[9px] text-[#9FAEA1] font-mono shrink-0 whitespace-nowrap">
+                        <span className="text-[9px] text-[#8A8078] font-mono shrink-0 whitespace-nowrap">
                           {new Date(proj.createdAt).toLocaleDateString()}
                         </span>
                       </div>
 
                       <div className="space-y-1">
-                        <h3 className="text-sm font-bold text-[#F3F0E4] group-hover:text-[#F0C93B] transition-colors break-words font-heading">
+                        <h3 className="text-sm font-bold text-[#FAFAF8] group-hover:text-[#F5B429] transition-colors break-words font-display">
                           {proj.title}
                         </h3>
-                        <p className="text-xs text-[#9FAEA1] line-clamp-2 leading-relaxed font-light">
+                        <p className="text-xs text-[#8A8078] line-clamp-2 leading-relaxed font-light">
                           {proj.description}
                         </p>
                       </div>
                     </div>
 
-                    <div className="border-t border-[#F3F0E4]/10 pt-3.5 flex flex-wrap items-center justify-between gap-2.5">
-                      <span className="text-[10px] text-[#9FAEA1] truncate min-w-0">
-                        By <span className="font-semibold text-[#F3F0E4]">{proj.owner.name}</span>
+                    <div className="border-t border-[#2E2118] pt-3.5 flex flex-wrap items-center justify-between gap-2.5">
+                      <span className="text-[10px] text-[#8A8078] truncate min-w-0">
+                        By <span className="font-semibold text-[#FAFAF8]">{proj.owner.name}</span>
                       </span>
 
                       <div className="flex items-center gap-2 shrink-0">
@@ -1130,7 +1131,7 @@ export default function ProjectsPage() {
                           <Button
                             onClick={() => handleOpenEditModal(proj)}
                             variant="ghost"
-                            className="h-8 w-8 p-0 text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl shrink-0"
+                            className="h-8 w-8 p-0 text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#0A0806] border border-[#2E2118] rounded-xl shrink-0"
                           >
                             <Edit3 className="h-3.5 w-3.5" />
                           </Button>
@@ -1140,12 +1141,12 @@ export default function ProjectsPage() {
                           <Button
                             onClick={() => handleUnlockProject(proj.id, proj.title, proj.cost)}
                             disabled={unlockingId === proj.id}
-                            className="bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all shadow-[2px_2px_0_0_#F28B6E] disabled:opacity-40 font-heading"
+                            className="bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all shadow-[0_0_12px_rgba(245,180,41,0.25)] disabled:opacity-40 font-display cursor-pointer"
                           >
                             {unlockingId === proj.id ? (
-                              <Loader2 className="h-3 w-3 animate-spin text-[#2A2118]" />
+                              <Loader2 className="h-3 w-3 animate-spin text-[#150F0B]" />
                             ) : (
-                              <Lock className="h-3 w-3 text-[#2A2118]" />
+                              <Lock className="h-3 w-3 text-[#150F0B]" />
                             )}
                             <span className="whitespace-nowrap">Unlock ({proj.cost} Coins)</span>
                           </Button>
@@ -1155,17 +1156,17 @@ export default function ProjectsPage() {
                               onClick={() => downloadAsZip(proj)}
                               disabled={downloadingZipId === proj.id}
                               variant="ghost"
-                              className="h-8 w-8 p-0 text-[#9FAEA1] hover:text-[#8FC3DE] hover:bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl shrink-0 flex items-center justify-center transition-all"
+                              className="h-8 w-8 p-0 text-[#8A8078] hover:text-[#F5B429] hover:bg-[#0A0806] border border-[#2E2118] rounded-xl shrink-0 flex items-center justify-center transition-all cursor-pointer"
                             >
                               {downloadingZipId === proj.id ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#8FC3DE]" />
+                                <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F5B429]" />
                               ) : (
                                 <Download className="h-3.5 w-3.5" />
                               )}
                             </Button>
                             <Button
                               onClick={() => handleOpenProjectViewer(proj)}
-                              className="bg-[#121F18] border border-[#F3F0E4]/20 hover:bg-[#1F362A] text-[#F3F0E4] hover:text-[#F0C93B] font-semibold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all font-heading"
+                              className="bg-[#0A0806] border border-[#2E2118] hover:bg-[#150F0B] text-[#FAFAF8] hover:text-[#F5B429] font-semibold h-8 text-[11px] px-3.5 rounded-xl flex items-center gap-1.5 transition-all font-display cursor-pointer"
                             >
                               <Eye className="h-3.5 w-3.5" />
                               <span className="whitespace-nowrap">Browse Files</span>
@@ -1188,25 +1189,25 @@ export default function ProjectsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-2xl bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden relative max-h-[95vh] flex flex-col"
+            className="w-full max-w-2xl bg-[#150F0B] border border-[#2E2118] rounded-[2rem] shadow-[0_0_50px_rgba(245,148,29,0.2)] overflow-hidden relative max-h-[95vh] flex flex-col backdrop-blur-2xl"
           >
-            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
+            <div className="h-1 bg-gradient-to-r from-[#F7C948] to-[#F5941D] w-full shrink-0" />
 
-            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#F3F0E4]/15 bg-[#121F18] shrink-0">
+            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#2E2118] bg-[#0A0806] shrink-0">
               <div className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-[#F0C93B]" />
-                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] uppercase tracking-wider truncate font-heading">
+                <Sparkles className="h-4 w-4 text-[#F5B429]" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#FAFAF8] uppercase tracking-wider truncate font-display">
                   Publish Structured Project
                 </h3>
               </div>
-              <button onClick={() => setIsModalOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl hover:bg-[#1A2D23] transition-colors shrink-0">
+              <button onClick={() => setIsModalOpen(false)} className="text-[#8A8078] hover:text-[#FAFAF8] p-1.5 rounded-xl hover:bg-[#150F0B] transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleCreateProject} className="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scroll flex-1 min-h-0">
               {formError && (
-                <div className="p-3 bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-semibold rounded-xl flex items-center gap-2">
+                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-xl flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span className="break-words">{formError}</span>
                 </div>
@@ -1214,7 +1215,7 @@ export default function ProjectsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                  <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                     Project Title
                   </label>
                   <Input
@@ -1227,12 +1228,12 @@ export default function ProjectsPage() {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     placeholder="e.g. Portfolio Template Node Repo"
-                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 placeholder-[#9FAEA1]/50 w-full focus:border-[#F0C93B] rounded-xl"
+                    className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-10 placeholder-[#8A8078]/50 w-full focus:border-[#F5B429] rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                  <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                     Short Description
                   </label>
                   <Input
@@ -1245,13 +1246,13 @@ export default function ProjectsPage() {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Explain the purpose of this project."
-                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 placeholder-[#9FAEA1]/50 w-full focus:border-[#F0C93B] rounded-xl"
+                    className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-10 placeholder-[#8A8078]/50 w-full focus:border-[#F5B429] rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                   Repository Summary / Introduction
                 </label>
                 <textarea
@@ -1264,24 +1265,24 @@ export default function ProjectsPage() {
                   onChange={(e) => setContent(e.target.value)}
                   rows={2}
                   placeholder="General project summary, requirements, or readme highlights."
-                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 text-[#F3F0E4] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F0C93B] placeholder-[#9FAEA1]/50 custom-scroll resize-none transition-all font-sans"
+                  className="w-full bg-[#0A0806] border border-[#2E2118] text-[#FAFAF8] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F5B429] placeholder-[#8A8078]/50 custom-scroll resize-none transition-all font-sans"
                 />
               </div>
 
               {/* Upload Screenshots (Production Images) */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider block font-heading">
+                <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider block font-display">
                   Production screenshots / Demo Images
                 </label>
                 
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="border border-[#F3F0E4]/15 hover:border-[#8FC3DE]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-[#9FAEA1] hover:text-[#F3F0E4]">
+                  <label className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-[#8A8078] hover:text-[#FAFAF8]">
                     {uploadingImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-[#8FC3DE] shrink-0" />
+                      <Loader2 className="h-4 w-4 animate-spin text-[#F5B429] shrink-0" />
                     ) : (
-                      <Camera className="h-4 w-4 text-[#8FC3DE] shrink-0" />
+                      <Camera className="h-4 w-4 text-[#F5B429] shrink-0" />
                     )}
-                    <span className="text-[10px] font-bold uppercase whitespace-nowrap font-heading">Add screenshots</span>
+                    <span className="text-[10px] font-bold uppercase whitespace-nowrap font-display">Add screenshots</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -1292,12 +1293,12 @@ export default function ProjectsPage() {
                   </label>
 
                   {productionImages.map((img, idx) => (
-                    <div key={idx} className="relative group/img h-10 w-16 rounded-xl overflow-hidden border border-[#F3F0E4]/20 shrink-0">
+                    <div key={idx} className="relative group/img h-10 w-16 rounded-xl overflow-hidden border border-[#2E2118] shrink-0">
                       <img src={img} alt="Production" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeProductionImage(img, false)}
-                        className="absolute inset-0 bg-[#F28B6E]/80 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 active:opacity-100 transition-opacity duration-200"
+                        className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover/img:opacity-100 active:opacity-100 transition-opacity duration-200"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -1309,16 +1310,16 @@ export default function ProjectsPage() {
               {/* Upload Folder / Template Buttons */}
               <div className="space-y-2.5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider block font-heading">
+                  <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider block font-display">
                     Repository Files Structure ({uploadedFiles.length} / {fileLimit} Files Loaded)
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="border border-[#F3F0E4]/15 hover:border-[#F0C93B]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#F3F0E4] text-center">
-                    <Upload className="h-5 w-5 text-[#8FC3DE] mb-0.5" />
-                    <span className="text-[10px] font-bold uppercase font-heading">Upload Local Folder</span>
-                    <span className="text-[8px] text-[#9FAEA1] font-mono">Processes .gitignore first</span>
+                  <label className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#FAFAF8] text-center">
+                    <Upload className="h-5 w-5 text-[#F5B429] mb-0.5" />
+                    <span className="text-[10px] font-bold uppercase font-display">Upload Local Folder</span>
+                    <span className="text-[8px] text-[#8A8078] font-mono">Processes .gitignore first</span>
                     <input
                       type="file"
                       id="folder-upload-input"
@@ -1334,23 +1335,23 @@ export default function ProjectsPage() {
                   <button
                     type="button"
                     onClick={() => loadTemplateFiles(false)}
-                    className="border border-[#F3F0E4]/15 hover:border-[#F0C93B]/50 bg-[#121F18] hover:bg-[#1F362A] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#F3F0E4] text-center"
+                    className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#FAFAF8] text-center"
                   >
-                    <Sparkles className="h-5 w-5 text-[#F0C93B] mb-0.5" />
-                    <span className="text-[10px] font-bold uppercase font-heading">Preload Template</span>
-                    <span className="text-[8px] text-[#9FAEA1] font-mono">Instant 4-file tree</span>
+                    <Sparkles className="h-5 w-5 text-[#F5B429] mb-0.5" />
+                    <span className="text-[10px] font-bold uppercase font-display">Preload Template</span>
+                    <span className="text-[8px] text-[#8A8078] font-mono">Instant 4-file tree</span>
                   </button>
                 </div>
 
                 {/* PREVIEW TREE */}
                 {uploadedFiles.length > 0 && (
-                  <div className="border border-[#F3F0E4]/15 rounded-xl bg-[#121F18] overflow-hidden">
-                    <div className="bg-[#16261D] px-3 sm:px-4 py-2 border-b border-[#F3F0E4]/15 select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-[#9FAEA1] font-heading font-semibold uppercase tracking-wider">
+                  <div className="border border-[#2E2118] rounded-xl bg-[#0A0806] overflow-hidden">
+                    <div className="bg-[#150F0B] px-3 sm:px-4 py-2 border-b border-[#2E2118] select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-[#8A8078] font-display font-semibold uppercase tracking-wider">
                       <span>Repository Preview Tree</span>
                       <span className="hidden sm:inline">Click to preview content</span>
                     </div>
 
-                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-[#F3F0E4]/15">
+                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-[#2E2118]">
                       {/* Left: Tree */}
                       <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll select-none">
                         <div className="-ml-3.5">
@@ -1365,18 +1366,18 @@ export default function ProjectsPage() {
                       </div>
 
                       {/* Right: Code Preview */}
-                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-[#121F18] font-mono text-[10px] leading-normal text-[#F3F0E4]">
+                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-[#0A0806] font-mono text-[10px] leading-normal text-[#FAFAF8]">
                         {createPreviewFile ? (
                           <div className="space-y-2 select-text">
-                            <div className="font-semibold text-[#8FC3DE] border-b border-[#F3F0E4]/10 pb-1 select-none font-mono text-[9px] uppercase truncate">
+                            <div className="font-semibold text-[#F5B429] border-b border-[#2E2118] pb-1 select-none font-mono text-[9px] uppercase truncate">
                               {"// "}{createPreviewFile.path}
                             </div>
-                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-[#9FAEA1]">
+                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-[#8A8078]">
                               {createPreviewFile.content || "// Empty file"}
                             </pre>
                           </div>
                         ) : (
-                          <div className="h-full flex items-center justify-center italic text-[#9FAEA1] text-center px-2">
+                          <div className="h-full flex items-center justify-center italic text-[#8A8078] text-center px-2">
                             Select a file to preview
                           </div>
                         )}
@@ -1387,50 +1388,50 @@ export default function ProjectsPage() {
               </div>
 
               {/* Premium configurations */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-neutral-850/60 pt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[#2E2118] pt-4">
                 <div className="flex items-center gap-2.5">
                   <input
                     type="checkbox"
                     id="premium-toggle"
                     checked={isPremium}
                     onChange={(e) => setIsPremium(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-800 bg-neutral-950 text-cyan-500 focus:ring-0 cursor-pointer shrink-0"
+                    className="h-4 w-4 rounded border-[#2E2118] bg-[#0A0806] text-[#F5B429] focus:ring-0 cursor-pointer shrink-0 accent-[#F5B429]"
                   />
-                  <label htmlFor="premium-toggle" className="text-xs font-bold text-neutral-300 uppercase tracking-wider cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label htmlFor="premium-toggle" className="text-xs font-bold text-[#FAFAF8] uppercase tracking-wider cursor-pointer font-display">
                     Make Premium Project
                   </label>
                 </div>
 
                 {isPremium && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider whitespace-nowrap" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                    <span className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider whitespace-nowrap font-display">
                       Cost (Coins)
                     </span>
                     <Input
                       type="number"
                       value={cost}
                       onChange={(e) => setCost(e.target.value)}
-                      className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-9 w-20 text-center font-mono shrink-0"
+                      className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-9 w-20 text-center font-mono shrink-0 focus:border-[#F5B429]"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-neutral-855 pt-4 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
+              <div className="border-t border-[#2E2118] pt-4 flex flex-col-reverse sm:flex-row justify-end gap-3 shrink-0">
                 <Button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
                   variant="outline"
-                  className="h-10 text-xs border-neutral-850 hover:bg-neutral-855 font-bold w-full sm:w-auto"
+                  className="h-10 text-xs border-[#2E2118] hover:bg-[#150F0B] text-[#FAFAF8] font-bold w-full sm:w-auto font-display"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting || uploadedFiles.length === 0 || uploadedFiles.length > fileLimit}
-                  className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold h-10 px-5 disabled:opacity-40 w-full sm:w-auto"
+                  className="bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold h-10 px-5 disabled:opacity-40 w-full sm:w-auto font-display shadow-[0_0_15px_rgba(245,180,41,0.25)] cursor-pointer"
                 >
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Deploy Repository"}
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mx-auto text-[#150F0B]" /> : "Deploy Repository"}
                 </Button>
               </div>
             </form>
@@ -1444,25 +1445,25 @@ export default function ProjectsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="w-full max-w-2xl bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] shadow-[0_25px_60px_rgba(0,0,0,0.5)] overflow-hidden relative max-h-[95vh] flex flex-col"
+            className="w-full max-w-2xl bg-[#150F0B] border border-[#2E2118] rounded-[2rem] shadow-[0_0_50px_rgba(245,148,29,0.2)] overflow-hidden relative max-h-[95vh] flex flex-col backdrop-blur-2xl"
           >
-            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
+            <div className="h-1 bg-gradient-to-r from-[#F7C948] to-[#F5941D] w-full shrink-0" />
 
-            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#F3F0E4]/15 bg-[#121F18] shrink-0">
+            <div className="flex items-center justify-between gap-3 px-6 py-4 border-b border-[#2E2118] bg-[#0A0806] shrink-0">
               <div className="flex items-center gap-2">
-                <Edit3 className="h-4 w-4 text-[#8FC3DE]" />
-                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] uppercase tracking-wider truncate font-heading">
+                <Edit3 className="h-4 w-4 text-[#F5B429]" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#FAFAF8] uppercase tracking-wider truncate font-display">
                   Edit Repository Details
                 </h3>
               </div>
-              <button onClick={() => setEditingProject(null)} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl hover:bg-[#1A2D23] transition-colors shrink-0">
+              <button onClick={() => setEditingProject(null)} className="text-[#8A8078] hover:text-[#FAFAF8] p-1.5 rounded-xl hover:bg-[#150F0B] transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             <form onSubmit={handleUpdateProject} className="p-4 sm:p-6 space-y-4 overflow-y-auto custom-scroll flex-1 min-h-0">
               {editFormError && (
-                <div className="p-3 bg-[#F28B6E]/10 border border-[#F28B6E]/30 text-[#F28B6E] text-xs font-semibold rounded-xl flex items-center gap-2">
+                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold rounded-xl flex items-center gap-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span className="break-words">{editFormError}</span>
                 </div>
@@ -1470,7 +1471,7 @@ export default function ProjectsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                  <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                     Project Title
                   </label>
                   <Input
@@ -1483,12 +1484,12 @@ export default function ProjectsPage() {
                     value={editTitle}
                     onChange={(e) => setEditTitle(e.target.value)}
                     placeholder="e.g. Portfolio Template Node Repo"
-                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 w-full focus:border-[#F0C93B] rounded-xl"
+                    className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-10 w-full focus:border-[#F5B429] rounded-xl"
                   />
                 </div>
 
                 <div className="space-y-1.5 min-w-0">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                  <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                     Short Description
                   </label>
                   <Input
@@ -1501,13 +1502,13 @@ export default function ProjectsPage() {
                     value={editDescription}
                     onChange={(e) => setEditDescription(e.target.value)}
                     placeholder="Explain the purpose of this project."
-                    className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-10 w-full focus:border-[#F0C93B] rounded-xl"
+                    className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-10 w-full focus:border-[#F5B429] rounded-xl"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-heading">
+                <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider font-display">
                   Repository Summary / Introduction
                 </label>
                 <textarea
@@ -1520,24 +1521,24 @@ export default function ProjectsPage() {
                   onChange={(e) => setEditContent(e.target.value)}
                   rows={2}
                   placeholder="General project summary, requirements, or readme highlights."
-                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 text-[#F3F0E4] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F0C93B] resize-none transition-all font-sans"
+                  className="w-full bg-[#0A0806] border border-[#2E2118] text-[#FAFAF8] text-xs p-3 rounded-xl focus:outline-none focus:border-[#F5B429] resize-none transition-all font-sans"
                 />
               </div>
 
               {/* Edit screenshots */}
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider block font-display">
                   Production Screenshots ({editImages.length} Screenshots Loaded)
                 </label>
 
                 <div className="flex flex-wrap items-center gap-3">
-                  <label className="border border-neutral-850 hover:border-neutral-750 bg-neutral-955 hover:bg-neutral-900 rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-neutral-450 hover:text-neutral-200">
+                  <label className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl px-4 py-3 flex items-center gap-2 cursor-pointer transition-all text-[#8A8078] hover:text-[#FAFAF8]">
                     {uploadingImage ? (
-                      <Loader2 className="h-4 w-4 animate-spin text-cyan-400 shrink-0" />
+                      <Loader2 className="h-4 w-4 animate-spin text-[#F5B429] shrink-0" />
                     ) : (
-                      <Camera className="h-4 w-4 text-cyan-500 shrink-0" />
+                      <Camera className="h-4 w-4 text-[#F5B429] shrink-0" />
                     )}
-                    <span className="text-[10px] font-bold font-space uppercase whitespace-nowrap">Add screenshots</span>
+                    <span className="text-[10px] font-bold font-display uppercase whitespace-nowrap">Add screenshots</span>
                     <input
                       type="file"
                       accept="image/*"
@@ -1548,12 +1549,12 @@ export default function ProjectsPage() {
                   </label>
 
                   {editImages.map((img, idx) => (
-                    <div key={idx} className="relative group/editimg h-10 w-16 rounded-lg overflow-hidden border border-neutral-850 shrink-0">
+                    <div key={idx} className="relative group/editimg h-10 w-16 rounded-lg overflow-hidden border border-[#2E2118] shrink-0">
                       <img src={img} alt="Edit Production" className="h-full w-full object-cover" />
                       <button
                         type="button"
                         onClick={() => removeProductionImage(img, true)}
-                        className="absolute inset-0 bg-red-650/80 text-white flex items-center justify-center opacity-0 group-hover/editimg:opacity-100 active:opacity-100 transition-opacity duration-200"
+                        className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover/editimg:opacity-100 active:opacity-100 transition-opacity duration-200"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -1564,15 +1565,15 @@ export default function ProjectsPage() {
 
               {/* Files structure edit */}
               <div className="space-y-2.5">
-                <label className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <label className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider block font-display">
                   Update Files List ({editFiles.length} / {fileLimit} Files Loaded)
                 </label>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <label className="border border-neutral-850 hover:border-neutral-700 bg-neutral-950 hover:bg-neutral-900 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-neutral-350 text-center">
-                    <Upload className="h-5 w-5 text-neutral-500 mb-0.5" />
-                    <span className="text-[10px] font-bold font-space uppercase">Replace Folder</span>
-                    <span className="text-[8px] text-neutral-600 font-mono">Processes .gitignore first</span>
+                  <label className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#FAFAF8] text-center">
+                    <Upload className="h-5 w-5 text-[#F5B429] mb-0.5" />
+                    <span className="text-[10px] font-bold font-display uppercase">Replace Folder</span>
+                    <span className="text-[8px] text-[#8A8078] font-mono">Processes .gitignore first</span>
                     <input
                       type="file"
                       id="folder-edit-input"
@@ -1588,23 +1589,23 @@ export default function ProjectsPage() {
                   <button
                     type="button"
                     onClick={() => loadTemplateFiles(true)}
-                    className="border border-neutral-850 hover:border-neutral-700 bg-neutral-955 hover:bg-neutral-900 rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-neutral-355 text-center"
+                    className="border border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] hover:bg-[#150F0B] rounded-xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all gap-1 text-[#FAFAF8] text-center"
                   >
-                    <Sparkles className="h-5 w-5 text-cyan-400 mb-0.5" />
-                    <span className="text-[10px] font-bold font-space uppercase">Preload Template</span>
-                    <span className="text-[8px] text-neutral-600 font-mono">Instant 4-file tree</span>
+                    <Sparkles className="h-5 w-5 text-[#F5B429] mb-0.5" />
+                    <span className="text-[10px] font-bold font-display uppercase">Preload Template</span>
+                    <span className="text-[8px] text-[#8A8078] font-mono">Instant 4-file tree</span>
                   </button>
                 </div>
 
                 {/* EDIT PREVIEW TREE */}
                 {editFiles.length > 0 && (
-                  <div className="border border-neutral-850 rounded-xl bg-neutral-955 overflow-hidden">
-                    <div className="bg-neutral-900 px-3 sm:px-4 py-2 border-b border-neutral-850 select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-neutral-400 font-space font-semibold uppercase tracking-wider">
+                  <div className="border border-[#2E2118] rounded-xl bg-[#0A0806] overflow-hidden">
+                    <div className="bg-[#150F0B] px-3 sm:px-4 py-2 border-b border-[#2E2118] select-none flex flex-wrap items-center justify-between gap-1 text-[10px] text-[#8A8078] font-display font-semibold uppercase tracking-wider">
                       <span>Preview Tree structure</span>
                       <span className="hidden sm:inline">Click to preview content</span>
                     </div>
 
-                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-neutral-850">
+                    <div className="flex flex-col md:flex-row h-64 md:h-48 divide-y md:divide-y-0 md:divide-x divide-[#2E2118]">
                       <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll select-none">
                         <div className="-ml-3.5">
                           <FileTree
@@ -1617,18 +1618,18 @@ export default function ProjectsPage() {
                         </div>
                       </div>
 
-                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-neutral-950 font-mono text-[10px] leading-normal text-neutral-450">
+                      <div className="w-full md:w-1/2 h-1/2 md:h-auto overflow-y-auto p-3 custom-scroll bg-[#0A0806] font-mono text-[10px] leading-normal text-[#FAFAF8]">
                         {editPreviewFile ? (
                           <div className="space-y-2 select-text">
-                            <div className="font-semibold text-neutral-350 border-b border-neutral-900 pb-1 select-none font-mono text-[9px] uppercase truncate">
+                            <div className="font-semibold text-[#F5B429] border-b border-[#2E2118] pb-1 select-none font-mono text-[9px] uppercase truncate">
                               {"// "}{editPreviewFile.path}
                             </div>
-                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-neutral-400">
+                            <pre className="whitespace-pre-wrap break-words font-mono text-[9px] text-[#8A8078]">
                               {editPreviewFile.content || "// Empty file"}
                             </pre>
                           </div>
                         ) : (
-                          <div className="h-full flex items-center justify-center italic text-neutral-600 text-center px-2">
+                          <div className="h-full flex items-center justify-center italic text-[#8A8078] text-center px-2">
                             Select a file to preview
                           </div>
                         )}
@@ -1639,42 +1640,41 @@ export default function ProjectsPage() {
               </div>
 
               {/* Premium toggles */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-neutral-850/60 pt-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-[#2E2118] pt-4">
                 <div className="flex items-center gap-2.5">
                   <input
                     type="checkbox"
                     id="edit-premium-toggle"
                     checked={editIsPremium}
                     onChange={(e) => setEditIsPremium(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-800 bg-neutral-950 text-cyan-500 focus:ring-0 cursor-pointer shrink-0"
+                    className="h-4 w-4 rounded border-[#2E2118] bg-[#0A0806] text-[#F5B429] focus:ring-0 cursor-pointer shrink-0 accent-[#F5B429]"
                   />
-                  <label htmlFor="edit-premium-toggle" className="text-xs font-bold text-neutral-350 uppercase tracking-wider cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <label htmlFor="edit-premium-toggle" className="text-xs font-bold text-[#FAFAF8] uppercase tracking-wider cursor-pointer font-display">
                     Make Premium Project
                   </label>
                 </div>
 
                 {editIsPremium && (
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider whitespace-nowrap" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                    <span className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider whitespace-nowrap font-display">
                       Cost (Coins)
                     </span>
                     <Input
                       type="number"
                       value={editCost}
                       onChange={(e) => setEditCost(e.target.value)}
-                      className="bg-neutral-950 border-neutral-850 text-neutral-100 text-xs h-9 w-20 text-center font-mono shrink-0"
+                      className="bg-[#0A0806] border-[#2E2118] text-[#FAFAF8] text-xs h-9 w-20 text-center font-mono shrink-0 focus:border-[#F5B429]"
                     />
                   </div>
                 )}
               </div>
 
-              <div className="border-t border-neutral-855 pt-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0">
+              <div className="border-t border-[#2E2118] pt-4 flex flex-col sm:flex-row justify-between sm:items-center gap-3 shrink-0">
                 <Button
                   type="button"
                   onClick={() => handleDeleteProject(editingProject.id)}
                   disabled={isSavingEdit}
-                  className="bg-red-650 hover:bg-red-600 text-white font-bold h-10 px-4 rounded-xl flex items-center justify-center gap-1.5 order-2 sm:order-1 w-full sm:w-auto"
-                  style={{ fontFamily: "var(--font-space-grotesk)" }}
+                  className="bg-red-600 hover:bg-red-500 text-white font-bold h-10 px-4 rounded-xl flex items-center justify-center gap-1.5 order-2 sm:order-1 w-full sm:w-auto font-display cursor-pointer"
                 >
                   <Trash2 className="h-4 w-4" />
                   <span>Delete Project</span>
@@ -1685,16 +1685,16 @@ export default function ProjectsPage() {
                     type="button"
                     onClick={() => setEditingProject(null)}
                     variant="outline"
-                    className="h-10 text-xs border-neutral-850 hover:bg-neutral-855 font-bold w-full sm:w-auto"
+                    className="h-10 text-xs border-[#2E2118] hover:bg-[#150F0B] text-[#FAFAF8] font-bold w-full sm:w-auto font-display"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     disabled={isSavingEdit || editFiles.length === 0 || editFiles.length > fileLimit}
-                    className="bg-cyan-500 hover:bg-cyan-400 text-neutral-950 font-bold h-10 px-5 disabled:opacity-40 w-full sm:w-auto"
+                    className="bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold h-10 px-5 disabled:opacity-40 w-full sm:w-auto font-display shadow-[0_0_15px_rgba(245,180,41,0.25)] cursor-pointer"
                   >
-                    {isSavingEdit ? <Loader2 className="h-4 w-4 animate-spin mx-auto" /> : "Save Changes"}
+                    {isSavingEdit ? <Loader2 className="h-4 w-4 animate-spin mx-auto text-[#150F0B]" /> : "Save Changes"}
                   </Button>
                 </div>
               </div>
@@ -1706,57 +1706,57 @@ export default function ProjectsPage() {
       {/* INLINE GITHUB STYLE REPOSITORY IDE WORKSPACE */}
       {viewingProject && (
         <div className="p-4 sm:p-8 max-w-6xl w-full mx-auto flex-1 select-none z-20 relative">
-          <div className="w-full bg-[#1A2D23]/95 border border-[#F3F0E4]/20 rounded-[2.5rem] p-2.5 backdrop-blur-3xl shadow-[0_25px_60px_rgba(0,0,0,0.6)] overflow-hidden relative flex flex-col min-h-[700px] h-[80vh]">
-            <div className="h-1 bg-gradient-to-r from-[#F0C93B] via-[#8FC3DE] to-[#C9A9E0] w-full shrink-0" />
+          <div className="w-full bg-[#150F0B]/95 border border-[#2E2118] rounded-[2.5rem] p-2.5 backdrop-blur-3xl shadow-[0_0_50px_rgba(245,148,29,0.2)] overflow-hidden relative flex flex-col min-h-[700px] h-[80vh]">
+            <div className="h-1 bg-gradient-to-r from-[#F7C948] to-[#F5941D] w-full shrink-0" />
 
             {/* GitHub Header */}
-            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-[#F3F0E4]/15 shrink-0 bg-[#121F18]/90">
+            <div className="flex items-center justify-between gap-2 px-4 sm:px-6 py-4 border-b border-[#2E2118] shrink-0 bg-[#0A0806]/90">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                <Button onClick={closeProjectViewer} variant="ghost" className="h-8 text-xs font-mono text-[#F0C93B] hover:text-[#F0C93B]/80 font-bold gap-1 px-3 rounded-full border border-[#F0C93B]/30 bg-[#F0C93B]/10">
+                <Button onClick={closeProjectViewer} variant="ghost" className="h-8 text-xs font-mono text-[#F5B429] hover:text-[#FCD34D] font-bold gap-1 px-3 rounded-full border border-[#F5B429]/30 bg-[#F5B429]/10 cursor-pointer">
                   <ChevronLeft className="size-4" /> Back
                 </Button>
-                <BookOpen className="h-4 w-4 text-[#8FC3DE] shrink-0 ml-1" />
-                <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] tracking-tight truncate font-heading">
+                <BookOpen className="h-4 w-4 text-[#F5B429] shrink-0 ml-1" />
+                <h3 className="text-xs sm:text-sm font-bold text-[#FAFAF8] tracking-tight truncate font-display">
                   {viewingProject.owner.name} / {viewingProject.title.toLowerCase().replace(/\s+/g, "-")}
                 </h3>
                 {viewingProject.isPremium ? (
-                  <span className="text-[8px] bg-[#F0C93B]/15 border border-[#F0C93B]/30 text-[#F0C93B] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Premium
                   </span>
                 ) : (
-                  <span className="text-[8px] bg-[#121F18] border border-[#F3F0E4]/20 text-[#9FAEA1] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
+                  <span className="text-[8px] bg-[#0A0806] border border-[#2E2118] text-[#8A8078] px-2 py-0.5 rounded-full font-mono font-bold uppercase shrink-0">
                     Free
                   </span>
                 )}
               </div>
 
-              <button onClick={closeProjectViewer} className="text-[#9FAEA1] hover:text-[#F3F0E4] p-1.5 rounded-xl transition-colors shrink-0 cursor-pointer">
+              <button onClick={closeProjectViewer} className="text-[#8A8078] hover:text-[#FAFAF8] p-1.5 rounded-xl transition-colors shrink-0 cursor-pointer">
                 <X className="h-4 w-4" />
               </button>
             </div>
 
             {/* GitHub Description Panel */}
-            <div className="px-4 sm:px-6 py-3.5 bg-[#121F18]/50 border-b border-[#F3F0E4]/15 shrink-0 text-xs text-[#9FAEA1]">
-              <p className="font-medium break-words leading-relaxed text-[#F3F0E4]">{viewingProject.description}</p>
-              <p className="text-[10px] text-[#9FAEA1]/80 mt-1 font-mono">
+            <div className="px-4 sm:px-6 py-3.5 bg-[#0A0806]/60 border-b border-[#2E2118] shrink-0 text-xs text-[#8A8078]">
+              <p className="font-medium break-words leading-relaxed text-[#FAFAF8]">{viewingProject.description}</p>
+              <p className="text-[10px] text-[#8A8078] mt-1 font-mono">
                 Project deployed: {new Date(viewingProject.createdAt).toLocaleString()}
               </p>
             </div>
 
             {/* Git Explorer Layout - RESPONSIVE TABBING ON MOBILE */}
-            <div className="flex flex-1 min-h-0 divide-x divide-[#F3F0E4]/15 bg-[#121F18]/60 relative">
+            <div className="flex flex-1 min-h-0 divide-x divide-[#2E2118] bg-[#0A0806]/60 relative">
               {/* Left Side: Folder Tree Explorer (Hidden on mobile if viewing code) */}
               <div className={`w-full md:w-64 shrink-0 overflow-y-auto p-4 custom-scroll space-y-3 select-none ${mobileTab === "files" ? "block" : "hidden md:block"}`}>
-                <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-2">
+                <div className="flex items-center justify-between border-b border-[#2E2118] pb-2">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-wider font-heading">
+                    <span className="text-[10px] font-bold text-[#F5B429] uppercase tracking-wider font-display">
                       Files Explorer
                     </span>
                     {viewingProject.isOwner && (
                       isPremiumUser ? (
                         <button
                           onClick={handleCreateNewFile}
-                          className="text-cyan-400 hover:text-cyan-300 transition-colors p-0.5 rounded hover:bg-neutral-800 shrink-0 cursor-pointer"
+                          className="text-[#F5B429] hover:text-[#FCD34D] transition-colors p-0.5 rounded hover:bg-[#150F0B] shrink-0 cursor-pointer"
                           title="Create New File"
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -1766,7 +1766,7 @@ export default function ProjectsPage() {
                           onClick={() => {
                             alert("Upgrade to Premium to edit, create, and delete files directly in the browser!");
                           }}
-                          className="text-yellow-500/70 hover:text-yellow-400 transition-colors p-0.5 rounded hover:bg-neutral-800 shrink-0 cursor-pointer"
+                          className="text-[#F5B429]/70 hover:text-[#F5B429] transition-colors p-0.5 rounded hover:bg-[#150F0B] shrink-0 cursor-pointer"
                           title="Premium Feature: Create New File"
                         >
                           <Lock className="h-3 w-3" />
@@ -1774,7 +1774,7 @@ export default function ProjectsPage() {
                       )
                     )}
                   </div>
-                  <span className="text-[9px] text-neutral-600 font-mono">
+                  <span className="text-[9px] text-[#8A8078] font-mono">
                     {viewingProject.files?.length || 0} items
                   </span>
                 </div>
@@ -1790,30 +1790,30 @@ export default function ProjectsPage() {
                     />
                   </div>
                 ) : (
-                  <p className="text-xs text-neutral-600 italic text-center py-6">
+                  <p className="text-xs text-[#8A8078] italic text-center py-6">
                     No files found in this repository.
                   </p>
                 )}
               </div>
 
               {/* Right Side: Code Viewer & Readme Preview (Hidden on mobile if viewing tree) */}
-              <div className={`flex-1 flex flex-col min-w-0 bg-neutral-950 ${mobileTab === "code" ? "flex" : "hidden md:flex"}`}>
+              <div className={`flex-1 flex flex-col min-w-0 bg-[#0A0806] ${mobileTab === "code" ? "flex" : "hidden md:flex"}`}>
                 {viewingSelectedFile ? (
                   <div className="flex-1 flex flex-col min-h-0">
                     {/* File Header */}
-                    <div className="h-10 px-3 sm:px-4 border-b border-neutral-850 bg-neutral-900/60 flex items-center justify-between gap-2 shrink-0 select-none">
+                    <div className="h-10 px-3 sm:px-4 border-b border-[#2E2118] bg-[#150F0B]/80 flex items-center justify-between gap-2 shrink-0 select-none">
                       <div className="flex items-center min-w-0">
                         {/* Mobile Back Button */}
                         <Button
                           onClick={() => setMobileTab("files")}
                           variant="ghost"
-                          className="md:hidden h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors mr-2 flex items-center gap-1.5 rounded-md shrink-0"
+                          className="md:hidden h-7 px-2 hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8] transition-colors mr-2 flex items-center gap-1.5 rounded-md shrink-0"
                         >
                           <ChevronLeft className="h-4 w-4" />
-                          <span className="text-[10px] font-bold font-space uppercase">Tree</span>
+                          <span className="text-[10px] font-bold font-display uppercase">Tree</span>
                         </Button>
 
-                        <span className="text-xs font-mono font-semibold text-neutral-300 truncate">
+                        <span className="text-xs font-mono font-semibold text-[#FAFAF8] truncate">
                           {viewingSelectedFile.path}
                         </span>
                       </div>
@@ -1821,19 +1821,19 @@ export default function ProjectsPage() {
                         {copiedFile ? (
                           <Button
                             variant="ghost"
-                            className="h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors gap-1 rounded-md cursor-pointer"
+                            className="h-7 px-2 hover:bg-[#150F0B] text-emerald-400 transition-colors gap-1 rounded-md cursor-pointer"
                           >
-                            <Check className="h-3.5 w-3.5 text-green-400" />
-                            <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Copied</span>
+                            <Check className="h-3.5 w-3.5" />
+                            <span className="text-[10px] font-bold uppercase font-display hidden sm:inline">Copied</span>
                           </Button>
                         ) : (
                           <Button
                             onClick={handleCopyFileContent}
                             variant="ghost"
-                            className="h-7 px-2 hover:bg-neutral-800 text-neutral-450 hover:text-neutral-200 transition-colors gap-1 rounded-md cursor-pointer"
+                            className="h-7 px-2 hover:bg-[#150F0B] text-[#8A8078] hover:text-[#FAFAF8] transition-colors gap-1 rounded-md cursor-pointer"
                           >
                             <Copy className="h-3.5 w-3.5" />
-                            <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Copy</span>
+                            <span className="text-[10px] font-bold uppercase font-display hidden sm:inline">Copy</span>
                           </Button>
                         )}
 
@@ -1845,14 +1845,14 @@ export default function ProjectsPage() {
                                   onClick={handleSaveFileContent}
                                   disabled={isSavingCodeFile}
                                   variant="ghost"
-                                  className="h-7 px-2 hover:bg-neutral-800 text-green-400 hover:text-green-300 transition-colors gap-1 rounded-md font-bold cursor-pointer"
+                                  className="h-7 px-2 hover:bg-[#150F0B] text-emerald-400 hover:text-emerald-300 transition-colors gap-1 rounded-md font-bold cursor-pointer"
                                 >
                                   {isSavingCodeFile ? (
                                     <Loader2 className="h-3.5 w-3.5 animate-spin" />
                                   ) : (
                                     <Check className="h-3.5 w-3.5" />
                                   )}
-                                  <span className="text-[10px] font-bold uppercase font-space">Save</span>
+                                  <span className="text-[10px] font-bold uppercase font-display">Save</span>
                                 </Button>
                                 <Button
                                   onClick={() => {
@@ -1861,10 +1861,10 @@ export default function ProjectsPage() {
                                   }}
                                   disabled={isSavingCodeFile}
                                   variant="ghost"
-                                  className="h-7 px-2 hover:bg-neutral-800 text-red-400 hover:text-red-300 transition-colors gap-1 rounded-md cursor-pointer"
+                                  className="h-7 px-2 hover:bg-[#150F0B] text-red-400 hover:text-red-300 transition-colors gap-1 rounded-md cursor-pointer"
                                 >
                                   <X className="h-3.5 w-3.5" />
-                                  <span className="text-[10px] font-bold uppercase font-space">Cancel</span>
+                                  <span className="text-[10px] font-bold uppercase font-display">Cancel</span>
                                 </Button>
                               </>
                             ) : (
@@ -1875,18 +1875,18 @@ export default function ProjectsPage() {
                                     setIsEditingCodeFile(true);
                                   }}
                                   variant="ghost"
-                                  className="h-7 px-2 hover:bg-neutral-800 text-cyan-400 hover:text-cyan-300 transition-colors gap-1 rounded-md cursor-pointer"
+                                  className="h-7 px-2 hover:bg-[#150F0B] text-[#F5B429] hover:text-[#FCD34D] transition-colors gap-1 rounded-md cursor-pointer"
                                 >
                                   <Edit3 className="h-3.5 w-3.5" />
-                                  <span className="text-[10px] font-bold uppercase font-space">Edit</span>
+                                  <span className="text-[10px] font-bold uppercase font-display">Edit</span>
                                 </Button>
                                 <Button
                                   onClick={handleDeleteFile}
                                   variant="ghost"
-                                  className="h-7 px-2 hover:bg-neutral-800 text-red-500 hover:text-red-400 transition-colors gap-1 rounded-md cursor-pointer"
+                                  className="h-7 px-2 hover:bg-[#150F0B] text-red-400 hover:text-red-300 transition-colors gap-1 rounded-md cursor-pointer"
                                 >
                                   <Trash2 className="h-3.5 w-3.5" />
-                                  <span className="text-[10px] font-bold uppercase font-space hidden sm:inline">Delete</span>
+                                  <span className="text-[10px] font-bold uppercase font-display hidden sm:inline">Delete</span>
                                 </Button>
                               </>
                             )
@@ -1896,10 +1896,10 @@ export default function ProjectsPage() {
                                 alert("Upgrade to Premium to edit, create, and delete files directly in the browser!");
                               }}
                               variant="ghost"
-                              className="h-7 px-2 hover:bg-neutral-800 text-yellow-500 hover:text-yellow-400 transition-colors gap-1 rounded-md opacity-70 cursor-pointer"
+                              className="h-7 px-2 hover:bg-[#150F0B] text-[#F5B429] hover:text-[#FCD34D] transition-colors gap-1 rounded-md opacity-70 cursor-pointer"
                             >
                               <Lock className="h-3.5 w-3.5" />
-                              <span className="text-[10px] font-bold uppercase font-space">Edit File</span>
+                              <span className="text-[10px] font-bold uppercase font-display">Edit File</span>
                             </Button>
                           )
                         )}
@@ -1907,9 +1907,9 @@ export default function ProjectsPage() {
                     </div>
 
                     {/* Code Code Block */}
-                    <div className="flex-1 overflow-auto custom-scroll p-3 sm:p-4 font-mono text-xs leading-relaxed text-neutral-300 select-text flex">
+                    <div className="flex-1 overflow-auto custom-scroll p-3 sm:p-4 font-mono text-xs leading-relaxed text-[#FAFAF8] select-text flex">
                       {/* Line Numbers */}
-                      <div className="select-none text-neutral-700 text-right pr-3 sm:pr-4 border-r border-neutral-850 text-[11px] font-mono leading-relaxed mr-3 sm:mr-4 shrink-0">
+                      <div className="select-none text-[#8A8078] text-right pr-3 sm:pr-4 border-r border-[#2E2118] text-[11px] font-mono leading-relaxed mr-3 sm:mr-4 shrink-0">
                         {(isEditingCodeFile ? editedCodeContent : viewingSelectedFile.content).split("\n").map((_, i) => (
                           <div key={i}>{i + 1}</div>
                         ))}
@@ -1920,7 +1920,7 @@ export default function ProjectsPage() {
                         <textarea
                           value={editedCodeContent}
                           onChange={(e) => setEditedCodeContent(e.target.value)}
-                          className="flex-1 bg-transparent text-neutral-300 font-mono text-[11px] leading-relaxed resize-none focus:outline-none overflow-x-auto whitespace-pre outline-none"
+                          className="flex-1 bg-transparent text-[#FAFAF8] font-mono text-[11px] leading-relaxed resize-none focus:outline-none overflow-x-auto whitespace-pre outline-none"
                           style={{ fontFamily: "var(--font-jetbrains-mono)", tabSize: 2 }}
                           onKeyDown={(e) => {
                             if (e.key === "Tab") {
@@ -1946,8 +1946,8 @@ export default function ProjectsPage() {
                   </div>
                 ) : (
                   <div className="flex-1 flex flex-col items-center justify-center p-6 text-center select-none">
-                    <File className="h-8 w-8 text-neutral-700 mb-2 opacity-50" />
-                    <p className="text-xs text-neutral-500 italic">Select a file from the explorer tree to view content.</p>
+                    <File className="h-8 w-8 text-[#8A8078] mb-2 opacity-50" />
+                    <p className="text-xs text-[#8A8078] italic">Select a file from the explorer tree to view content.</p>
                   </div>
                 )}
               </div>
@@ -1957,16 +1957,16 @@ export default function ProjectsPage() {
             {viewingProject.productionImages &&
               viewingProject.productionImages.length > 0 &&
               (mobileTab === "files" || viewingSelectedFile === null) && (
-                <div className="border-t border-neutral-850 bg-neutral-900/40 p-3 sm:p-4 shrink-0 max-h-[120px] sm:max-h-[140px] overflow-y-auto custom-scroll">
-                  <div className="flex items-center gap-1.5 border-b border-neutral-850 pb-2 mb-2 select-none">
-                    <ImageIcon className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider font-space">
+                <div className="border-t border-[#2E2118] bg-[#0A0806]/80 p-3 sm:p-4 shrink-0 max-h-[120px] sm:max-h-[140px] overflow-y-auto custom-scroll">
+                  <div className="flex items-center gap-1.5 border-b border-[#2E2118] pb-2 mb-2 select-none">
+                    <ImageIcon className="h-3.5 w-3.5 text-[#F5B429] shrink-0" />
+                    <span className="text-[10px] font-bold text-[#FAFAF8] uppercase tracking-wider font-display">
                       Production Screenshots
                     </span>
                   </div>
                   <div className="flex items-center gap-3 overflow-x-auto py-1 custom-scroll">
                     {viewingProject.productionImages.map((img, idx) => (
-                      <a key={idx} href={img} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg overflow-hidden border border-neutral-800 hover:border-cyan-500/50 transition-colors">
+                      <a key={idx} href={img} target="_blank" rel="noreferrer" className="shrink-0 rounded-lg overflow-hidden border border-[#2E2118] hover:border-[#F5B429] transition-colors">
                         <img src={img} alt={`Production demo screenshot ${idx + 1}`} className="h-14 sm:h-16 w-auto object-cover rounded-lg" />
                       </a>
                     ))}
@@ -1978,30 +1978,30 @@ export default function ProjectsPage() {
             {viewingProject.files &&
               (mobileTab === "files" || viewingSelectedFile === null) &&
               viewingProject.files.some((f) => f.path.toLowerCase() === "readme.md") && (
-                <div className="border-t border-neutral-850 bg-neutral-900/40 p-3 sm:p-4 shrink-0 max-h-[120px] sm:max-h-[150px] overflow-y-auto custom-scroll">
-                  <div className="flex items-center gap-1.5 border-b border-neutral-850 pb-2 mb-2 select-none">
-                    <BookOpen className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
-                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider font-space">
+                <div className="border-t border-[#2E2118] bg-[#0A0806]/80 p-3 sm:p-4 shrink-0 max-h-[120px] sm:max-h-[150px] overflow-y-auto custom-scroll">
+                  <div className="flex items-center gap-1.5 border-b border-[#2E2118] pb-2 mb-2 select-none">
+                    <BookOpen className="h-3.5 w-3.5 text-[#F5B429] shrink-0" />
+                    <span className="text-[10px] font-bold text-[#FAFAF8] uppercase tracking-wider font-display">
                       README.md Preview
                     </span>
                   </div>
-                  <pre className="text-xs font-mono text-neutral-400 whitespace-pre-wrap break-words select-text leading-relaxed">
+                  <pre className="text-xs font-mono text-[#8A8078] whitespace-pre-wrap break-words select-text leading-relaxed">
                     {viewingProject.files.find((f) => f.path.toLowerCase() === "readme.md")?.content}
                   </pre>
                 </div>
               )}
 
             {/* Footer */}
-            <div className="px-4 sm:px-6 py-3 border-t border-neutral-850 shrink-0 bg-neutral-900 flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between sm:items-center text-neutral-500 text-[9px] uppercase font-semibold font-space">
+            <div className="px-4 sm:px-6 py-3 border-t border-[#2E2118] shrink-0 bg-[#0A0806] flex flex-col sm:flex-row gap-2 sm:gap-0 justify-between sm:items-center text-[#8A8078] text-[9px] uppercase font-semibold font-display">
               <span className="truncate">Owner: {viewingProject.owner.name} ({viewingProject.owner.email})</span>
               <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
                 <Button
                   onClick={() => downloadAsZip(viewingProject)}
                   disabled={downloadingZipId === viewingProject.id}
-                  className="bg-neutral-950 border border-neutral-855 hover:bg-neutral-800 text-cyan-400 font-bold h-8 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                  className="bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold h-8 px-4 rounded-xl text-xs flex items-center justify-center gap-1.5 w-full sm:w-auto font-display shadow-[0_0_12px_rgba(245,180,41,0.2)] cursor-pointer"
                 >
                   {downloadingZipId === viewingProject.id ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin text-cyan-400" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-[#150F0B]" />
                   ) : (
                     <Download className="h-3.5 w-3.5" />
                   )}
@@ -2009,7 +2009,7 @@ export default function ProjectsPage() {
                 </Button>
                 <Button
                   onClick={closeProjectViewer}
-                  className="bg-neutral-950 border border-neutral-850 hover:bg-neutral-800 text-neutral-300 font-bold h-8 px-4 rounded-xl text-xs w-full sm:w-auto cursor-pointer"
+                  className="bg-[#150F0B] border border-[#2E2118] hover:bg-[#241811] text-[#FAFAF8] font-bold h-8 px-4 rounded-xl text-xs w-full sm:w-auto cursor-pointer font-display"
                 >
                   Close Repository
                 </Button>

@@ -411,7 +411,7 @@ export function ProfileClient({
                             <img src={post.mediaUrl} alt="Post Attachment" className="object-cover w-full h-full" />
                           )
                         ) : (
-                          <div className="bg-gradient-to-br from-indigo-950/30 via-neutral-900 to-cyan-950/30 p-4 flex items-center justify-center text-center text-[10px] text-neutral-450 italic w-full h-full line-clamp-4 font-mono select-none">
+                          <div className="bg-gradient-to-br from-[#150F0B] via-[#0A0806] to-[#241811] p-4 flex items-center justify-center text-center text-[10px] text-[#8A8078] italic w-full h-full line-clamp-4 font-mono select-none">
                             {post.content}
                           </div>
                         )}

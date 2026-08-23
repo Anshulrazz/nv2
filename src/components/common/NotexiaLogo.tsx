@@ -17,7 +17,7 @@ export function NotexiaLogo({
 
   return (
     <div className={`inline-flex items-center gap-2.5 select-none ${className}`}>
-      {/* SVG Emblem: Geometric Shield N with Glowing Gold Chalk Dot */}
+      {/* SVG Emblem: Geometric Shield N with Glowing Gold Accent */}
       <svg
         width={iconSize}
         height={iconSize}
@@ -26,38 +26,45 @@ export function NotexiaLogo({
         xmlns="http://www.w3.org/2000/svg"
         className="shrink-0 transition-transform duration-300 hover:scale-105"
       >
-        <rect width="40" height="40" rx="10" fill={theme === "light" ? "#1B2A4A" : "#121F18"} />
-        <rect x="0.5" y="0.5" width="39" height="39" rx="9.5" stroke="#F0C93B" strokeOpacity="0.3" />
+        <rect width="40" height="40" rx="10" fill="#150F0B" />
+        <rect x="0.5" y="0.5" width="39" height="39" rx="9.5" stroke="#F5B429" strokeOpacity="0.4" />
         
         {/* N Path */}
         <path
           d="M12 29V11L28 29V11"
-          stroke="#F3F0E4"
+          stroke="#FAFAF8"
           strokeWidth="3.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         
-        {/* Quantum Accent Line */}
+        {/* Gold Accent Line */}
         <path
           d="M12 29L28 11"
-          stroke="#F0C93B"
+          stroke="url(#notexia-logo-gold)"
           strokeWidth="3.2"
           strokeLinecap="round"
         />
+
+        <defs>
+          <linearGradient id="notexia-logo-gold" x1="12" y1="29" x2="28" y2="11" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#F7C948" />
+            <stop offset="1" stopColor="#F5941D" />
+          </linearGradient>
+        </defs>
         
-        {/* Glowing Red/Gold Chalk Status Badge Dot */}
-        <circle cx="31" cy="9" r="3.5" fill="#F28B6E" />
-        <circle cx="31" cy="9" r="4.5" stroke="#16261D" strokeWidth="1.5" />
+        {/* Glowing Orange Badge Dot */}
+        <circle cx="31" cy="9" r="3.5" fill="#F5941D" />
+        <circle cx="31" cy="9" r="4.5" stroke="#0A0806" strokeWidth="1.5" />
       </svg>
 
       {showText && (
         <div className="flex flex-col">
-          <span className="font-heading font-black text-lg tracking-widest text-[#F3F0E4] leading-tight">
+          <span className="font-display font-black text-lg tracking-widest text-[#FAFAF8] leading-tight">
             NOTEXIA
           </span>
-          <span className="font-mono text-[9px] text-[#8FC3DE] tracking-widest uppercase">
-            ACADEMIC SLATE
+          <span className="font-mono text-[9px] text-[#F5B429] tracking-widest uppercase">
+            STUDY PLATFORM
           </span>
         </div>
       )}
