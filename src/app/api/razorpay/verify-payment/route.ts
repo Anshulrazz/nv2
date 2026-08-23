@@ -56,9 +56,10 @@ export async function POST(req: Request) {
       : await PaymentOrder.findOne({ razorpayOrderId: razorpay_order_id });
 
     if (!paymentOrder && razorpay_subscription_id) {
-      // Create record if initiated on client with plan ID plan_TT5V5vOaLSgVtl
+      // Create record if initiated on client with plan ID plan_TT5V5vOaLSgVtl (changed by ravi)
       paymentOrder = await PaymentOrder.create({
         userId,
+        razorpayOrderId: `sub_order_${razorpay_subscription_id}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
         razorpaySubscriptionId: razorpay_subscription_id,
         razorpayPlanId: process.env.RAZORPAY_MONTHLY_PLAN_ID || "plan_TT5V5vOaLSgVtl",
         amountINR: 149,

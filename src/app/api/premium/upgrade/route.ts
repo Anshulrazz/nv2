@@ -127,11 +127,12 @@ export async function POST(req: Request) {
           { session: dbSession }
         );
 
-        // Record unified payment order
+        // Record unified payment order (changed by ravi - unique razorpayOrderId to avoid legacy index collisions)
         await PaymentOrder.create(
           [
             {
               userId: user._id,
+              razorpayOrderId: `coins_order_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
               amountINR: 0,
               coinsDelivered: 0,
               type: "subscription",
@@ -180,6 +181,7 @@ export async function POST(req: Request) {
 
       await PaymentOrder.create({
         userId: user._id,
+        razorpayOrderId: `coins_order_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
         amountINR: 0,
         coinsDelivered: 0,
         type: "subscription",

@@ -70,6 +70,7 @@ export async function POST(req: Request) {
         if (paymentEntity?.id) {
           await PaymentOrder.create({
             userId: user._id,
+            razorpayOrderId: `sub_renew_${subscriptionId}_${paymentEntity.id}`,
             razorpaySubscriptionId: subscriptionId,
             razorpayPlanId: subEntity?.plan_id || "plan_TT5V5vOaLSgVtl",
             razorpayPaymentId: paymentEntity.id,

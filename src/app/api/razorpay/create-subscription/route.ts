@@ -57,9 +57,10 @@ export async function POST(req: Request) {
       }
     }
 
-    // Save pending subscription order in database
+    // Save pending subscription order in database (changed by ravi - unique razorpayOrderId)
     await PaymentOrder.create({
       userId,
+      razorpayOrderId: `sub_order_${subscriptionId}_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       razorpaySubscriptionId: subscriptionId,
       razorpayPlanId: planId,
       amountINR: MONTHLY_PRICE_INR,

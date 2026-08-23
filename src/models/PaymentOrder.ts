@@ -19,11 +19,17 @@ export interface IPaymentOrder extends Document {
   updatedAt: Date;
 }
 
-// changed by ravi - updated PaymentOrderSchema for razorpay subscriptions
+// changed by ravi - updated PaymentOrderSchema for razorpay subscriptions with unique default
 const PaymentOrderSchema = new Schema<IPaymentOrder>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    razorpayOrderId: { type: String, sparse: true, index: true },
+    razorpayOrderId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+      default: () => `order_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+    },
     razorpaySubscriptionId: { type: String, sparse: true, index: true }, // changed by ravi
     razorpayPlanId: { type: String, default: null },                     // changed by ravi
     razorpayPaymentId: { type: String, default: null },
