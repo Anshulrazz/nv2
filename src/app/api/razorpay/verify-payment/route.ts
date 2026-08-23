@@ -8,6 +8,7 @@ import { User } from "@/models/User";
 import { Coupon } from "@/models/Coupon";
 import { CoinTransaction } from "@/models/CoinTransaction";
 import { getOrCreateUserWallet } from "@/lib/wallet";
+import { memoryCache } from "@/lib/cache";
 
 // changed by ravi - support subscription and order verification
 export async function POST(req: Request) {
@@ -290,6 +291,9 @@ export async function POST(req: Request) {
     } finally {
       await dbSession.endSession();
     }
+
+    // Invalidate premium status memory cache
+    memoryCache.delete(`user:premium:${userId}`);
 
     return NextResponse.json({
       success: true,

@@ -86,34 +86,38 @@ export function PremiumUpgradeModal({
     toast.info("Coupon removed.");
   };
 
-  // changed by ravi - support monthly recurring subscription (plan_TT5V5vOaLSgVtl / sub_TT5Y1breIHPLTs) & annual orders
+  // changed by ravi - support monthly recurring subscription & order fallback for 100% reliable checkout
   const handleRazorpayUpgrade = async () => {
     try {
       setIsUpgrading(true);
 
       if (selectedPlan === "monthly") {
-        // Recurring subscription endpoint
         const res = await fetch("/api/razorpay/create-subscription", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             planId: "plan_TT5V5vOaLSgVtl",
-            subscriptionId: "sub_TT5Y1breIHPLTs",
+            couponCode: appliedCoupon ? appliedCoupon.code : undefined,
           }),
         });
 
         const json = await res.json();
         if (!res.ok) {
-          toast.error(json.error || "Failed to initiate recurring subscription.");
+          toast.error(json.error || "Failed to initiate subscription.");
           setIsUpgrading(false);
           return;
         }
 
+        const isSubscriptionMode = json.mode === "subscription" && json.subscriptionId;
+
         await openRazorpayCheckout({
           key: json.keyId || process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "rzp_test_fallback",
           name: "Notexia Premium Subscription",
-          description: "Monthly Recurring Plan (₹149/mo)",
-          subscription_id: json.subscriptionId || "sub_TT5Y1breIHPLTs",
+          description: "Monthly Premium Plan (₹149/mo)",
+          amount: isSubscriptionMode ? undefined : json.amount,
+          currency: isSubscriptionMode ? undefined : json.currency || "INR",
+          order_id: isSubscriptionMode ? undefined : json.orderId,
+          subscription_id: isSubscriptionMode ? json.subscriptionId : undefined,
           theme: { color: "#F0C93B" },
           prefill: {
             name: json.user?.name,
@@ -144,7 +148,7 @@ export function PremiumUpgradeModal({
           modal: {
             ondismiss: () => {
               setIsUpgrading(false);
-              toast.info("Subscription setup cancelled.");
+              toast.info("Payment cancelled.");
             },
           },
         });
