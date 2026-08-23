@@ -255,7 +255,7 @@ export default function PPTMakerPage() {
             <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-2">
               Color Theme
             </label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               {THEMES.map((t) => (
                 <button
                   key={t.id}

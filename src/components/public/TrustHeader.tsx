@@ -74,7 +74,7 @@ export function TrustHeader({ title }: { title: string }) {
             <Link
               key={link.href}
               href={link.href}
-              className={`shrink-0 text-xs px-3 py-1 rounded-full font-medium transition-all ${
+              className={`shrink-0 text-xs px-3.5 py-1.5 min-h-[36px] flex items-center justify-center rounded-full font-medium transition-all ${
                 isActive
                   ? "bg-[#F0C93B] text-[#2A2118] font-bold"
                   : "text-[#9FAEA1] hover:text-white bg-[#1A2D23]/40 border border-[#F3F0E4]/5"

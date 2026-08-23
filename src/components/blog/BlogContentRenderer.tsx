@@ -2,7 +2,6 @@
 
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import katex from "katex";
-import "katex/dist/katex.min.css";
 
 interface BlogContentRendererProps {
   content: unknown;

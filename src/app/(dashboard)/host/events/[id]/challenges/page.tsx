@@ -106,7 +106,7 @@ function ChallengeForm({
       </div>
 
       {/* Points + Difficulty + Order row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
           <label className="text-[11px] font-mono uppercase tracking-widest text-muted-foreground block mb-1">
             Points *

@@ -10,8 +10,6 @@ import rehypeKatex from "rehype-katex";
 import rehypeHighlight from "rehype-highlight";
 import rehypeRaw from "rehype-raw";
 import katex from "katex";
-import "katex/dist/katex.min.css";
-import "highlight.js/styles/github-dark-dimmed.min.css";
 import {
   Check,
   Copy,

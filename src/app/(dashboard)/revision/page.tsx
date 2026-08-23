@@ -384,7 +384,7 @@ export default function RevisionPage() {
               </span>
             </div>
 
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
               {[
                 { id: "cheatsheet", label: "Cheat Sheet", icon: BookOpen, color: "#00F0FF" },
                 { id: "flashcards", label: "Flashcards", icon: BrainCircuit, color: "#A855F7" },
@@ -396,14 +396,14 @@ export default function RevisionPage() {
                   <button
                     key={m.id}
                     onClick={() => setRevisionMode(m.id as typeof revisionMode)}
-                    className={`p-3 rounded-xl border flex flex-col items-center justify-center text-center gap-2 transition-all cursor-pointer ${
+                    className={`p-3 min-h-[48px] rounded-xl border flex sm:flex-col items-center justify-center text-center gap-2.5 transition-all cursor-pointer ${
                       isActive
                         ? "bg-white/10 border-cyan-400 text-white shadow-[0_0_15px_rgba(0,240,255,0.2)]"
                         : "bg-[#060D14] border-white/5 text-[#94A3B8] hover:border-white/20 hover:text-white"
                     }`}
                   >
-                    <Icon className="size-5" style={{ color: isActive ? m.color : "#94A3B8" }} />
-                    <span className="text-[11px] font-bold uppercase tracking-wider">{m.label}</span>
+                    <Icon className="size-5 shrink-0" style={{ color: isActive ? m.color : "#94A3B8" }} />
+                    <span className="text-xs sm:text-[11px] font-bold uppercase tracking-wider">{m.label}</span>
                   </button>
                 );
               })}

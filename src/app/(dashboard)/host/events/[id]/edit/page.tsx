@@ -316,7 +316,7 @@ export default function EditEventPage() {
       </div>
 
       {/* Quick links */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
         <Link
           href={`/host/events/${id}/challenges`}
           className="flex items-center gap-3 bg-sidebar border border-sidebar-border rounded-xl p-4 hover:border-primary/40 transition-colors"

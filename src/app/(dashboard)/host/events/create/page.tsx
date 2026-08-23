@@ -107,7 +107,7 @@ export default function CreateEventPage() {
         {/* Type */}
         <div>
           <label className={labelCls}>Event Type</label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
             {(
               [
                 { value: "ctf", label: "CTF", icon: Code2, color: "text-cyan-400" },
@@ -119,13 +119,13 @@ export default function CreateEventPage() {
                 key={value}
                 type="button"
                 onClick={() => setForm((p) => ({ ...p, type: value }))}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all ${
+                className={`flex sm:flex-col items-center justify-center gap-2.5 p-3.5 sm:p-4 min-h-[48px] rounded-xl border transition-all ${
                   form.type === value
                     ? "border-primary bg-primary/10"
                     : "border-sidebar-border bg-sidebar hover:border-primary/40"
                 }`}
               >
-                <Icon className={`size-6 ${color}`} />
+                <Icon className={`size-5 sm:size-6 shrink-0 ${color}`} />
                 <span className="text-xs font-mono font-bold uppercase tracking-wider text-foreground">
                   {label}
                 </span>

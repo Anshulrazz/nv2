@@ -51,7 +51,7 @@ function LandingSkeleton() {
           </div>
           <div className="w-3/4 h-6 rounded bg-white/10" />
           <div className="w-full h-24 rounded-xl bg-[#16261D] border border-white/10" />
-          <div className="grid grid-cols-4 gap-2 pt-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-4">
             <div className="h-8 rounded bg-white/5" />
             <div className="h-8 rounded bg-white/5" />
             <div className="h-8 rounded bg-white/5" />
