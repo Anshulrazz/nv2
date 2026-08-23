@@ -1,3 +1,4 @@
+// changed by ravi - updated coin-based premium upgrade endpoint
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import mongoose from "mongoose";
@@ -5,7 +6,9 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { User } from "@/models/User";
 import { Coupon } from "@/models/Coupon";
 import { CoinTransaction } from "@/models/CoinTransaction";
+import { PaymentOrder } from "@/models/PaymentOrder";
 import { getOrCreateUserWallet } from "@/lib/wallet";
+import { memoryCache } from "@/lib/cache";
 
 const PLAN_PRICING = {
   monthly: 500, // 500 coins for 30 days
@@ -74,7 +77,13 @@ export async function POST(req: Request) {
     }
 
     const now = new Date();
-    const expiryDate = new Date(now);
+    // changed by ravi - extend active expiry if already premium instead of resetting
+    const currentExpiry =
+      user.isPremium && user.premiumExpiresAt && new Date(user.premiumExpiresAt) > now
+        ? new Date(user.premiumExpiresAt)
+        : new Date(now);
+
+    const expiryDate = new Date(currentExpiry);
     if (plan === "monthly") {
       expiryDate.setDate(expiryDate.getDate() + 30);
     } else {
@@ -85,15 +94,15 @@ export async function POST(req: Request) {
     try {
       await dbSession.withTransaction(async () => {
         // Deduct coins from user & wallet
-        user.coins -= finalCost;
+        user.coins = Math.max(0, (user.coins || 0) - finalCost);
         user.isPremium = true;
         user.isPremiumUser = true;
-        user.premiumSince = now;
+        user.premiumSince = user.premiumSince || now;
         user.premiumPlan = plan;
         user.premiumExpiresAt = expiryDate;
         await user.save({ session: dbSession });
 
-        wallet.balance -= finalCost;
+        wallet.balance = Math.max(0, wallet.balance - finalCost);
         await wallet.save({ session: dbSession });
 
         // Record transaction ledger
@@ -111,7 +120,28 @@ export async function POST(req: Request) {
                 finalCost,
                 appliedCoupon,
                 premiumExpiresAt: expiryDate,
-                note: `Purchased ${plan} premium subscription`,
+                note: `Purchased ${plan} premium subscription using ${finalCost} coins`,
+              },
+            },
+          ],
+          { session: dbSession }
+        );
+
+        // Record unified payment order
+        await PaymentOrder.create(
+          [
+            {
+              userId: user._id,
+              amountINR: 0,
+              coinsDelivered: 0,
+              type: "subscription",
+              plan,
+              status: "paid",
+              appliedCoupon: appliedCoupon || null,
+              metadata: {
+                paymentMethod: "coins",
+                coinsCost: finalCost,
+                premiumExpiresAt: expiryDate,
               },
             },
           ],
@@ -121,15 +151,15 @@ export async function POST(req: Request) {
     } catch (txError) {
       console.warn("MongoDB transaction fallback for premium upgrade:", txError);
       // Fallback for standalone Mongo instances without replica set
-      user.coins -= finalCost;
+      user.coins = Math.max(0, (user.coins || 0) - finalCost);
       user.isPremium = true;
       user.isPremiumUser = true;
-      user.premiumSince = now;
+      user.premiumSince = user.premiumSince || now;
       user.premiumPlan = plan;
       user.premiumExpiresAt = expiryDate;
       await user.save();
 
-      wallet.balance -= finalCost;
+      wallet.balance = Math.max(0, wallet.balance - finalCost);
       await wallet.save();
 
       await CoinTransaction.create({
@@ -144,15 +174,34 @@ export async function POST(req: Request) {
           finalCost,
           appliedCoupon,
           premiumExpiresAt: expiryDate,
-          note: `Purchased ${plan} premium subscription`,
+          note: `Purchased ${plan} premium subscription using ${finalCost} coins`,
+        },
+      });
+
+      await PaymentOrder.create({
+        userId: user._id,
+        amountINR: 0,
+        coinsDelivered: 0,
+        type: "subscription",
+        plan,
+        status: "paid",
+        appliedCoupon: appliedCoupon || null,
+        metadata: {
+          paymentMethod: "coins",
+          coinsCost: finalCost,
+          premiumExpiresAt: expiryDate,
         },
       });
     } finally {
       await dbSession.endSession();
     }
 
+    // Invalidate premium status cache
+    memoryCache.delete(`user:premium:${userId}`);
+
     return NextResponse.json({
-      message: `Congratulations! You are now a Premium member (${plan} plan).`,
+      success: true,
+      message: `Congratulations! You are now a Premium member (${plan} plan). ✨`,
       isPremium: true,
       premiumPlan: plan,
       premiumExpiresAt: expiryDate,
