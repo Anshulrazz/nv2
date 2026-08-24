@@ -1240,44 +1240,13 @@ export default function MarketingPage() {
             </Link>
           </nav>
           <div className="nav-cta">
-            {/* Social Icons for all devices */}
-            <div className="flex items-center gap-1 sm:gap-1.5 mr-0.5 sm:mr-1">
-              <a
-                href="https://x.com/Notexiaay"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Notexia on X (Twitter)"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
-              >
-                <TwitterXIcon className="size-3 sm:size-3.5" />
-              </a>
-              <a
-                href="https://www.instagram.com/notexia_edu/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Notexia on Instagram"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
-              >
-                <InstagramIcon className="size-3 sm:size-3.5" />
-              </a>
-              <a
-                href="https://www.linkedin.com/in/notexia-technology-ba99b1430/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Notexia on LinkedIn"
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
-              >
-                <LinkedInIcon className="size-3 sm:size-3.5" />
-              </a>
-            </div>
-
             {session?.user ? (
               <Link href="/dashboard" className="btn btn-solid btn-sm">
                 Dashboard &rarr;
               </Link>
             ) : (
               <>
-                <Link href="/login" className="btn btn-ghost btn-sm hidden sm:inline-flex">
+                <Link href="/login" className="btn btn-ghost btn-sm">
                   Sign in
                 </Link>
                 <Link href="/signup" className="btn btn-solid btn-sm">
