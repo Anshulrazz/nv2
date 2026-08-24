@@ -553,35 +553,6 @@ export default function PublicFeedPage() {
 
       {/* Responsive Header Banner */}
       <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10 space-y-4 max-w-7xl w-full mx-auto">
-        {/* Guest Mode Notification Banner */}
-        {!session?.user && (
-          <div className="rounded-2xl bg-[#150F0B]/90 border border-[#F5B429]/40 p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_0_30px_rgba(245,148,29,0.12)] backdrop-blur-xl">
-            <div className="flex items-center gap-3 text-xs text-[#FAFAF8]">
-              <div className="size-8 rounded-full bg-[#F5B429]/20 border border-[#F5B429]/40 flex items-center justify-center text-[#F5B429] shrink-0 font-mono text-xs font-bold">
-                ⚡
-              </div>
-              <p className="leading-relaxed">
-                <strong className="text-[#F5B429]">Guest Mode:</strong> You are browsing the Public Study Feed.{" "}
-                <span className="text-[#8A8078]">Sign in or create a free account to upvote, comment, and bookmark study notes.</span>
-              </p>
-            </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <Link
-                href="/login"
-                className="px-4 py-1.5 rounded-full text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] border border-[#2E2118] bg-[#0A0806] hover:bg-[#150F0B] transition-colors"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] shadow-[0_0_12px_rgba(245,180,41,0.25)] transition-colors font-display"
-              >
-                Sign Up Free
-              </Link>
-            </div>
-          </div>
-        )}
-
         <div className="border border-[#2E2118] bg-[#150F0B]/85 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_0_35px_-5px_rgba(245,148,29,0.12)]">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex items-center gap-3 sm:gap-4">
