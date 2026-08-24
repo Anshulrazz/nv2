@@ -8,7 +8,7 @@ import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
 import { Button } from "@/components/ui/button";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
-import { Menu, X, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { InstagramIcon, LinkedInIcon, TwitterXIcon } from "@/components/common/SocialIcons";
 
 function LandingSkeleton() {
@@ -224,7 +224,6 @@ export default function MarketingPage() {
 
   /* ── SCROLL NAVIGATION ── */
   const [activeSection, setActiveSection] = useState("");
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   /* Set hydration mount flag */
   useEffect(() => {
@@ -388,7 +387,6 @@ export default function MarketingPage() {
   };
 
   const scrollToSection = (sectionId: string) => {
-    setMobileMenuOpen(false);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -495,7 +493,7 @@ export default function MarketingPage() {
         /* Nav */
         header {
           position: sticky; top: 0; z-index: 50;
-          background: rgba(10, 8, 6, 0.9);
+          background: rgba(10, 8, 6, 0.92);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
           border-bottom: 1px solid var(--rule);
@@ -504,13 +502,13 @@ export default function MarketingPage() {
         }
         .nav {
           display: flex; align-items: center; justify-content: space-between;
-          height: 72px; gap: 12px; width: 100%;
+          height: 68px; gap: 12px; width: 100%;
         }
         @media(max-width:640px){
-          .nav { height: 60px; }
+          .nav { height: 60px; gap: 8px; }
         }
         .nav-links {
-          display: flex; align-items: center; gap: 20px;
+          display: flex; align-items: center; gap: 18px;
           font-size: 13px; color: var(--ink-soft); font-weight: 600;
           text-transform: uppercase; letter-spacing: 0.05em;
         }
@@ -525,84 +523,23 @@ export default function MarketingPage() {
         }
         .nav-links a:hover, .nav-links button:hover { color: var(--gold); }
         .nav-links a.active, .nav-links button.active { color: var(--gold); }
-        .nav-cta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .nav-cta { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        @media(max-width:640px){
+          .nav-cta { gap: 6px; }
+        }
         @media(max-width:980px){ .nav-links{display:none;} }
-
-        .mobile-menu-btn {
-          display: none;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: #150F0B;
-          border: 1px solid var(--rule);
-          color: var(--gold);
-          transition: all .2s ease;
-          cursor: pointer;
-          flex-shrink: 0;
-        }
-        .mobile-menu-btn:hover {
-          background: #241811;
-          border-color: var(--gold);
-        }
-        @media(max-width:980px){
-          .mobile-menu-btn { display: flex; }
-        }
-
-        .mobile-nav-drawer {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: rgba(15, 10, 7, 0.98);
-          border-bottom: 1px solid var(--rule);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          padding: 16px 20px 22px;
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          box-shadow: 0 25px 60px rgba(0,0,0,0.85);
-          animation: slideDown .22s cubic-bezier(0.16, 1, 0.3, 1);
-          z-index: 60;
-          max-height: calc(100vh - 65px);
-          overflow-y: auto;
-        }
-        @keyframes slideDown {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-
-        .mobile-nav-item {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 10px 14px;
-          border-radius: 10px;
-          background: transparent;
-          color: var(--ink);
-          font-size: 14px;
-          font-weight: 600;
-          text-align: left;
-          width: 100%;
-          border: none;
-          transition: all .16s ease;
-          cursor: pointer;
-        }
-        .mobile-nav-item:hover, .mobile-nav-item:active {
-          background: #241811;
-          color: var(--gold);
-        }
 
         .btn {
           display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-          padding: 9px 20px; border-radius: 9999px;
-          font-weight: 600; font-size: 13.5px;
+          padding: 8px 18px; border-radius: 9999px;
+          font-weight: 600; font-size: 13px;
           border: 1px solid transparent;
           transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
           white-space: nowrap;
           cursor: pointer;
+        }
+        @media(max-width:480px){
+          .btn { padding: 7px 14px; font-size: 12px; }
         }
         .btn:disabled {
           opacity: 0.6;
@@ -1303,34 +1240,34 @@ export default function MarketingPage() {
             </Link>
           </nav>
           <div className="nav-cta">
-            {/* Social Icons for desktop */}
-            <div className="hidden xl:flex items-center gap-1.5 mr-1">
+            {/* Social Icons for all devices */}
+            <div className="flex items-center gap-1 sm:gap-1.5 mr-0.5 sm:mr-1">
               <a
                 href="https://x.com/Notexiaay"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Notexia on X (Twitter)"
-                className="w-8 h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
               >
-                <TwitterXIcon className="size-3.5" />
+                <TwitterXIcon className="size-3 sm:size-3.5" />
               </a>
               <a
                 href="https://www.instagram.com/notexia_edu/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Notexia on Instagram"
-                className="w-8 h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
               >
-                <InstagramIcon className="size-3.5" />
+                <InstagramIcon className="size-3 sm:size-3.5" />
               </a>
               <a
                 href="https://www.linkedin.com/in/notexia-technology-ba99b1430/"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Notexia on LinkedIn"
-                className="w-8 h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors"
+                className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors shrink-0"
               >
-                <LinkedInIcon className="size-3.5" />
+                <LinkedInIcon className="size-3 sm:size-3.5" />
               </a>
             </div>
 
@@ -1348,146 +1285,8 @@ export default function MarketingPage() {
                 </Link>
               </>
             )}
-
-            {/* Mobile Hamburger Toggle Button */}
-            <button
-              type="button"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="mobile-menu-btn"
-              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
-              aria-expanded={mobileMenuOpen}
-            >
-              {mobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
-            </button>
           </div>
         </div>
-
-        {/* ── MOBILE NAVIGATION DRAWER ── */}
-        {mobileMenuOpen && (
-          <div className="mobile-nav-drawer">
-            <div className="flex flex-col gap-1 pb-3 border-b border-[#2E2118]">
-              <button
-                type="button"
-                onClick={() => scrollToSection("features")}
-                className="mobile-nav-item"
-              >
-                <span>Features</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("demo")}
-                className="mobile-nav-item"
-              >
-                <span>Live AI Demo</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("how-it-works")}
-                className="mobile-nav-item"
-              >
-                <span>How it works</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("pricing")}
-                className="mobile-nav-item"
-              >
-                <span>Pricing</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("tools")}
-                className="mobile-nav-item"
-              >
-                <span>Tools</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection("reviews")}
-                className="mobile-nav-item"
-              >
-                <span>Stories</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </button>
-              <Link
-                href="/feed"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mobile-nav-item"
-              >
-                <span>Public Notes Feed</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </Link>
-              <Link
-                href="/blogs"
-                onClick={() => setMobileMenuOpen(false)}
-                className="mobile-nav-item"
-              >
-                <span>Scholar Articles</span>
-                <span className="text-[#8A8078] text-xs">&rarr;</span>
-              </Link>
-            </div>
-
-            {/* Mobile Social Links & CTAs */}
-            <div className="pt-2 flex flex-col gap-3">
-              <div className="flex items-center justify-between text-xs text-[#8A8078] px-1">
-                <span>Follow Notexia:</span>
-                <div className="flex items-center gap-3">
-                  <a
-                    href="https://x.com/Notexiaay"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[#FAFAF8] hover:text-[#F5B429] transition-colors"
-                  >
-                    <TwitterXIcon className="size-3.5 text-[#F5B429]" />
-                    <span className="font-mono text-[11px]">X</span>
-                  </a>
-                  <a
-                    href="https://www.instagram.com/notexia_edu/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[#FAFAF8] hover:text-[#F5B429] transition-colors"
-                  >
-                    <InstagramIcon className="size-3.5 text-[#F5B429]" />
-                    <span className="font-mono text-[11px]">Instagram</span>
-                  </a>
-                  <a
-                    href="https://www.linkedin.com/in/notexia-technology-ba99b1430/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 text-[#FAFAF8] hover:text-[#F5B429] transition-colors"
-                  >
-                    <LinkedInIcon className="size-3.5 text-[#F5B429]" />
-                    <span className="font-mono text-[11px]">LinkedIn</span>
-                  </a>
-                </div>
-              </div>
-
-              {!session?.user && (
-                <div className="grid grid-cols-2 gap-2 pt-2">
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="btn btn-ghost text-center justify-center text-xs py-2.5"
-                  >
-                    Sign in
-                  </Link>
-                  <Link
-                    href="/signup"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="btn btn-solid text-center justify-center text-xs py-2.5"
-                  >
-                    Get started
-                  </Link>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
       </header>
 
       {/* ── MAIN CONTENT ── */}
