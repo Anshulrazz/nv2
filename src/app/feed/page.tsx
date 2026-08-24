@@ -14,6 +14,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { CoinConverterModal } from "@/components/wallet/CoinConverterModal";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 interface Author {
   _id: string;
@@ -473,11 +474,9 @@ export default function PublicFeedPage() {
               >
                 <ChevronLeft className="size-4" />
               </Link>
-              <Link href="/feed" className="flex items-center gap-1.5 sm:gap-2 font-bold text-white tracking-wider text-xs sm:text-sm">
-                <span className="size-6 sm:size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-[10px] sm:text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
-                  N
-                </span>
-                <span className="font-display text-[#FAFAF8] truncate tracking-wider">PUBLIC FEED</span>
+              <Link href="/dashboard" className="flex items-center">
+                <NotexiaLogo size="sm" showText={false} />
+                <span className="font-display text-[#FAFAF8] text-xs sm:text-sm font-bold tracking-wider ml-2">FEED</span>
               </Link>
             </div>
 
@@ -523,11 +522,8 @@ export default function PublicFeedPage() {
       ) : (
         <header className="border-b border-[#2E2118] bg-[#0A0806]/85 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
-              <span className="size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
-                N
-              </span>
-              <span className="font-display text-[#FAFAF8] tracking-wider">NOTEXIA PUBLIC FEED</span>
+            <Link href="/" className="flex items-center">
+              <NotexiaLogo size="md" />
             </Link>
 
             <div className="flex items-center gap-3">

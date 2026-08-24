@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 export default function GlobalError({
   error,
@@ -15,90 +16,45 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="en" className="dark">
-      <body
-        style={{
-          margin: 0,
-          background: "#0a0c12",
-          color: "#f1f5f9",
-          fontFamily: "system-ui, sans-serif",
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <div
-          style={{
-            textAlign: "center",
-            padding: "2rem",
-            maxWidth: "440px",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "5rem",
-              marginBottom: "1rem",
-              filter: "grayscale(0.3)",
-            }}
-          >
-            ⚠️
-          </div>
-          <h1
-            style={{
-              fontSize: "1.5rem",
-              fontWeight: 700,
-              color: "#e2e8f0",
-              marginBottom: "0.75rem",
-            }}
-          >
+    <div className="min-h-screen bg-[#0A0806] text-[#FAFAF8] flex flex-col items-center justify-center p-6 select-none relative overflow-hidden antialiased glowing-bg">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#EF4444]/10 rounded-full blur-[140px]" />
+      </div>
+
+      <div className="relative z-10 text-center max-w-md w-full space-y-6">
+        <div className="flex items-center justify-center mb-4">
+          <Link href="/">
+            <NotexiaLogo size="lg" />
+          </Link>
+        </div>
+
+        <div className="text-4xl">⚠️</div>
+
+        <div className="space-y-2">
+          <h1 className="text-xl font-bold text-[#FAFAF8] font-display">
             Something went wrong
           </h1>
-          <p
-            style={{
-              color: "#64748b",
-              fontSize: "0.9rem",
-              lineHeight: 1.6,
-              marginBottom: "2rem",
-            }}
-          >
-            An unexpected error occurred. Please try again or return to the homepage.
+          <p className="text-xs text-[#8A8078] font-light leading-relaxed">
+            An unexpected error occurred. Please try again or return to the workspace home.
           </p>
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
-            <button
-              onClick={reset}
-              style={{
-                padding: "10px 24px",
-                background: "linear-gradient(135deg, #06b6d4, #0891b2)",
-                color: "white",
-                border: "none",
-                borderRadius: "10px",
-                fontWeight: 600,
-                fontSize: "14px",
-                cursor: "pointer",
-              }}
-            >
-              Try Again
-            </button>
-            <Link
-              href="/"
-              style={{
-                padding: "10px 24px",
-                background: "rgba(255,255,255,0.05)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                color: "#94a3b8",
-                borderRadius: "10px",
-                fontWeight: 600,
-                fontSize: "14px",
-                textDecoration: "none",
-                display: "inline-block",
-              }}
-            >
-              Go Home
-            </Link>
-          </div>
         </div>
-      </body>
-    </html>
+
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button
+            onClick={reset}
+            className="rounded-full bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold text-xs px-6 py-2.5 inline-flex items-center justify-center transition-all shadow-[0_0_15px_rgba(245,180,41,0.25)] cursor-pointer"
+          >
+            Try Again
+          </button>
+          <Link
+            href="/"
+            className="rounded-full bg-[#150F0B] hover:bg-[#241811] text-[#FAFAF8] border border-[#2E2118] font-bold text-xs px-6 py-2.5 inline-flex items-center justify-center transition-all"
+          >
+            Go Home
+          </Link>
+        </div>
+      </div>
+    </div>
   );
 }
+

@@ -28,6 +28,7 @@ import { User } from "@/models/User";
 import { SiteSetting } from "@/models/SiteSetting";
 import { DirectMessage } from "@/models/DirectMessage";
 import { MobileBottomNav } from "@/components/navigation/MobileBottomNav";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 export default async function DashboardLayout({
   children,
@@ -103,15 +104,10 @@ export default async function DashboardLayout({
       >
         <div className="flex flex-col flex-1 min-h-0 overflow-y-auto custom-scroll">
           {/* Brand header */}
-          <div className="h-16 px-6 border-b border-[#2E2118] flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-2">
-              <img src="/logo.png" className="h-5 w-auto object-contain" alt="Notexia Logo" />
-              <span
-                className="text-base font-bold tracking-widest text-[#FAFAF8] font-display"
-              >
-                NOTEXIA
-              </span>
-            </div>
+          <div className="h-16 px-4 border-b border-[#2E2118] flex items-center justify-between shrink-0">
+            <Link href="/dashboard" className="flex items-center hover:opacity-90 transition-opacity">
+              <NotexiaLogo size="sm" />
+            </Link>
             <div className="flex items-center gap-2">
               <span
                 className="text-[9px] bg-[#F5B429]/10 text-[#F5B429] px-2 py-0.5 rounded border border-[#F5B429]/25 font-bold uppercase tracking-wider font-mono"

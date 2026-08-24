@@ -15,6 +15,7 @@ import { Loader2, ArrowUpRight } from "lucide-react";
 import { trackPixelEvent } from "@/lib/pixel";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address." }),
@@ -85,11 +86,10 @@ function LoginForm() {
       <div className="rounded-[2.5rem] bg-[#150F0B]/80 border border-[#2E2118] p-2.5 backdrop-blur-3xl shadow-[0_0_100px_rgba(0,0,0,0.9)]">
         <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-5 sm:p-8 space-y-6">
           <div className="text-center space-y-3">
-            <div className="flex items-center justify-center gap-2.5 mb-2">
-              <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
-              <span className="text-xl font-extrabold tracking-tight text-[#FAFAF8] font-display">
-                Notexia
-              </span>
+            <div className="flex items-center justify-center mb-2">
+              <Link href="/">
+                <NotexiaLogo size="md" />
+              </Link>
             </div>
             <h1 className="text-2xl font-bold text-[#FAFAF8] tracking-tight font-display">
               Welcome back

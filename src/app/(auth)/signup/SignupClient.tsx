@@ -17,6 +17,7 @@ import { Loader2, ArrowUpRight } from "lucide-react";
 import { trackMetaEvent } from "@/lib/metaPixel";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 const signupSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -101,11 +102,10 @@ function SignupForm() {
         <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-5 sm:p-8 space-y-6">
           {/* Header */}
           <div className="text-center space-y-3">
-            <div className="flex items-center justify-center gap-2.5 mb-2">
-              <img src="/logo.png" className="h-6 w-auto object-contain" alt="Notexia Logo" />
-              <span className="text-xl font-extrabold tracking-tight text-[#FAFAF8] font-display">
-                Notexia
-              </span>
+            <div className="flex items-center justify-center mb-2">
+              <Link href="/">
+                <NotexiaLogo size="md" />
+              </Link>
             </div>
             <h1 className="text-2xl font-bold text-[#FAFAF8] tracking-tight font-display">
               Create your account

@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Loader2, AlertCircle, Download, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 export default function CertificatePage() {
   const { id } = useParams();
@@ -91,11 +92,8 @@ export default function CertificatePage() {
             
             {/* Header / Logo */}
             <div className="mb-6 md:mb-10 mt-4 md:mt-6 flex flex-col items-center">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-<img src="/logo.png" alt="Nottexia Logo" className="h-10 md:h-12 w-auto object-contain mb-3" onError={(e) => {
-                (e.target as HTMLElement).style.display = 'none';
-              }} />
-              <h2 className="text-[9px] md:text-[11px] text-amber-800/80 uppercase tracking-[0.25em] font-medium text-center" style={{ fontFamily: "'Cinzel', serif" }}>
+              <NotexiaLogo size="md" />
+              <h2 className="text-[9px] md:text-[11px] text-amber-800/80 uppercase tracking-[0.25em] font-medium text-center mt-2" style={{ fontFamily: "'Cinzel', serif" }}>
                 Notexia, The Ultimate Learning Platform
               </h2>
             </div>

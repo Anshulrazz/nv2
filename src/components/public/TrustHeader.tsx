@@ -4,6 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 export function TrustHeader({ title }: { title: string }) {
   const pathname = usePathname();
@@ -31,11 +32,8 @@ export function TrustHeader({ title }: { title: string }) {
             <span className="hidden sm:inline">Back to Notexia</span>
           </Link>
           <div className="h-4 w-px bg-[#2E2118] hidden sm:block" />
-          <Link href="/" className="flex items-center gap-2 font-bold text-white tracking-wider text-sm">
-            <span className="size-6 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
-              N
-            </span>
-            <span className="font-display hidden md:inline text-[#FAFAF8] font-bold tracking-widest">NOTEXIA</span>
+          <Link href="/" className="flex items-center">
+            <NotexiaLogo size="sm" />
           </Link>
         </div>
 

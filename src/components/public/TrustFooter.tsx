@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
+import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 
 export function TrustFooter() {
   return (
@@ -9,12 +10,9 @@ export function TrustFooter() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-8 border-b border-[#2E2118]">
           <div className="space-y-3 md:col-span-1">
-            <div className="flex items-center gap-2 font-bold text-white tracking-wider text-base">
-              <span className="size-7 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] flex items-center justify-center text-[#150F0B] font-mono text-xs font-black shadow-[0_0_12px_rgba(245,180,41,0.3)]">
-                N
-              </span>
-              <span className="font-display text-[#FAFAF8] tracking-wider font-bold">NOTEXIA</span>
-            </div>
+            <Link href="/" className="inline-block mb-1">
+              <NotexiaLogo size="md" />
+            </Link>
             <p className="text-xs text-[#8A8078] leading-relaxed">
               Smart study platform for Indian students &amp; engineers. AI doubt resolution, collaborative markdown notes, and peer study groups.
             </p>
