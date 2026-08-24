@@ -9,7 +9,7 @@ import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton
 import { Button } from "@/components/ui/button";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
 import { Menu, X, ArrowUpRight } from "lucide-react";
-import { InstagramIcon, LinkedInIcon } from "@/components/common/SocialIcons";
+import { InstagramIcon, LinkedInIcon, TwitterXIcon } from "@/components/common/SocialIcons";
 
 function LandingSkeleton() {
   return (
@@ -1306,6 +1306,15 @@ export default function MarketingPage() {
             {/* Social Icons for desktop */}
             <div className="hidden xl:flex items-center gap-1.5 mr-1">
               <a
+                href="https://x.com/Notexiaay"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Notexia on X (Twitter)"
+                className="w-8 h-8 rounded-full bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/60 text-[#8A8078] hover:text-[#F5B429] flex items-center justify-center transition-colors"
+              >
+                <TwitterXIcon className="size-3.5" />
+              </a>
+              <a
                 href="https://www.instagram.com/notexia_edu/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -1428,6 +1437,15 @@ export default function MarketingPage() {
               <div className="flex items-center justify-between text-xs text-[#8A8078] px-1">
                 <span>Follow Notexia:</span>
                 <div className="flex items-center gap-3">
+                  <a
+                    href="https://x.com/Notexiaay"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 text-[#FAFAF8] hover:text-[#F5B429] transition-colors"
+                  >
+                    <TwitterXIcon className="size-3.5 text-[#F5B429]" />
+                    <span className="font-mono text-[11px]">X</span>
+                  </a>
                   <a
                     href="https://www.instagram.com/notexia_edu/"
                     target="_blank"
@@ -2310,6 +2328,16 @@ export default function MarketingPage() {
               </div>
               <div className="foot-col">
                 <h5>Social &amp; Community</h5>
+                <a
+                  href="https://x.com/Notexiaay"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 hover:text-[#F5B429] transition-colors"
+                >
+                  <TwitterXIcon className="size-3.5 text-[#F5B429]" />
+                  <span>Twitter / X</span>
+                  <ArrowUpRight className="size-3 text-[#8A8078]" />
+                </a>
                 <a
                   href="https://www.instagram.com/notexia_edu/"
                   target="_blank"

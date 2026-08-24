@@ -118,6 +118,17 @@ export function TrustFooter() {
                 </a>
               </li>
               <li>
+                <a
+                  href="https://x.com/Notexiaay"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#F5B429] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Twitter / X</span>
+                  <ArrowUpRight className="size-3 text-[#F5B429]" />
+                </a>
+              </li>
+              <li>
                 <Link href="/feed" className="hover:text-[#FAFAF8] transition-colors">
                   Public Notes Feed
                 </Link>
