@@ -92,29 +92,46 @@ export function TrustFooter() {
 
           <div className="space-y-3">
             <h4 className="font-display uppercase tracking-wider text-[11px] font-bold text-[#FAFAF8]">
-              Student Tools
+              Connect &amp; Social
             </h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/tools/cgpa-converter" className="hover:text-[#FAFAF8] transition-colors inline-flex items-center gap-1">
-                  CGPA Converter <ArrowUpRight className="size-3 text-[#F5B429]" />
-                </Link>
+                <a
+                  href="https://www.instagram.com/notexia_edu/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#F5B429] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Instagram</span>
+                  <ArrowUpRight className="size-3 text-[#F5B429]" />
+                </a>
               </li>
               <li>
-                <Link href="/tools/formula-sheets" className="hover:text-[#FAFAF8] transition-colors inline-flex items-center gap-1">
-                  Formula Sheets <ArrowUpRight className="size-3 text-[#F5941D]" />
+                <a
+                  href="https://www.linkedin.com/in/notexia-technology-ba99b1430/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#F5B429] transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>LinkedIn</span>
+                  <ArrowUpRight className="size-3 text-[#F5B429]" />
+                </a>
+              </li>
+              <li>
+                <Link href="/feed" className="hover:text-[#FAFAF8] transition-colors">
+                  Public Notes Feed
                 </Link>
               </li>
               <li>
                 <Link href="/blogs" className="hover:text-[#FAFAF8] transition-colors">
-                  Student Blogs
+                  Scholar Articles
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4">
           <div className="flex items-center gap-2.5">
             <div className="size-2 rounded-full bg-[#22C55E] animate-pulse" />
             <span className="font-mono text-[#F5B429] text-[11px]">All Trust &amp; Verification Standards Active</span>

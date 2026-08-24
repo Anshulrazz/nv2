@@ -46,7 +46,7 @@ export function HeroWorkspaceShowcase() {
             </div>
 
             {/* HIGH-END PILL TAB SELECTOR BUTTONS */}
-            <div className="flex flex-wrap items-center gap-1 bg-[#150F0B] p-1.5 rounded-full border border-[#2E2118]">
+            <div className="flex flex-wrap items-center gap-1 bg-[#150F0B] p-1.5 rounded-2xl sm:rounded-full border border-[#2E2118]">
               {[
                 { id: "editor", label: "LaTeX & Notes", icon: FileText, color: "bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B]" },
                 { id: "ai", label: "AI Copilot", icon: Bot, color: "bg-[#241811] text-[#F5B429] border border-[#F5B429]/40" },

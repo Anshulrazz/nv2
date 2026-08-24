@@ -84,7 +84,7 @@ export function InteractiveDoubtSimulator() {
 
   return (
     <div className="rounded-[2.5rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 sm:p-3 shadow-[0_0_50px_-10px_rgba(245,148,29,0.2)] backdrop-blur-2xl">
-      <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#0A0806] p-6 sm:p-10 space-y-8">
+      <div className="rounded-[calc(2.5rem-0.5rem)] bg-[#0A0806] p-4 sm:p-10 space-y-8">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#2E2118] pb-6">
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F5B429] bg-[#F5B429]/10 px-3 py-1 rounded-full border border-[#F5B429]/30">

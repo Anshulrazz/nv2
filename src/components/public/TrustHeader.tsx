@@ -59,8 +59,8 @@ export function TrustHeader({ title }: { title: string }) {
           })}
         </nav>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold tracking-widest text-[#F5B429] uppercase font-mono bg-[#241811] px-3 py-1 rounded-full border border-[#2E2118]">
+        <div className="flex items-center gap-2 shrink-0 min-w-0">
+          <span className="text-xs font-bold tracking-widest text-[#F5B429] uppercase font-mono bg-[#241811] px-2.5 sm:px-3 py-1 rounded-full border border-[#2E2118] truncate max-w-[110px] sm:max-w-none">
             {title}
           </span>
         </div>
