@@ -19,7 +19,10 @@ export const GET = auth(async function GET(req, context) {
 
     await connectToDatabase();
 
-    const note = await Note.findOne({ _id: id, userId });
+    const isAdmin = req.auth?.user?.role === "admin";
+    const note = await Note.findOne(
+      isAdmin ? { _id: id } : { _id: id, $or: [{ userId }, { published: true }] }
+    );
     if (!note) {
       return NextResponse.json({ error: "Note not found." }, { status: 404 });
     }

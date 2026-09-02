@@ -34,9 +34,12 @@ export interface IUser extends Document {
   isPublic: boolean;
   directMessageWallpaper?: string;
   directMessageWallpapers?: Map<string, string>;
-  // Mobile password-reset fields (unused by web Auth.js)
+  // 2FA / Password-reset fields
   resetTokenHash?: string;
   resetTokenExpiry?: Date;
+  resetOtpHash?: string;
+  resetOtpExpiry?: Date;
+  resetOtpAttempts?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -79,9 +82,12 @@ const UserSchema = new Schema<IUser>(
     isPublic: { type: Boolean, default: true },
     directMessageWallpaper: { type: String, default: "" },
     directMessageWallpapers: { type: Map, of: String, default: {} },
-    // Mobile password-reset fields (unused by web Auth.js)
+    // 2FA Password reset fields
     resetTokenHash: { type: String },
     resetTokenExpiry: { type: Date },
+    resetOtpHash: { type: String },
+    resetOtpExpiry: { type: Date },
+    resetOtpAttempts: { type: Number, default: 0 },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   }

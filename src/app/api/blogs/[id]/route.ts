@@ -23,8 +23,9 @@ export const GET = auth(async function GET(req, context) {
       return NextResponse.json({ error: "Blog not found." }, { status: 404 });
     }
 
-    // If it's a draft, only the author can see it
-    if (!blog.published && blog.userId.toString() !== userId) {
+    const isAdmin = req.auth?.user?.role === "admin";
+    // If it's a draft, only the author or admin can see it
+    if (!blog.published && blog.userId.toString() !== userId && !isAdmin) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 403 });
     }
 
