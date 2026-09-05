@@ -9,7 +9,7 @@ import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton
 import { Button } from "@/components/ui/button";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
 import Image from "next/image";
-import { ContestAdPoster } from "@/components/marketing/ContestAdPoster";
+import { ContestCampaignPoster } from "@/components/marketing/ContestCampaignPoster";
 import { ArrowUpRight, Gift, Laptop, Smartphone, Trophy, Sparkles, CheckCircle2 } from "lucide-react";
 import { InstagramIcon, LinkedInIcon, TwitterXIcon } from "@/components/common/SocialIcons";
 
@@ -1411,9 +1411,6 @@ export default function MarketingPage() {
                           <Trophy className="w-4 h-4 text-[#F5B429]" />
                           <span>MacBook Air M3 + iPhone 16 Pro</span>
                         </div>
-                        <span className="text-[11px] font-mono text-[#F5B429] bg-[#0A0806]/80 px-2 py-0.5 rounded border border-[#2E2118]">
-                          End of Semester
-                        </span>
                       </div>
                     </div>
 
@@ -1519,8 +1516,8 @@ export default function MarketingPage() {
           </div>
         </section>
 
-        {/* ── MEGA CONTEST & AD POSTER SECTION (WIN IPHONE OR MACBOOK) ── */}
-        <ContestAdPoster />
+        {/* ── MEGA CONTEST & CAMPAIGN POSTER SECTION (WIN IPHONE OR MACBOOK) ── */}
+        <ContestCampaignPoster />
 
         {/* ── LIVE DEMO WITH FORMATTED AI OUTPUT ── */}
         <section id="demo">

@@ -27,10 +27,10 @@ import {
   Calculator,
 } from "lucide-react";
 
-export function ContestAdPoster() {
+export function ContestCampaignPoster() {
   const [copied, setCopied] = useState(false);
   const [activeStep, setActiveStep] = useState<number>(1);
-  const [adFormat, setAdFormat] = useState<"full" | "banner" | "card">("full");
+  const [campaignFormat, setCampaignFormat] = useState<"full" | "banner" | "card">("full");
 
   // Calculator state
   const [notesCount, setNotesCount] = useState<number>(5);
@@ -165,7 +165,7 @@ export function ContestAdPoster() {
           </p>
         </div>
 
-        {/* ── AD FORMAT CONTROLS (Website Ads & Poster Mode) ── */}
+        {/* ── CAMPAIGN FORMAT CONTROLS (Website Campaigns & Poster Mode) ── */}
         <div className="flex flex-wrap items-center justify-between gap-4 p-3 rounded-2xl bg-[#150F0B]/90 border border-[#2E2118] backdrop-blur-md">
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono text-[#8A8078] uppercase tracking-wider pl-2 hidden sm:inline">
@@ -174,9 +174,9 @@ export function ContestAdPoster() {
             <div className="flex items-center gap-1 bg-[#0A0806] p-1 rounded-xl border border-[#2E2118]">
               <button
                 type="button"
-                onClick={() => setAdFormat("full")}
+                onClick={() => setCampaignFormat("full")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  adFormat === "full"
+                  campaignFormat === "full"
                     ? "bg-[#F5B429] text-[#150F0B] font-bold shadow-[0_0_12px_rgba(245,180,41,0.3)]"
                     : "text-[#A89F91] hover:text-white"
                 }`}
@@ -185,25 +185,25 @@ export function ContestAdPoster() {
               </button>
               <button
                 type="button"
-                onClick={() => setAdFormat("card")}
+                onClick={() => setCampaignFormat("card")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  adFormat === "card"
+                  campaignFormat === "card"
                     ? "bg-[#F5B429] text-[#150F0B] font-bold shadow-[0_0_12px_rgba(245,180,41,0.3)]"
                     : "text-[#A89F91] hover:text-white"
                 }`}
               >
-                🖼️ Ad Poster View
+                🖼️ Campaign Poster View
               </button>
               <button
                 type="button"
-                onClick={() => setAdFormat("banner")}
+                onClick={() => setCampaignFormat("banner")}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  adFormat === "banner"
+                  campaignFormat === "banner"
                     ? "bg-[#F5B429] text-[#150F0B] font-bold shadow-[0_0_12px_rgba(245,180,41,0.3)]"
                     : "text-[#A89F91] hover:text-white"
                 }`}
               >
-                🏷️ Website Ribbon Ad
+                🏷️ Website Ribbon Campaign
               </button>
             </div>
           </div>
@@ -222,7 +222,7 @@ export function ContestAdPoster() {
               ) : (
                 <>
                   <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Ad URL</span>
+                  <span>Copy Campaign URL</span>
                 </>
               )}
             </button>
@@ -236,8 +236,8 @@ export function ContestAdPoster() {
           </div>
         </div>
 
-        {/* ── BANNER AD VIEW (728x90 style preview for ads on notexia.in) ── */}
-        {adFormat === "banner" && (
+        {/* ── BANNER CAMPAIGN VIEW (728x90 style preview for campaigns on notexia.in) ── */}
+        {campaignFormat === "banner" && (
           <div className="rounded-2xl bg-gradient-to-r from-[#150F0B] via-[#241811] to-[#150F0B] border-2 border-[#F5B429]/40 p-4 sm:p-6 shadow-[0_15px_50px_rgba(245,180,41,0.15)] relative overflow-hidden transition-all duration-300">
             <div className="absolute -right-12 -top-12 w-48 h-48 bg-[#F5B429]/15 rounded-full blur-3xl pointer-events-none" />
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -250,7 +250,7 @@ export function ContestAdPoster() {
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F5B429]/20 text-[#F5B429] border border-[#F5B429]/30">
-                      Website Ad · notexia.in
+                      Website Campaign · notexia.in
                     </span>
                     <span className="text-xs text-[#8A8078]">Active Season 1</span>
                   </div>
@@ -281,8 +281,8 @@ export function ContestAdPoster() {
           </div>
         )}
 
-        {/* ── VISUAL AD POSTER VIEW (High-impact poster for ads on notexia.in) ── */}
-        {adFormat === "card" && (
+        {/* ── VISUAL CAMPAIGN POSTER VIEW (High-impact poster for campaigns on notexia.in) ── */}
+        {campaignFormat === "card" && (
           <div className="max-w-4xl mx-auto rounded-3xl bg-[#150F0B] border border-[#F5B429]/40 p-6 sm:p-10 shadow-[0_30px_90px_rgba(0,0,0,0.9)] relative overflow-hidden transition-all duration-300">
             <div className="absolute top-0 right-0 w-80 h-80 bg-[#F5B429]/15 rounded-full blur-[100px] pointer-events-none" />
             <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
@@ -291,7 +291,7 @@ export function ContestAdPoster() {
                 <div className="space-y-2">
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#F5B429] text-xs font-mono font-bold">
                     <Sparkles className="w-3.5 h-3.5" />
-                    NOTEXIA.IN OFFICIAL AD POSTER
+                    NOTEXIA.IN OFFICIAL CAMPAIGN POSTER
                   </div>
                   <h3 className="text-2xl sm:text-4xl font-black text-white leading-tight">
                     Get a Chance to Win an{" "}
@@ -369,7 +369,7 @@ export function ContestAdPoster() {
         )}
 
         {/* ── FULL CAMPAIGN HUB (Default Interactive Experience) ── */}
-        {adFormat === "full" && (
+        {campaignFormat === "full" && (
           <div className="space-y-12">
             {/* 1. Grand Prizes Showcase Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
