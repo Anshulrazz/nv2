@@ -293,18 +293,16 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
   return (
     <div className="space-y-6">
       {/* WALLET ADDRESS HEADER BANNER */}
-      <div className="rounded-2xl bg-gradient-to-r from-[#121F18] via-[#16261D] to-[#0A120E] border border-[#F0C93B]/30 p-4 sm:p-6 shadow-2xl relative overflow-hidden backdrop-blur-xl space-y-4">
-        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-        
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 relative z-10">
+      <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden space-y-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-accent-primary bg-accent-primary/10 px-2.5 py-0.5 rounded-full border border-accent-primary/20">
                 Official Wallet Address
               </span>
-              <span className="text-[10px] text-[#9FAEA1] font-mono">• Peer-to-Peer ID</span>
+              <span className="text-[10px] text-text-muted font-mono">• Peer-to-Peer ID</span>
             </div>
-            <p className="text-xs text-[#9FAEA1] max-w-xl leading-relaxed">
+            <p className="text-xs text-text-secondary max-w-xl leading-relaxed">
               Share this unique wallet address with other scholars or educators on Notexia to receive instant coin transfers.
             </p>
           </div>
@@ -319,11 +317,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
               setTimeout(() => setCopiedAddress(false), 2000);
             }}
             disabled={!address}
-            className="w-full md:w-auto h-10 px-4 text-xs font-mono font-bold bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] border border-[#F0C93B]/60 rounded-xl shrink-0 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(240,201,59,0.2)] transition-all active:scale-95 cursor-pointer font-heading"
+            className="w-full md:w-auto h-10 px-4 text-xs font-mono font-bold btn-premium-primary rounded-xl shrink-0 flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             {copiedAddress ? (
               <>
-                <Check className="size-4 text-[#2A2118]" />
+                <Check className="size-4" />
                 <span>Address Copied!</span>
               </>
             ) : (
@@ -344,22 +342,22 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             toast.success("Wallet address copied to clipboard!");
             setTimeout(() => setCopiedAddress(false), 2000);
           }}
-          className="bg-[#0A120E]/90 border border-[#F0C93B]/40 p-3 sm:px-4 sm:py-3 rounded-xl flex items-center justify-between gap-3 group cursor-pointer hover:border-[#F0C93B]/70 transition-all select-all overflow-hidden"
+          className="bg-bg-elevated/70 border border-border-subtle p-3 sm:px-4 sm:py-3 rounded-xl flex items-center justify-between gap-3 group cursor-pointer hover:border-accent-primary/40 transition-colors select-all overflow-hidden"
           title="Click to copy wallet address"
         >
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <div className="h-7 w-7 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
+            <div className="size-7 rounded-lg bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
               <WalletIcon className="size-3.5" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[9px] text-[#9FAEA1] uppercase tracking-wider font-mono block">Your Unique Address</span>
-              <span className="font-mono text-xs sm:text-sm text-[#F0C93B] font-bold tracking-tight sm:tracking-wider break-all block truncate sm:whitespace-normal">
+              <span className="text-[9px] text-text-muted uppercase tracking-wider font-mono block">Your Unique Address</span>
+              <span className="font-mono text-xs sm:text-sm text-accent-primary font-bold tracking-tight sm:tracking-wider break-all block truncate sm:whitespace-normal">
                 {isLoading ? "Fetching address..." : (address || "NTX-GENERATING...")}
               </span>
             </div>
           </div>
 
-          <div className="shrink-0 flex items-center gap-1.5 text-[11px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 group-hover:bg-[#F0C93B]/20 border border-[#F0C93B]/30 px-2.5 py-1 rounded-lg transition-colors">
+          <div className="shrink-0 flex items-center gap-1.5 text-[11px] font-mono text-accent-primary bg-accent-primary/10 group-hover:bg-accent-primary/20 border border-accent-primary/20 px-2.5 py-1 rounded-lg transition-colors">
             {copiedAddress ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
             <span className="hidden sm:inline">{copiedAddress ? "Copied" : "Copy"}</span>
           </div>
@@ -367,86 +365,82 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
       </div>
 
       {/* TWO SEPARATE BALANCE CARDS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (TEACHER / ADMIN ONLY) OR BECOME TEACHER CTA */}
         {userRole === "teacher" || userRole === "admin" ? (
-          <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-emerald-500/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="space-y-3 relative z-10">
+          <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                  <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold shrink-0">
                     ₹
                   </div>
                   <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
                     Withdrawable Creator Earnings
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shrink-0">
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0 font-bold">
                   WITHDRAWABLE CASH
                 </span>
               </div>
 
               <div>
-                <span className="text-xs text-[#9FAEA1]">70% Course Sales &amp; Project Revenue</span>
+                <span className="text-xs text-text-muted">70% Course Sales &amp; Project Revenue</span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <h2 className="text-3xl font-black text-emerald-400 font-heading tracking-tight">
+                  <h2 className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
                     {isLoading ? "..." : creatorEarnings.toLocaleString()}
                   </h2>
-                  <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
+                  <span className="text-xs font-mono text-text-muted uppercase">
                     Coins (₹{creatorEarnings})
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-[11px] text-[#9FAEA1] font-light">
+            <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[11px] text-text-muted">
                 Only Creator Earnings can be withdrawn to bank/UPI.
               </span>
               <Button
                 onClick={() => setIsWithdrawModalOpen(true)}
-                className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all shrink-0 font-heading"
+                className="w-full sm:w-auto h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
               >
                 Withdraw Cash
               </Button>
             </div>
           </div>
         ) : (
-          <div className="rounded-2xl bg-gradient-to-br from-[#1A2D23] via-[#16261D] to-[#121F18] border border-[#F0C93B]/30 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="absolute top-0 right-0 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="space-y-3 relative z-10">
+          <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
+            <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
-                    <GraduationCap className="h-4 w-4" />
+                  <div className="size-8 rounded-lg bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+                    <GraduationCap className="size-4" />
                   </div>
-                  <span className="text-xs font-bold text-[#F0C93B] uppercase tracking-wider font-mono">
+                  <span className="text-xs font-bold text-accent-primary uppercase tracking-wider font-mono">
                     Become a Notexia Teacher
                   </span>
                 </div>
-                <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30 shrink-0">
+                <span className="text-[10px] font-mono text-accent-primary bg-accent-primary/10 px-2.5 py-0.5 rounded-full border border-accent-primary/20 shrink-0 font-bold">
                   70% REVENUE SHARE
                 </span>
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-white font-heading">Publish Courses &amp; Earn Money</h3>
-                <p className="text-xs text-[#9FAEA1] mt-1 leading-relaxed">
+                <h3 className="text-sm font-bold text-text-primary">Publish Courses &amp; Earn Money</h3>
+                <p className="text-xs text-text-secondary mt-1 leading-relaxed">
                   Earn 70% direct cash payout on every course &amp; research project sold. Apply as an educator in 2 simple steps!
                 </p>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-[11px] text-[#9FAEA1] font-light">
+            <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-[11px] text-text-muted">
                 Requires academic qualification or domain expertise.
               </span>
               <Button
                 onClick={() => setShowBecomeTeacherModal(true)}
-                className="w-full sm:w-auto h-10 sm:h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all shrink-0 font-heading flex items-center justify-center gap-1.5"
+                className="w-full sm:w-auto h-9 px-4 btn-premium-primary text-xs shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
               >
                 <GraduationCap className="size-4" />
                 <span>Become a Teacher</span>
@@ -456,61 +450,59 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
         )}
 
         {/* CARD 2: NOTEXIA ACTIVITY COINS (NON-WITHDRAWABLE) */}
-        <div className="rounded-2xl bg-gradient-to-br from-[#121F18] via-[#16261D] to-[#1A2D23] border border-[#F3F0E4]/15 p-5 sm:p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between space-y-4">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="space-y-3 relative z-10">
+        <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-lg bg-[#F0C93B]/15 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B] shrink-0">
-                  <WalletIcon className="h-4 w-4" />
+                <div className="size-8 rounded-lg bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+                  <WalletIcon className="size-4" />
                 </div>
-                <span className="text-xs font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                <span className="text-xs font-bold text-text-secondary uppercase tracking-wider font-mono">
                   Activity Coins (Non-Withdrawable)
                 </span>
               </div>
-              <span className="text-[10px] font-mono text-[#F0C93B] bg-[#F0C93B]/10 px-2.5 py-0.5 rounded-full border border-[#F0C93B]/30 shrink-0">
+              <span className="text-[10px] font-mono text-accent-primary bg-accent-primary/10 px-2.5 py-0.5 rounded-full border border-accent-primary/20 shrink-0 font-bold">
                 PLATFORM TOKENS
               </span>
             </div>
 
             <div>
-              <span className="text-xs text-[#9FAEA1]">Referrals, Signups &amp; Activity Tokens</span>
-              <div className="flex flex-wrap items-center gap-2 mt-1">
-                <h2 className="text-3xl font-black text-[#F0C93B] font-heading tracking-tight">
+              <span className="text-xs text-text-muted">Referrals, Signups &amp; Activity Tokens</span>
+              <div className="flex flex-wrap items-center gap-2.5 mt-1">
+                <h2 className="text-2xl sm:text-3xl font-bold font-mono text-accent-primary tracking-tight">
                   {isLoading ? "..." : balance.toLocaleString()}
                 </h2>
-                <span className="text-xs font-bold text-[#F3F0E4] font-mono uppercase">
+                <span className="text-xs font-mono text-text-muted uppercase">
                   Coins
                 </span>
 
                 <button
                   type="button"
                   onClick={() => setShowCoinConverter(true)}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2A2118] bg-[#F0C93B] hover:bg-[#F0C93B]/90 px-3 py-1 rounded-full border border-[#F0C93B]/50 transition-all font-heading shadow-md active:scale-95"
+                  className="inline-flex items-center gap-1 text-[11px] font-semibold text-text-primary bg-bg-elevated hover:bg-bg-elevated/80 border border-border-default hover:border-accent-primary/40 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Plus className="size-3.5" />
+                  <Plus className="size-3 text-accent-primary" />
                   <span>Convert / Buy</span>
                 </button>
               </div>
             </div>
           </div>
 
-          <div className="pt-3 border-t border-[#F3F0E4]/10 relative z-10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+          <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
             <Button
               onClick={() => setIsPasswordModalOpen(true)}
               variant="outline"
-              className="h-10 sm:h-9 px-3 bg-[#121F18] hover:bg-[#1F362A] border-[#F3F0E4]/20 text-[#F3F0E4] hover:text-[#F0C93B] font-bold text-xs rounded-xl transition-all"
+              className="h-9 px-3 bg-bg-elevated hover:bg-bg-elevated/80 border-border-subtle text-text-secondary hover:text-text-primary text-xs rounded-xl transition-colors cursor-pointer"
             >
-              <KeyRound className="h-3.5 w-3.5 text-[#F0C93B] mr-1" />
+              <KeyRound className="size-3.5 text-accent-primary mr-1" />
               <span>{hasWalletPassword ? "Change PIN" : "Set Wallet PIN"}</span>
             </Button>
 
             <Button
               onClick={handleOpenSendModal}
-              className="h-10 sm:h-9 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shadow-[0_0_15px_rgba(240,201,59,0.25)] transition-all flex items-center justify-center gap-1.5 font-heading"
+              className="h-9 px-4 btn-premium-primary text-xs flex items-center justify-center gap-1.5 cursor-pointer"
             >
-              <Send className="h-3.5 w-3.5" />
+              <Send className="size-3.5" />
               <span>Send Coins</span>
             </Button>
           </div>
@@ -518,11 +510,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
       </div>
 
       {/* Transaction History Ledger */}
-      <div className="rounded-2xl bg-[#121F18]/90 border border-[#F3F0E4]/15 p-5 sm:p-6 space-y-4 shadow-xl">
-        <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-3">
+      <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between border-b border-border-subtle pb-3">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-[#F0C93B]" />
-            <h3 className="text-xs sm:text-sm font-bold text-[#F3F0E4] font-heading tracking-wide uppercase">
+            <History className="size-4 text-accent-primary" />
+            <h3 className="text-xs sm:text-sm font-bold text-text-primary font-mono tracking-wider uppercase">
               Coin Transaction Ledger
             </h3>
           </div>
@@ -531,18 +523,18 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             size="icon"
             variant="ghost"
             onClick={() => fetchTransactions(page)}
-            className="h-7 w-7 text-[#9FAEA1] hover:text-[#F3F0E4] rounded-lg"
+            className="size-7 text-text-muted hover:text-text-primary rounded-lg cursor-pointer"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${isLedgerLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`size-3.5 ${isLedgerLoading ? "animate-spin" : ""}`} />
           </Button>
         </div>
 
         {isLedgerLoading && transactions.length === 0 ? (
           <ListSkeleton count={4} />
         ) : transactions.length === 0 ? (
-          <div className="py-12 text-center text-xs text-[#9FAEA1] space-y-1">
+          <div className="py-10 text-center text-xs text-text-muted space-y-1 border border-dashed border-border-subtle rounded-xl">
             <p>No coin transactions recorded yet.</p>
-            <p className="text-[10px] text-[#9FAEA1]/60">Earn coins via referrals or send coins to friends!</p>
+            <p className="text-[10px] text-text-muted/70">Earn coins via referrals or send coins to friends!</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -558,29 +550,29 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
               return (
                 <div
                   key={tx.id}
-                  className="p-3 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 flex items-center justify-between gap-3 hover:border-[#F3F0E4]/20 transition-all"
+                  className="p-3 rounded-xl bg-bg-elevated/40 border border-border-subtle flex items-center justify-between gap-3 hover:border-border-default transition-colors"
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                      className={`size-9 rounded-xl flex items-center justify-center shrink-0 border ${
                         isCredit
-                          ? "bg-[#1F362A] border-[#F0C93B]/30 text-[#F0C93B]"
-                          : "bg-red-500/10 border-red-500/30 text-red-400"
+                          ? "bg-accent-primary/10 border-accent-primary/20 text-accent-primary"
+                          : "bg-destructive/10 border-destructive/20 text-destructive"
                       }`}
                     >
                       {tx.type === "referral_bonus" ? (
-                        <Gift className="h-4 w-4" />
+                        <Gift className="size-4" />
                       ) : tx.type === "premium_purchase" ? (
-                        <Crown className="h-4 w-4 text-[#F0C93B]" />
+                        <Crown className="size-4 text-accent-primary" />
                       ) : isCredit ? (
-                        <ArrowDownLeft className="h-4 w-4" />
+                        <ArrowDownLeft className="size-4" />
                       ) : (
-                        <ArrowUpRight className="h-4 w-4" />
+                        <ArrowUpRight className="size-4" />
                       )}
                     </div>
 
                     <div className="min-w-0 space-y-0.5">
-                      <p className="text-xs font-bold text-[#F3F0E4] truncate">
+                      <p className="text-xs font-semibold text-text-primary truncate">
                         {tx.type === "referral_bonus"
                           ? "Referral Reward Bonus"
                           : tx.type === "premium_purchase"
@@ -591,7 +583,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                           ? `Received from ${tx.counterpartyName}`
                           : `Sent to ${tx.counterpartyName}`}
                       </p>
-                      <p className="text-[10px] text-[#9FAEA1] font-mono truncate">
+                      <p className="text-[10px] text-text-muted font-mono truncate">
                         {dateStr} {tx.metadata?.note ? `• ${tx.metadata.note}` : ""}
                       </p>
                     </div>
@@ -599,13 +591,13 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
                   <div className="text-right shrink-0">
                     <span
-                      className={`text-sm font-black font-mono ${
-                        isCredit ? "text-[#F0C93B]" : "text-red-400"
+                      className={`text-sm font-bold font-mono ${
+                        isCredit ? "text-accent-primary" : "text-destructive"
                       }`}
                     >
                       {isCredit ? `+${tx.amount}` : `-${tx.amount}`}
                     </span>
-                    <span className="block text-[9px] text-[#9FAEA1] uppercase font-mono">
+                    <span className="block text-[9px] text-text-muted uppercase font-mono">
                       {tx.status}
                     </span>
                   </div>
@@ -615,7 +607,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-3 border-t border-[#F3F0E4]/10 text-xs text-[#9FAEA1]">
+              <div className="flex items-center justify-between pt-3 border-t border-border-subtle text-xs text-text-muted">
                 <span>Page {page} of {totalPages}</span>
                 <div className="flex gap-2">
                   <Button
@@ -623,7 +615,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     variant="ghost"
                     disabled={page <= 1}
                     onClick={() => fetchTransactions(page - 1)}
-                    className="h-7 px-2 text-xs hover:bg-[#1F362A] text-[#F3F0E4]"
+                    className="h-7 px-2.5 text-xs bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary disabled:opacity-40"
                   >
                     Previous
                   </Button>
@@ -632,7 +624,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     variant="ghost"
                     disabled={page >= totalPages}
                     onClick={() => fetchTransactions(page + 1)}
-                    className="h-7 px-2 text-xs hover:bg-[#1F362A] text-[#F3F0E4]"
+                    className="h-7 px-2.5 text-xs bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary disabled:opacity-40"
                   >
                     Next
                   </Button>
@@ -646,11 +638,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
       {/* Send Coins Modal */}
       {isSendModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-[#121F18] border border-[#F3F0E4]/20 rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-3">
+          <div className="w-full max-w-md bg-bg-surface border border-border-default rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative text-text-primary">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
               <div className="flex items-center gap-2">
-                <Send className="h-4 w-4 text-[#F0C93B]" />
-                <h3 className="text-sm font-bold text-[#F3F0E4] font-heading">
+                <Send className="size-4 text-accent-primary" />
+                <h3 className="text-sm font-bold text-text-primary tracking-tight">
                   Transfer Coins
                 </h3>
               </div>
@@ -661,9 +653,9 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                   setIsSendModalOpen(false);
                   setShowConfirmStep(false);
                 }}
-                className="h-7 w-7 text-[#9FAEA1] hover:text-[#F3F0E4] rounded-lg"
+                className="size-7 text-text-muted hover:text-text-primary rounded-lg"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             </div>
 
@@ -671,7 +663,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
               <div className="space-y-4 text-xs">
                 {/* Address Input */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                  <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
                     Recipient Wallet Address
                   </label>
                   <div className="relative">
@@ -688,25 +680,25 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                         handleResolveRecipient(val);
                       }}
                       onBlur={() => handleResolveRecipient(recipientAddress)}
-                      className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono pr-8"
+                      className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono pr-8"
                     />
                     {resolvingRecipient && (
-                      <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-[#F0C93B]" />
+                      <Loader2 className="absolute right-3 top-3 size-4 animate-spin text-accent-primary" />
                     )}
                   </div>
 
                   {recipientError && (
-                    <p className="text-[10px] text-red-400 font-mono flex items-center gap-1">
-                      <AlertCircle className="h-3 w-3 shrink-0" /> {recipientError}
+                    <p className="text-[10px] text-destructive font-mono flex items-center gap-1">
+                      <AlertCircle className="size-3 shrink-0" /> {recipientError}
                     </p>
                   )}
 
                   {resolvedRecipient && (
-                    <div className="p-2.5 rounded-xl bg-[#1F362A] border border-[#F0C93B]/30 flex items-center gap-2 text-xs text-[#F3F0E4] animate-fade-in">
-                      <ShieldCheck className="h-4 w-4 text-[#F0C93B] shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-accent-primary/10 border border-accent-primary/30 flex items-center gap-2 text-xs text-text-primary animate-fade-in">
+                      <ShieldCheck className="size-4 text-accent-primary shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-[10px] text-[#9FAEA1] block">Verified Recipient:</span>
-                        <span className="font-bold text-[#F0C93B] truncate block">
+                        <span className="text-[10px] text-text-muted block">Verified Recipient:</span>
+                        <span className="font-bold text-accent-primary truncate block">
                           {resolvedRecipient.name}
                         </span>
                       </div>
@@ -717,11 +709,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                 {/* Amount Input */}
                 <div className="space-y-1.5">
                   <div className="flex justify-between items-center text-[10px] font-mono">
-                    <label className="font-bold text-[#9FAEA1] uppercase tracking-wider">
+                    <label className="font-bold text-text-muted uppercase tracking-wider">
                       Amount (Coins)
                     </label>
-                    <span className="text-[#9FAEA1]">
-                      Balance: <strong className="text-[#F0C93B]">{balance}</strong>
+                    <span className="text-text-muted">
+                      Balance: <strong className="text-accent-primary">{balance}</strong>
                     </span>
                   </div>
                   <Input
@@ -732,10 +724,10 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     placeholder="Enter whole amount (e.g. 50)"
                     value={transferAmount}
                     onChange={(e) => setTransferAmount(e.target.value)}
-                    className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono"
+                    className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono"
                   />
                   {isInsufficientBalance && (
-                    <p className="text-[10px] text-red-400 font-mono">
+                    <p className="text-[10px] text-destructive font-mono">
                       Entered amount exceeds available balance.
                     </p>
                   )}
@@ -743,7 +735,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
                 {/* Optional Note */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                  <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
                     Note (Optional)
                   </label>
                   <Input
@@ -752,7 +744,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     placeholder="What's this transfer for?"
                     value={transferNote}
                     onChange={(e) => setTransferNote(e.target.value)}
-                    className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10"
+                    className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10"
                   />
                 </div>
 
@@ -761,7 +753,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     type="button"
                     variant="ghost"
                     onClick={() => setIsSendModalOpen(false)}
-                    className="flex-1 bg-[#16261D] hover:bg-[#1F362A] text-[#9FAEA1] text-xs h-10 rounded-xl"
+                    className="flex-1 bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary text-xs h-10 rounded-xl"
                   >
                     Cancel
                   </Button>
@@ -774,7 +766,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                       Boolean(recipientError)
                     }
                     onClick={() => setShowConfirmStep(true)}
-                    className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 rounded-xl disabled:opacity-40"
+                    className="flex-1 btn-premium-primary text-xs h-10 rounded-xl disabled:opacity-40"
                   >
                     Review Transfer
                   </Button>
@@ -783,40 +775,40 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             ) : (
               /* Confirmation Step */
               <div className="space-y-4 text-xs animate-fade-in">
-                <div className="p-4 rounded-xl bg-[#1A2D23] border border-[#F0C93B]/30 space-y-3">
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-[#9FAEA1] font-mono block">
+                <div className="p-4 rounded-xl bg-bg-elevated border border-border-subtle space-y-3">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-text-muted font-mono block">
                     Transfer Summary
                   </span>
 
-                  <div className="space-y-1.5 border-b border-[#F3F0E4]/10 pb-3">
+                  <div className="space-y-1.5 border-b border-border-subtle pb-3">
                     <div className="flex justify-between">
-                      <span className="text-[#9FAEA1]">Sending to:</span>
-                      <span className="font-bold text-[#F3F0E4]">{resolvedRecipient?.name}</span>
+                      <span className="text-text-muted">Sending to:</span>
+                      <span className="font-bold text-text-primary">{resolvedRecipient?.name}</span>
                     </div>
                     <div className="flex justify-between font-mono">
-                      <span className="text-[#9FAEA1]">Recipient Address:</span>
-                      <span className="text-[#F0C93B]">{resolvedRecipient?.address}</span>
+                      <span className="text-text-muted">Recipient Address:</span>
+                      <span className="text-accent-primary">{resolvedRecipient?.address}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#9FAEA1]">Transfer Amount:</span>
-                      <span className="font-black text-[#F0C93B] font-mono">{amountNum} Coins</span>
+                      <span className="text-text-muted">Transfer Amount:</span>
+                      <span className="font-bold text-accent-primary font-mono">{amountNum} Coins</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[#9FAEA1]">Network Fee:</span>
-                      <span className="font-bold text-emerald-400 font-mono">0 Coins (Free)</span>
+                      <span className="text-text-muted">Network Fee:</span>
+                      <span className="font-semibold text-emerald-400 font-mono">0 Coins (Free)</span>
                     </div>
                   </div>
 
                   <div className="flex justify-between font-bold pt-1">
-                    <span className="text-[#F3F0E4]">New Balance After Transfer:</span>
-                    <span className="text-[#F0C93B] font-mono">{balance - amountNum} Coins</span>
+                    <span className="text-text-primary">New Balance After Transfer:</span>
+                    <span className="text-accent-primary font-mono">{balance - amountNum} Coins</span>
                   </div>
                 </div>
 
                 {/* Dedicated Wallet Security PIN / Password Field */}
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#F0C93B] uppercase tracking-wider font-mono flex items-center gap-1">
-                    <Lock className="h-3 w-3" /> Wallet PIN / Security Password
+                  <label className="text-[10px] font-bold text-accent-primary uppercase tracking-wider font-mono flex items-center gap-1">
+                    <Lock className="size-3" /> Wallet PIN / Security Password
                   </label>
                   <Input
                     type="password"
@@ -829,7 +821,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     placeholder="Enter your Wallet PIN/Password"
                     value={walletPasswordInput}
                     onChange={(e) => setWalletPasswordInput(e.target.value)}
-                    className="bg-[#1A2D23] border-[#F0C93B]/40 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono focus:border-[#F0C93B]"
+                    className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono focus:border-accent-primary"
                   />
                 </div>
 
@@ -839,7 +831,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     variant="ghost"
                     disabled={isTransferring}
                     onClick={() => setShowConfirmStep(false)}
-                    className="flex-1 bg-[#16261D] hover:bg-[#1F362A] text-[#9FAEA1] text-xs h-10 rounded-xl"
+                    className="flex-1 bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary text-xs h-10 rounded-xl"
                   >
                     Back
                   </Button>
@@ -847,16 +839,16 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     type="button"
                     disabled={isTransferring || !walletPasswordInput.trim()}
                     onClick={handleExecuteTransfer}
-                    className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40"
+                    className="flex-1 btn-premium-primary text-xs h-10 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40"
                   >
                     {isTransferring ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
+                        <Loader2 className="size-4 animate-spin" />
                         <span>Sending...</span>
                       </>
                     ) : (
                       <>
-                        <Send className="h-3.5 w-3.5" />
+                        <Send className="size-3.5" />
                         <span>Confirm & Send</span>
                       </>
                     )}
@@ -871,11 +863,11 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
       {/* Set / Change Wallet Password Modal */}
       {isPasswordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-[#121F18] border border-[#F0C93B]/30 rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative">
-            <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-3">
+          <div className="w-full max-w-md bg-bg-surface border border-border-default rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative text-text-primary">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-3">
               <div className="flex items-center gap-2">
-                <KeyRound className="h-4 w-4 text-[#F0C93B]" />
-                <h3 className="text-sm font-bold text-[#F3F0E4] font-heading">
+                <KeyRound className="size-4 text-accent-primary" />
+                <h3 className="text-sm font-bold text-text-primary tracking-tight">
                   {hasWalletPassword ? "Change Wallet PIN / Password" : "Set Up Wallet PIN / Password"}
                 </h3>
               </div>
@@ -883,16 +875,16 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                 size="icon"
                 variant="ghost"
                 onClick={() => setIsPasswordModalOpen(false)}
-                className="h-7 w-7 text-[#9FAEA1] hover:text-[#F3F0E4] rounded-lg"
+                className="size-7 text-text-muted hover:text-text-primary rounded-lg"
               >
-                <X className="h-4 w-4" />
+                <X className="size-4" />
               </Button>
             </div>
 
             <form onSubmit={handleSaveWalletPassword} className="space-y-4 text-xs">
-              <div className="p-3 rounded-xl bg-[#1F362A] border border-[#F0C93B]/20 text-[#9FAEA1] text-[11px] space-y-1">
-                <span className="font-bold text-[#F0C93B] flex items-center gap-1 font-mono">
-                  <ShieldAlert className="h-3.5 w-3.5" /> Dedicated Wallet Protection
+              <div className="p-3 rounded-xl bg-bg-elevated border border-accent-secondary/30 text-text-secondary text-[11px] space-y-1">
+                <span className="font-bold text-accent-secondary flex items-center gap-1 font-mono">
+                  <ShieldAlert className="size-3.5" /> Dedicated Wallet Protection
                 </span>
                 <p>
                   This PIN/Password is specifically used to authorize sending coins from your wallet. It is separate from your account login password.
@@ -902,7 +894,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
               {/* Current Password Field (only if updating) */}
               {hasWalletPassword && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                  <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
                     Current Wallet PIN / Password
                   </label>
                   <Input
@@ -912,14 +904,14 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     placeholder="Enter current wallet password"
                     value={oldPasswordInput}
                     onChange={(e) => setOldPasswordInput(e.target.value)}
-                    className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono"
+                    className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono"
                   />
                 </div>
               )}
 
               {/* New Password Field */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
                   {hasWalletPassword ? "New Wallet PIN / Password" : "Create Wallet PIN / Password"}
                 </label>
                 <Input
@@ -929,14 +921,14 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                   placeholder="Min 4 characters or digits"
                   value={newPasswordInput}
                   onChange={(e) => setNewPasswordInput(e.target.value)}
-                  className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono"
+                  className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono"
                 />
               </div>
 
               {/* Confirm Password Field (only on initial setup) */}
               {!hasWalletPassword && (
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+                  <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono">
                     Confirm Wallet PIN / Password
                   </label>
                   <Input
@@ -946,7 +938,7 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                     placeholder="Re-enter wallet password"
                     value={confirmPasswordInput}
                     onChange={(e) => setConfirmPasswordInput(e.target.value)}
-                    className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/40 text-xs h-10 font-mono"
+                    className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-10 font-mono"
                   />
                 </div>
               )}
@@ -956,18 +948,18 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                   type="button"
                   variant="ghost"
                   onClick={() => setIsPasswordModalOpen(false)}
-                  className="flex-1 bg-[#16261D] hover:bg-[#1F362A] text-[#9FAEA1] text-xs h-10 rounded-xl"
+                  className="flex-1 bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary text-xs h-10 rounded-xl"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSavingPassword || !newPasswordInput.trim()}
-                  className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 rounded-xl flex items-center justify-center gap-2"
+                  className="flex-1 btn-premium-primary text-xs h-10 rounded-xl flex items-center justify-center gap-2"
                 >
                   {isSavingPassword ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
+                      <Loader2 className="size-4 animate-spin" />
                       <span>Saving...</span>
                     </>
                   ) : (

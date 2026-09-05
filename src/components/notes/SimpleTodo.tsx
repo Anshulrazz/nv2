@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CheckCircle2, Circle, Clock, Trash2, Plus, Bell, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface TodoItem {
   _id: string;
@@ -57,12 +58,11 @@ export function SimpleTodo() {
     const interval = setInterval(() => {
       const now = Date.now();
       const currentTodos = todosRef.current;
-      
+
       currentTodos.forEach((todo) => {
         if (!todo.isCompleted && todo.reminderAt && !todo.reminderSent) {
           const reminderTime = new Date(todo.reminderAt).getTime();
           const timeDiff = reminderTime - now;
-          // Notify if due in less than 10 mins (600,000 ms) and greater than 0
           if (timeDiff > 0 && timeDiff <= 600000) {
             if (Notification.permission === "granted") {
               new Notification("Task Reminder", {
@@ -71,14 +71,14 @@ export function SimpleTodo() {
                 badge: "/logo.png",
               } as NotificationOptions & { vibrate?: number[] });
             }
-            // Mark as sent in DB
             updateTodo(todo._id, { reminderSent: true }, false);
           }
         }
       });
-    }, 60000); // Check every minute
-    
+    }, 60000);
+
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleAddTodo = async (e: React.FormEvent) => {
@@ -98,7 +98,7 @@ export function SimpleTodo() {
 
       if (res.ok) {
         const newTodo = await res.json();
-        setTodos([newTodo, ...todos]);
+        setTodos((prev) => [newTodo, ...prev]);
         setNewTask("");
         setReminderTime("");
         setShowReminder(false);
@@ -112,19 +112,20 @@ export function SimpleTodo() {
 
   const updateTodo = async (id: string, updates: Partial<TodoItem>, optimistic = true) => {
     if (optimistic) {
-      setTodos((prev) => prev.map((t) => (t._id === id ? { ...t, ...updates } : t)));
+      setTodos((prev) =>
+        prev.map((t) => (t._id === id ? { ...t, ...updates } : t))
+      );
     }
+
     try {
       await fetch(`/api/todos/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
       });
-      if (!optimistic) {
-        setTodos((prev) => prev.map((t) => (t._id === id ? { ...t, ...updates } : t)));
-      }
     } catch (e) {
       console.error(e);
+      if (optimistic) fetchTodos();
     }
   };
 
@@ -134,114 +135,162 @@ export function SimpleTodo() {
       await fetch(`/api/todos/${id}`, { method: "DELETE" });
     } catch (e) {
       console.error(e);
+      fetchTodos();
     }
   };
 
+  const pendingCount = todos.filter((t) => !t.isCompleted).length;
+
   return (
-    <div className="w-full bg-zinc-900/40 border border-white/10 backdrop-blur-xl rounded-[2rem] p-6 shadow-2xl relative overflow-hidden">
-      {/* Decorative gradient orb */}
-      <div className="absolute -top-10 -right-10 w-32 h-32 bg-cyan-500/10 rounded-full blur-[40px] pointer-events-none" />
-      
-      <div className="flex items-center justify-between mb-5 relative z-10">
-        <h3 className="text-sm font-extrabold text-neutral-100 tracking-wider flex items-center gap-2" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-          <CheckCircle2 className="h-5 w-5 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)]" />
-          QUICK TASKS
-        </h3>
-        {isLoading && <Loader2 className="h-4 w-4 text-cyan-400 animate-spin" />}
-      </div>
-
-      <form onSubmit={handleAddTodo} className="mb-5 space-y-3 relative z-10">
-        <div className="flex items-center gap-2 bg-neutral-950/80 border border-neutral-800 rounded-xl p-1.5 focus-within:border-cyan-500/60 focus-within:ring-1 focus-within:ring-cyan-500/20 transition-all shadow-inner">
-          <Input
-            value={newTask}
-            onChange={(e) => setNewTask(e.target.value)}
-            placeholder="What needs to be done?"
-            className="bg-transparent border-none focus-visible:ring-0 h-10 text-sm text-neutral-100 placeholder-neutral-600 px-3 w-full font-medium"
-            autoComplete="off"
-            disabled={isSubmitting}
-          />
-          <button
-            type="button"
-            onClick={() => setShowReminder(!showReminder)}
-            className={`p-2 rounded-lg transition-all shrink-0 ${showReminder ? "bg-cyan-500/20 text-cyan-400 shadow-[0_0_10px_rgba(6,182,212,0.2)]" : "text-neutral-500 hover:text-neutral-300 hover:bg-neutral-800"}`}
-            title="Set Reminder"
-          >
-            <Bell className="h-4.5 w-4.5" />
-          </button>
-          <Button
-            type="submit"
-            size="icon"
-            disabled={isSubmitting || !newTask.trim()}
-            className="h-10 w-10 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 rounded-lg shrink-0 transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(6,182,212,0.25)]"
-          >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-5 w-5" />}
-          </Button>
+    <Card className="border-border-subtle bg-bg-surface flex flex-col h-full shadow-sm">
+      <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between border-b border-border-subtle">
+        <div className="space-y-0.5">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-text-muted">
+            Daily Planner
+          </span>
+          <CardTitle className="text-sm font-bold text-text-primary flex items-center gap-2">
+            <span>Study Tasks</span>
+            {pendingCount > 0 && (
+              <span className="text-[10px] font-mono font-bold bg-accent-primary/15 text-accent-primary px-2 py-0.5 rounded-full border border-accent-primary/20">
+                {pendingCount} due
+              </span>
+            )}
+          </CardTitle>
         </div>
-        
-        {showReminder && (
-          <div className="flex flex-col gap-2 p-3 bg-neutral-950/50 border border-neutral-800/80 rounded-xl animate-in fade-in slide-in-from-top-2 duration-300">
-            <label className="text-[10px] font-bold text-cyan-400/80 uppercase tracking-wider flex items-center gap-1.5">
-              <Clock className="h-3 w-3" />
-              Set Reminder Time
-            </label>
-            <Input
-              type="datetime-local"
-              value={reminderTime}
-              onChange={(e) => setReminderTime(e.target.value)}
-              className="bg-neutral-900 border-neutral-800 h-10 text-xs text-neutral-200 px-3 w-full rounded-lg focus:border-cyan-500/50 transition-colors"
-            />
-          </div>
-        )}
-      </form>
+      </CardHeader>
 
-      <div className="space-y-2 max-h-[350px] overflow-y-auto custom-scroll pr-2 relative z-10">
-        {!isLoading && todos.length === 0 ? (
-          <div className="text-center py-8 border border-dashed border-neutral-800/60 rounded-xl bg-neutral-950/20 flex flex-col items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-neutral-900 flex items-center justify-center border border-neutral-800">
-              <CheckCircle2 className="h-5 w-5 text-neutral-600" />
-            </div>
-            <p className="text-xs text-neutral-500 font-medium">No tasks pending.<br/>You&apos;re all caught up!</p>
-          </div>
-        ) : (
-          todos.map((todo) => (
-            <div
-              key={todo._id}
-              className={`group flex items-start gap-3 p-3 rounded-xl border backdrop-blur-sm transition-all duration-300 ${
-                todo.isCompleted 
-                  ? "bg-neutral-950/30 border-neutral-900/50 opacity-50 hover:opacity-100" 
-                  : "bg-neutral-900/50 border-neutral-800/80 hover:border-cyan-500/30 shadow-sm hover:shadow-[0_4px_20px_rgba(6,182,212,0.05)] hover:-translate-y-0.5"
+      <CardContent className="p-5 space-y-4 flex-1 flex flex-col justify-between">
+        {/* Task input form */}
+        <form onSubmit={handleAddTodo} className="space-y-2">
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              placeholder="Add a new study task..."
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              className="flex-1 bg-bg-base border-border-subtle focus-visible:ring-accent-primary text-xs h-9 rounded-xl placeholder:text-text-muted text-text-primary"
+              autoComplete="off"
+              disabled={isSubmitting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowReminder(!showReminder)}
+              className={`p-2 rounded-xl transition-colors shrink-0 outline-none focus-visible:ring-1 focus-visible:ring-accent-primary ${
+                showReminder
+                  ? "bg-accent-primary/15 text-accent-primary border border-accent-primary/30"
+                  : "text-text-muted hover:text-text-primary hover:bg-bg-elevated border border-transparent"
               }`}
+              title="Set Reminder"
+              aria-label="Set reminder time"
             >
-              <button
-                onClick={() => updateTodo(todo._id, { isCompleted: !todo.isCompleted })}
-                className={`mt-0.5 shrink-0 transition-colors ${todo.isCompleted ? "text-emerald-500 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" : "text-neutral-500 hover:text-cyan-400"}`}
-              >
-                {todo.isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Circle className="h-5 w-5" />}
-              </button>
-              
-              <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[24px]">
-                <p className={`text-sm leading-snug break-words transition-colors ${todo.isCompleted ? "text-neutral-500 line-through" : "text-neutral-200 font-medium"}`}>
-                  {todo.title}
-                </p>
-                {todo.reminderAt && !todo.isCompleted && (
-                  <div className="flex items-center gap-1.5 mt-1.5 text-[10px] text-cyan-400/90 font-mono bg-cyan-950/30 w-fit px-2 py-0.5 rounded-md border border-cyan-900/50">
-                    <Clock className="h-3 w-3" />
-                    {new Date(todo.reminderAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
-                  </div>
-                )}
-              </div>
-              
-              <button
-                onClick={() => deleteTodo(todo._id)}
-                className="opacity-0 group-hover:opacity-100 p-1.5 shrink-0 text-neutral-600 hover:text-red-400 hover:bg-neutral-800 rounded-lg transition-all"
-                title="Delete task"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <Bell className="size-4" />
+            </button>
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isSubmitting || !newTask.trim()}
+              className="size-9 bg-accent-primary hover:bg-accent-primary-hover text-bg-base rounded-xl shrink-0 transition-transform active:scale-95 disabled:opacity-40"
+              aria-label="Add task"
+            >
+              {isSubmitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Plus className="size-4 stroke-[2.5]" />
+              )}
+            </Button>
+          </div>
+
+          {showReminder && (
+            <div className="flex flex-col gap-1.5 p-3 bg-bg-elevated border border-border-subtle rounded-xl animate-in fade-in duration-150">
+              <label className="text-[10px] font-mono font-bold text-accent-primary uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="size-3" />
+                Reminder Time
+              </label>
+              <Input
+                type="datetime-local"
+                value={reminderTime}
+                onChange={(e) => setReminderTime(e.target.value)}
+                className="bg-bg-base border-border-subtle h-8 text-xs text-text-primary px-2.5 w-full rounded-lg"
+              />
             </div>
-          ))
-        )}
-      </div>
-    </div>
+          )}
+        </form>
+
+        {/* Task list container */}
+        <div className="space-y-1.5 max-h-[300px] overflow-y-auto custom-scroll pr-1 flex-1">
+          {!isLoading && todos.length === 0 ? (
+            <div className="text-center py-8 border border-dashed border-border-subtle rounded-xl bg-bg-base/40 flex flex-col items-center gap-2 select-none">
+              <div className="size-8 rounded-full bg-bg-elevated flex items-center justify-center border border-border-subtle text-text-muted">
+                <CheckCircle2 className="size-4" />
+              </div>
+              <p className="text-xs text-text-muted font-medium">All study tasks complete!</p>
+            </div>
+          ) : (
+            todos.map((todo) => (
+              <div
+                key={todo._id}
+                className={`group flex items-start gap-2.5 p-2.5 rounded-xl border transition-all duration-150 ${
+                  todo.isCompleted
+                    ? "bg-bg-base/30 border-border-subtle/50 opacity-60 hover:opacity-100"
+                    : "bg-bg-elevated/40 border-border-subtle hover:border-border-default hover:bg-bg-elevated"
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => updateTodo(todo._id, { isCompleted: !todo.isCompleted })}
+                  className={`mt-0.5 shrink-0 transition-colors cursor-pointer ${
+                    todo.isCompleted
+                      ? "text-success"
+                      : "text-text-muted hover:text-accent-primary"
+                  }`}
+                  aria-label={todo.isCompleted ? "Mark incomplete" : "Mark complete"}
+                >
+                  {todo.isCompleted ? (
+                    <CheckCircle2 className="size-4" />
+                  ) : (
+                    <Circle className="size-4" />
+                  )}
+                </button>
+
+                <div className="flex-1 min-w-0 flex flex-col justify-center min-h-[20px]">
+                  <p
+                    className={`text-xs leading-snug break-words transition-colors ${
+                      todo.isCompleted
+                        ? "text-text-muted line-through"
+                        : "text-text-primary font-medium"
+                    }`}
+                  >
+                    {todo.title}
+                  </p>
+                  {todo.reminderAt && !todo.isCompleted && (
+                    <div className="flex items-center gap-1 mt-1 text-[10px] text-accent-primary font-mono bg-accent-primary/10 w-fit px-1.5 py-0.5 rounded border border-accent-primary/20">
+                      <Clock className="size-3" />
+                      <span>
+                        {new Date(todo.reminderAt).toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => deleteTodo(todo._id)}
+                  className="opacity-0 group-hover:opacity-100 p-1 shrink-0 text-text-muted hover:text-destructive hover:bg-bg-surface rounded-lg transition-opacity cursor-pointer"
+                  title="Delete task"
+                  aria-label="Delete task"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

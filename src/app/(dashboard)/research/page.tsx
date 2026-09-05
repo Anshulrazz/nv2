@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import React, { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   GraduationCap,
   Loader2,
@@ -13,7 +13,6 @@ import {
   ArrowLeft,
   Upload,
   ExternalLink,
-  ArrowUpRight,
   X,
   Wand2,
   Trash2,
@@ -41,11 +40,6 @@ interface PaperData {
   createdAt: string;
 }
 
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
 export default function ResearchPage() {
   const { data: session } = useSession();
   const currentUserId = session?.user?.id;
@@ -66,12 +60,6 @@ export default function ResearchPage() {
   const [editContent, setEditContent] = useState("");
   const [isSubmittingWrite, setIsSubmittingWrite] = useState(false);
   const [showAiTopicModal, setShowAiTopicModal] = useState(false);
-
-  // AI Assistant chat states
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
-  const [inputMessage, setInputMessage] = useState("");
-  const [isSendingMessage, setIsSendingMessage] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   // Upload PDF Modal states
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -104,22 +92,18 @@ export default function ResearchPage() {
     fetchPapers();
   }, [fetchPapers]);
 
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatMessages]);
-
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.name.toLowerCase().endsWith(".pdf")) {
-      showAlert("Invalid File Type", "Only PDF files are supported for research paper uploads.");
+    if (file.type !== "application/pdf") {
+      toast.error("Please upload a valid PDF document.");
       return;
     }
 
     setIsUploadingFile(true);
+    setUploadFileName(file.name);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -132,14 +116,13 @@ export default function ResearchPage() {
       if (res.ok) {
         const data = await res.json();
         setUploadFileUrl(data.url);
-        setUploadFileName(file.name);
         toast.success("PDF uploaded successfully!");
       } else {
-        showAlert("Upload Failed", "Could not upload research paper file.");
+        toast.error("Failed to upload PDF file.");
       }
     } catch (err) {
       console.error(err);
-      showAlert("Upload Error", "An error occurred during paper file upload.");
+      toast.error("An error occurred during file upload.");
     } finally {
       setIsUploadingFile(false);
     }
@@ -147,7 +130,10 @@ export default function ResearchPage() {
 
   const handlePublishUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!uploadTitle.trim() || !uploadAuthors.trim() || !uploadAbstract.trim() || !uploadFileUrl || isSubmittingUpload) return;
+    if (!uploadTitle.trim() || !uploadAuthors.trim() || !uploadAbstract.trim() || !uploadFileUrl) {
+      toast.error("Please fill all required fields and upload a PDF.");
+      return;
+    }
 
     setIsSubmittingUpload(true);
     try {
@@ -170,30 +156,30 @@ export default function ResearchPage() {
         setUploadFileName("");
         setIsUploadOpen(false);
         fetchPapers();
-        toast.success("Research paper uploaded successfully! You gained +50 points.");
+        toast.success("Research paper published successfully! You gained +50 points.");
       } else {
         const err = await res.json();
-        showAlert("Upload Failed", err.error || "Could not publish research paper.");
+        showAlert("Publish Failed", err.error || "Could not publish paper.");
       }
     } catch (err) {
       console.error(err);
-      showAlert("Upload Error", "An error occurred while uploading research paper metadata.");
+      showAlert("Publish Error", "An error occurred while saving paper.");
     } finally {
       setIsSubmittingUpload(false);
     }
   };
 
   const handlePublishWritten = async () => {
-    if (!editTitle.trim() || !editAuthors.trim() || !editAbstract.trim() || !editContent.trim() || isSubmittingWrite) {
-      toast.error("Please fill in Title, Authors, Abstract, and Paper Content.");
+    if (!editTitle.trim() || !editAuthors.trim() || !editAbstract.trim() || !editContent.trim()) {
+      toast.error("Please provide title, authors, abstract, and paper content.");
       return;
     }
 
     setIsSubmittingWrite(true);
     try {
-      const isUpdate = Boolean(editingPaperId);
+      const isUpdate = !!editingPaperId;
       const url = isUpdate ? `/api/research/${editingPaperId}` : "/api/research";
-      const method = isUpdate ? "PATCH" : "POST";
+      const method = isUpdate ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
@@ -260,42 +246,6 @@ export default function ResearchPage() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleSendChatMessage = async () => {
-    if (!inputMessage.trim() || !selectedPaper || isSendingMessage) return;
-
-    const userMsg = inputMessage.trim();
-    setInputMessage("");
-    setChatMessages((prev) => [...prev, { role: "user", content: userMsg }]);
-    setIsSendingMessage(true);
-
-    try {
-      const res = await fetch("/api/research/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          paperId: selectedPaper._id,
-          paperTitle: selectedPaper.title,
-          paperAbstract: selectedPaper.abstract,
-          paperContent: selectedPaper.content,
-          message: userMsg,
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setChatMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
-      } else {
-        toast.error("Failed to get AI analysis.");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Error communicating with AI Assistant.");
-    } finally {
-      setIsSendingMessage(false);
-    }
-  };
-
   const filteredPapers = papers.filter(
     (p) =>
       p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -304,39 +254,39 @@ export default function ResearchPage() {
   );
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
-      </div>
-
+    <div className="flex-1 flex flex-col h-full bg-transparent text-text-primary overflow-y-auto antialiased relative selection:bg-accent-primary/30 selection:text-text-primary p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto w-full">
       {/* Header Banner */}
-      <div className="border-b border-[#2E2118] bg-[#150F0B]/80 p-8 rounded-[2rem] border border-[#2E2118] relative z-10 backdrop-blur-2xl m-6 sm:m-10 mb-0 shadow-[0_0_30px_-10px_rgba(245,148,29,0.15)]">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/20 text-[#F5B429]">
-              <GraduationCap className="size-7" />
+      <header className="rounded-2xl bg-bg-surface border border-border-subtle p-6 sm:p-8 backdrop-blur-xl shadow-lg relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="size-12 sm:size-14 rounded-2xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0 shadow-sm">
+              <GraduationCap className="size-6 sm:size-7" />
             </div>
-            <div>
-              <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-                Research Workspace
-                <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-3 py-1 rounded-full border border-violet-500/30 uppercase tracking-widest">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="text-[10px] font-mono font-bold text-accent-primary tracking-widest uppercase">
                   ACADEMIC ARCHIVE
                 </span>
+                <span className="text-[10px] font-mono font-bold bg-accent-primary/10 text-accent-primary px-2.5 py-0.5 rounded-full border border-accent-primary/20 uppercase tracking-widest flex items-center gap-1">
+                  <Wand2 className="size-3" /> AI RESEARCH COPILOT
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-display">
+                Research Workspace
               </h1>
-              <p className="text-zinc-400 text-xs sm:text-sm font-light mt-1">
-                Publish papers, analyze PDFs with AI assistants, and collaborate with peer researchers.
+              <p className="text-xs sm:text-sm text-text-muted max-w-xl leading-relaxed">
+                Publish academic papers, analyze PDFs with AI side assistants, and collaborate on scholarly research.
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap shrink-0">
             <Button
               onClick={() => setShowAiTopicModal(true)}
-              className="bg-gradient-to-r from-violet-500/20 via-purple-500/20 to-cyan-500/20 hover:from-violet-500/30 hover:to-cyan-500/30 text-violet-300 border border-violet-500/30 font-bold text-xs h-11 px-5 rounded-full flex items-center gap-2 transition-all shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+              className="btn-premium-primary rounded-xl text-xs font-bold h-10 px-4 flex items-center gap-2 cursor-pointer"
             >
-              <Wand2 className="size-4 text-violet-400" />
-              <span>AI Paper Writer (with Figures)</span>
+              <Wand2 className="size-3.5" />
+              <span>AI Paper Writer</span>
             </Button>
 
             <Button
@@ -345,85 +295,85 @@ export default function ResearchPage() {
                 setSelectedPaper(null);
               }}
               variant="outline"
-              className="bg-zinc-900 border-white/10 text-white hover:bg-zinc-800 rounded-full text-xs font-bold h-11 px-5"
+              className="rounded-xl border-border-subtle bg-bg-elevated hover:bg-bg-card text-text-primary text-xs font-bold h-10 px-4 flex items-center gap-2 cursor-pointer"
             >
-              <Edit className="size-4 mr-2" /> Write Paper
+              <Edit className="size-3.5" /> Write Paper
             </Button>
 
             <Button
               onClick={() => setIsUploadOpen(true)}
-              className="group rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+              variant="outline"
+              className="rounded-xl border-border-subtle bg-bg-elevated hover:bg-bg-card text-text-primary text-xs font-bold h-10 px-4 flex items-center gap-2 cursor-pointer"
             >
-              <Upload className="size-4 text-zinc-950" />
+              <Upload className="size-3.5" />
               <span>Upload PDF</span>
-              <ArrowUpRight className="size-4 text-zinc-950 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Main Container */}
-      <div className="p-4 sm:p-8 w-full max-w-7xl mx-auto space-y-8 relative z-10">
+      <main className="w-full space-y-6 relative z-10">
         {isWriting ? (
           <div className="w-full space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-4">
               <button
                 onClick={() => setIsWriting(false)}
-                className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
+                className="flex items-center gap-1.5 text-xs font-mono text-text-muted hover:text-text-primary font-bold uppercase tracking-wider cursor-pointer"
               >
                 <ArrowLeft className="size-4" /> Cancel &amp; Back
               </button>
               <Button
                 onClick={handlePublishWritten}
                 disabled={isSubmittingWrite}
-                className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-10 px-6"
+                className="btn-premium-primary rounded-xl text-xs font-bold h-10 px-5 cursor-pointer"
               >
-                {isSubmittingWrite ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper"}
+                {isSubmittingWrite ? <Loader2 className="size-4 animate-spin" /> : "Publish Research Paper"}
               </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-8 space-y-6">
+              <div className="lg:col-span-8 space-y-5">
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Title</label>
+                    <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Title</label>
                     <Input
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
                       placeholder="Research Paper Title..."
-                      className="bg-zinc-950/80 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl focus:border-cyan-400"
+                      className="bg-bg-base border-border-subtle text-text-primary placeholder:text-text-muted h-10 text-xs rounded-xl focus:border-accent-primary"
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Authors</label>
+                    <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Authors</label>
                     <Input
                       value={editAuthors}
                       onChange={(e) => setEditAuthors(e.target.value)}
                       placeholder="e.g. Dr. A. Sharma, Prof. B. Roy"
-                      className="bg-zinc-950/80 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl focus:border-cyan-400"
+                      className="bg-bg-base border-border-subtle text-text-primary placeholder:text-text-muted h-10 text-xs rounded-xl focus:border-accent-primary"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Abstract</label>
+                  <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Abstract</label>
                   <textarea
                     value={editAbstract}
                     onChange={(e) => setEditAbstract(e.target.value)}
                     placeholder="Summary of methodology, experimental setup, and primary findings..."
                     rows={3}
-                    className="w-full bg-zinc-950/80 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
+                    className="w-full bg-bg-base border border-border-subtle rounded-xl p-3 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary resize-none leading-relaxed"
                   />
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Paper Content</label>
+                  <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Paper Content</label>
                   <SimpleEditor value={editContent} onChange={setEditContent} placeholder="Write paper sections using Markdown..." />
                 </div>
               </div>
 
               {/* Side AI Assistant Panel */}
-              <div className="lg:col-span-4 rounded-3xl bg-zinc-950/80 border border-white/10 overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6">
+              <div className="lg:col-span-4 rounded-2xl bg-bg-surface border border-border-subtle overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6 shadow-sm">
                 <NoteSideChat
                   noteTitle={editTitle || "Research Paper Draft"}
                   noteContentText={editContent}
@@ -437,10 +387,10 @@ export default function ResearchPage() {
           </div>
         ) : selectedPaper ? (
           <div className="w-full space-y-6">
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-4">
               <button
                 onClick={() => setSelectedPaper(null)}
-                className="flex items-center gap-1.5 text-xs font-mono text-cyan-400 hover:text-cyan-300 font-bold uppercase tracking-widest"
+                className="flex items-center gap-1.5 text-xs font-mono text-text-muted hover:text-text-primary font-bold uppercase tracking-wider cursor-pointer"
               >
                 <ArrowLeft className="size-4" /> Back to Archive
               </button>
@@ -449,14 +399,14 @@ export default function ResearchPage() {
                   <>
                     <button
                       onClick={(e) => handleStartEditPaper(selectedPaper, e)}
-                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-zinc-900 border border-white/10 text-zinc-300 hover:text-white flex items-center gap-1 transition-all"
+                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-subtle text-text-secondary hover:text-text-primary flex items-center gap-1 transition-all cursor-pointer"
                       title="Edit Paper"
                     >
-                      <Edit className="size-3.5" /> Edit
+                      <Edit className="size-3.5 text-accent-primary" /> Edit
                     </button>
                     <button
                       onClick={(e) => handleDeletePaper(selectedPaper._id, e)}
-                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 flex items-center gap-1 transition-all"
+                      className="text-xs font-mono font-bold px-3 py-1.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/20 flex items-center gap-1 transition-all cursor-pointer"
                       title="Delete Paper"
                     >
                       <Trash2 className="size-3.5" /> Delete
@@ -465,78 +415,49 @@ export default function ResearchPage() {
                 )}
                 <button
                   onClick={() => setShowAiSideChat((prev) => !prev)}
-                  className={`text-xs font-mono font-bold px-4 py-1.5 rounded-full uppercase tracking-widest transition-all flex items-center gap-1.5 ${
-                    showAiSideChat ? "bg-violet-500/20 text-violet-300 border border-violet-500/30" : "bg-zinc-900 text-zinc-400 border border-white/10 hover:text-white"
+                  className={`text-xs font-mono font-bold px-3.5 py-1.5 rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
+                    showAiSideChat ? "bg-accent-primary/15 text-accent-primary border border-accent-primary/30" : "bg-bg-elevated text-text-muted border border-border-subtle hover:text-text-primary"
                   }`}
                 >
-                  <Wand2 className="size-3.5 text-violet-400" />
+                  <Wand2 className="size-3.5 text-accent-primary" />
                   <span>{showAiSideChat ? "Hide AI Side Chat" : "✨ AI Side Chat"}</span>
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Paper Content - ALWAYS VISIBLE */}
+              {/* Paper Content */}
               <div className={showAiSideChat ? "lg:col-span-8 space-y-6" : "lg:col-span-12 space-y-6"}>
-                <div className="space-y-2 border-b border-white/10 pb-6">
-                  <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight leading-tight">{selectedPaper.title}</h2>
-                  <p className="text-sm font-mono text-cyan-300">Authors: {selectedPaper.authors}</p>
+                <div className="space-y-2 border-b border-border-subtle pb-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-text-primary tracking-tight font-display">{selectedPaper.title}</h2>
+                  <p className="text-xs sm:text-sm font-mono text-accent-primary">Authors: {selectedPaper.authors}</p>
                 </div>
 
-                <div className="p-5 bg-zinc-950/60 rounded-2xl border-l-4 border-cyan-400 border-y border-r border-white/5 space-y-1.5">
-                  <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest block">ABSTRACT</span>
-                  <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed font-light">{selectedPaper.abstract}</p>
+                <div className="p-5 bg-bg-surface rounded-2xl border-l-4 border-accent-primary border-y border-r border-border-subtle space-y-1.5 shadow-sm">
+                  <span className="text-[10px] font-mono font-bold text-accent-primary uppercase tracking-widest block">ABSTRACT</span>
+                  <p className="text-xs sm:text-sm text-text-secondary leading-relaxed font-light">{selectedPaper.abstract}</p>
                 </div>
 
                 {selectedPaper.fileUrl ? (
-                  <a
-                    href={selectedPaper.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-xs font-mono text-cyan-400 hover:text-cyan-300 underline font-bold"
-                  >
-                    <Download className="size-4" /> Download PDF Research File
-                  </a>
+                  <div className="space-y-4">
+                    <a
+                      href={selectedPaper.fileUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 text-xs font-mono text-accent-primary hover:underline font-bold"
+                    >
+                      <Download className="size-4" /> Download PDF Research Document
+                    </a>
+                    <div className="w-full h-[600px] rounded-2xl border border-border-subtle overflow-hidden bg-bg-card">
+                      <iframe
+                        src={selectedPaper.fileUrl}
+                        title="PDF Viewer"
+                        className="w-full h-full border-none"
+                      />
+                    </div>
+                  </div>
                 ) : selectedPaper.content ? (
                   <div className="w-full pt-2" id="research-paper-body">
-                    <style>{`
-                      #research-paper-body pre {
-                        margin: 1.5rem 0;
-                        background: #0d0d12;
-                        border: 1px solid rgba(255,255,255,0.12);
-                        border-radius: 1rem;
-                        padding: 1.25rem;
-                        overflow-x: auto;
-                        font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                        font-size: 13px;
-                        line-height: 1.75;
-                        box-shadow: 0 4px 32px rgba(0,0,0,0.5);
-                      }
-                      #research-paper-body pre code {
-                        background: transparent !important;
-                        border: none !important;
-                        border-radius: 0 !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                        color: #6ee7b7 !important;
-                        font-family: inherit !important;
-                        font-size: inherit !important;
-                        line-height: inherit !important;
-                        white-space: pre !important;
-                        display: block !important;
-                        box-shadow: none !important;
-                      }
-                      #research-paper-body code {
-                        color: #67e8f9;
-                        background: rgba(39,39,42,0.8);
-                        border: 1px solid rgba(255,255,255,0.1);
-                        border-radius: 0.25rem;
-                        padding: 0.125rem 0.375rem;
-                        font-family: 'JetBrains Mono', 'Fira Code', monospace;
-                        font-size: 12px;
-                        line-height: 1;
-                      }
-                    `}</style>
                     <BlogContentRenderer content={selectedPaper.content} />
                   </div>
                 ) : null}
@@ -544,7 +465,7 @@ export default function ResearchPage() {
 
               {/* AI Copilot Side Chat Sidebar */}
               {showAiSideChat && (
-                <div className="lg:col-span-4 rounded-3xl bg-zinc-950/80 border border-white/10 overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6">
+                <div className="lg:col-span-4 rounded-2xl bg-bg-surface border border-border-subtle overflow-hidden flex flex-col h-[650px] lg:sticky lg:top-6 shadow-sm">
                   <NoteSideChat
                     noteTitle={selectedPaper.title}
                     noteContentText={selectedPaper.content || selectedPaper.abstract}
@@ -565,75 +486,72 @@ export default function ResearchPage() {
         ) : (
           <div className="space-y-6">
             <div className="relative w-full max-w-md">
-              <Search className="absolute left-3.5 top-3 size-4 text-zinc-500" />
+              <Search className="absolute left-3.5 top-3 size-4 text-text-muted" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search research paper titles, authors..."
-                className="bg-zinc-950 border-white/10 focus:border-cyan-400 text-white placeholder-zinc-600 h-10 text-xs pl-10 rounded-xl"
+                className="bg-bg-base border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted h-10 text-xs pl-10 rounded-xl"
               />
             </div>
 
             {isLoading ? (
-              <div className="py-20 flex flex-col items-center justify-center text-zinc-500 text-xs gap-3">
-                <Loader2 className="size-8 animate-spin text-violet-400" />
-                <span className="font-mono text-zinc-400 tracking-widest">LOADING PAPERS...</span>
+              <div className="py-20 flex flex-col items-center justify-center text-text-muted text-xs gap-3">
+                <Loader2 className="size-8 animate-spin text-accent-primary" />
+                <span className="font-mono text-text-muted tracking-widest uppercase">Loading Academic Archive...</span>
               </div>
             ) : filteredPapers.length === 0 ? (
-              <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col items-center gap-4">
-                  <FileText className="size-10 text-zinc-600" />
-                  <h3 className="text-lg font-bold text-white">No research papers found</h3>
-                  <p className="text-xs text-zinc-400 font-light max-w-xs">
-                    Be the first scholar to upload or write a research paper!
-                  </p>
-                </div>
+              <div className="rounded-2xl bg-bg-card border border-border-subtle p-8 max-w-md mx-auto text-center my-12 shadow-sm space-y-3">
+                <FileText className="size-10 text-text-muted mx-auto" />
+                <h3 className="text-base font-bold text-text-primary font-display">No research papers found</h3>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Be the first scholar to upload or write a research paper in this workspace!
+                </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {filteredPapers.map((paper) => (
-                  <div key={paper._id} className="rounded-[2rem] bg-zinc-900/40 border border-white/10 p-2 backdrop-blur-xl hover:border-violet-500/40 transition-all duration-300 flex flex-col h-full">
-                    <div
-                      onClick={() => setSelectedPaper(paper)}
-                      className="rounded-[calc(2rem-0.5rem)] bg-[#07070a] border border-white/5 p-6 space-y-4 cursor-pointer flex flex-col justify-between h-full group"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                          <span>By {paper.userName}</span>
-                          <span>{new Date(paper.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-white group-hover:text-violet-400 transition-colors line-clamp-1">
-                          {paper.title}
-                        </h3>
-                        <p className="text-xs font-mono text-zinc-400 line-clamp-1">Authors: {paper.authors}</p>
-                        <p className="text-xs text-zinc-400 font-light line-clamp-2 leading-relaxed">{paper.abstract}</p>
+                  <div
+                    key={paper._id}
+                    onClick={() => setSelectedPaper(paper)}
+                    className="rounded-2xl bg-bg-card border border-border-subtle hover:border-accent-primary/40 p-5 cursor-pointer flex flex-col justify-between h-full group transition-all duration-200 shadow-sm space-y-4"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-text-muted">
+                        <span>By {paper.userName}</span>
+                        <span>{new Date(paper.createdAt).toLocaleDateString()}</span>
                       </div>
+                      <h3 className="text-base font-bold text-text-primary group-hover:text-accent-primary transition-colors font-display line-clamp-1">
+                        {paper.title}
+                      </h3>
+                      <p className="text-xs font-mono text-accent-primary line-clamp-1">Authors: {paper.authors}</p>
+                      <p className="text-xs text-text-muted leading-relaxed line-clamp-2">{paper.abstract}</p>
+                    </div>
 
-                      <div className="flex items-center justify-between border-t border-white/5 pt-4">
-                        <span className="text-xs font-mono text-cyan-400 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                          Open Paper Workspace →
-                        </span>
-                        <div className="flex items-center gap-2">
-                          {(currentUserId === paper.userId || session?.user?.role === "admin") && (
-                            <>
-                              <button
-                                onClick={(e) => handleStartEditPaper(paper, e)}
-                                className="text-zinc-400 hover:text-white p-1 transition-colors"
-                                title="Edit Paper"
-                              >
-                                <Edit className="size-4" />
-                              </button>
-                              <button
-                                onClick={(e) => handleDeletePaper(paper._id, e)}
-                                className="text-zinc-400 hover:text-rose-400 p-1 transition-colors"
-                                title="Delete Paper"
-                              >
-                                <Trash2 className="size-4" />
-                              </button>
-                            </>
-                          )}
-                          {paper.fileUrl && <ExternalLink className="size-4 text-zinc-500" />}
-                        </div>
+                    <div className="flex items-center justify-between border-t border-border-subtle pt-3 text-xs">
+                      <span className="font-mono text-accent-primary font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                        Open Paper Workspace →
+                      </span>
+                      <div className="flex items-center gap-2">
+                        {(currentUserId === paper.userId || session?.user?.role === "admin") && (
+                          <>
+                            <button
+                              onClick={(e) => handleStartEditPaper(paper, e)}
+                              className="text-text-muted hover:text-text-primary p-1 transition-colors"
+                              title="Edit Paper"
+                            >
+                              <Edit className="size-3.5" />
+                            </button>
+                            <button
+                              onClick={(e) => handleDeletePaper(paper._id, e)}
+                              className="text-text-muted hover:text-destructive p-1 transition-colors"
+                              title="Delete Paper"
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </>
+                        )}
+                        {paper.fileUrl && <ExternalLink className="size-3.5 text-text-muted" />}
                       </div>
                     </div>
                   </div>
@@ -642,58 +560,58 @@ export default function ResearchPage() {
             )}
           </div>
         )}
-      </div>
+      </main>
 
       {/* Upload PDF Dialog Modal */}
       {isUploadOpen && (
         <Dialog open={true} onOpenChange={() => setIsUploadOpen(false)}>
-          <DialogContent className="bg-zinc-950 border border-white/10 text-white max-w-md rounded-3xl p-6">
-            <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-lg font-bold text-white">Upload Research PDF</DialogTitle>
-              <button onClick={() => setIsUploadOpen(false)} className="text-zinc-500 hover:text-white">
+          <DialogContent className="bg-bg-surface border border-border-subtle text-text-primary max-w-md rounded-2xl p-6 shadow-2xl">
+            <DialogHeader className="flex flex-row items-center justify-between border-b border-border-subtle pb-3">
+              <DialogTitle className="text-base font-bold text-text-primary font-display">Upload Research PDF</DialogTitle>
+              <button onClick={() => setIsUploadOpen(false)} className="text-text-muted hover:text-text-primary cursor-pointer" aria-label="Close">
                 <X className="size-4" />
               </button>
             </DialogHeader>
 
             <form onSubmit={handlePublishUpload} className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Paper Title</label>
+                <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Paper Title</label>
                 <Input
                   value={uploadTitle}
                   onChange={(e) => setUploadTitle(e.target.value)}
                   placeholder="Paper Title..."
                   required
-                  className="bg-zinc-900 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  className="bg-bg-base border-border-subtle text-text-primary placeholder:text-text-muted h-10 text-xs rounded-xl focus:border-accent-primary"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Authors</label>
+                <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Authors</label>
                 <Input
                   value={uploadAuthors}
                   onChange={(e) => setUploadAuthors(e.target.value)}
                   placeholder="Authors..."
                   required
-                  className="bg-zinc-900 border-white/10 text-white placeholder-zinc-600 h-11 text-xs rounded-xl"
+                  className="bg-bg-base border-border-subtle text-text-primary placeholder:text-text-muted h-10 text-xs rounded-xl focus:border-accent-primary"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">Abstract</label>
+                <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">Abstract</label>
                 <textarea
                   value={uploadAbstract}
                   onChange={(e) => setUploadAbstract(e.target.value)}
-                  placeholder="Brief abstract..."
+                  placeholder="Brief abstract of the paper..."
                   rows={3}
                   required
-                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl p-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-400 resize-none"
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl p-3 text-xs text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary resize-none leading-relaxed"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-widest block">PDF File</label>
-                <label className="flex items-center justify-center border border-dashed border-white/10 hover:border-violet-400 bg-zinc-900 rounded-2xl p-4 cursor-pointer gap-2 text-xs font-mono text-zinc-400 hover:text-white">
-                  {isUploadingFile ? <Loader2 className="size-4 animate-spin text-violet-400" /> : <Upload className="size-4 text-violet-400" />}
+                <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">PDF File</label>
+                <label className="flex items-center justify-center border border-dashed border-border-subtle hover:border-accent-primary bg-bg-base rounded-xl p-4 cursor-pointer gap-2 text-xs font-mono text-text-muted hover:text-text-primary transition-colors">
+                  {isUploadingFile ? <Loader2 className="size-4 animate-spin text-accent-primary" /> : <Upload className="size-4 text-accent-primary" />}
                   <span>{uploadFileName || "Select PDF File"}</span>
                   <input type="file" accept=".pdf" onChange={handleFileUpload} disabled={isUploadingFile} className="hidden" />
                 </label>
@@ -703,9 +621,9 @@ export default function ResearchPage() {
                 <Button
                   type="submit"
                   disabled={isSubmittingUpload}
-                  className="w-full rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-11 transition-all"
+                  className="w-full btn-premium-primary rounded-xl text-xs font-bold h-11 transition-all cursor-pointer"
                 >
-                  {isSubmittingUpload ? <Loader2 className="size-4 animate-spin text-zinc-950" /> : "Publish Research Paper (+50 pts)"}
+                  {isSubmittingUpload ? <Loader2 className="size-4 animate-spin" /> : "Publish Research Paper (+50 pts)"}
                 </Button>
               </DialogFooter>
             </form>
@@ -724,7 +642,7 @@ export default function ResearchPage() {
             setEditContent(contentHtml);
             setSelectedPaper(null);
             setIsWriting(true);
-            toast.success("AI Research Paper with related figures generated successfully!");
+            toast.success("AI Research Paper generated successfully!");
           }}
         />
       )}

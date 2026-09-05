@@ -3,10 +3,10 @@
 import React, { Suspense, useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { HomeIcon, LayoutDashboard, Users, Send, Trophy, User as UserIcon } from "lucide-react";
+import { LayoutDashboard, BookOpen, Sparkles, Users, Menu } from "lucide-react";
+import { useDashboardShell } from "@/components/layout/DashboardShellContext";
 
 function MobileBottomNavContent({
-  userId,
   unreadMessagesCount = 0,
 }: {
   userId?: string;
@@ -17,40 +17,52 @@ function MobileBottomNavContent({
   const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
+  let toggleMobileNav: (() => void) | undefined;
+  let isMobileNavOpen = false;
+  try {
+    const shell = useDashboardShell();
+    toggleMobileNav = shell.toggleMobileNav;
+    isMobileNavOpen = shell.isMobileNavOpen;
+  } catch {
+    // Fallback if rendered outside provider
+  }
+
+  // 5 High-Value Core Destinations (Dashboard, Notes, Learn, Community, Menu)
   const navItems = [
-    {
-      href: "/feed",
-      icon: HomeIcon,
-      label: "Home",
-    },
     {
       href: "/dashboard",
       icon: LayoutDashboard,
-      label: "Dashboard",
+      label: "Home",
+      isAction: false,
+    },
+    {
+      href: "/notes",
+      icon: BookOpen,
+      label: "Notes",
+      isAction: false,
+    },
+    {
+      href: "/courses",
+      icon: Sparkles,
+      label: "Learn",
+      isAction: false,
     },
     {
       href: "/community",
       icon: Users,
       label: "Community",
-    },
-    {
-      href: "/messages",
-      icon: Send,
-      label: "Messages",
+      isAction: false,
       badge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
     },
     {
-      href: "/leaderboard",
-      icon: Trophy,
-      label: "Leaderboard",
-    },
-    {
-      href: userId ? `/user/${userId}` : "/login",
-      icon: UserIcon,
-      label: "Profile",
+      href: "#menu",
+      icon: Menu,
+      label: "Menu",
+      isAction: true,
     },
   ];
 
+  // Hide on deep chat or message conversation views for maximum focus/keyboard space
   if (pathname.startsWith("/chat")) {
     return null;
   }
@@ -87,33 +99,96 @@ function MobileBottomNavContent({
   };
 
   return (
-    <div
+    <nav
       id="mobile-bottom-nav"
-      className="lg:hidden fixed bottom-3 left-3 right-3 z-40 bg-[#0A0806]/95 backdrop-blur-xl border border-[#2E2118] h-14 rounded-2xl flex items-center justify-around px-2 shadow-[0_12px_40px_rgba(0,0,0,0.8)] selection:bg-none select-none"
+      aria-label="Mobile Navigation Bar"
+      className="lg:hidden fixed inset-x-3 z-40 bg-bg-surface/95 backdrop-blur-xl border border-border-subtle h-14 rounded-2xl flex items-center justify-around px-2 shadow-[0_8px_32px_rgba(0,0,0,0.7)] selection:bg-none select-none max-w-lg mx-auto"
+      style={{
+        bottom: "max(0.625rem, calc(env(safe-area-inset-bottom, 0px) + 0.5rem))",
+      }}
     >
       {navItems.map((item) => {
-        const isActive =
-          pathname === item.href ||
-          (item.href !== "/" && pathname.startsWith(item.href + "/"));
+        const isActive = item.isAction
+          ? isMobileNavOpen
+          : pathname === item.href ||
+            (item.href !== "/" && pathname.startsWith(item.href + "/"));
         const IconComponent = item.icon;
         const isTooltipOpen = activeTooltip === item.label;
 
-        return (
-          <div key={item.href} className="relative flex-1 h-full flex items-center justify-center">
-            {/* Long-Press Tooltip — CSS-only */}
+        const content = (
+          <>
+            {/* Long-Press Tooltip */}
             <div
               aria-hidden="true"
               className={`absolute pointer-events-none z-50 bottom-[calc(100%+8px)] left-1/2 -translate-x-1/2
-                bg-[#150F0B] border border-[#F5B429]/40 text-[#F5B429]
-                px-3 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase
-                shadow-[0_4px_20px_rgba(0,0,0,0.7)] whitespace-nowrap flex items-center gap-1.5
-                transition-[opacity,transform] duration-150
+                bg-bg-surface border border-accent-primary/30 text-accent-primary
+                px-2.5 py-1 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase
+                shadow-xl whitespace-nowrap flex items-center gap-1.5
+                transition-[opacity,transform] duration-150 motion-reduce:transition-none
                 ${isTooltipOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1.5"}`}
             >
               <span>{item.label}</span>
-              <div className="w-1.5 h-1.5 bg-[#F5B429] rounded-full animate-pulse" />
+              <div className="size-1.5 bg-accent-primary rounded-full animate-pulse" />
             </div>
 
+            {/* Active Item Background Pill */}
+            <span
+              className={`absolute inset-x-1 inset-y-1.5 rounded-xl border transition-[opacity,background-color] duration-150 motion-reduce:transition-none
+                ${isActive
+                  ? "opacity-100 bg-bg-elevated border-border-default text-text-primary"
+                  : "opacity-0 bg-transparent border-transparent"
+                }`}
+              aria-hidden="true"
+            />
+
+            {/* Icon Container */}
+            <div className="relative flex items-center justify-center">
+              <div
+                className={`transition-[transform,color] duration-150 active:scale-90 motion-reduce:transition-none
+                  ${isActive ? "scale-105" : "scale-100"}`}
+              >
+                <IconComponent
+                  className={`size-5 transition-colors duration-150 ${
+                    isActive
+                      ? "text-accent-primary"
+                      : "text-text-muted hover:text-text-primary"
+                  }`}
+                />
+              </div>
+
+              {/* Badge Indicator */}
+              {item.badge !== undefined && (
+                <span className="absolute -top-2 -right-2 bg-accent-primary text-bg-base text-[9px] font-extrabold flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full border border-bg-surface shadow-md">
+                  {item.badge}
+                </span>
+              )}
+            </div>
+          </>
+        );
+
+        if (item.isAction) {
+          return (
+            <div key={item.label} className="relative flex-1 h-full flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => {
+                  if (toggleMobileNav) toggleMobileNav();
+                }}
+                onTouchStart={() => handleTouchStart(item.label)}
+                onTouchEnd={handleTouchEnd}
+                onTouchCancel={handleTouchEnd}
+                className="relative w-full h-full flex items-center justify-center outline-none cursor-pointer"
+                aria-label="Open full menu"
+                aria-expanded={isMobileNavOpen}
+              >
+                {content}
+              </button>
+            </div>
+          );
+        }
+
+        return (
+          <div key={item.href} className="relative flex-1 h-full flex items-center justify-center">
             <Link
               href={item.href}
               onTouchStart={() => handleTouchStart(item.label)}
@@ -121,46 +196,16 @@ function MobileBottomNavContent({
               onTouchCancel={handleTouchEnd}
               onMouseEnter={() => setActiveTooltip(item.label)}
               onMouseLeave={() => setActiveTooltip(null)}
-              className="relative w-full h-full flex items-center justify-center"
+              className="relative w-full h-full flex items-center justify-center outline-none"
               aria-label={item.label}
+              aria-current={isActive ? "page" : undefined}
             >
-              {/* Active Item Background Pill — CSS-only, no framer-motion */}
-              <span
-                className={`absolute inset-x-1 inset-y-1.5 rounded-xl border transition-[opacity,background-color] duration-150
-                  ${isActive
-                    ? "opacity-100 bg-[#F5B429]/15 border-[#F5B429]/40"
-                    : "opacity-0 bg-transparent border-transparent"
-                  }`}
-                aria-hidden="true"
-              />
-
-              {/* Icon Container */}
-              <div className="relative flex items-center justify-center">
-                <div
-                  className={`transition-[transform,color] duration-150 active:scale-75
-                    ${isActive ? "scale-[1.15] -translate-y-px" : "scale-100 translate-y-0"}`}
-                >
-                  <IconComponent
-                    className={`h-5 w-5 transition-colors duration-150 ${
-                      isActive
-                        ? "text-[#F5B429] drop-shadow-[0_0_8px_rgba(245,180,41,0.5)]"
-                        : "text-[#8A8078] hover:text-[#FAFAF8]"
-                    }`}
-                  />
-                </div>
-
-                {/* Badge Indicator */}
-                {item.badge !== undefined && (
-                  <span className="absolute -top-2 -right-2 bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] text-[9px] font-black flex items-center justify-center min-w-[16px] h-4 px-1 rounded-full border border-[#0A0806] shadow-md">
-                    {item.badge}
-                  </span>
-                )}
-              </div>
+              {content}
             </Link>
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }
 

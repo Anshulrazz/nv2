@@ -5,11 +5,12 @@ export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
   AlertCircle,
   ChevronLeft,
+  ChevronRight,
   PlayCircle,
   FileText,
   CheckCircle,
@@ -17,6 +18,10 @@ import {
   Coins,
   Tag,
   Sparkles,
+  Menu,
+  X,
+  Award,
+  HelpCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -82,6 +87,9 @@ export default function CourseViewerPage() {
 
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [submittingProgress, setSubmittingProgress] = useState(false);
+
+  // Mobile curriculum drawer toggle
+  const [mobileCurriculumOpen, setMobileCurriculumOpen] = useState(false);
 
   // Unlock Modal & Coupon State
   const [showUnlockModal, setShowUnlockModal] = useState(false);
@@ -202,7 +210,7 @@ export default function CourseViewerPage() {
 
     for (let i = 0; i < questions.length; i++) {
       if (answers[i] === undefined) {
-        alert(`Please select an answer for question ${i + 1}`);
+        toast.error(`Please select an answer for question ${i + 1}`);
         return;
       }
     }
@@ -230,8 +238,10 @@ export default function CourseViewerPage() {
       if (resProg.ok) {
         setProgress(await resProg.json());
       }
+      toast.success(`Quiz completed! You scored ${correctCount}/${questions.length}`);
     } catch (e) {
       console.error(e);
+      toast.error("Failed to save quiz results.");
     }
   };
 
@@ -282,12 +292,34 @@ export default function CourseViewerPage() {
     }
   };
 
+  const handlePrevLesson = () => {
+    if (!course) return;
+    if (activeLessonIdx > 0) {
+      setActiveLessonIdx((prev) => prev - 1);
+    } else if (activeModuleIdx > 0) {
+      const prevModIdx = activeModuleIdx - 1;
+      setActiveModuleIdx(prevModIdx);
+      setActiveLessonIdx(course.modules[prevModIdx].lessons.length - 1);
+    }
+  };
+
+  const handleNextLesson = () => {
+    if (!course) return;
+    const currentMod = course.modules[activeModuleIdx];
+    if (activeLessonIdx < currentMod.lessons.length - 1) {
+      setActiveLessonIdx((prev) => prev + 1);
+    } else if (activeModuleIdx < course.modules.length - 1) {
+      setActiveModuleIdx((prev) => prev + 1);
+      setActiveLessonIdx(0);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-10 gap-3 bg-transparent text-[#8A8078]">
         <Loader2 className="size-8 animate-spin text-[#F5B429]" />
         <span className="font-mono text-xs text-[#8A8078] tracking-widest uppercase">
-          Loading course curriculum...
+          Loading learning workstation...
         </span>
       </div>
     );
@@ -295,13 +327,13 @@ export default function CourseViewerPage() {
 
   if (error || !course) {
     return (
-      <div className="flex-1 p-10 flex flex-col items-center justify-center gap-4 bg-transparent">
+      <div className="flex-1 p-8 flex flex-col items-center justify-center gap-4 bg-transparent max-w-md mx-auto text-center my-16">
         <AlertCircle className="size-10 text-[#EF4444]" />
         <h2 className="text-xl font-bold text-[#FAFAF8] font-display">Error Loading Course</h2>
         <p className="text-[#8A8078] text-xs font-mono">{error || "Course not found"}</p>
         <Button
           onClick={() => router.push("/courses")}
-          className="btn-premium-primary rounded-full text-xs"
+          className="btn-premium-primary rounded-xl text-xs h-9 px-4"
         >
           Back to Courses
         </Button>
@@ -314,36 +346,165 @@ export default function CourseViewerPage() {
   const finalCoursePrice = Math.max(0, basePrice - discount);
   const isLockedCourse = !course.isEnrolled && basePrice > 0;
 
+  const hasPrevLesson = activeLessonIdx > 0 || activeModuleIdx > 0;
+  const isLastLesson =
+    activeModuleIdx === (course.modules?.length || 1) - 1 &&
+    activeLessonIdx === (activeModule?.lessons?.length || 1) - 1;
+  const isCurrentLessonCompleted = progress?.completedLessons?.includes(
+    `${activeModuleIdx}-${activeLessonIdx}`
+  );
+
   return (
     <div className="flex-1 flex flex-col lg:flex-row overflow-hidden bg-transparent text-[#FAFAF8] antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
-      {/* Sidebar Curriculum Drawer */}
-      <div className="w-full lg:w-80 border-r border-white/5 bg-zinc-950/60 backdrop-blur-2xl flex flex-col h-[40vh] lg:h-auto overflow-hidden shrink-0">
-        <div className="p-6 border-b border-white/5 shrink-0 space-y-3">
+      {/* Mobile Top Navigation & Curriculum Bar */}
+      <div className="lg:hidden p-3 bg-[#150F0B] border-b border-[#2E2118] flex items-center justify-between z-20 shrink-0">
+        <Link
+          href="/courses"
+          className="text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8] flex items-center gap-1 transition-colors"
+        >
+          <ChevronLeft className="size-4" />
+          <span>Courses</span>
+        </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            onClick={() => setMobileCurriculumOpen(!mobileCurriculumOpen)}
+            className="text-xs font-semibold bg-[#241811] hover:bg-[#2E2118] text-[#FAFAF8] border border-[#2E2118] h-8 px-3 rounded-lg flex items-center gap-1.5"
+          >
+            <Menu className="size-3.5" />
+            <span>Curriculum</span>
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => setShowCopilot(true)}
+            className="text-xs font-semibold bg-[#F5B429]/15 text-[#F5B429] border border-[#F5B429]/30 h-8 px-2.5 rounded-lg flex items-center gap-1"
+          >
+            <Sparkles className="size-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Mobile Curriculum Overlay Drawer */}
+      <AnimatePresence>
+        {mobileCurriculumOpen && (
+          <div className="fixed inset-0 z-40 lg:hidden flex">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileCurriculumOpen(false)}
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              className="relative w-4/5 max-w-xs bg-[#150F0B] border-r border-[#2E2118] h-full flex flex-col z-50 overflow-hidden shadow-2xl"
+            >
+              <div className="p-4 border-b border-[#241811] flex items-center justify-between bg-[#0A0806]">
+                <div className="min-w-0 flex-1 pr-2">
+                  <h3 className="text-xs font-bold text-[#FAFAF8] truncate font-display">
+                    {course.title}
+                  </h3>
+                  <span className="text-[10px] font-mono text-[#8A8078]">Course Curriculum</span>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setMobileCurriculumOpen(false)}
+                  className="size-7 rounded-lg text-[#8A8078] hover:text-[#FAFAF8]"
+                >
+                  <X className="size-4" />
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-3 space-y-4 custom-scroll">
+                {course.modules?.map((mod, mIdx) => (
+                  <div key={mIdx} className="space-y-1.5">
+                    <h4 className="text-[11px] font-mono font-bold text-[#F5B429] px-2.5 py-1 bg-[#0A0806] rounded-lg border border-[#241811]">
+                      Module {mIdx + 1}: {mod.title}
+                    </h4>
+                    <div className="flex flex-col gap-1 pl-2 border-l border-[#241811] ml-2">
+                      {mod.lessons?.map((lesson, lIdx) => {
+                        const isActive = mIdx === activeModuleIdx && lIdx === activeLessonIdx;
+                        const isCompleted = progress?.completedLessons?.includes(`${mIdx}-${lIdx}`);
+                        const lessonLocked = isLockedCourse || lesson.isLocked;
+
+                        return (
+                          <button
+                            key={lIdx}
+                            onClick={() => {
+                              if (lessonLocked) {
+                                setShowUnlockModal(true);
+                                setMobileCurriculumOpen(false);
+                                return;
+                              }
+                              setActiveModuleIdx(mIdx);
+                              setActiveLessonIdx(lIdx);
+                              setMobileCurriculumOpen(false);
+                            }}
+                            className={`text-left px-2.5 py-2 text-xs rounded-lg transition-all ${
+                              isActive
+                                ? "bg-[#F5B429]/15 text-[#F5B429] font-bold border border-[#F5B429]/30"
+                                : "text-[#B8AFA6] hover:bg-[#241811] hover:text-[#FAFAF8] border border-transparent"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                {isCompleted ? (
+                                  <CheckCircle className="size-3.5 text-emerald-400 shrink-0" />
+                                ) : lesson.videoUrl ? (
+                                  <PlayCircle className="size-3.5 shrink-0 text-[#8A8078]" />
+                                ) : (
+                                  <FileText className="size-3.5 shrink-0 text-[#8A8078]" />
+                                )}
+                                <span className="truncate">{lesson.title}</span>
+                              </div>
+                              {lessonLocked && <Lock className="size-3 text-[#F5B429] shrink-0" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Desktop Sidebar Curriculum Drawer */}
+      <div className="hidden lg:flex w-80 border-r border-[#2E2118] bg-[#150F0B] flex-col h-auto overflow-hidden shrink-0">
+        <div className="p-5 border-b border-[#241811] shrink-0 space-y-3 bg-[#0A0806]/40">
           <Link
             href="/courses"
-            className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 font-bold uppercase tracking-widest transition-colors"
+            className="text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8] flex items-center gap-1 font-medium transition-colors"
           >
             <ChevronLeft className="size-4" /> Back to courses
           </Link>
-          <h2 className="text-base font-bold text-white line-clamp-2">{course.title}</h2>
+          <h2 className="text-sm font-bold text-[#FAFAF8] line-clamp-2 font-display">
+            {course.title}
+          </h2>
           <div className="flex items-center justify-between pt-1">
             <div className="flex items-center gap-2">
               <img
                 src={course.instructor?.image || "/default-avatar.png"}
                 alt={course.instructor?.name || "Instructor"}
-                className="size-6 rounded-full object-cover border border-white/10"
+                className="size-6 rounded-full object-cover border border-[#2E2118]"
               />
-              <span className="text-xs font-mono text-zinc-400">
+              <span className="text-xs font-mono text-[#8A8078] truncate max-w-[130px]">
                 {course.instructor?.name || "Instructor"}
               </span>
             </div>
             {isLockedCourse ? (
-              <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/20 text-[#F0C93B] px-2 py-0.5 rounded-full border border-[#F0C93B]/40 flex items-center gap-1">
-                🔒 {basePrice} Coins
+              <span className="text-[10px] font-mono font-bold bg-[#F5B429]/15 text-[#F5B429] px-2 py-0.5 rounded-full border border-[#F5B429]/30 flex items-center gap-1">
+                <Lock className="size-2.5" /> {basePrice} Coins
               </span>
             ) : (
-              <span className="text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/40">
-                UNLOCKED
+              <span className="text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                ENROLLED
               </span>
             )}
           </div>
@@ -352,10 +513,10 @@ export default function CourseViewerPage() {
         <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-4">
           {course.modules?.map((mod, mIdx) => (
             <div key={mIdx} className="space-y-1.5">
-              <h3 className="text-xs font-mono font-bold text-white px-3 py-1.5 bg-zinc-900 rounded-xl border border-white/5">
+              <h3 className="text-xs font-mono font-bold text-[#FAFAF8] px-3 py-1.5 bg-[#0A0806] rounded-xl border border-[#241811]">
                 Module {mIdx + 1}: {mod.title}
               </h3>
-              <div className="flex flex-col gap-1.5 pl-3 border-l border-white/5 ml-3 mt-2">
+              <div className="flex flex-col gap-1 pl-3 border-l border-[#241811] ml-3 mt-2">
                 {mod.lessons?.map((lesson, lIdx) => {
                   const isActive = mIdx === activeModuleIdx && lIdx === activeLessonIdx;
                   const isCompleted = progress?.completedLessons?.includes(`${mIdx}-${lIdx}`);
@@ -374,22 +535,22 @@ export default function CourseViewerPage() {
                       }}
                       className={`text-left px-3 py-2 text-xs rounded-xl transition-all ${
                         isActive
-                          ? "bg-amber-500/10 text-amber-400 font-bold border border-amber-500/30"
-                          : "text-zinc-400 hover:bg-white/5 hover:text-white border border-transparent"
+                          ? "bg-[#F5B429]/15 text-[#F5B429] font-bold border border-[#F5B429]/30"
+                          : "text-[#B8AFA6] hover:bg-[#241811] hover:text-[#FAFAF8] border border-transparent"
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
                           {isCompleted ? (
-                            <CheckCircle className="size-3.5 text-emerald-400" />
+                            <CheckCircle className="size-3.5 text-emerald-400 shrink-0" />
                           ) : lesson.videoUrl ? (
-                            <PlayCircle className="size-3.5" />
+                            <PlayCircle className="size-3.5 shrink-0 text-[#8A8078]" />
                           ) : (
-                            <FileText className="size-3.5" />
+                            <FileText className="size-3.5 shrink-0 text-[#8A8078]" />
                           )}
-                          <span className="line-clamp-1">{lesson.title}</span>
+                          <span className="truncate">{lesson.title}</span>
                         </div>
-                        {lessonLocked && <Lock className="size-3 text-[#F0C93B]" />}
+                        {lessonLocked && <Lock className="size-3 text-[#F5B429] shrink-0" />}
                       </div>
                     </button>
                   );
@@ -401,71 +562,74 @@ export default function CourseViewerPage() {
       </div>
 
       {/* Main Content View */}
-      <div className="flex-1 overflow-y-auto p-6 lg:p-10 relative">
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative custom-scroll">
         {/* Course Lock Banner Overlay */}
         {isLockedCourse ? (
-          <div className="max-w-2xl mx-auto my-12 p-8 rounded-3xl bg-[#121F18] border border-[#F0C93B]/30 space-y-6 shadow-[0_0_50px_rgba(240,201,59,0.15)] text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="h-16 w-16 mx-auto rounded-3xl bg-[#F0C93B]/15 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] shadow-inner">
-              <Lock className="h-8 w-8" />
+          <div className="max-w-xl mx-auto my-8 sm:my-14 p-6 sm:p-8 rounded-2xl bg-[#150F0B] border border-[#2E2118] space-y-6 text-center relative overflow-hidden shadow-2xl">
+            <div className="size-14 mx-auto rounded-2xl bg-[#F5B429]/10 border border-[#F5B429]/25 flex items-center justify-center text-[#F5B429]">
+              <Lock className="size-7" />
             </div>
 
             <div className="space-y-2">
-              <span className="text-xs font-mono font-bold uppercase tracking-widest text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/20">
-                LOCKED PREMIUM COURSE
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#F5B429] bg-[#F5B429]/10 px-3 py-1 rounded-full border border-[#F5B429]/25">
+                PREMIUM COURSE TRACK
               </span>
-              <h2 className="text-2xl font-black text-[#F3F0E4] font-heading">{course.title}</h2>
-              <p className="text-xs text-[#9FAEA1] max-w-md mx-auto">{course.description}</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-[#FAFAF8] font-display">
+                {course.title}
+              </h2>
+              <p className="text-xs text-[#8A8078] max-w-md mx-auto leading-relaxed">
+                {course.description}
+              </p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 max-w-sm mx-auto space-y-2 font-mono text-xs">
-              <div className="flex justify-between text-[#9FAEA1]">
+            <div className="p-4 rounded-xl bg-[#0A0806] border border-[#241811] max-w-sm mx-auto space-y-2 font-mono text-xs">
+              <div className="flex justify-between text-[#8A8078]">
                 <span>Course Price:</span>
-                <span className="font-bold text-[#F0C93B]">{basePrice} Coins</span>
+                <span className="font-bold text-[#F5B429]">{basePrice} Coins</span>
               </div>
-              <div className="flex justify-between text-[#9FAEA1]">
+              <div className="flex justify-between text-[#8A8078]">
                 <span>Instructor Revenue Share:</span>
                 <span className="text-emerald-400 font-bold">70% ({Math.floor(basePrice * 0.7)} Coins)</span>
               </div>
-              <div className="flex justify-between text-[#9FAEA1]">
+              <div className="flex justify-between text-[#8A8078]">
                 <span>Platform Fee:</span>
-                <span className="text-zinc-400">30%</span>
+                <span className="text-[#8A8078]">30%</span>
               </div>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
               <Button
                 onClick={() => setShowUnlockModal(true)}
-                className="bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-12 px-8 rounded-xl shadow-[0_0_20px_rgba(240,201,59,0.3)]"
+                className="btn-premium-primary text-xs h-11 px-8 rounded-xl"
               >
-                <Lock className="h-4 w-4 mr-2" /> Unlock Full Course ({basePrice} Coins)
+                <Lock className="size-3.5 mr-2" /> Unlock Full Track ({basePrice} Coins)
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => setShowCoinConverter(true)}
-                className="bg-[#16261D] hover:bg-[#1F362A] text-[#F3F0E4] border border-[#F3F0E4]/10 text-xs h-12 px-6 rounded-xl"
+                className="bg-[#241811] hover:bg-[#2E2118] text-[#FAFAF8] border border-[#2E2118] text-xs h-11 px-6 rounded-xl"
               >
-                <Coins className="h-4 w-4 mr-2 text-[#F0C93B]" /> Buy / Convert Coins
+                <Coins className="size-3.5 mr-2 text-[#F5B429]" /> Convert / Buy Coins
               </Button>
             </div>
           </div>
         ) : (
           <>
+            {/* Completed Course Banner */}
             {progress?.isCompleted && (
-              <div className="mb-8 p-6 rounded-[2rem] bg-emerald-500/10 border border-emerald-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="mb-6 p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-lg font-bold text-emerald-400 flex items-center gap-2">
-                    <CheckCircle className="size-5" /> Course Completed!
+                  <h3 className="text-base font-bold text-emerald-400 flex items-center gap-2 font-display">
+                    <CheckCircle className="size-5" /> Track Completed!
                   </h3>
-                  <p className="text-xs text-emerald-300/80 font-light mt-1">
-                    Congratulations on finishing {course.title}.
+                  <p className="text-xs text-emerald-300/80 font-light mt-0.5">
+                    Congratulations on completing all modules in {course.title}.
                   </p>
                 </div>
                 {progress.certificateId && (
                   <Link href={`/certificates/${progress.certificateId}`}>
-                    <Button className="rounded-full bg-emerald-500 text-zinc-950 font-bold text-xs h-10 px-6">
-                      View Certificate
+                    <Button className="rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs h-9 px-5 flex items-center gap-1.5">
+                      <Award className="size-4" /> View Certificate
                     </Button>
                   </Link>
                 )}
@@ -477,48 +641,55 @@ export default function CourseViewerPage() {
                 key={`${activeModuleIdx}-${activeLessonIdx}`}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="max-w-4xl mx-auto space-y-8 pb-20"
+                className="max-w-4xl mx-auto space-y-6 pb-20"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/20">
-                      {activeModule?.title}
-                    </span>
-                    <h1 className="text-3xl font-black text-white tracking-tight">
+                {/* Lesson Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#241811] pb-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#F5B429] bg-[#F5B429]/10 px-2.5 py-0.5 rounded-full border border-[#F5B429]/25">
+                        Module {activeModuleIdx + 1}: {activeModule?.title}
+                      </span>
+                      {isCurrentLessonCompleted && (
+                        <span className="text-[10px] font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1">
+                          <CheckCircle className="size-2.5" /> COMPLETED
+                        </span>
+                      )}
+                    </div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-[#FAFAF8] tracking-tight font-display">
                       {activeLesson.title}
                     </h1>
                   </div>
 
                   <Button
                     onClick={() => setShowCopilot(true)}
-                    className="bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold h-10 px-5 rounded-2xl shrink-0 flex items-center gap-2 shadow-lg shadow-amber-500/10 transition-all"
+                    className="bg-[#241811] hover:bg-[#F5B429]/10 text-[#FAFAF8] hover:text-[#F5B429] border border-[#2E2118] hover:border-[#F5B429]/30 text-xs font-semibold h-9 px-4 rounded-xl shrink-0 flex items-center gap-2 transition-all"
                   >
-                    <Sparkles className="size-4 text-amber-400 animate-pulse" />
-                    <span>Gemini AI Copilot</span>
+                    <Sparkles className="size-3.5 text-[#F5B429]" />
+                    <span>Course Copilot</span>
                   </Button>
                 </div>
 
                 {/* Video Player */}
                 {activeLesson.videoUrl && (
-                  <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl">
-                    <div className="w-full aspect-video bg-black rounded-[calc(2.5rem-0.75rem)] overflow-hidden border border-white/5 shadow-2xl">
-                      {activeLesson.videoUrl.match(/\.(mp4|webm|ogg)$/i) ||
-                      activeLesson.videoUrl.startsWith("/uploads/") ? (
-                        <video src={activeLesson.videoUrl} controls className="w-full h-full object-contain" />
-                      ) : (
-                        <iframe
-                          src={activeLesson.videoUrl}
-                          className="w-full h-full"
-                          allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        />
-                      )}
-                    </div>
+                  <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden border border-[#2E2118] shadow-2xl">
+                    {activeLesson.videoUrl.match(/\.(mp4|webm|ogg)$/i) ||
+                    activeLesson.videoUrl.startsWith("/uploads/") ? (
+                      <video src={activeLesson.videoUrl} controls className="w-full h-full object-contain" />
+                    ) : (
+                      <iframe
+                        src={activeLesson.videoUrl}
+                        className="w-full h-full"
+                        allowFullScreen
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      />
+                    )}
                   </div>
                 )}
 
+                {/* Photo Illustration */}
                 {activeLesson.photoUrl && (
-                  <div className="rounded-[2rem] overflow-hidden border border-white/10 shadow-lg">
+                  <div className="rounded-2xl overflow-hidden border border-[#2E2118] shadow-lg bg-[#0A0806]">
                     <img
                       src={activeLesson.photoUrl}
                       alt="Lesson illustration"
@@ -527,19 +698,20 @@ export default function CourseViewerPage() {
                   </div>
                 )}
 
+                {/* Lesson Notes (Markdown) */}
                 {activeLesson.text && (
-                  <div className="bg-[#08080c] p-6 sm:p-10 rounded-[2rem] border border-white/10 shadow-2xl backdrop-blur-2xl">
+                  <div className="bg-[#150F0B] p-6 sm:p-8 rounded-2xl border border-[#2E2118] shadow-lg leading-relaxed">
                     <MarkdownRenderer content={activeLesson.text} />
                   </div>
                 )}
 
-                {/* Quiz */}
+                {/* Quiz Section */}
                 {activeLesson.quiz && activeLesson.quiz.length > 0 && (
-                  <div className="space-y-6 pt-6 border-t border-white/10">
-                    <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                      <Sparkles className="size-5 text-amber-400" /> Lesson Quiz
+                  <div className="space-y-4 pt-4 border-t border-[#241811]">
+                    <h3 className="text-base font-bold text-[#FAFAF8] flex items-center gap-2 font-display">
+                      <HelpCircle className="size-4 text-[#F5B429]" /> Lesson Practice Quiz
                     </h3>
-                    <div className="space-y-6">
+                    <div className="space-y-4">
                       {activeLesson.quiz.map((q, qIdx) => {
                         const lessonKey = `${activeModuleIdx}-${activeLessonIdx}`;
                         const selectedAnswer = quizAnswers[lessonKey]?.[qIdx];
@@ -548,12 +720,12 @@ export default function CourseViewerPage() {
                         return (
                           <div
                             key={qIdx}
-                            className="p-6 rounded-2xl bg-zinc-950/60 border border-white/5 space-y-4"
+                            className="p-5 rounded-xl bg-[#0A0806] border border-[#241811] space-y-3"
                           >
-                            <p className="text-sm font-bold text-white">
+                            <p className="text-xs sm:text-sm font-semibold text-[#FAFAF8]">
                               {qIdx + 1}. {q.question}
                             </p>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                               {q.options.map((opt, oIdx) => (
                                 <button
                                   key={oIdx}
@@ -564,10 +736,10 @@ export default function CourseViewerPage() {
                                       [lessonKey]: { ...(prev[lessonKey] || {}), [qIdx]: oIdx },
                                     }))
                                   }
-                                  className={`p-3 rounded-xl text-xs text-left border transition-all ${
+                                  className={`p-3 rounded-lg text-xs text-left border transition-all ${
                                     selectedAnswer === oIdx
-                                      ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold"
-                                      : "bg-zinc-900/50 text-zinc-300 border-white/5 hover:border-white/20"
+                                      ? "bg-[#F5B429]/15 text-[#F5B429] border-[#F5B429]/40 font-semibold"
+                                      : "bg-[#150F0B] text-[#B8AFA6] border-[#241811] hover:border-[#2E2118] hover:text-[#FAFAF8]"
                                   }`}
                                 >
                                   {opt}
@@ -575,8 +747,8 @@ export default function CourseViewerPage() {
                               ))}
                             </div>
                             {result !== undefined && (
-                              <p className={`text-xs font-mono ${result ? "text-emerald-400" : "text-rose-400"}`}>
-                                {result ? "✓ Correct!" : "✗ Incorrect answer"}
+                              <p className={`text-xs font-mono ${result ? "text-emerald-400" : "text-[#EF4444]"}`}>
+                                {result ? "✓ Correct answer!" : "✗ Incorrect answer"}
                               </p>
                             )}
                           </div>
@@ -588,7 +760,7 @@ export default function CourseViewerPage() {
                         onClick={() =>
                           handleQuizSubmit(`${activeModuleIdx}-${activeLessonIdx}`, activeLesson.quiz)
                         }
-                        className="rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-10 px-6"
+                        className="btn-premium-primary text-xs h-10 px-6 rounded-xl"
                       >
                         Submit Quiz Answers
                       </Button>
@@ -596,36 +768,58 @@ export default function CourseViewerPage() {
                   </div>
                 )}
 
-                {/* Complete Lesson Action */}
-                <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  {progress?.isCompleted && (
-                    <Link
-                      href={`/certificates/${progress.certificateId}`}
-                      className="inline-flex items-center gap-2 text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-full border border-emerald-500/30 hover:bg-emerald-500/20 transition-all"
-                    >
-                      <Sparkles className="size-3.5" /> View Verified Certificate 🎓
-                    </Link>
-                  )}
-
-                  <Button
-                    onClick={handleCompleteLesson}
-                    disabled={submittingProgress}
-                    className="w-full sm:w-auto rounded-full bg-white hover:bg-zinc-100 text-zinc-950 font-bold text-xs h-12 sm:h-11 px-8 shadow-[0_0_25px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2 transition-all font-heading"
-                  >
-                    {submittingProgress ? (
-                      <Loader2 className="size-4 animate-spin text-zinc-950" />
-                    ) : activeModuleIdx === (course.modules?.length || 1) - 1 &&
-                      activeLessonIdx === (activeModule?.lessons?.length || 1) - 1 ? (
-                      "Complete & Finish Course 🎓"
-                    ) : (
-                      "Complete & Next Lesson ➔"
+                {/* Lesson Navigation & Completion Action Bar */}
+                <div className="pt-6 border-t border-[#241811] flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    {hasPrevLesson && (
+                      <Button
+                        variant="outline"
+                        onClick={handlePrevLesson}
+                        className="w-full sm:w-auto rounded-xl border-[#2E2118] bg-[#150F0B] hover:bg-[#241811] text-[#B8AFA6] hover:text-[#FAFAF8] text-xs h-10 px-4 flex items-center gap-1.5"
+                      >
+                        <ChevronLeft className="size-4" /> Previous
+                      </Button>
                     )}
-                  </Button>
+                    {!isLastLesson && isCurrentLessonCompleted && (
+                      <Button
+                        variant="outline"
+                        onClick={handleNextLesson}
+                        className="w-full sm:w-auto rounded-xl border-[#2E2118] bg-[#150F0B] hover:bg-[#241811] text-[#B8AFA6] hover:text-[#FAFAF8] text-xs h-10 px-4 flex items-center gap-1.5"
+                      >
+                        Next <ChevronRight className="size-4" />
+                      </Button>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    {progress?.isCompleted && (
+                      <Link
+                        href={`/certificates/${progress.certificateId}`}
+                        className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-3.5 py-2 rounded-xl border border-emerald-500/25 hover:bg-emerald-500/20 transition-all"
+                      >
+                        <Award className="size-3.5" /> Certificate
+                      </Link>
+                    )}
+
+                    <Button
+                      onClick={handleCompleteLesson}
+                      disabled={submittingProgress}
+                      className="btn-premium-primary w-full sm:w-auto rounded-xl text-xs h-11 px-7 flex items-center justify-center gap-2"
+                    >
+                      {submittingProgress ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : isLastLesson ? (
+                        "Complete & Finish Course 🎓"
+                      ) : (
+                        "Complete & Next Lesson ➔"
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             ) : (
-              <div className="text-center py-20 text-zinc-500 font-mono text-xs">
-                Select a lesson from the curriculum sidebar to begin.
+              <div className="text-center py-20 text-[#8A8078] font-mono text-xs">
+                Select a lesson from the curriculum to begin studying.
               </div>
             )}
           </>
@@ -634,33 +828,33 @@ export default function CourseViewerPage() {
 
       {/* Unlock Course Modal with Coupon */}
       {showUnlockModal && course && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-md bg-[#121F18] border border-[#F0C93B]/30 rounded-3xl p-6 space-y-5 shadow-[0_0_50px_rgba(240,201,59,0.15)] relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="w-full max-w-md bg-[#150F0B] border border-[#2E2118] rounded-2xl p-6 space-y-5 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-[#241811] pb-4">
               <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-2xl bg-[#F0C93B]/15 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B]">
-                  <Lock className="h-5 w-5" />
+                <div className="size-10 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/25 flex items-center justify-center text-[#F5B429]">
+                  <Lock className="size-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-[#F3F0E4]">Unlock Course</h3>
-                  <p className="text-xs text-[#9FAEA1] line-clamp-1">{course.title}</p>
+                  <h3 className="text-sm font-bold text-[#FAFAF8] font-display">Unlock Course</h3>
+                  <p className="text-xs text-[#8A8078] line-clamp-1">{course.title}</p>
                 </div>
               </div>
               <Button
                 size="icon"
                 variant="ghost"
                 onClick={() => setShowUnlockModal(false)}
-                className="h-8 w-8 text-[#9FAEA1] hover:text-[#F3F0E4] rounded-xl"
+                className="size-8 text-[#8A8078] hover:text-[#FAFAF8] rounded-lg"
               >
                 ✕
               </Button>
             </div>
 
-            {/* Price & Revenue Info */}
-            <div className="p-4 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-2 font-mono text-xs">
-              <div className="flex justify-between text-[#9FAEA1]">
+            {/* Price & Revenue Breakdown */}
+            <div className="p-4 rounded-xl bg-[#0A0806] border border-[#241811] space-y-2 font-mono text-xs">
+              <div className="flex justify-between text-[#8A8078]">
                 <span>Base Price:</span>
-                <span className="text-[#F3F0E4] font-bold">{basePrice} Coins</span>
+                <span className="text-[#FAFAF8] font-bold">{basePrice} Coins</span>
               </div>
               {appliedCoupon && (
                 <div className="flex justify-between text-emerald-400 font-bold">
@@ -668,51 +862,51 @@ export default function CourseViewerPage() {
                   <span>-{appliedCoupon.discountAmount} Coins</span>
                 </div>
               )}
-              <div className="flex justify-between text-[#F0C93B] font-bold pt-1 border-t border-[#F3F0E4]/10">
+              <div className="flex justify-between text-[#F5B429] font-bold pt-1 border-t border-[#241811]">
                 <span>Final Price:</span>
                 <span>{finalCoursePrice} Coins</span>
               </div>
-              <div className="flex justify-between text-[10px] text-[#9FAEA1] pt-1">
+              <div className="flex justify-between text-[10px] text-[#8A8078] pt-1">
                 <span>70% Instructor Payout:</span>
                 <span className="text-emerald-400">{Math.floor(finalCoursePrice * 0.7)} Coins</span>
               </div>
             </div>
 
-            {/* Coupon Code Input */}
-            <div className="space-y-2 bg-[#16261D]/80 border border-[#F3F0E4]/10 rounded-2xl p-3">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block flex items-center gap-1">
-                <Tag className="h-3 w-3 text-[#F0C93B]" /> Apply Coupon Code
+            {/* Coupon Input */}
+            <div className="space-y-2 bg-[#0A0806] border border-[#241811] rounded-xl p-3">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8078] font-mono flex items-center gap-1">
+                <Tag className="size-3 text-[#F5B429]" /> Coupon Code
               </span>
               <div className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Coupon code (e.g. NOTEXIA50)"
+                  placeholder="e.g. NOTEXIA50"
                   value={couponCode}
                   onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                  className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] text-xs h-9 font-mono"
+                  className="bg-[#150F0B] border-[#2E2118] text-[#FAFAF8] text-xs h-9 font-mono rounded-lg"
                 />
                 <Button
                   type="button"
                   onClick={handleApplyCoupon}
                   disabled={isValidatingCoupon || !couponCode.trim()}
-                  className="bg-[#F0C93B]/20 hover:bg-[#F0C93B]/30 text-[#F0C93B] border border-[#F0C93B]/40 text-xs h-9 font-bold px-3 shrink-0"
+                  className="bg-[#241811] hover:bg-[#F5B429]/20 text-[#F5B429] border border-[#F5B429]/30 text-xs h-9 font-bold px-3 shrink-0 rounded-lg"
                 >
-                  {isValidatingCoupon ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
+                  {isValidatingCoupon ? <Loader2 className="size-3.5 animate-spin" /> : "Apply"}
                 </Button>
               </div>
             </div>
 
-            {/* Actions */}
+            {/* Modal Actions */}
             <div className="space-y-2 pt-2">
               <Button
                 onClick={handleUnlockCourse}
                 disabled={isEnrolling}
-                className="w-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 rounded-xl shadow-[0_0_20px_rgba(240,201,59,0.3)]"
+                className="btn-premium-primary w-full text-xs h-11 rounded-xl"
               >
                 {isEnrolling ? (
-                  <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  `Confirm & Unlock Course (${finalCoursePrice} Coins)`
+                  `Confirm & Unlock Track (${finalCoursePrice} Coins)`
                 )}
               </Button>
               <Button
@@ -721,7 +915,7 @@ export default function CourseViewerPage() {
                   setShowUnlockModal(false);
                   setShowCoinConverter(true);
                 }}
-                className="w-full text-xs text-[#9FAEA1] hover:text-[#F3F0E4]"
+                className="w-full text-xs text-[#8A8078] hover:text-[#FAFAF8]"
               >
                 Need Coins? Open Coin Converter
               </Button>
@@ -738,18 +932,7 @@ export default function CourseViewerPage() {
         onSuccess={() => fetchCourseData()}
       />
 
-      {/* Floating Gemini Copilot Trigger Button */}
-      {!showCopilot && (
-        <button
-          onClick={() => setShowCopilot(true)}
-          className="fixed bottom-6 right-6 z-40 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs px-5 py-3 rounded-full shadow-2xl shadow-amber-500/40 flex items-center gap-2 border border-amber-300/40 transition-all hover:scale-105 active:scale-95"
-        >
-          <Sparkles className="size-4 animate-pulse text-zinc-950" />
-          <span>Gemini Copilot</span>
-        </button>
-      )}
-
-      {/* AI Side Chat Copilot */}
+      {/* Course AI Copilot Drawer */}
       <CourseAICopilot
         courseTitle={course.title}
         lessonTitle={activeLesson?.title || ""}

@@ -13,7 +13,7 @@ interface TopicGeneratorModalProps {
 }
 
 const SAMPLE_TOPICS = [
-  "Quantum Computing & Qubits Mechanics",
+  "Quantum Computing & Qubit Mechanics",
   "Transformer Models & Attention Mechanisms",
   "Biochemistry: ATP Synthesis & Cellular Respiration",
   "Distributed Systems & Consensus Protocols (Raft / Paxos)",
@@ -39,11 +39,11 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
 
     const stepInterval = setInterval(() => {
       const steps = [
-        "Analyzing topic & domain literature...",
-        "Drafting comprehensive 2,000+ word outline (2+ pages)...",
+        "Analyzing topic & academic literature...",
+        "Drafting comprehensive 2,000+ word study chapters...",
         "Formulating theoretical frameworks & equations...",
         "Writing code blueprints & detailed examples...",
-        "Finalizing study checklist & formatting HTML...",
+        "Finalizing study checklist & formatting content...",
       ];
       setProgressStep((prev) => {
         const idx = steps.indexOf(prev);
@@ -52,7 +52,7 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
       });
     }, 2200);
 
-    const toastId = toast.loading("Generating 2,000+ word deep-dive note...");
+    const toastId = toast.loading("Generating 2,000+ word deep study note...");
 
     try {
       const res = await fetch("/api/notes/ai", {
@@ -78,51 +78,49 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
     } catch (err) {
       clearInterval(stepInterval);
       console.error(err);
-      toast.error("An error occurred while generating note.", { id: toastId });
+      toast.error("An error occurred during generation.", { id: toastId });
     } finally {
       setIsGenerating(false);
-      setProgressStep("");
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-xl bg-[#150F0B] border border-[#2E2118] rounded-3xl p-6 sm:p-8 shadow-2xl overflow-hidden">
-        {/* Glow orb background decoration */}
-        <div className="absolute -top-24 -right-24 size-60 bg-[#F5B429]/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-24 -left-24 size-60 bg-[#F5941D]/10 rounded-full blur-3xl pointer-events-none" />
-
-        {/* Close Button */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 animate-in fade-in duration-150">
+      <div className="relative w-full max-w-lg bg-bg-surface border border-border-subtle rounded-2xl p-6 sm:p-7 shadow-2xl space-y-6">
+        {/* Close button */}
         <button
           onClick={onClose}
           disabled={isGenerating}
-          className="absolute top-5 right-5 text-[#8A8078] hover:text-[#FAFAF8] p-2 rounded-full hover:bg-[#241811] transition-colors disabled:opacity-50"
+          className="absolute top-4 right-4 text-text-muted hover:text-text-primary p-1 rounded-lg hover:bg-bg-elevated transition-colors disabled:opacity-50 cursor-pointer"
+          aria-label="Close modal"
         >
-          <X className="size-5" />
+          <X className="size-4" />
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <div className="size-12 rounded-2xl bg-[#F5B429]/15 border border-[#F5B429]/30 flex items-center justify-center text-[#F5B429] shrink-0">
-            <Sparkles className="size-6" />
+        <div className="flex items-center gap-3">
+          <div className="size-11 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+            <Sparkles className="size-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-bold text-[#FAFAF8] font-display">AI Note Topic Writer</h2>
-              <span className="bg-[#F5B429]/10 border border-[#F5B429]/20 text-[#FCD34D] text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                <Zap className="size-3" /> 2,000+ Words (2 Pages)
+              <h2 className="text-base sm:text-lg font-bold text-text-primary font-display">
+                AI Note Topic Writer
+              </h2>
+              <span className="bg-accent-primary/10 border border-accent-primary/20 text-accent-primary text-[10px] font-mono font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Zap className="size-3" /> 2,000+ Words
               </span>
             </div>
-            <p className="text-[#8A8078] text-xs mt-0.5">
-              Enter any topic and AI will write an exhaustive, multi-chapter academic study note.
+            <p className="text-text-muted text-xs mt-0.5">
+              Enter any topic and AI will write an exhaustive study note.
             </p>
           </div>
         </div>
 
-        {/* Input area */}
+        {/* Input Area */}
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-xs font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-bold text-text-muted uppercase tracking-wider block">
               Topic or Research Subject
             </label>
             <Input
@@ -132,15 +130,15 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !isGenerating) handleGenerate();
               }}
-              placeholder="e.g. Quantum Supremacy, Cell Division, Macroeconomics, React 19..."
-              className="bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-11 text-sm rounded-xl"
+              placeholder="e.g. Quantum Computing, Photosynthesis, Monetary Policy..."
+              className="bg-bg-base border-border-subtle focus-visible:ring-accent-primary text-text-primary placeholder:text-text-muted h-10 text-xs rounded-xl"
             />
           </div>
 
-          {/* Quick suggestions */}
-          <div className="space-y-2">
-            <span className="text-[10px] font-mono text-[#8A8078] uppercase tracking-wider block">
-              Or pick a sample topic:
+          {/* Quick Suggestions */}
+          <div className="space-y-1.5">
+            <span className="text-[10px] font-mono text-text-muted uppercase tracking-wider block">
+              Sample Topics:
             </span>
             <div className="flex flex-wrap gap-1.5">
               {SAMPLE_TOPICS.map((sample) => (
@@ -152,7 +150,7 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
                     setTopic(sample);
                     handleGenerate(sample);
                   }}
-                  className="text-[11px] bg-[#0A0806] border border-[#2E2118] hover:border-[#F5B429]/40 text-[#B8AFA6] hover:text-[#FAFAF8] px-2.5 py-1 rounded-lg transition-all text-left truncate max-w-full disabled:opacity-50"
+                  className="text-[11px] bg-bg-base border border-border-subtle hover:border-border-default text-text-secondary hover:text-text-primary px-2.5 py-1 rounded-lg transition-colors text-left truncate max-w-full disabled:opacity-50 cursor-pointer"
                 >
                   ✨ {sample}
                 </button>
@@ -162,23 +160,23 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
 
           {/* Progress / Loading UI */}
           {isGenerating && (
-            <div className="p-4 bg-[#150F0B] border border-[#F5B429]/30 rounded-2xl space-y-2 animate-in fade-in">
-              <div className="flex items-center gap-2 text-[#FCD34D] text-xs font-bold font-mono">
-                <Loader2 className="size-4 animate-spin text-[#F5B429]" />
-                <span>Generating Deep Note...</span>
+            <div className="p-3.5 bg-bg-elevated border border-accent-primary/30 rounded-xl space-y-1.5 animate-in fade-in duration-150">
+              <div className="flex items-center gap-2 text-accent-primary text-xs font-semibold font-mono">
+                <Loader2 className="size-3.5 animate-spin text-accent-primary" />
+                <span>Writing comprehensive study note...</span>
               </div>
-              <p className="text-[11px] font-mono text-[#8A8078] animate-pulse">{progressStep}</p>
+              <p className="text-[11px] font-mono text-text-muted animate-pulse">{progressStep}</p>
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="pt-3 flex items-center justify-end gap-3 border-t border-[#2E2118]">
+          {/* Action Buttons */}
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-border-subtle">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={isGenerating}
               onClick={onClose}
-              className="text-xs text-[#8A8078] hover:text-[#FAFAF8]"
+              className="h-9 px-4 text-xs border-border-subtle bg-bg-surface hover:bg-bg-elevated text-text-secondary hover:text-text-primary rounded-xl"
             >
               Cancel
             </Button>
@@ -186,17 +184,17 @@ export function TopicGeneratorModal({ isOpen, onClose, onGenerate }: TopicGenera
               type="button"
               disabled={isGenerating || !topic.trim()}
               onClick={() => handleGenerate()}
-              className="btn-premium-primary text-xs h-10 px-5 gap-2"
+              className="btn-premium-primary text-xs h-9 px-4 flex items-center gap-2"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="size-4 animate-spin" />
-                  <span>Writing Note...</span>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  <span>Generating...</span>
                 </>
               ) : (
                 <>
-                  <Wand2 className="size-4" />
-                  <span>Generate 2,000+ Word Note</span>
+                  <Wand2 className="size-3.5" />
+                  <span>Generate Note</span>
                 </>
               )}
             </Button>

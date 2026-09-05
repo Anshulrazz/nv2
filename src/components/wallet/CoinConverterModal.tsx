@@ -171,95 +171,95 @@ export function CoinConverterModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border border-[#F0C93B]/30 rounded-[2rem] sm:rounded-3xl p-5 sm:p-7 space-y-5 shadow-[0_0_50px_rgba(240,201,59,0.15)] relative">
-        {/* Ambient Glow */}
-        <div className="absolute top-0 left-0 w-72 h-72 bg-[#F0C93B]/10 rounded-full blur-3xl pointer-events-none" />
-
+      <div className="w-full max-w-lg max-h-[92vh] overflow-y-auto custom-scroll bg-bg-surface border border-border-default rounded-2xl p-5 sm:p-6 space-y-5 shadow-2xl relative text-text-primary">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-4 relative z-10">
+        <div className="flex items-center justify-between border-b border-border-subtle pb-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-2xl bg-[#F0C93B]/15 border border-[#F0C93B]/40 flex items-center justify-center text-[#F0C93B] shadow-inner">
-              <Coins className="h-5 w-5" />
+            <div className="size-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+              <Coins className="size-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-[#F3F0E4] font-heading tracking-wide flex items-center gap-2">
-                Coin Converter <Sparkles className="h-4 w-4 text-[#F0C93B]" />
+              <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-tight flex items-center gap-2">
+                Coin Converter <Sparkles className="size-4 text-accent-primary" />
               </h2>
-              <p className="text-xs text-[#9FAEA1]">Convert INR (₹) to Notexia Coins instantly.</p>
+              <p className="text-xs text-text-secondary">Convert INR (₹) to Notexia Coins instantly.</p>
             </div>
           </div>
           <Button
             size="icon"
             variant="ghost"
             onClick={onClose}
-            className="h-8 w-8 text-[#9FAEA1] hover:text-[#F3F0E4] rounded-xl"
+            className="size-8 text-text-muted hover:text-text-primary rounded-xl"
           >
-            <X className="h-4 w-4" />
+            <X className="size-4" />
           </Button>
         </div>
 
         {/* Current Balance */}
-        <div className="flex justify-between items-center text-xs p-3 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 font-mono relative z-10">
-          <span className="text-[#9FAEA1]">Current Balance:</span>
-          <span className="font-bold text-[#F0C93B] flex items-center gap-1">
-            <Coins className="h-3.5 w-3.5" /> {currentBalance.toLocaleString()} coins
+        <div className="flex justify-between items-center text-xs p-3 rounded-xl bg-bg-elevated/60 border border-border-subtle font-mono">
+          <span className="text-text-muted">Current Balance:</span>
+          <span className="font-bold text-accent-primary flex items-center gap-1">
+            <Coins className="size-3.5" /> {currentBalance.toLocaleString()} coins
           </span>
         </div>
 
         {/* Quick Packs */}
-        <div className="space-y-2 relative z-10">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block">
+        <div className="space-y-2">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
             Popular Coin Packs:
           </span>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => handleSelectPack(100, 10)}
-              className={`p-3 rounded-xl border text-center transition-all ${coinsRequested === 100
-                  ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
-                  : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-                }`}
+              className={`p-3 rounded-xl border text-center transition-colors cursor-pointer ${
+                coinsRequested === 100
+                  ? "bg-bg-elevated border-accent-primary text-accent-primary font-bold"
+                  : "bg-bg-elevated/50 border-border-subtle hover:border-border-default text-text-primary"
+              }`}
             >
-              <div className="text-sm font-black font-heading">100 Coins</div>
-              <div className="text-[10px] font-mono text-[#9FAEA1]">₹10</div>
+              <div className="text-sm font-bold font-mono">100 Coins</div>
+              <div className="text-[10px] font-mono text-text-muted">₹10</div>
             </button>
 
             <button
               type="button"
               onClick={() => handleSelectPack(500, 50)}
-              className={`p-3 rounded-xl border text-center transition-all relative ${coinsRequested === 500
-                  ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
-                  : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-                }`}
+              className={`p-3 rounded-xl border text-center transition-colors cursor-pointer relative ${
+                coinsRequested === 500
+                  ? "bg-bg-elevated border-accent-primary text-accent-primary font-bold"
+                  : "bg-bg-elevated/50 border-border-subtle hover:border-border-default text-text-primary"
+              }`}
             >
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#F0C93B] text-[#2A2118] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full font-mono uppercase">
+              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-accent-primary text-bg-base text-[8px] font-bold px-1.5 py-0.2 rounded-full font-mono uppercase">
                 Popular
               </span>
-              <div className="text-sm font-black font-heading">500 Coins</div>
-              <div className="text-[10px] font-mono text-[#9FAEA1]">₹50</div>
+              <div className="text-sm font-bold font-mono">500 Coins</div>
+              <div className="text-[10px] font-mono text-text-muted">₹50</div>
             </button>
 
             <button
               type="button"
               onClick={() => handleSelectPack(5000, 400)}
-              className={`p-3 rounded-xl border text-center transition-all relative ${coinsRequested === 5000
-                  ? "bg-[#1A2D23] border-[#F0C93B] shadow-[0_0_15px_rgba(240,201,59,0.2)] text-[#F0C93B]"
-                  : "bg-[#16261D]/60 border-[#F3F0E4]/10 hover:border-[#F3F0E4]/25 text-[#F3F0E4]"
-                }`}
+              className={`p-3 rounded-xl border text-center transition-colors cursor-pointer relative ${
+                coinsRequested === 5000
+                  ? "bg-bg-elevated border-accent-primary text-accent-primary font-bold"
+                  : "bg-bg-elevated/50 border-border-subtle hover:border-border-default text-text-primary"
+              }`}
             >
-              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#F0C93B] text-[#2A2118] text-[8px] font-extrabold px-1.5 py-0.2 rounded-full font-mono uppercase">
+              <span className="absolute -top-2 left-1/2 -translate-x-1/2 bg-accent-primary text-bg-base text-[8px] font-bold px-1.5 py-0.2 rounded-full font-mono uppercase">
                 Save 20%
               </span>
-              <div className="text-sm font-black font-heading">5,000 Coins</div>
-              <div className="text-[10px] font-mono text-[#9FAEA1]">₹400</div>
+              <div className="text-sm font-bold font-mono">5,000 Coins</div>
+              <div className="text-[10px] font-mono text-text-muted">₹400</div>
             </button>
           </div>
         </div>
 
         {/* Custom Converter Inputs */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10 items-center">
+        <div className="grid grid-cols-2 gap-3 items-center">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
               Rupees (₹)
             </label>
             <Input
@@ -268,14 +268,14 @@ export function CoinConverterModal({
               value={inrAmount}
               onChange={(e) => handleInrChange(e.target.value)}
               placeholder="e.g. 50"
-              className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] font-mono text-sm h-10"
+              className="bg-bg-elevated border-border-subtle text-text-primary font-mono text-sm h-10"
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono block flex items-center justify-between">
-              <span>Notexia Coins</span>
-              <span className="text-[9px] text-[#F0C93B]">₹1 = 10 Coins</span>
+            <label className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block flex items-center justify-between">
+              <span>Coins</span>
+              <span className="text-[9px] text-accent-primary font-mono">₹1 = 10</span>
             </label>
             <Input
               type="number"
@@ -283,22 +283,22 @@ export function CoinConverterModal({
               value={coinsRequested}
               onChange={(e) => handleCoinsChange(e.target.value)}
               placeholder="e.g. 500"
-              className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F0C93B] font-mono font-bold text-sm h-10"
+              className="bg-bg-elevated border-border-subtle text-accent-primary font-mono font-bold text-sm h-10"
             />
           </div>
         </div>
 
         {/* Coupon Code Section */}
-        <div className="space-y-2 bg-[#16261D]/80 border border-[#F3F0E4]/10 rounded-2xl p-3.5 relative z-10">
-          <div className="flex items-center justify-between text-xs font-mono text-[#9FAEA1]">
-            <span className="flex items-center gap-1.5 font-bold text-[#F3F0E4]">
-              <Tag className="h-3.5 w-3.5 text-[#F0C93B]" /> Apply Coupon
+        <div className="space-y-2 bg-bg-elevated/40 border border-border-subtle rounded-xl p-3">
+          <div className="flex items-center justify-between text-xs font-mono text-text-muted">
+            <span className="flex items-center gap-1.5 font-semibold text-text-primary">
+              <Tag className="size-3.5 text-accent-primary" /> Apply Coupon
             </span>
             {appliedCoupon && (
               <button
                 type="button"
                 onClick={() => setAppliedCoupon(null)}
-                className="text-red-400 hover:underline text-[11px]"
+                className="text-destructive hover:underline text-[11px]"
               >
                 Remove
               </button>
@@ -306,14 +306,14 @@ export function CoinConverterModal({
           </div>
 
           {appliedCoupon ? (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 text-xs font-mono">
-              <div className="flex items-center gap-2 text-[#F0C93B]">
-                <TicketCheck className="h-4 w-4 shrink-0" />
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-accent-primary/10 border border-accent-primary/25 text-xs font-mono">
+              <div className="flex items-center gap-2 text-accent-primary">
+                <TicketCheck className="size-4 shrink-0" />
                 <span>
                   <strong>{appliedCoupon.code}</strong> applied (-₹{appliedCoupon.discountAmount})
                 </span>
               </div>
-              <span className="text-emerald-400 font-bold">Applied!</span>
+              <span className="text-emerald-400 font-semibold">Applied!</span>
             </div>
           ) : (
             <div className="flex gap-2">
@@ -322,31 +322,31 @@ export function CoinConverterModal({
                 placeholder="Coupon code (optional)"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                className="bg-[#121F18] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder:text-[#9FAEA1]/60 text-xs h-9 font-mono"
+                className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-9 font-mono"
               />
               <Button
                 type="button"
                 onClick={handleApplyCoupon}
                 disabled={isValidatingCoupon || !couponCode.trim()}
-                className="bg-[#F0C93B]/20 hover:bg-[#F0C93B]/30 text-[#F0C93B] border border-[#F0C93B]/40 text-xs h-9 font-bold px-3 shrink-0"
+                className="bg-bg-elevated hover:bg-bg-elevated/80 text-accent-primary border border-border-default hover:border-accent-primary/40 text-xs h-9 font-bold px-3 shrink-0"
               >
-                {isValidatingCoupon ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Apply"}
+                {isValidatingCoupon ? <Loader2 className="size-3.5 animate-spin" /> : "Apply"}
               </Button>
             </div>
           )}
         </div>
 
         {/* Total Summary & Action */}
-        <div className="space-y-3 relative z-10 pt-1">
-          <div className="flex justify-between items-center text-xs p-3.5 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 font-mono">
+        <div className="space-y-3 pt-1">
+          <div className="flex justify-between items-center text-xs p-3.5 rounded-xl bg-bg-elevated/60 border border-border-subtle font-mono">
             <div>
-              <span className="text-[#9FAEA1] block text-[10px]">Total Payable:</span>
-              <span className="text-base font-bold text-[#F3F0E4]">₹{finalInr}</span>
+              <span className="text-text-muted block text-[10px]">Total Payable:</span>
+              <span className="text-base font-bold text-text-primary">₹{finalInr}</span>
             </div>
             <div className="text-right">
-              <span className="text-[#9FAEA1] block text-[10px]">Coins Added:</span>
-              <span className="text-base font-bold text-[#F0C93B] flex items-center justify-end gap-1">
-                +{Number(coinsRequested || 0).toLocaleString()} <Coins className="h-4 w-4" />
+              <span className="text-text-muted block text-[10px]">Coins Added:</span>
+              <span className="text-base font-bold text-accent-primary flex items-center justify-end gap-1">
+                +{Number(coinsRequested || 0).toLocaleString()} <Coins className="size-4" />
               </span>
             </div>
           </div>
@@ -356,7 +356,7 @@ export function CoinConverterModal({
               type="button"
               variant="ghost"
               onClick={onClose}
-              className="flex-1 bg-[#16261D] hover:bg-[#1F362A] text-[#9FAEA1] text-xs h-11 rounded-xl"
+              className="flex-1 bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary text-xs h-10 rounded-xl"
             >
               Cancel
             </Button>
@@ -364,24 +364,24 @@ export function CoinConverterModal({
               type="button"
               disabled={isConverting || !coinsRequested}
               onClick={handleConvert}
-              className="flex-1 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40 shadow-[0_0_20px_rgba(240,201,59,0.3)]"
+              className="flex-1 btn-premium-primary text-xs h-10 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40"
             >
               {isConverting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin text-[#2A2118]" />
+                  <Loader2 className="size-4 animate-spin" />
                   <span>Processing...</span>
                 </>
               ) : (
                 <>
-                  <CreditCard className="h-4 w-4" />
+                  <CreditCard className="size-4" />
                   <span>Pay ₹{finalInr} via Razorpay</span>
                 </>
               )}
             </Button>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#9FAEA1]/80 text-center pt-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+          <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-text-muted text-center pt-1">
+            <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
             <span>Secure 256-Bit SSL Payment via Razorpay (UPI, Cards, NetBanking)</span>
           </div>
         </div>

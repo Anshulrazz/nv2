@@ -169,45 +169,45 @@ export default function PPTMakerPage() {
   // ── FORM ─────────────────────────────────────────────────────────────────
   if (stage === "form") {
     return (
-      <div className="min-h-screen bg-background px-4 py-10 max-w-2xl mx-auto">
+      <div className="min-h-screen bg-transparent text-text-primary px-4 py-10 max-w-2xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="size-8 rounded-xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center">
-              <Monitor className="size-4 text-violet-400" />
+        <div className="mb-8 space-y-2">
+          <div className="flex items-center gap-2">
+            <div className="size-8 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary">
+              <Monitor className="size-4" />
             </div>
-            <span className="text-[10px] font-mono uppercase tracking-widest text-violet-400 font-bold">
-              AI Tool
+            <span className="text-[10px] font-mono uppercase tracking-widest text-accent-primary font-bold">
+              AI Presentation Studio
             </span>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">AI PPT Maker</h1>
-          <p className="text-sm text-muted-foreground mt-1 max-w-lg">
-            Generates a beautiful, full-page editorial presentation — Space Grotesk typography, 
-            scroll-snapping slides, animated nav rail. Exports as a standalone HTML file.
+          <h1 className="text-3xl font-bold text-text-primary font-display">AI PPT Maker</h1>
+          <p className="text-xs sm:text-sm text-text-muted max-w-lg leading-relaxed">
+            Generate full-page editorial slide presentations with Space Grotesk typography, 
+            scroll-snapping slides, and animated nav rail. Export as a standalone HTML file.
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-6 bg-bg-surface border border-border-subtle p-6 sm:p-8 rounded-2xl shadow-lg">
           {/* Topic */}
-          <div>
-            <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted block">
               Topic <span className="text-destructive">*</span>
             </label>
             <textarea
-              className="w-full bg-sidebar border border-sidebar-border rounded-xl px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/20 transition-all resize-none"
+              className="w-full bg-bg-base border border-border-subtle rounded-xl px-4 py-3 text-xs sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/40 transition-all resize-none font-sans leading-relaxed"
               rows={2}
               placeholder="e.g. The Future of AI in Healthcare, React Performance Patterns, Climate Change & Cities…"
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               maxLength={500}
             />
-            <p className="text-[10px] text-muted-foreground mt-1 text-right">{topic.length}/500</p>
+            <p className="text-[10px] font-mono text-text-muted text-right">{topic.length}/500</p>
           </div>
 
           {/* Slide count */}
-          <div>
-            <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-2">
-              Content Slides <span className="text-muted-foreground font-normal">(+ cover & closing = total)</span>
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted block">
+              Content Slides <span className="text-text-muted font-normal lowercase">(+ cover &amp; closing = total)</span>
             </label>
             <div className="flex gap-2">
               {[4, 6, 8, 10].map((n) => (
@@ -215,21 +215,21 @@ export default function PPTMakerPage() {
                   key={n}
                   type="button"
                   onClick={() => setSlideCount(n)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                     slideCount === n
-                      ? "bg-violet-500/20 border-violet-500/50 text-violet-300"
-                      : "bg-sidebar border-sidebar-border text-muted-foreground hover:border-violet-500/30"
+                      ? "bg-accent-primary/15 border-accent-primary text-text-primary font-bold shadow-sm"
+                      : "bg-bg-elevated/60 border-border-subtle text-text-muted hover:border-border-default hover:text-text-primary"
                   }`}
                 >
-                  {n} <span className="text-[10px] opacity-60">→{n + 2}</span>
+                  {n} <span className="text-[10px] opacity-60 font-mono">→{n + 2}</span>
                 </button>
               ))}
             </div>
           </div>
 
           {/* Audience */}
-          <div>
-            <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted block">
               Audience
             </label>
             <div className="flex gap-2">
@@ -238,10 +238,10 @@ export default function PPTMakerPage() {
                   key={a}
                   type="button"
                   onClick={() => setAudience(a)}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border capitalize transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold border capitalize transition-all cursor-pointer ${
                     audience === a
-                      ? "bg-violet-500/20 border-violet-500/50 text-violet-300"
-                      : "bg-sidebar border-sidebar-border text-muted-foreground hover:border-violet-500/30"
+                      ? "bg-accent-primary/15 border-accent-primary text-text-primary font-bold shadow-sm"
+                      : "bg-bg-elevated/60 border-border-subtle text-text-muted hover:border-border-default hover:text-text-primary"
                   }`}
                 >
                   {a}
@@ -251,8 +251,8 @@ export default function PPTMakerPage() {
           </div>
 
           {/* Theme */}
-          <div>
-            <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-2">
+          <div className="space-y-2">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted block">
               Color Theme
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
@@ -261,10 +261,10 @@ export default function PPTMakerPage() {
                   key={t.id}
                   type="button"
                   onClick={() => setThemeId(t.id)}
-                  className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all ${
+                  className={`relative overflow-hidden rounded-xl border p-3 text-left transition-all cursor-pointer ${
                     themeId === t.id
-                      ? "border-violet-500/60 ring-1 ring-violet-500/30"
-                      : "border-sidebar-border hover:border-sidebar-border/60"
+                      ? "border-accent-primary ring-1 ring-accent-primary/40 shadow-sm"
+                      : "border-border-subtle hover:border-border-default"
                   }`}
                   style={{ background: t.preview }}
                 >
@@ -293,13 +293,13 @@ export default function PPTMakerPage() {
           </div>
 
           {/* Extra context */}
-          <div>
-            <label className="text-xs font-mono font-bold uppercase tracking-widest text-muted-foreground block mb-1.5">
-              Extra Context <span className="text-muted-foreground font-normal">(optional)</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-mono font-bold uppercase tracking-wider text-text-muted block">
+              Extra Context <span className="text-text-muted font-normal lowercase">(optional)</span>
             </label>
             <input
               type="text"
-              className="w-full bg-sidebar border border-sidebar-border rounded-xl px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/20 transition-all"
+              className="w-full bg-bg-base border border-border-subtle rounded-xl px-4 py-2.5 text-xs sm:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/40 transition-all font-sans"
               placeholder="e.g. Focus on India market, include Python code examples, beginner-friendly tone…"
               value={extraContext}
               onChange={(e) => setExtraContext(e.target.value)}
@@ -307,7 +307,7 @@ export default function PPTMakerPage() {
           </div>
 
           {error && (
-            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3 text-sm text-destructive">
+            <div className="flex items-start gap-2 bg-destructive/10 border border-destructive/30 rounded-xl px-4 py-3 text-xs text-destructive">
               {error}
             </div>
           )}
@@ -316,14 +316,14 @@ export default function PPTMakerPage() {
             type="button"
             disabled={!topic.trim()}
             onClick={handleGenerate}
-            className="w-full py-3.5 bg-violet-600 text-white rounded-xl font-bold text-sm hover:bg-violet-500 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-violet-500/20"
+            className="w-full py-3.5 btn-premium-primary rounded-xl font-bold text-xs sm:text-sm uppercase tracking-wider transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
           >
             <Sparkles className="size-4" />
             Generate Presentation
           </button>
 
-          <p className="text-[10px] text-muted-foreground text-center">
-            AI researches your topic first, then builds a styled editorial presentation. Takes ~40-60s.
+          <p className="text-[10px] font-mono text-text-muted text-center">
+            AI researches your topic first, then writes editorial slides and builds standalone HTML (~40-60s).
           </p>
         </div>
       </div>
@@ -334,14 +334,14 @@ export default function PPTMakerPage() {
   if (stage === "loading") {
     const activePhaseIdx = PHASES.findIndex((p) => p.id === currentPhase);
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6 px-4 py-10">
-        <div className="text-center">
-          <div className="size-14 rounded-2xl bg-violet-500/15 border border-violet-500/25 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-violet-500/10">
-            <Sparkles className="size-6 text-violet-400 animate-pulse" />
+      <div className="min-h-screen bg-transparent flex flex-col items-center justify-center gap-6 px-4 py-10">
+        <div className="text-center space-y-2">
+          <div className="size-14 rounded-2xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center mx-auto shadow-sm text-accent-primary">
+            <Sparkles className="size-6 animate-pulse" />
           </div>
-          <h2 className="text-xl font-bold text-foreground">Building Your Presentation</h2>
-          <p className="text-xs text-muted-foreground mt-1">
-            AI researches first, then writes editorial content, then builds the HTML
+          <h2 className="text-xl font-bold text-text-primary font-display">Building Your Presentation</h2>
+          <p className="text-xs text-text-muted max-w-sm">
+            AI is analyzing facts, structuring the narrative arc, and assembling the slide deck.
           </p>
         </div>
 
@@ -353,62 +353,48 @@ export default function PPTMakerPage() {
             return (
               <div
                 key={phase.id}
-                className="flex items-center gap-3 rounded-xl px-4 py-3 border transition-all duration-500"
-                style={{
-                  background: isActive
-                    ? "rgba(99,102,241,0.10)"
+                className={`flex items-center gap-3 rounded-xl px-4 py-3 border transition-all duration-300 ${
+                  isActive
+                    ? "bg-accent-primary/10 border-accent-primary/40 shadow-sm"
                     : isDone
-                    ? "rgba(16,185,129,0.06)"
-                    : "rgba(255,255,255,0.02)",
-                  borderColor: isActive
-                    ? "rgba(99,102,241,0.40)"
-                    : isDone
-                    ? "rgba(16,185,129,0.25)"
-                    : "rgba(255,255,255,0.06)",
-                }}
+                    ? "bg-success/10 border-success/30"
+                    : "bg-bg-elevated/40 border-border-subtle"
+                }`}
               >
                 <div
-                  className="size-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-500"
-                  style={{
-                    background: isActive
-                      ? "rgba(99,102,241,0.25)"
+                  className={`size-8 rounded-full flex items-center justify-center shrink-0 border transition-all duration-300 ${
+                    isActive
+                      ? "bg-accent-primary/20 border-accent-primary/50 text-accent-primary"
                       : isDone
-                      ? "rgba(16,185,129,0.20)"
-                      : "rgba(255,255,255,0.04)",
-                    border: isActive
-                      ? "1px solid rgba(99,102,241,0.5)"
-                      : isDone
-                      ? "1px solid rgba(16,185,129,0.4)"
-                      : "1px solid rgba(255,255,255,0.08)",
-                  }}
+                      ? "bg-success/20 border-success/40 text-success"
+                      : "bg-bg-base border-border-subtle text-text-muted font-mono"
+                  }`}
                 >
                   {isDone ? (
-                    <span className="text-emerald-400 text-xs font-bold">✓</span>
+                    <span className="text-success text-xs font-bold">✓</span>
                   ) : isActive ? (
-                    <Loader2 className="size-3.5 text-violet-400 animate-spin" />
+                    <Loader2 className="size-3.5 animate-spin text-accent-primary" />
                   ) : (
-                    <span className="text-[11px] text-muted-foreground font-mono">{idx + 1}</span>
+                    <span className="text-[11px] font-mono">{idx + 1}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p
-                    className="text-sm font-semibold transition-colors"
-                    style={{
-                      color: isActive ? "#a5b4fc" : isDone ? "#6ee7b7" : "#64748b",
-                    }}
+                    className={`text-xs sm:text-sm font-semibold transition-colors ${
+                      isActive ? "text-accent-primary" : isDone ? "text-success" : "text-text-muted"
+                    }`}
                   >
                     {phase.icon} {phase.label}
                   </p>
-                  <p className="text-xs text-muted-foreground truncate">{phase.desc}</p>
+                  <p className="text-[11px] text-text-muted truncate">{phase.desc}</p>
                 </div>
                 {isActive && (
-                  <div className="w-14 h-1.5 rounded-full overflow-hidden bg-violet-500/15">
+                  <div className="w-14 h-1.5 rounded-full overflow-hidden bg-accent-primary/20">
                     <div
-                      className="h-full rounded-full"
+                      className="h-full rounded-full bg-gradient-to-r from-accent-primary to-accent-secondary"
                       style={{
-                        background: "linear-gradient(90deg,#6366f1,#818cf8)",
                         animation: "pptShimmer 1.4s ease-in-out infinite",
-                        width: "55%",
+                        width: "60%",
                       }}
                     />
                   </div>
@@ -418,18 +404,18 @@ export default function PPTMakerPage() {
           })}
         </div>
 
-        <p className="text-xs text-muted-foreground text-center max-w-xs transition-all duration-500">
+        <p className="text-xs font-mono text-text-muted text-center max-w-xs transition-all duration-500">
           {phaseMessage}
         </p>
 
         {/* Slide preview skeleton */}
         <div
-          className="w-full max-w-xl rounded-2xl overflow-hidden border border-sidebar-border shadow-2xl opacity-50"
+          className="w-full max-w-xl rounded-2xl overflow-hidden border border-border-subtle shadow-2xl opacity-60"
           style={{ aspectRatio: "16/9" }}
         >
           <div
             style={{
-              background: "linear-gradient(135deg,#100C2A 0%,#1B1642 100%)",
+              background: "linear-gradient(135deg,#0A0806 0%,#150F0B 100%)",
               height: "100%",
               padding: "40px 60px",
               display: "flex",
@@ -439,11 +425,11 @@ export default function PPTMakerPage() {
             }}
             className="animate-pulse"
           >
-            <div style={{ width: "40px", height: "2px", background: "#F59E0B50", borderRadius: "2px" }} />
-            <div style={{ width: "65%", height: "32px", background: "#ffffff08", borderRadius: "6px" }} />
-            <div style={{ width: "80%", height: "16px", background: "#ffffff05", borderRadius: "4px" }} />
-            <div style={{ width: "70%", height: "16px", background: "#ffffff04", borderRadius: "4px" }} />
-            <div style={{ width: "55%", height: "16px", background: "#ffffff03", borderRadius: "4px" }} />
+            <div style={{ width: "40px", height: "2px", background: "#F5B429", borderRadius: "2px" }} />
+            <div style={{ width: "65%", height: "32px", background: "rgba(255,255,255,0.06)", borderRadius: "6px" }} />
+            <div style={{ width: "80%", height: "16px", background: "rgba(255,255,255,0.04)", borderRadius: "4px" }} />
+            <div style={{ width: "70%", height: "16px", background: "rgba(255,255,255,0.03)", borderRadius: "4px" }} />
+            <div style={{ width: "55%", height: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "4px" }} />
           </div>
         </div>
 
@@ -455,7 +441,7 @@ export default function PPTMakerPage() {
               className="h-1.5 rounded-full animate-pulse"
               style={{
                 width: i === 0 ? "20px" : "6px",
-                background: i <= activePhaseIdx * 2 ? "#6366f1" : "#6366f120",
+                background: i <= activePhaseIdx * 2 ? "#F5B429" : "rgba(245,180,41,0.2)",
                 animationDelay: `${i * 0.1}s`,
               }}
             />
@@ -477,44 +463,38 @@ export default function PPTMakerPage() {
     <div ref={viewerRef} className="flex flex-col h-screen bg-black overflow-hidden">
       {/* Top bar */}
       {!isFullscreen && (
-        <div
-          className="shrink-0 flex items-center justify-between px-4 py-2.5 border-b"
-          style={{ background: "#050505", borderColor: "rgba(255,255,255,0.07)" }}
-        >
+        <div className="shrink-0 flex items-center justify-between px-4 py-2.5 border-b border-border-subtle bg-bg-surface">
           <div className="flex items-center gap-3">
             <button
               onClick={() => { setStage("form"); setGeneratedHtml(""); }}
-              className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-xs text-text-muted hover:text-text-primary transition-colors cursor-pointer"
             >
               <RotateCcw className="size-3.5" />
               New
             </button>
-            <span className="text-slate-700 text-xs">|</span>
-            <p className="text-xs text-slate-400 font-medium truncate max-w-[200px]">{topic}</p>
+            <span className="text-border-default text-xs">|</span>
+            <p className="text-xs text-text-primary font-medium truncate max-w-[200px]">{topic}</p>
           </div>
 
           <div className="flex items-center gap-2">
             <span
-              className="text-[10px] font-mono px-2 py-0.5 rounded-full border hidden sm:block"
+              className="text-[10px] font-mono px-2 py-0.5 rounded-full border hidden sm:block font-bold"
               style={{
                 color: theme.dot,
                 borderColor: `${theme.dot}40`,
-                background: `${theme.dot}12`,
+                background: `${theme.dot}15`,
               }}
             >
               {theme.label}
             </span>
 
-            <span className="text-[10px] text-slate-600 font-mono hidden sm:block">
+            <span className="text-[10px] text-text-muted font-mono hidden sm:block">
               ↑↓ or scroll
             </span>
 
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 text-xs border text-slate-200 px-3 py-1.5 rounded-lg transition-colors"
-              style={{ background: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.10)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.12)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.06)")}
+              className="btn-premium-primary flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg cursor-pointer font-bold"
             >
               <Download className="size-3.5" />
               Export HTML
@@ -522,14 +502,7 @@ export default function PPTMakerPage() {
 
             <button
               onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg transition-colors"
-              style={{
-                background: "rgba(99,102,241,0.18)",
-                border: "1px solid rgba(99,102,241,0.35)",
-                color: "#a5b4fc",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(99,102,241,0.28)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(99,102,241,0.18)")}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-border-subtle bg-bg-elevated hover:bg-bg-card text-text-primary transition-colors cursor-pointer"
             >
               {isFullscreen ? (
                 <><Minimize2 className="size-3.5" />Exit</>

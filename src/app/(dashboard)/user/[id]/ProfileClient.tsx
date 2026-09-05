@@ -195,11 +195,11 @@ export function ProfileClient({
         {/* Followers Stat Card */}
         <button
           onClick={() => canViewProfile && setActiveListModal("followers")}
-          className="bg-zinc-900/40 backdrop-blur-md border border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] transition-all p-4 rounded-2xl text-center group cursor-pointer"
+          className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 transition-all p-4 rounded-xl text-center group cursor-pointer"
           disabled={!canViewProfile}
         >
-          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Followers</span>
-          <span className="text-xl font-black text-white mt-1 block group-hover:text-cyan-400 transition-colors">
+          <span className="text-[9px] text-[#8A8078] uppercase tracking-widest font-mono block">Followers</span>
+          <span className="text-xl font-black text-[#FAFAF8] mt-1 block group-hover:text-[#F5B429] transition-colors">
             {followers.length}
           </span>
         </button>
@@ -207,28 +207,28 @@ export function ProfileClient({
         {/* Following Stat Card */}
         <button
           onClick={() => canViewProfile && setActiveListModal("following")}
-          className="bg-zinc-900/40 backdrop-blur-md border border-white/10 hover:border-cyan-500/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] transition-all p-4 rounded-2xl text-center group cursor-pointer"
+          className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 transition-all p-4 rounded-xl text-center group cursor-pointer"
           disabled={!canViewProfile}
         >
-          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Following</span>
-          <span className="text-xl font-black text-white mt-1 block group-hover:text-cyan-400 transition-colors">
+          <span className="text-[9px] text-[#8A8078] uppercase tracking-widest font-mono block">Following</span>
+          <span className="text-xl font-black text-[#FAFAF8] mt-1 block group-hover:text-[#F5B429] transition-colors">
             {following.length}
           </span>
         </button>
 
         {/* Rank Tier Card */}
-        <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl flex flex-col justify-between items-center text-center">
-          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Scholar Rank</span>
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${targetUser.scholarRankColor || ""}`}>
+        <div className="bg-[#150F0B] border border-[#2E2118] p-4 rounded-xl flex flex-col justify-between items-center text-center">
+          <span className="text-[9px] text-[#8A8078] uppercase tracking-widest font-mono block">Scholar Rank</span>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full border ${targetUser.scholarRankColor || "text-[#8A8078] bg-[#241811] border-[#2E2118]"}`}>
             {targetUser.scholarRank || "Novice Scholar"}
           </span>
         </div>
 
         {/* Leaderboard Rank points */}
-        <div className="bg-zinc-900/40 backdrop-blur-md border border-white/10 p-4 rounded-2xl text-center flex flex-col justify-between items-center">
-          <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-mono block">Activity Points</span>
-          <span className="text-xl font-black text-amber-400 mt-1 flex items-center justify-center gap-1.5 font-mono">
-            <Trophy className="size-4 text-amber-400 shrink-0" />
+        <div className="bg-[#150F0B] border border-[#2E2118] p-4 rounded-xl text-center flex flex-col justify-between items-center">
+          <span className="text-[9px] text-[#8A8078] uppercase tracking-widest font-mono block">Activity Points</span>
+          <span className="text-xl font-black text-[#F5B429] mt-1 flex items-center justify-center gap-1.5 font-mono">
+            <Trophy className="size-4 text-[#F5B429] shrink-0" />
             {targetUser.points}
           </span>
         </div>
@@ -236,28 +236,28 @@ export function ProfileClient({
 
       {/* 2. Wallet Direct Access Banner (Own Profile) */}
       {isOwnProfile && (
-        <div className="rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-zinc-950 border border-amber-500/30 p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-xl">
+        <div className="rounded-xl bg-[#150F0B] border border-[#2E2118] p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3.5">
-            <div className="h-11 w-11 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+            <div className="h-11 w-11 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/20 flex items-center justify-center text-[#F5B429] shrink-0">
               <WalletIcon className="size-5" />
             </div>
             <div className="space-y-0.5">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="text-sm font-bold text-white tracking-wide" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <h3 className="text-sm font-bold text-[#FAFAF8] tracking-wide" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                   Digital Wallet &amp; P2P Coins
                 </h3>
-                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-[#F5B429] bg-[#F5B429]/10 px-2 py-0.5 rounded border border-[#F5B429]/30">
                   Dedicated Page
                 </span>
               </div>
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-[#8A8078]">
                 Manage platform activity coins, educator cash payouts, wallet PIN &amp; peer-to-peer transfers.
               </p>
             </div>
           </div>
 
           <Link href="/wallet" className="shrink-0 w-full sm:w-auto">
-            <Button className="w-full sm:w-auto bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold text-xs h-9 px-4 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.25)] transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <Button className="w-full sm:w-auto bg-[#F5B429] hover:bg-[#FCD34D] text-[#0A0806] font-bold text-xs h-9 px-4 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer">
               <span>Open Wallet</span>
               <ArrowUpRight className="size-4" />
             </Button>
@@ -269,7 +269,7 @@ export function ProfileClient({
       {canViewProfile && (
         <div className="space-y-6">
           {/* Tab Switcher Toolbar */}
-          <div className="flex border-b border-white/10 overflow-x-auto shrink-0 scrollbar-none gap-2">
+          <div className="flex border-b border-[#2E2118] overflow-x-auto shrink-0 scrollbar-none gap-2">
             {[
               { id: "notes", label: "Notes", count: notes.length, icon: BookOpen },
               { id: "blogs", label: "Blogs", count: blogs.length, icon: Rss },
@@ -293,15 +293,15 @@ export function ProfileClient({
                   }
                   className={`flex items-center gap-2 py-3 px-4 border-b-2 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                     isActive
-                      ? "border-cyan-400 text-cyan-400 bg-cyan-500/[0.02]"
-                      : "border-transparent text-zinc-400 hover:text-zinc-200"
+                      ? "border-[#F5B429] text-[#F5B429] bg-[#F5B429]/5"
+                      : "border-transparent text-[#8A8078] hover:text-[#FAFAF8]"
                   }`}
                   style={{ fontFamily: "var(--font-space-grotesk)" }}
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                   {tab.count !== null && (
-                    <span className="text-[10px] bg-zinc-900 border border-white/10 text-zinc-400 px-2 py-0.5 rounded-full font-mono">
+                    <span className="text-[10px] bg-[#0A0806] border border-[#2E2118] text-[#8A8078] px-2 py-0.5 rounded-full font-mono">
                       {tab.count}
                     </span>
                   )}
@@ -316,7 +316,7 @@ export function ProfileClient({
             {activeTab === "notes" && (
               <div className="space-y-4">
                 {notes.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-neutral-900 rounded-2xl bg-neutral-950/20 text-neutral-500 text-xs italic">
+                  <div className="text-center py-12 border border-dashed border-[#2E2118] rounded-xl bg-[#150F0B]/50 text-[#8A8078] text-xs italic">
                     No public notes published.
                   </div>
                 ) : (
@@ -324,22 +324,22 @@ export function ProfileClient({
                     {notes.map((note) => (
                       <div
                         key={note._id}
-                        className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-cyan-500/20 hover:shadow-[0_0_20px_rgba(6,182,212,0.06)] p-5 rounded-2xl flex flex-col justify-between h-36 transition-all duration-300 relative group"
+                        className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 p-5 rounded-xl flex flex-col justify-between h-36 transition-all duration-300 relative group"
                       >
                         <div className="space-y-2">
-                          <span className="text-[9px] text-cyan-400 bg-cyan-400/5 border border-cyan-400/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
+                          <span className="text-[9px] text-[#F5B429] bg-[#F5B429]/10 border border-[#F5B429]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
                             {note.category || "General"}
                           </span>
                           <Link href={`/blog/${encodeURIComponent(targetUser.name || "user")}/${encodeURIComponent(note.slug || note._id)}`}>
                             <h3
-                              className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors pt-1.5 cursor-pointer line-clamp-2"
+                              className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors pt-1.5 cursor-pointer line-clamp-2"
                               style={{ fontFamily: "var(--font-space-grotesk)" }}
                             >
                               {note.title}
                             </h3>
                           </Link>
                         </div>
-                        <div className="flex items-center justify-between text-[10px] text-neutral-500 font-mono">
+                        <div className="flex items-center justify-between text-[10px] text-[#8A8078] font-mono">
                           <span>{note.wordCount || 0} words</span>
                           <span>{formatDate(note.createdAt)}</span>
                         </div>
@@ -354,7 +354,7 @@ export function ProfileClient({
             {activeTab === "blogs" && (
               <div className="space-y-4">
                 {blogs.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-neutral-900 rounded-2xl bg-neutral-950/20 text-neutral-500 text-xs italic">
+                  <div className="text-center py-12 border border-dashed border-[#2E2118] rounded-xl bg-[#150F0B]/50 text-[#8A8078] text-xs italic">
                     No blogs published.
                   </div>
                 ) : (
@@ -362,22 +362,22 @@ export function ProfileClient({
                     {blogs.map((blog) => (
                       <div
                         key={blog._id}
-                        className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-violet-500/20 hover:shadow-[0_0_20px_rgba(167,139,250,0.06)] p-5 rounded-2xl flex flex-col justify-between min-h-[144px] transition-all duration-300 group"
+                        className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 p-5 rounded-xl flex flex-col justify-between min-h-[144px] transition-all duration-300 group"
                       >
                         <div className="space-y-2">
                           <Link href={`/blogs?blogId=${blog._id}`}>
                             <h3
-                              className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors cursor-pointer line-clamp-1"
+                              className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors cursor-pointer line-clamp-1"
                               style={{ fontFamily: "var(--font-space-grotesk)" }}
                             >
                               {blog.title}
                             </h3>
                           </Link>
-                          <p className="text-[11px] text-neutral-450 leading-relaxed line-clamp-2">
+                          <p className="text-[11px] text-[#8A8078] leading-relaxed line-clamp-2">
                             {blog.summary}
                           </p>
                         </div>
-                        <div className="text-[10px] text-neutral-550 font-mono mt-2">
+                        <div className="text-[10px] text-[#8A8078] font-mono mt-2">
                           {formatDate(blog.createdAt)}
                         </div>
                       </div>
@@ -391,7 +391,7 @@ export function ProfileClient({
             {activeTab === "social" && (
               <div>
                 {socialPosts.length === 0 ? (
-                  <div className="text-center py-12 border border-dashed border-neutral-900 rounded-2xl bg-neutral-950/20 text-neutral-500 text-xs italic">
+                  <div className="text-center py-12 border border-dashed border-[#2E2118] rounded-xl bg-[#150F0B]/50 text-[#8A8078] text-xs italic">
                     No social posts published.
                   </div>
                 ) : (
@@ -400,7 +400,7 @@ export function ProfileClient({
                       <div
                         key={post._id}
                         onClick={() => openSocialPost(post)}
-                        className="aspect-square bg-neutral-900 border border-white/5 rounded-2xl overflow-hidden hover:scale-[1.02] hover:border-cyan-500/30 transition-all duration-300 relative group cursor-pointer shadow-md"
+                        className="aspect-square bg-[#150F0B] border border-[#2E2118] rounded-xl overflow-hidden hover:scale-[1.02] hover:border-[#F5B429]/40 transition-all duration-300 relative group cursor-pointer shadow-md"
                       >
                         {/* Media display */}
                         {post.mediaUrl ? (
@@ -422,7 +422,7 @@ export function ProfileClient({
                             <Heart className="h-4 w-4 fill-white" />
                             {post.likes.length}
                           </span>
-                          <span className="flex items-center gap-1.5 hover:text-cyan-400 transition-colors">
+                          <span className="flex items-center gap-1.5 hover:text-[#F5B429] transition-colors">
                             <MessageSquare className="h-4 w-4 fill-white" />
                             {post.comments.length}
                           </span>
@@ -439,28 +439,28 @@ export function ProfileClient({
               <div className="grid md:grid-cols-2 gap-6">
                 {/* Forums Column */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 border-b border-neutral-900 pb-2.5">
-                    <MessageSquare className="h-4 w-4 text-violet-400" />
-                    <h4 className="text-[10px] font-bold text-neutral-350 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <div className="flex items-center gap-2 border-b border-[#2E2118] pb-2.5">
+                    <MessageSquare className="h-4 w-4 text-[#F5B429]" />
+                    <h4 className="text-[10px] font-bold text-[#FAFAF8] uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                       Forum Threads ({forums.length})
                     </h4>
                   </div>
                   {forums.length === 0 ? (
-                    <div className="text-center py-8 border border-white/5 rounded-xl bg-neutral-950/20 text-neutral-550 text-xs italic">
+                    <div className="text-center py-8 border border-[#2E2118] rounded-xl bg-[#150F0B]/50 text-[#8A8078] text-xs italic">
                       No forum threads created.
                     </div>
                   ) : (
                     forums.map((forum) => (
-                      <div key={forum._id} className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-violet-500/20 p-4 rounded-xl space-y-1.5 transition-all">
-                        <span className="text-[8px] text-violet-400 bg-violet-400/5 border border-violet-400/10 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
+                      <div key={forum._id} className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 p-4 rounded-xl space-y-1.5 transition-all">
+                        <span className="text-[8px] text-[#F5B429] bg-[#F5B429]/10 border border-[#F5B429]/20 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">
                           {forum.category}
                         </span>
                         <Link href={`/forums?forumId=${forum._id}`}>
-                          <h5 className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors pt-1 cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                          <h5 className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors pt-1 cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                             {forum.title}
                           </h5>
                         </Link>
-                        <div className="flex items-center justify-between text-[10px] text-neutral-500 font-mono mt-1">
+                        <div className="flex items-center justify-between text-[10px] text-[#8A8078] font-mono mt-1">
                           <span>{forum.commentsCount || 0} comments</span>
                           <span>{formatDate(forum.createdAt)}</span>
                         </div>
@@ -471,19 +471,19 @@ export function ProfileClient({
 
                 {/* Doubts Column */}
                 <div className="space-y-4">
-                  <div className="flex items-center gap-2 border-b border-neutral-900 pb-2.5">
-                    <HelpCircle className="h-4 w-4 text-cyan-400" />
-                    <h4 className="text-[10px] font-bold text-neutral-350 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                  <div className="flex items-center gap-2 border-b border-[#2E2118] pb-2.5">
+                    <HelpCircle className="h-4 w-4 text-[#F5B429]" />
+                    <h4 className="text-[10px] font-bold text-[#FAFAF8] uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                       Academic Doubts ({doubts.length})
                     </h4>
                   </div>
                   {doubts.length === 0 ? (
-                    <div className="text-center py-8 border border-white/5 rounded-xl bg-neutral-950/20 text-neutral-550 text-xs italic">
+                    <div className="text-center py-8 border border-[#2E2118] rounded-xl bg-[#150F0B]/50 text-[#8A8078] text-xs italic">
                       No doubt tickets posted.
                     </div>
                   ) : (
                     doubts.map((doubt) => (
-                      <div key={doubt._id} className="bg-neutral-955/40 backdrop-blur-md border border-white/5 hover:border-cyan-500/20 p-4 rounded-xl space-y-1.5 transition-all">
+                      <div key={doubt._id} className="bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 p-4 rounded-xl space-y-1.5 transition-all">
                         <span className={`text-[8px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
                           doubt.status === "resolved"
                             ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
@@ -492,11 +492,11 @@ export function ProfileClient({
                           {doubt.status}
                         </span>
                         <Link href={`/doubts?doubtId=${doubt._id}`}>
-                          <h5 className="text-xs font-bold text-neutral-200 hover:text-cyan-400 transition-colors pt-1 cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                          <h5 className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors pt-1 cursor-pointer" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                             {doubt.title}
                           </h5>
                         </Link>
-                        <div className="text-[10px] text-neutral-500 font-mono mt-1">
+                        <div className="text-[10px] text-[#8A8078] font-mono mt-1">
                           {formatDate(doubt.createdAt)}
                         </div>
                       </div>
@@ -518,10 +518,10 @@ export function ProfileClient({
 
       {/* 3. Clickable Followers & Following Lists Dialog */}
       <Dialog open={activeListModal !== null} onOpenChange={() => setActiveListModal(null)}>
-        <DialogContent className="bg-neutral-900 border-neutral-800 text-neutral-100 max-w-sm cyber-panel max-h-[80vh] flex flex-col overflow-hidden">
-          <DialogHeader className="shrink-0 select-none border-b border-neutral-800 pb-3">
+        <DialogContent className="bg-[#150F0B] border-[#2E2118] text-[#FAFAF8] max-w-sm rounded-2xl max-h-[80vh] flex flex-col overflow-hidden">
+          <DialogHeader className="shrink-0 select-none border-b border-[#2E2118] pb-3">
             <DialogTitle
-              className="text-sm font-bold text-neutral-100 uppercase tracking-widest text-center"
+              className="text-sm font-bold text-[#FAFAF8] uppercase tracking-widest text-center"
               style={{ fontFamily: "var(--font-space-grotesk)" }}
             >
               {activeListModal === "followers" ? "Followers" : "Following"}
@@ -530,7 +530,7 @@ export function ProfileClient({
 
           <div className="flex-1 overflow-y-auto custom-scroll py-3 space-y-3.5 pr-1">
             {listUsers.length === 0 ? (
-              <p className="text-center py-8 text-neutral-500 text-xs italic">
+              <p className="text-center py-8 text-[#8A8078] text-xs italic">
                 No users found
               </p>
             ) : (
@@ -542,10 +542,10 @@ export function ProfileClient({
                       <img
                         src={usr.image}
                         alt={usr.name}
-                        className="h-8 w-8 rounded-full object-cover border border-neutral-850"
+                        className="h-8 w-8 rounded-full object-cover border border-[#2E2118]"
                       />
                     ) : (
-                      <div className="h-8 w-8 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 border border-neutral-750 font-bold uppercase text-[10px]">
+                      <div className="h-8 w-8 rounded-full bg-[#241811] flex items-center justify-center text-[#8A8078] border border-[#2E2118] font-bold uppercase text-[10px]">
                         {usr.name.substring(0, 2)}
                       </div>
                     )}
@@ -553,17 +553,17 @@ export function ProfileClient({
                       <Link
                         href={`/user/${usr._id}`}
                         onClick={() => setActiveListModal(null)}
-                        className="font-semibold text-neutral-200 hover:text-cyan-400 transition-colors truncate block"
+                        className="font-semibold text-[#FAFAF8] hover:text-[#F5B429] transition-colors truncate block"
                         style={{ fontFamily: "var(--font-space-grotesk)" }}
                       >
                         {usr.name}
                       </Link>
-                      <span className="text-[10px] text-neutral-500 truncate block">{usr.email}</span>
+                      <span className="text-[10px] text-[#8A8078] truncate block">{usr.email}</span>
                     </div>
                   </div>
 
                   <Link href={`/user/${usr._id}`} onClick={() => setActiveListModal(null)}>
-                    <Button variant="ghost" className="h-7 text-[10px] border border-neutral-800 text-neutral-450 hover:text-neutral-200">
+                    <Button variant="ghost" className="h-7 text-[10px] border border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811]">
                       Profile
                     </Button>
                   </Link>
@@ -576,11 +576,11 @@ export function ProfileClient({
 
       {/* 4. Social Post Details Dialog */}
       <Dialog open={selectedSocialPost !== null} onOpenChange={() => setSelectedSocialPost(null)}>
-        <DialogContent className="bg-neutral-900 border-neutral-800 text-neutral-100 max-w-xl cyber-panel max-h-[85vh] flex flex-col md:flex-row p-0 overflow-hidden">
+        <DialogContent className="bg-[#150F0B] border-[#2E2118] text-[#FAFAF8] max-w-xl rounded-2xl max-h-[85vh] flex flex-col md:flex-row p-0 overflow-hidden">
           {selectedSocialPost && (
             <>
               {/* Media Content Left Side */}
-              <div className="flex-1 max-h-[40vh] md:max-h-none md:w-1/2 bg-neutral-950 flex items-center justify-center border-b md:border-b-0 md:border-r border-neutral-800 relative">
+              <div className="flex-1 max-h-[40vh] md:max-h-none md:w-1/2 bg-[#0A0806] flex items-center justify-center border-b md:border-b-0 md:border-r border-[#2E2118] relative">
                 {selectedSocialPost.mediaUrl ? (
                   selectedSocialPost.mediaType === "video" ? (
                     <video src={selectedSocialPost.mediaUrl} controls className="max-h-full max-w-full object-contain" />
@@ -589,29 +589,29 @@ export function ProfileClient({
                     <img src={selectedSocialPost.mediaUrl} alt="Post Attachment" className="max-h-full max-w-full object-contain" />
                   )
                 ) : (
-                  <div className="p-6 text-center text-xs text-neutral-400 italic max-w-xs font-mono leading-relaxed select-text">
+                  <div className="p-6 text-center text-xs text-[#8A8078] italic max-w-xs font-mono leading-relaxed select-text">
                     {selectedSocialPost.content}
                   </div>
                 )}
               </div>
 
               {/* Likes & Comments Right Side */}
-              <div className="flex flex-col h-[45vh] md:h-auto md:w-1/2 overflow-hidden bg-neutral-900/40">
+              <div className="flex flex-col h-[45vh] md:h-auto md:w-1/2 overflow-hidden bg-[#150F0B]">
                 {/* Header */}
-                <div className="p-4 border-b border-neutral-850 shrink-0 select-none flex items-center gap-2">
+                <div className="p-4 border-b border-[#2E2118] shrink-0 select-none flex items-center gap-2">
                   {selectedSocialPost.userImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={selectedSocialPost.userImage} alt="" className="h-7 w-7 rounded-full object-cover border border-neutral-800" />
+                    <img src={selectedSocialPost.userImage} alt="" className="h-7 w-7 rounded-full object-cover border border-[#2E2118]" />
                   ) : (
-                    <div className="h-7 w-7 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 font-bold uppercase text-[9px]">
+                    <div className="h-7 w-7 rounded-full bg-[#241811] flex items-center justify-center text-[#8A8078] font-bold uppercase text-[9px]">
                       {selectedSocialPost.userName.substring(0, 2)}
                     </div>
                   )}
                   <div>
-                    <h4 className="text-xs font-bold text-neutral-200" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                    <h4 className="text-xs font-bold text-[#FAFAF8]" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                       {selectedSocialPost.userName}
                     </h4>
-                    <span className="text-[8px] text-neutral-550 font-mono">
+                    <span className="text-[8px] text-[#8A8078] font-mono">
                       {formatDate(selectedSocialPost.createdAt)}
                     </span>
                   </div>
@@ -619,67 +619,67 @@ export function ProfileClient({
 
                 {/* Text Content for Media Posts */}
                 {selectedSocialPost.mediaUrl && selectedSocialPost.content && (
-                  <div className="p-4 border-b border-neutral-850 shrink-0 text-xs text-neutral-300 leading-relaxed max-h-24 overflow-y-auto custom-scroll select-text">
+                  <div className="p-4 border-b border-[#2E2118] shrink-0 text-xs text-[#B8AFA6] leading-relaxed max-h-24 overflow-y-auto custom-scroll select-text">
                     {selectedSocialPost.content}
                   </div>
                 )}
 
                 {/* Scrollable Comments List */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-3.5 custom-scroll text-xs">
-                  <div className="flex items-center justify-between border-b border-neutral-850 pb-2 select-none">
-                    <span className="text-[10px] text-neutral-400 font-bold uppercase tracking-wider font-mono">Comments</span>
+                  <div className="flex items-center justify-between border-b border-[#2E2118] pb-2 select-none">
+                    <span className="text-[10px] text-[#8A8078] font-bold uppercase tracking-wider font-mono">Comments</span>
                   </div>
 
                   {commentsList.length === 0 ? (
-                    <p className="text-center py-6 text-neutral-500 italic text-[11px] select-none">
+                    <p className="text-center py-6 text-[#8A8078] italic text-[11px] select-none">
                       No comments yet
                     </p>
                   ) : (
                     commentsList.map((c, index) => (
                       <div key={c._id || index} className="space-y-1">
                         <div className="flex items-baseline gap-2">
-                          <span className="font-semibold text-neutral-200 font-mono text-[11px]">{c.userName}</span>
-                          <span className="text-[8px] text-neutral-600 font-mono">
+                          <span className="font-semibold text-[#FAFAF8] font-mono text-[11px]">{c.userName}</span>
+                          <span className="text-[8px] text-[#8A8078] font-mono">
                             {formatDate(c.createdAt)}
                           </span>
                         </div>
-                        <p className="text-neutral-400 select-text leading-relaxed">{c.content}</p>
+                        <p className="text-[#B8AFA6] select-text leading-relaxed">{c.content}</p>
                       </div>
                     ))
                   )}
                 </div>
 
                 {/* Likes Action Bar */}
-                <div className="p-4 border-t border-neutral-850 shrink-0 select-none flex items-center justify-between">
+                <div className="p-4 border-t border-[#2E2118] shrink-0 select-none flex items-center justify-between">
                   <button
                     onClick={() => handleLikeToggle(selectedSocialPost._id)}
-                    className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-red-400 transition-colors group"
+                    className="flex items-center gap-1.5 text-xs text-[#8A8078] hover:text-red-400 transition-colors group"
                   >
                     <Heart className={`h-4 w-4 transition-all ${
                       likesList.includes(currentUserId)
                         ? "fill-red-500 text-red-500 scale-110"
-                        : "text-neutral-500 group-hover:scale-110"
+                        : "text-[#8A8078] group-hover:scale-110"
                     }`} />
-                    <span className="font-semibold text-neutral-350">{likesList.length} likes</span>
+                    <span className="font-semibold text-[#B8AFA6]">{likesList.length} likes</span>
                   </button>
                 </div>
 
                 {/* Comment Input form */}
                 <form
                   onSubmit={(e) => handlePostComment(e, selectedSocialPost._id)}
-                  className="p-3 border-t border-neutral-850 bg-neutral-950/20 shrink-0 flex items-center gap-2"
+                  className="p-3 border-t border-[#2E2118] bg-[#0A0806] shrink-0 flex items-center gap-2"
                 >
                   <Input
                     placeholder="Add a comment..."
                     value={commentInput}
                     onChange={(e) => setCommentInput(e.target.value)}
-                    className="bg-neutral-950 border-neutral-850 focus:border-cyan-400 text-neutral-100 placeholder-neutral-600 h-8 text-xs flex-1 rounded-lg"
+                    className="bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-8 text-xs flex-1 rounded-lg"
                   />
                   <Button
                     type="submit"
                     size="icon"
                     disabled={isCommenting}
-                    className="h-8 w-8 bg-cyan-500 hover:bg-cyan-400 text-neutral-950 rounded-lg"
+                    className="h-8 w-8 bg-[#F5B429] hover:bg-[#FCD34D] text-[#0A0806] rounded-lg"
                   >
                     {isCommenting ? (
                       <Loader2 className="h-3 w-3 animate-spin" />

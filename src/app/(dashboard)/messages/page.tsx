@@ -763,7 +763,7 @@ export default function MessagesPage() {
           <div className="flex items-center gap-2">
             <MessageSquare className="h-4 w-4 text-[#F5B429]" />
             <h1
-              className="text-xs sm:text-sm font-black text-[#F3F0E4] uppercase tracking-widest font-heading"
+              className="text-xs sm:text-sm font-black text-[#FAFAF8] uppercase tracking-widest font-heading"
             >
               Direct Messages
             </h1>
@@ -771,9 +771,9 @@ export default function MessagesPage() {
         </div>
 
         {/* User Search Bar */}
-        <div className="p-3 sm:p-4 border-b border-[#F3F0E4]/10 relative">
+        <div className="p-3 sm:p-4 border-b border-[#2E2118] relative">
           <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#9FAEA1]" />
+            <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-[#8A8078]" />
             <Input
               type="text"
               name="chat_user_search_query"
@@ -788,20 +788,20 @@ export default function MessagesPage() {
               placeholder="Search users to message..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-[#1A2D23]/80 border-[#F3F0E4]/15 pl-9 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-9 text-xs rounded-xl"
+              className="bg-[#150F0B] border-[#2E2118] pl-9 focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-9 text-xs rounded-xl"
             />
           </div>
 
           {/* Search Dropdown Panel */}
           {searchQuery && (
-            <div className="absolute left-3 right-3 sm:left-4 sm:right-4 mt-1 bg-[#121F18] border border-[#F3F0E4]/20 rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5 backdrop-blur-2xl">
+            <div className="absolute left-3 right-3 sm:left-4 sm:right-4 mt-1 bg-[#150F0B] border border-[#2E2118] rounded-xl shadow-2xl z-50 max-h-60 overflow-y-auto custom-scroll p-1.5 backdrop-blur-2xl">
               {isSearching ? (
-                <div className="flex items-center justify-center py-4 text-[#9FAEA1] gap-2 text-xs">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F0C93B]" />
+                <div className="flex items-center justify-center py-4 text-[#8A8078] gap-2 text-xs">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F5B429]" />
                   Searching...
                 </div>
               ) : searchResults.length === 0 ? (
-                <div className="text-center py-4 text-[#9FAEA1] text-xs italic">
+                <div className="text-center py-4 text-[#8A8078] text-xs italic">
                   No users found
                 </div>
               ) : (
@@ -813,19 +813,19 @@ export default function MessagesPage() {
                       setSearchQuery("");
                       router.replace("/messages?chat=open");
                     }}
-                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#1F362A] transition-all text-left text-xs text-[#F3F0E4]"
+                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#241811] transition-all text-left text-xs text-[#FAFAF8]"
                   >
                     {usr.image ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={usr.image} alt={usr.name} className="h-7 w-7 rounded-full object-cover border border-[#F3F0E4]/20" />
+                      <img src={usr.image} alt={usr.name} className="h-7 w-7 rounded-full object-cover border border-[#2E2118]" />
                     ) : (
-                      <div className="h-7 w-7 rounded-full bg-[#1F362A] flex items-center justify-center text-[#9FAEA1] border border-[#F3F0E4]/20 font-bold uppercase text-[10px]">
-                        <UserIcon className="h-3.5 w-3.5 text-[#F0C93B]" />
+                      <div className="h-7 w-7 rounded-full bg-[#241811] flex items-center justify-center text-[#8A8078] border border-[#2E2118] font-bold uppercase text-[10px]">
+                        <UserIcon className="h-3.5 w-3.5 text-[#F5B429]" />
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="font-bold text-[#F3F0E4] truncate">{usr.name}</p>
-                      <p className="text-[10px] text-[#9FAEA1] truncate">{usr.email}</p>
+                      <p className="font-bold text-[#FAFAF8] truncate">{usr.name}</p>
+                      <p className="text-[10px] text-[#8A8078] truncate">{usr.email}</p>
                     </div>
                   </button>
                 ))
@@ -837,12 +837,12 @@ export default function MessagesPage() {
         {/* Conversations list */}
         <div className="flex-1 overflow-y-auto custom-scroll p-2 sm:p-3 pb-20 md:pb-3 space-y-1.5">
           {isConversationsLoading ? (
-            <div className="flex flex-col items-center justify-center h-40 text-[#9FAEA1] gap-2 select-none">
-              <Loader2 className="h-5 w-5 animate-spin text-[#F0C93B]" />
+            <div className="flex flex-col items-center justify-center h-40 text-[#8A8078] gap-2 select-none">
+              <Loader2 className="h-5 w-5 animate-spin text-[#F5B429]" />
               <span className="text-[10px] uppercase font-bold tracking-wider">Loading chats...</span>
             </div>
           ) : conversations.length === 0 ? (
-            <div className="text-center py-12 text-[#9FAEA1] text-xs select-none">
+            <div className="text-center py-12 text-[#8A8078] text-xs select-none">
               No conversations active.<br />Search users to start chatting!
             </div>
           ) : (
@@ -863,8 +863,8 @@ export default function MessagesPage() {
                   }}
                   className={`w-full flex items-center gap-3 sm:gap-3.5 p-3 rounded-2xl border transition-all text-left group ${
                     isSelected
-                      ? "bg-[#1A2D23] border-[#F0C93B]/40 shadow-[0_4px_20px_rgba(0,0,0,0.25)]"
-                      : "bg-[#16261D]/50 border-[#F3F0E4]/10 hover:bg-[#1F362A]/60 hover:border-[#F3F0E4]/20"
+                      ? "bg-[#241811] border-[#F5B429]/40 shadow-sm"
+                      : "bg-[#150F0B] border-[#2E2118] hover:bg-[#241811]/60 hover:border-[#2E2118]"
                   }`}
                 >
                   {/* User Avatar */}
@@ -874,16 +874,16 @@ export default function MessagesPage() {
                       <img
                         src={conv.otherUser.image}
                         alt={conv.otherUser.name}
-                        className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full object-cover border-2 ${hasUnread ? "border-[#F0C93B]" : "border-[#F3F0E4]/20"}`}
+                        className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full object-cover border-2 ${hasUnread ? "border-[#F5B429]" : "border-[#2E2118]"}`}
                       />
                     ) : (
-                      <div className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-[#1F362A] flex items-center justify-center text-[#F3F0E4] border-2 font-bold uppercase text-xs ${hasUnread ? "border-[#F0C93B]" : "border-[#F3F0E4]/20"}`}>
+                      <div className={`h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-[#241811] flex items-center justify-center text-[#FAFAF8] border-2 font-bold uppercase text-xs ${hasUnread ? "border-[#F5B429]" : "border-[#2E2118]"}`}>
                         {conv.otherUser.name.substring(0, 2)}
                       </div>
                     )}
                     {/* Active/Unread glow indicator */}
                     {hasUnread && (
-                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-[#F0C93B] border-2 border-[#121F18] rounded-full shadow-[0_0_10px_#F0C93B] animate-pulse" />
+                      <span className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-[#F5B429] border-2 border-[#0A0806] rounded-full shadow-[0_0_10px_#F5B429] animate-pulse" />
                     )}
                   </div>
 
@@ -891,11 +891,11 @@ export default function MessagesPage() {
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex justify-between items-baseline select-none gap-2">
                       <span
-                        className="text-xs sm:text-[13px] font-bold text-[#F3F0E4] truncate group-hover:text-[#F0C93B] font-heading transition-colors"
+                        className="text-xs sm:text-[13px] font-bold text-[#FAFAF8] truncate group-hover:text-[#F5B429] font-heading transition-colors"
                       >
                         {conv.otherUser.name}
                       </span>
-                      <span className="text-[9px] text-[#9FAEA1] font-mono shrink-0">
+                      <span className="text-[9px] text-[#8A8078] font-mono shrink-0">
                         {new Date(conv.lastMessage.createdAt).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -905,13 +905,13 @@ export default function MessagesPage() {
                     <div className="flex items-center justify-between gap-2">
                       <p
                         className={`text-[11px] truncate flex-1 ${
-                          hasUnread ? "text-[#F0C93B] font-bold" : "text-[#9FAEA1]"
+                          hasUnread ? "text-[#F5B429] font-bold" : "text-[#8A8078]"
                         }`}
                       >
                         {lastMsgSnippet}
                       </p>
                       {conv.unreadCount > 0 && (
-                        <span className="bg-[#F0C93B] text-[#2A2118] text-[9px] font-bold px-1.5 py-0.5 rounded-full select-none font-mono">
+                        <span className="bg-[#F5B429] text-[#0A0806] text-[9px] font-bold px-1.5 py-0.5 rounded-full select-none font-mono">
                           {conv.unreadCount}
                         </span>
                       )}
@@ -931,7 +931,7 @@ export default function MessagesPage() {
         {activeUser ? (
           <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Header controls */}
-            <div className="h-14 sm:h-16 px-3 sm:px-6 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-md flex items-center justify-between shrink-0 select-none">
+            <div className="h-14 sm:h-16 px-3 sm:px-6 border-b border-[#2E2118] bg-[#150F0B]/80 backdrop-blur-md flex items-center justify-between shrink-0 select-none">
               <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                 {/* Mobile Back Button */}
                 <Button
@@ -941,7 +941,7 @@ export default function MessagesPage() {
                     setActiveUser(null);
                     router.replace("/messages");
                   }}
-                  className="md:hidden h-8 w-8 shrink-0 text-neutral-450 hover:text-neutral-250 hover:bg-white/[0.08]"
+                  className="md:hidden h-8 w-8 shrink-0 text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811]"
                 >
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -951,21 +951,21 @@ export default function MessagesPage() {
                   <img
                     src={activeUser.image}
                     alt={activeUser.name}
-                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border border-neutral-800 shrink-0"
+                    className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover border border-[#2E2118] shrink-0"
                   />
                 ) : (
-                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-neutral-800 flex items-center justify-center text-neutral-500 border border-neutral-700 font-bold uppercase text-xs shrink-0">
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-full bg-[#241811] flex items-center justify-center text-[#8A8078] border border-[#2E2118] font-bold uppercase text-xs shrink-0">
                     {activeUser.name.substring(0, 2)}
                   </div>
                 )}
                 <div className="min-w-0">
                   <h2
-                    className="text-xs font-bold text-neutral-100 truncate"
+                    className="text-xs font-bold text-[#FAFAF8] truncate"
                     style={{ fontFamily: "var(--font-space-grotesk)" }}
                   >
                     {activeUser.name}
                   </h2>
-                  <p className="text-[10px] text-neutral-500 truncate font-mono hidden xs:block">{activeUser.email}</p>
+                  <p className="text-[10px] text-[#8A8078] truncate font-mono hidden xs:block">{activeUser.email}</p>
                 </div>
               </div>
 
@@ -995,7 +995,7 @@ export default function MessagesPage() {
                       alert("Microphone permission is required to start a voice call.");
                     }
                   }}
-                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                  className="h-8 w-8 text-[#8A8078] hover:text-[#F5B429] hover:bg-[#F5B429]/10 border border-[#2E2118] hover:border-[#F5B429]/30 transition-all rounded-lg"
                   title="Voice Call"
                 >
                   <Phone className="h-4 w-4" />
@@ -1026,7 +1026,7 @@ export default function MessagesPage() {
                       alert("Microphone and Camera permissions are required to start a video call.");
                     }
                   }}
-                  className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                  className="h-8 w-8 text-[#8A8078] hover:text-[#F5B429] hover:bg-[#F5B429]/10 border border-[#2E2118] hover:border-[#F5B429]/30 transition-all rounded-lg"
                   title="Video Call"
                 >
                   <Video className="h-4 w-4" />
@@ -1038,18 +1038,18 @@ export default function MessagesPage() {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-neutral-400 hover:text-cyan-400 hover:bg-cyan-500/10 border border-neutral-850 hover:border-cyan-500/20 transition-all rounded-lg"
+                        className="h-8 w-8 text-[#8A8078] hover:text-[#F5B429] hover:bg-[#F5B429]/10 border border-[#2E2118] hover:border-[#F5B429]/30 transition-all rounded-lg"
                         title="More Options"
                       />
                     }
                   >
                     <MoreVertical className="h-4 w-4" />
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48 bg-neutral-900 border-neutral-800 text-neutral-300">
-                    <DropdownMenuItem onClick={() => setIsWallpaperPickerOpen(true)} className="cursor-pointer hover:bg-neutral-800 hover:text-neutral-100">
+                  <DropdownMenuContent align="end" className="w-48 bg-[#150F0B] border-[#2E2118] text-[#FAFAF8]">
+                    <DropdownMenuItem onClick={() => setIsWallpaperPickerOpen(true)} className="cursor-pointer hover:bg-[#241811] hover:text-[#F5B429]">
                       <span>Theme</span>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleClearConversation} className="cursor-pointer text-red-400 hover:bg-neutral-800 hover:text-red-300 focus:text-red-400">
+                    <DropdownMenuItem onClick={handleClearConversation} className="cursor-pointer text-red-400 hover:bg-[#241811] hover:text-red-300 focus:text-red-400">
                       <span>Clear Chat</span>
                     </DropdownMenuItem>
                     <Link href={`/user/${activeUser._id}`} className="w-full">
@@ -1120,20 +1120,20 @@ export default function MessagesPage() {
                       >
                         {/* Message Bubble */}
                         <div
-                          className={`rounded-[20px] px-4 py-2.5 sm:px-4.5 text-[13px] sm:text-xs leading-relaxed transition-all break-words w-full ${
+                          className={`rounded-2xl px-4 py-2.5 sm:px-4.5 text-[13px] sm:text-xs leading-relaxed transition-all break-words w-full ${
                             isSentByMe
-                              ? "bg-[#F0C93B] text-[#2A2118] rounded-tr-xs font-medium shadow-[3px_3px_0_0_#F28B6E]"
-                              : "bg-[#1A2D23] border border-[#F3F0E4]/15 text-[#F3F0E4] rounded-tl-xs shadow-[0_4px_15px_rgba(0,0,0,0.25)]"
+                              ? "bg-[#F5B429] text-[#0A0806] rounded-tr-xs font-medium shadow-sm"
+                              : "bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8] rounded-tl-xs shadow-sm"
                           }`}
                         >
                           {/* Replied Message Preview Header */}
                           {repliedToMsg && repliedToMsg.messageId && (
-                            <div className={`mb-2 p-2 rounded-xl text-[10px] leading-normal flex flex-col gap-0.5 select-none border-l-3 ${
+                            <div className={`mb-2 p-2 rounded-xl text-[10px] leading-normal flex flex-col gap-0.5 select-none border-l-2 ${
                               isSentByMe
-                                ? "bg-[#2A2118]/10 border-[#2A2118] text-[#2A2118]"
-                                : "bg-[#121F18]/80 border-[#F0C93B] text-[#9FAEA1]"
+                                ? "bg-[#0A0806]/10 border-[#0A0806] text-[#0A0806]"
+                                : "bg-[#0A0806] border-[#F5B429] text-[#8A8078]"
                             }`}>
-                              <span className={`font-bold font-mono ${isSentByMe ? "text-[#2A2118]" : "text-[#F0C93B]"}`}>{repliedToMsg.senderName}</span>
+                              <span className={`font-bold font-mono ${isSentByMe ? "text-[#0A0806]" : "text-[#F5B429]"}`}>{repliedToMsg.senderName}</span>
                               <span className="truncate max-w-[200px]">{repliedToMsg.content}</span>
                             </div>
                           )}
@@ -1168,23 +1168,26 @@ export default function MessagesPage() {
                                           <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover/vid:bg-black/45 transition-colors">
                                             <div className="h-10 w-10 rounded-full bg-white/90 text-neutral-950 flex items-center justify-center shadow-lg transition-transform group-hover/vid:scale-105">
                                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 ml-0.5">
-                                                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                                                <path d="M8 5v14l11-7z" />
                                               </svg>
                                             </div>
                                           </div>
                                         </div>
                                       ) : (
-                                        <div
-                                          className={`p-3 flex items-center gap-2.5 cursor-pointer transition-colors rounded-xl border ${
-                                            isSentByMe
-                                              ? "bg-neutral-950/10 hover:bg-neutral-950/15 border-neutral-950/10"
-                                              : "bg-neutral-900 hover:bg-neutral-850 border-neutral-800/80"
-                                          }`}
-                                          onClick={() => window.open(att.url, "_blank")}
+                                        <a
+                                          href={att.url}
+                                          download={att.name}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          className="flex items-center gap-2 p-2.5 rounded-xl border border-neutral-800 bg-neutral-950/40 hover:bg-neutral-950/60 transition-all text-neutral-200 hover:text-white"
                                         >
-                                          <FileText className={`h-5 w-5 shrink-0 ${isSentByMe ? "text-neutral-950" : "text-cyan-400"}`} />
-                                          <span className="text-[10px] truncate max-w-[200px] font-mono">{att.name || "Download File"}</span>
-                                        </div>
+                                          <FileText className="h-5 w-5 text-[#F5B429] shrink-0" />
+                                          <div className="min-w-0 flex-1">
+                                            <p className="text-[11px] font-bold truncate">{att.name || "Document"}</p>
+                                            <p className="text-[9px] text-neutral-500 font-mono uppercase">Click to download</p>
+                                          </div>
+                                          <Download className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+                                        </a>
                                       )}
                                     </div>
                                   ))}
@@ -1193,30 +1196,28 @@ export default function MessagesPage() {
 
                               {/* Text Content */}
                               {isDMEditing ? (
-                                <div className="space-y-2 mt-2 w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+                                <div className="space-y-2 select-none py-1">
                                   <textarea
-                                    name="edit_message_content"
-                                    autoComplete="off"
-                                    data-1p-ignore="true"
-                                    data-bwignore="true"
-                                    data-lpignore="true"
-                                    data-form-type="other"
                                     value={editingMessageText}
                                     onChange={(e) => setEditingMessageText(e.target.value)}
-                                    className="w-full min-h-[50px] p-2 bg-neutral-950 border border-neutral-800 rounded-lg text-xs text-neutral-200 focus:outline-none focus:border-cyan-500 font-sans resize-none leading-relaxed"
+                                    className="w-full bg-black/30 text-white rounded-lg p-2 text-xs border border-white/20 focus:outline-none focus:border-[#F5B429] resize-none"
+                                    rows={2}
+                                    autoFocus
                                   />
-                                  <div className="flex items-center gap-1.5">
+                                  <div className="flex items-center justify-end gap-1.5">
                                     <Button
+                                      size="sm"
                                       onClick={() => handleUpdateDM(msg._id, editingMessageText)}
-                                      className="bg-cyan-500 hover:bg-cyan-400 text-neutral-955 font-bold text-[9px] h-6 px-2.5 rounded-md flex items-center gap-0.5 cursor-pointer transition-all"
+                                      className="h-6 px-2 text-[10px] bg-[#0A0806] text-[#FAFAF8] hover:bg-[#241811] rounded-md font-bold"
                                       style={{ fontFamily: "var(--font-space-grotesk)" }}
                                     >
-                                      <Check className="h-3 w-3" /> Save
+                                      Save
                                     </Button>
                                     <Button
+                                      size="sm"
                                       variant="ghost"
                                       onClick={() => setEditingMessageId(null)}
-                                      className="text-neutral-455 hover:text-neutral-200 text-[9px] h-6 px-2.5 rounded-md border border-neutral-800 hover:bg-neutral-800 transition-all"
+                                      className="h-6 px-2 text-[10px] text-neutral-400 hover:text-white rounded-md"
                                       style={{ fontFamily: "var(--font-space-grotesk)" }}
                                     >
                                       Cancel
@@ -1235,7 +1236,7 @@ export default function MessagesPage() {
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                                           isMissed
                                             ? (isSentByMe ? "bg-neutral-950/20" : "bg-red-500/20")
-                                            : (isSentByMe ? "bg-neutral-950/20" : "bg-cyan-500/15")
+                                            : (isSentByMe ? "bg-neutral-950/20" : "bg-[#F5B429]/15")
                                         }`}>
                                           <span className="text-sm">{isMissed ? "📵" : isVoice ? "📞" : "📹"}</span>
                                         </div>
@@ -1244,7 +1245,7 @@ export default function MessagesPage() {
                                             {isMissed ? "Missed call" : isVoice ? "Voice call" : "Video call"}
                                           </p>
                                           {duration && (
-                                            <p className={`text-[10px] font-mono ${isSentByMe ? "text-neutral-950/70" : "text-cyan-400"}`}>
+                                            <p className={`text-[10px] font-mono ${isSentByMe ? "text-neutral-950/70" : "text-[#F5B429]"}`}>
                                               {duration}
                                             </p>
                                           )}
@@ -1266,14 +1267,14 @@ export default function MessagesPage() {
                         </div>
 
                         {/* Message Meta Info */}
-                        <div className="flex items-center gap-1 mt-1 text-[9px] text-neutral-600 font-mono select-none">
+                        <div className="flex items-center gap-1 mt-1 text-[9px] text-[#8A8078] font-mono select-none">
                           <span>{messageTime}</span>
                           {msg.isEdited && !msg.isDeleted && (
-                            <span className="text-cyan-400 font-bold ml-1 font-sans text-[8px] lowercase">(edited)</span>
+                            <span className="text-[#F5B429] font-bold ml-1 font-sans text-[8px] lowercase">(edited)</span>
                           )}
                           {isSentByMe && (
                             msg.isRead ? (
-                              <CheckCheck className="h-3 w-3 text-cyan-500" />
+                              <CheckCheck className="h-3 w-3 text-[#F5B429]" />
                             ) : (
                               <Check className="h-3 w-3" />
                             )
@@ -1298,21 +1299,21 @@ export default function MessagesPage() {
             </div>
 
             {/* Bottom Text/Media Inputs Panel — shrink-0 relative container */}
-            <div className="shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#F3F0E4]/15 bg-[#121F18]/95 backdrop-blur-xl relative z-10">
+            <div className="shrink-0 p-3 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-[#2E2118] bg-[#0A0806]/95 backdrop-blur-xl relative z-10">
               <form onSubmit={handleSendMessage} autoComplete="off" className="space-y-2.5 sm:space-y-3">
                 {/* Hidden fields to prevent browser/extension password manager popups */}
                 <input type="text" name="username" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
                 <input type="password" name="password" style={{ display: "none" }} tabIndex={-1} autoComplete="new-password" />
                 {/* Replying message preview banner */}
                 {replyingMessage && (
-                  <div className="flex items-center justify-between p-3 bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-xl animate-fade-in relative select-none">
+                  <div className="flex items-center justify-between p-3 bg-[#150F0B] border border-[#2E2118] rounded-xl animate-fade-in relative select-none">
                     <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                      <div className="shrink-0 h-4 border-l-2 border-[#F0C93B] self-stretch" />
+                      <div className="shrink-0 h-4 border-l-2 border-[#F5B429] self-stretch" />
                       <div className="flex flex-col gap-0.5 min-w-0">
-                        <span className="text-[10px] font-bold text-[#F0C93B] font-mono">
+                        <span className="text-[10px] font-bold text-[#F5B429] font-mono">
                           Replying to {replyingMessage.senderId === currentUserId ? "yourself" : activeUser?.name}
                         </span>
-                        <span className="text-[10px] text-[#9FAEA1] truncate max-w-[220px] sm:max-w-md">
+                        <span className="text-[10px] text-[#8A8078] truncate max-w-[220px] sm:max-w-md">
                           {replyingMessage.content || (replyingMessage.attachments && replyingMessage.attachments.length > 0 ? "📷 Media Attachment" : "")}
                         </span>
                       </div>
@@ -1321,7 +1322,7 @@ export default function MessagesPage() {
                       type="button"
                       variant="ghost"
                       onClick={() => setReplyingMessage(null)}
-                      className="h-6 w-6 p-0 hover:bg-[#1F362A] text-[#9FAEA1] hover:text-[#F3F0E4] rounded-lg shrink-0 flex items-center justify-center cursor-pointer transition-all"
+                      className="h-6 w-6 p-0 hover:bg-[#241811] text-[#8A8078] hover:text-[#FAFAF8] rounded-lg shrink-0 flex items-center justify-center cursor-pointer transition-all"
                     >
                       <X className="h-3.5 w-3.5" />
                     </Button>
@@ -1331,19 +1332,19 @@ export default function MessagesPage() {
                 {attachments.length > 0 && (
                   <div className="flex flex-wrap gap-2 animate-[slideIn_0.2s_ease-out]">
                     {attachments.map((att, i) => (
-                      <div key={i} className="relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-[#F3F0E4]/20 bg-[#16261D] select-none group">
+                      <div key={i} className="relative shrink-0 h-16 w-16 sm:h-20 sm:w-20 rounded-xl overflow-hidden border border-[#2E2118] bg-[#150F0B] select-none group">
                         {att.type === "image" ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={att.url} alt="Preview" className="object-cover h-full w-full" />
                         ) : att.type === "video" ? (
-                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#121F18]/80">
-                            <Film className="h-5 w-5 text-[#8FC3DE]" />
-                            <span className="text-[7px] text-[#9FAEA1] uppercase font-bold tracking-wide">Video</span>
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#150F0B]">
+                            <Film className="h-5 w-5 text-[#F5B429]" />
+                            <span className="text-[7px] text-[#8A8078] uppercase font-bold tracking-wide">Video</span>
                           </div>
                         ) : (
-                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#121F18]/80 px-1.5">
-                            <FileText className="h-5 w-5 text-[#8FC3DE]" />
-                            <span className="text-[7px] text-[#9FAEA1] truncate max-w-full font-mono">{att.name}</span>
+                          <div className="h-full w-full flex flex-col items-center justify-center gap-1 bg-[#150F0B] px-1.5">
+                            <FileText className="h-5 w-5 text-[#F5B429]" />
+                            <span className="text-[7px] text-[#8A8078] truncate max-w-full font-mono">{att.name}</span>
                           </div>
                         )}
                         <button
@@ -1351,7 +1352,7 @@ export default function MessagesPage() {
                           onClick={() => {
                             setAttachments(prev => prev.filter((_, index) => index !== i));
                           }}
-                          className="absolute top-1 right-1 p-0.5 rounded-full bg-[#121F18]/90 border border-[#F3F0E4]/30 text-[#F3F0E4] hover:text-[#F28B6E] transition-colors opacity-90"
+                          className="absolute top-1 right-1 p-0.5 rounded-full bg-[#0A0806]/90 border border-[#2E2118] text-[#FAFAF8] hover:text-red-400 transition-colors opacity-90"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -1389,23 +1390,23 @@ export default function MessagesPage() {
                           variant="ghost"
                           size="icon"
                           disabled={isUploading}
-                          className="h-10 w-10 shrink-0 text-[#9FAEA1] hover:text-[#F0C93B] hover:bg-[#F0C93B]/10 border border-[#F3F0E4]/20 hover:border-[#F0C93B]/40 transition-all rounded-xl"
+                          className="h-10 w-10 shrink-0 text-[#8A8078] hover:text-[#F5B429] hover:bg-[#F5B429]/10 border border-[#2E2118] hover:border-[#F5B429]/40 transition-all rounded-xl"
                         />
                       }
                     >
                       {isUploading ? (
-                        <Loader2 className="h-4 w-4 animate-spin text-[#F0C93B]" />
+                        <Loader2 className="h-4 w-4 animate-spin text-[#F5B429]" />
                       ) : (
                         <Paperclip className="h-4 w-4" />
                       )}
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" side="top" className="w-56 bg-[#121F18] border-[#F3F0E4]/20 text-[#F3F0E4]">
-                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:bg-[#1F362A] hover:text-[#F0C93B] gap-2">
-                        <Images className="h-3.5 w-3.5 text-[#8FC3DE]" />
+                    <DropdownMenuContent align="start" side="top" className="w-56 bg-[#150F0B] border-[#2E2118] text-[#FAFAF8]">
+                      <DropdownMenuItem onClick={() => fileInputRef.current?.click()} className="cursor-pointer hover:bg-[#241811] hover:text-[#F5B429] gap-2">
+                        <Images className="h-3.5 w-3.5 text-[#F5B429]" />
                         <span>Photo or Video</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => docInputRef.current?.click()} className="cursor-pointer hover:bg-[#1F362A] hover:text-[#F0C93B] gap-2">
-                        <FileIcon className="h-3.5 w-3.5 text-[#8FC3DE]" />
+                      <DropdownMenuItem onClick={() => docInputRef.current?.click()} className="cursor-pointer hover:bg-[#241811] hover:text-[#F5B429] gap-2">
+                        <FileIcon className="h-3.5 w-3.5 text-[#F5B429]" />
                         <span>Document</span>
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -1428,13 +1429,13 @@ export default function MessagesPage() {
                       setInputText(e.target.value);
                       handleTypingNotification();
                     }}
-                    className="flex-1 bg-[#1A2D23]/80 border-[#F3F0E4]/20 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs sm:text-sm rounded-xl px-4 font-sans min-w-0"
+                    className="flex-1 bg-[#150F0B] border-[#2E2118] focus:border-[#F5B429] text-[#FAFAF8] placeholder-[#8A8078] h-10 text-xs sm:text-sm rounded-xl px-4 font-sans min-w-0"
                   />
 
                   <Button
                     type="submit"
                     disabled={(!inputText.trim() && attachments.length === 0) || isUploading}
-                    className="h-10 w-10 shrink-0 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-[2px_2px_0_0_#F28B6E]"
+                    className="h-10 w-10 shrink-0 bg-[#F5B429] hover:bg-[#FCD34D] text-[#0A0806] font-bold rounded-xl transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -1443,21 +1444,21 @@ export default function MessagesPage() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 flex flex-col items-center justify-center bg-neutral-950/20 text-center px-6 sm:px-8 relative select-none">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/5 rounded-full blur-[110px] pointer-events-none" />
+          <div className="flex-1 flex flex-col items-center justify-center bg-transparent text-center px-6 sm:px-8 relative select-none">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-[#F5B429]/5 rounded-full blur-[110px] pointer-events-none" />
 
-            <div className="relative z-10 space-y-5 max-w-sm">
-              <div className="h-14 w-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto shadow-inner">
-                <MessageSquare className="h-6 w-6 text-neutral-500" />
+            <div className="relative z-10 space-y-4 max-w-sm">
+              <div className="h-14 w-14 rounded-2xl bg-[#150F0B] border border-[#2E2118] flex items-center justify-center mx-auto text-[#F5B429] shadow-sm">
+                <MessageSquare className="h-6 w-6 text-[#F5B429]" />
               </div>
               <div className="space-y-1">
                 <h3
-                  className="text-sm font-bold text-neutral-300 tracking-tight"
+                  className="text-sm font-bold text-[#FAFAF8] tracking-tight"
                   style={{ fontFamily: "var(--font-space-grotesk)" }}
                 >
                   No conversation active
                 </h3>
-                <p className="text-neutral-600 text-xs leading-relaxed">
+                <p className="text-[#8A8078] text-xs leading-relaxed">
                   Select a user from your messages sidebar on the left, or use the search bar to find someone new and start chatting.
                 </p>
               </div>
@@ -1571,7 +1572,7 @@ export default function MessagesPage() {
       {/* Context Menu Dropdown */}
       {contextMenu && contextMenu.visible && (
         <div
-          className="fixed z-[99999] bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl p-1 w-32 flex flex-col animate-fade-in"
+          className="fixed z-[99999] bg-[#150F0B] border border-[#2E2118] rounded-xl shadow-2xl p-1 w-32 flex flex-col animate-fade-in"
           style={{
             top: Math.min(contextMenu.y, typeof window !== "undefined" ? window.innerHeight - 150 : contextMenu.y),
             left: Math.min(contextMenu.x, typeof window !== "undefined" ? window.innerWidth - 140 : contextMenu.x),
@@ -1588,10 +1589,10 @@ export default function MessagesPage() {
               }
               setContextMenu(null);
             }}
-            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-[#F0C93B] hover:bg-neutral-800 hover:text-white font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-[#F5B429] hover:bg-[#241811] hover:text-[#FAFAF8] font-bold transition-all flex items-center gap-1.5 cursor-pointer"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
-            <Copy className="h-3.5 w-3.5 text-[#F0C93B]" />
+            <Copy className="h-3.5 w-3.5 text-[#F5B429]" />
             <span>Copy Text</span>
           </button>
 
@@ -1600,7 +1601,7 @@ export default function MessagesPage() {
               setReplyingMessage(contextMenu.message);
               setContextMenu(null);
             }}
-            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-neutral-300 hover:bg-neutral-800 hover:text-cyan-400 font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+            className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-[#FAFAF8] hover:bg-[#241811] hover:text-[#F5B429] font-bold transition-all flex items-center gap-1.5 cursor-pointer"
             style={{ fontFamily: "var(--font-space-grotesk)" }}
           >
             <CornerUpLeft className="h-3.5 w-3.5" />
@@ -1615,7 +1616,7 @@ export default function MessagesPage() {
                   setEditingMessageText(contextMenu.message.content);
                   setContextMenu(null);
                 }}
-                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-neutral-300 hover:bg-neutral-800 hover:text-cyan-400 font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-[#FAFAF8] hover:bg-[#241811] hover:text-[#F5B429] font-bold transition-all flex items-center gap-1.5 cursor-pointer"
                 style={{ fontFamily: "var(--font-space-grotesk)" }}
               >
                 <Edit3 className="h-3.5 w-3.5" />
@@ -1626,7 +1627,7 @@ export default function MessagesPage() {
                   handleDeleteDM(contextMenu.message._id);
                   setContextMenu(null);
                 }}
-                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-red-400 hover:bg-neutral-800 hover:text-red-300 font-bold transition-all flex items-center gap-1.5 cursor-pointer border-t border-neutral-800 mt-0.5 pt-1.5"
+                className="w-full text-left py-1.5 px-2.5 rounded-lg text-[10px] text-red-400 hover:bg-[#241811] hover:text-red-300 font-bold transition-all flex items-center gap-1.5 cursor-pointer border-t border-[#2E2118] mt-0.5 pt-1.5"
                 style={{ fontFamily: "var(--font-space-grotesk)" }}
               >
                 <span>Delete</span>
@@ -1643,13 +1644,13 @@ export default function MessagesPage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-md bg-neutral-900 border border-neutral-800 rounded-2xl p-5 sm:p-6 space-y-6 shadow-2xl relative max-h-[85vh] overflow-y-auto custom-scroll"
+            className="w-full max-w-md bg-[#150F0B] border border-[#2E2118] rounded-2xl p-5 sm:p-6 space-y-6 shadow-2xl relative max-h-[85vh] overflow-y-auto custom-scroll"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+            <div className="flex items-center justify-between border-b border-[#2E2118] pb-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-neutral-200 uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                <h3 className="text-sm font-bold text-[#FAFAF8] uppercase tracking-widest" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                   Chat Wallpaper Settings
                 </h3>
               </div>
@@ -1657,7 +1658,7 @@ export default function MessagesPage() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsWallpaperPickerOpen(false)}
-                className="h-8 w-8 text-neutral-500 hover:text-neutral-200 rounded-lg"
+                className="h-8 w-8 text-[#8A8078] hover:text-[#FAFAF8] rounded-lg"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -1665,15 +1666,15 @@ export default function MessagesPage() {
 
             {/* Presets - Solid Colors */}
             <div className="space-y-3">
-              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+              <h4 className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                 Solid Colors
               </h4>
               <div className="grid grid-cols-3 sm:grid-cols-6 gap-2.5">
                 {[
                   { name: "Charcoal", value: "#0b141a" },
-                  { name: "Olive", value: "#1c2826" },
-                  { name: "Teal", value: "#0d2c30" },
-                  { name: "Indigo", value: "#182238" },
+                  { name: "Obsidian", value: "#0A0806" },
+                  { name: "Warm Dark", value: "#150F0B" },
+                  { name: "Elevated", value: "#241811" },
                   { name: "Crimson", value: "#2e141a" },
                   { name: "Royal", value: "#221230" },
                 ].map((color) => (
@@ -1681,7 +1682,7 @@ export default function MessagesPage() {
                     key={color.name}
                     title={color.name}
                     onClick={() => updateWallpaper(color.value)}
-                    className="w-10 h-10 rounded-full border border-white/5 shadow-inner hover:scale-105 active:scale-95 transition-transform"
+                    className="w-10 h-10 rounded-full border border-[#2E2118] shadow-inner hover:scale-105 active:scale-95 transition-transform cursor-pointer"
                     style={{ backgroundColor: color.value }}
                   />
                 ))}
@@ -1690,12 +1691,12 @@ export default function MessagesPage() {
 
             {/* Presets - Gradients */}
             <div className="space-y-3">
-              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
-                Cyber Gradients
+              <h4 className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+                Atmospheric Gradients
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {[
-                  { name: "Neon", value: "linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15))" },
+                  { name: "Amber", value: "linear-gradient(135deg, rgba(245, 180, 41, 0.15), rgba(245, 148, 29, 0.15))" },
                   { name: "Cosmic", value: "linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.15))" },
                   { name: "Flame", value: "linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 179, 8, 0.15))" },
                   { name: "Forest", value: "linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))" },
@@ -1704,7 +1705,7 @@ export default function MessagesPage() {
                     key={grad.name}
                     title={grad.name}
                     onClick={() => updateWallpaper(grad.value)}
-                    className="h-10 rounded-lg border border-white/5 shadow-inner hover:scale-105 active:scale-95 transition-transform"
+                    className="h-10 rounded-lg border border-[#2E2118] shadow-inner hover:scale-105 active:scale-95 transition-transform cursor-pointer"
                     style={{ background: grad.value }}
                   />
                 ))}
@@ -1712,22 +1713,22 @@ export default function MessagesPage() {
             </div>
 
             {/* Custom Image Upload */}
-            <div className="space-y-3 border-t border-neutral-800 pt-4">
-              <h4 className="text-[10px] font-bold text-neutral-500 uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+            <div className="space-y-3 border-t border-[#2E2118] pt-4">
+              <h4 className="text-[10px] font-bold text-[#8A8078] uppercase tracking-wider" style={{ fontFamily: "var(--font-space-grotesk)" }}>
                 Custom Background Image
               </h4>
               <div className="flex items-center gap-3">
-                <label className="flex-1 flex flex-col items-center justify-center border border-dashed border-neutral-850 hover:border-cyan-500/50 bg-neutral-950/40 rounded-xl p-4 cursor-pointer transition-all hover:bg-neutral-950/60 select-none">
+                <label className="flex-1 flex flex-col items-center justify-center border border-dashed border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806]/40 rounded-xl p-4 cursor-pointer transition-all hover:bg-[#0A0806]/60 select-none">
                   {isUploadingWallpaper ? (
-                    <div className="flex items-center gap-2 text-xs text-neutral-400">
-                      <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
+                    <div className="flex items-center gap-2 text-xs text-[#8A8078]">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#F5B429]" />
                       <span>Uploading...</span>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center gap-1.5 text-xs text-neutral-400">
-                      <ImageIcon className="h-5 w-5 text-neutral-500" />
-                      <span className="font-semibold text-neutral-350">Choose a file...</span>
-                      <span className="text-[9px] text-neutral-600">JPG, PNG, WEBP or GIF up to 10MB</span>
+                    <div className="flex flex-col items-center gap-1.5 text-xs text-[#8A8078]">
+                      <ImageIcon className="h-5 w-5 text-[#8A8078]" />
+                      <span className="font-semibold text-[#B8AFA6]">Choose a file...</span>
+                      <span className="text-[9px] text-[#8A8078]">JPG, PNG, WEBP or GIF up to 10MB</span>
                     </div>
                   )}
                   <input
@@ -1742,10 +1743,10 @@ export default function MessagesPage() {
             </div>
 
             {/* Reset Defaults */}
-            <div className="flex items-center gap-2 border-t border-neutral-800 pt-4">
+            <div className="flex items-center gap-2 border-t border-[#2E2118] pt-4">
               <Button
                 onClick={() => updateWallpaper("")}
-                className="flex-1 bg-neutral-800 hover:bg-neutral-750 text-neutral-300 text-[10px] uppercase font-space font-bold py-2 rounded-xl transition-all cursor-pointer"
+                className="flex-1 bg-[#241811] hover:bg-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] text-[10px] uppercase font-space font-bold py-2 rounded-xl transition-all cursor-pointer border border-[#2E2118]"
                 style={{ fontFamily: "var(--font-space-grotesk)" }}
               >
                 Clear Custom Wallpaper

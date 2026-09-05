@@ -8,7 +8,9 @@ import { NotexiaLogo } from "@/components/common/NotexiaLogo";
 import { RazorpayPaymentButton } from "@/components/common/RazorpayPaymentButton";
 import { Button } from "@/components/ui/button";
 import { buildFAQSchema } from "@/lib/seo/jsonld";
-import { ArrowUpRight } from "lucide-react";
+import Image from "next/image";
+import { ContestAdPoster } from "@/components/marketing/ContestAdPoster";
+import { ArrowUpRight, Gift, Laptop, Smartphone, Trophy, Sparkles, CheckCircle2 } from "lucide-react";
 import { InstagramIcon, LinkedInIcon, TwitterXIcon } from "@/components/common/SocialIcons";
 
 function LandingSkeleton() {
@@ -179,6 +181,7 @@ export default function MarketingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const [heroView, setHeroView] = useState<"prizes" | "workspace">("prizes");
 
   /* ── INTERACTIVE DEMO STATE ── */
   const [activeChip, setActiveChip] = useState<number>(0);
@@ -1186,6 +1189,26 @@ export default function MarketingPage() {
         .min-h-screen { min-height: 100vh; }
       `}</style>
 
+      {/* ── TOP CONTEST ANNOUNCEMENT BAR ── */}
+      <aside aria-label="Contest Announcement" className="bg-gradient-to-r from-[#150F0B] via-[#241811] to-[#150F0B] border-b border-[#F5B429]/30 text-xs py-2.5 px-4 relative z-50 shadow-md">
+        <div className="max-w-6xl mx-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap text-center">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#F5B429]/20 text-[#F5B429] font-mono font-bold text-[11px] tracking-wide border border-[#F5B429]/40 animate-pulse shadow-[0_0_12px_rgba(245,180,41,0.25)]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#F5B429]" />
+            MEGA GIVEAWAY
+          </span>
+          <span className="text-[#E0D8D0] text-xs sm:text-sm">
+            Get a chance to win an <strong className="text-white font-bold">iPhone 16 Pro</strong> or <strong className="text-[#F5B429] font-bold">MacBook Air M3</strong>!
+          </span>
+          <button
+            type="button"
+            onClick={() => scrollToSection("contest-poster")}
+            className="text-[#F5B429] hover:text-[#F7C948] font-bold text-xs sm:text-sm inline-flex items-center gap-1 underline underline-offset-2 transition-all hover:translate-x-0.5 cursor-pointer"
+          >
+            <span>See 5 Steps &amp; Enter</span> &rarr;
+          </button>
+        </div>
+      </aside>
+
       {/* ── HEADER NAVBAR ── */}
       <header>
         <div className="wrap nav">
@@ -1194,6 +1217,18 @@ export default function MarketingPage() {
           </Link>
           <nav className="nav-links" role="navigation" aria-label="Main navigation">
             <button 
+              type="button"
+              onClick={() => scrollToSection("contest-poster")}
+              className={`text-[#F5B429] font-bold inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F5B429]/10 border border-[#F5B429]/30 hover:bg-[#F5B429]/20 transition-all ${
+                activeSection === "contest-poster" ? "active ring-1 ring-[#F5B429]" : ""
+              }`}
+              aria-current={activeSection === "contest-poster" ? "location" : undefined}
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#F5B429]" />
+              <span>Win iPhone/MacBook</span>
+            </button>
+            <button 
+              type="button"
               onClick={() => scrollToSection("features")} 
               className={activeSection === "features" ? "active" : ""}
               aria-current={activeSection === "features" ? "location" : undefined}
@@ -1265,75 +1300,199 @@ export default function MarketingPage() {
           <div className="wrap">
             <div className="hero-grid">
               <div>
-                <span className="eyebrow">
-                  <span className="dot" />
-                  Built for JEE · NEET · CBSE · GATE aspirants
-                </span>
+                <div className="flex flex-wrap items-center gap-2 mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5B429]/15 border border-[#F5B429]/40 text-[#F5B429] text-xs font-mono font-bold tracking-wide shadow-[0_0_15px_rgba(245,180,41,0.2)]">
+                    <span className="w-2 h-2 rounded-full bg-[#F5B429] animate-ping" />
+                    ALL-INDIA SCHOLAR CHAMPIONSHIP · WIN FLAGSHIP PRIZES
+                  </span>
+                  <span className="text-xs text-[#8A8078] hidden sm:inline font-mono">
+                    Built for JEE · NEET · BTech · GATE
+                  </span>
+                </div>
                 <h1>
-                  AI Study Platform for Students — Notes, Doubt Solver &amp; Revision
+                  Study Smarter, Share Notes &amp;{" "}
+                  <em className="bg-gradient-to-r from-[#F7C948] via-[#F5B429] to-[#F5941D] bg-clip-text text-transparent not-italic">
+                    Win an iPhone or MacBook
+                  </em>
                 </h1>
                 <p className="lead">
-                  Notexia is an AI-powered study platform for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE). Organize digital study notes with LaTeX formulas, solve homework doubts 24/7, access formula sheets, and collaborate with a student community.
+                  Notexia gives Indian students and engineering undergrads an AI-powered workspace for LaTeX notes, 24/7 doubt solving, and formulas. Share your notes &amp; projects, publish technical blogs, collaborate with peers, and climb the contributor leaderboard to take home an Apple flagship.
                 </p>
                 <div className="hero-ctas">
                   <Link href="/signup" className="btn btn-solid">
-                    Start free, no card needed
+                    Start Free &amp; Enter Contest &rarr;
                   </Link>
-                  <button onClick={() => scrollToSection("demo")} className="btn btn-ghost">
-                    Watch a doubt get solved ↓
+                  <button type="button" onClick={() => scrollToSection("contest-poster")} className="btn btn-ghost">
+                    See 5 Steps to Win ↓
                   </button>
                 </div>
-                <div className="trust-note">
+
+                {/* Contest Highlights & Trust */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-5 mt-5 border-t border-[#2E2118]/80 text-[11px] font-mono text-[#A89F91]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#F5B429] font-bold">✦</span> 100% Free Entry
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#F5B429] font-bold">✦</span> MacBook Air (Rank 1)
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#F5B429] font-bold">✦</span> iPhone 16 Pro (Rank 2)
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[#F5B429] font-bold">✦</span> +500 Coins on Signup
+                  </div>
+                </div>
+
+                <div className="trust-note mt-4">
                   <div className="avatars">
                     <span>R</span>
                     <span>S</span>
                     <span>A</span>
                     <span>P</span>
                   </div>
-                  <span>Joined by students preparing across 120+ colleges and coaching batches</span>
+                  <span>Joined by 42,000+ students preparing across IITs, NITs, BITS &amp; 120+ colleges</span>
                 </div>
               </div>
 
-              <div className="sheet" role="img" aria-label="Notexia workspace preview showing quantum Fourier transform derivation with AI verification">
-                <div className="sheet-head">
-                  <span className="sheet-head-title">Notexia Workspace</span>
-                  <span className="sheet-head-code">workspace.notexia.cloud</span>
-                </div>
-                <div className="sheet-body">
-                  <div className="stamp">
-                    ✓ AI
-                    <br />
-                    VERIFIED
+              {/* ── HERO RIGHT INTERACTIVE SHOWCASE ── */}
+              <div className="sheet" role="region" aria-label="Notexia interactive preview">
+                {/* Switcher Tab Header */}
+                <div className="flex items-center justify-between border-b border-[#2E2118] bg-[#150F0B] px-4 py-2.5">
+                  <div className="flex items-center gap-1.5 bg-[#0A0806] p-1 rounded-xl border border-[#2E2118]">
+                    <button
+                      type="button"
+                      onClick={() => setHeroView("prizes")}
+                      className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                        heroView === "prizes"
+                          ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] shadow-sm"
+                          : "text-[#A89F91] hover:text-white"
+                      }`}
+                    >
+                      <Gift className="w-3.5 h-3.5" />
+                      <span>Grand Prizes</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setHeroView("workspace")}
+                      className={`px-3 py-1 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 ${
+                        heroView === "workspace"
+                          ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] shadow-sm"
+                          : "text-[#A89F91] hover:text-white"
+                      }`}
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>AI Workspace</span>
+                    </button>
                   </div>
-                  <div className="sheet-note">
-                    <div className="fname">Quantum_Fourier_Transform.md · auto-saved</div>
-                    <h4>Quantum Fourier Transform — derivation</h4>
-                    <div className="eqn" aria-label="Mathematical expression">
-                      const qft = (state) =&gt; state.applyGate(&quot;Hadamard&quot;);
+                  <span className="text-[11px] font-mono text-[#F5B429] hidden sm:inline">
+                    {heroView === "prizes" ? "Season 1: Active Now" : "workspace.notexia.cloud"}
+                  </span>
+                </div>
+
+                {heroView === "prizes" ? (
+                  <div className="p-4 sm:p-6 space-y-4 bg-[#0A0806]">
+                    {/* Device Showcase Image Card */}
+                    <div className="relative aspect-video rounded-xl overflow-hidden border border-[#2E2118] group">
+                      <Image
+                        src="/images/contest/devices.jpg"
+                        alt="MacBook Air M3 and iPhone 16 Pro Grand Prizes"
+                        fill
+                        className="object-cover group-hover:scale-105 transition-transform duration-500"
+                        priority
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0A0806] via-transparent to-transparent opacity-80" />
+                      <div className="absolute top-2.5 left-2.5">
+                        <span className="px-2.5 py-1 rounded-md bg-[#150F0B]/90 border border-[#F5B429]/40 text-[#F5B429] text-[10px] font-mono font-bold uppercase tracking-wider backdrop-blur-md">
+                          Top Contributor Rewards
+                        </span>
+                      </div>
+                      <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-xs">
+                        <div className="font-bold text-white flex items-center gap-2">
+                          <Trophy className="w-4 h-4 text-[#F5B429]" />
+                          <span>MacBook Air M3 + iPhone 16 Pro</span>
+                        </div>
+                        <span className="text-[11px] font-mono text-[#F5B429] bg-[#0A0806]/80 px-2 py-0.5 rounded border border-[#2E2118]">
+                          End of Semester
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* 5 Quick Steps Micro-Bar */}
+                    <div className="space-y-1.5">
+                      <div className="text-[11px] font-mono text-[#8A8078] flex justify-between">
+                        <span>5 STEPS TO WIN</span>
+                        <span className="text-[#F5B429]">100% Merit Based</span>
+                      </div>
+                      <div className="grid grid-cols-5 gap-1 text-center text-[10px] font-mono">
+                        <div className="p-1.5 rounded-lg bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8]">
+                          1. Upload
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8]">
+                          2. Blogs
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8]">
+                          3. Doubts
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8]">
+                          4. Refer
+                        </div>
+                        <div className="p-1.5 rounded-lg bg-[#241811] border border-[#F5B429]/40 text-[#F5B429] font-bold">
+                          5. Win!
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Current Leader Bar & Quick Action */}
+                    <div className="pt-2 border-t border-[#2E2118] flex items-center justify-between text-xs">
+                      <div className="text-[#8A8078] text-[11px]">
+                        Leader: <strong className="text-white">Rohan K. (IIT Bombay)</strong> · 5,420 pts
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => scrollToSection("contest-poster")}
+                        className="text-[#F5B429] hover:underline font-mono text-xs font-bold inline-flex items-center gap-1"
+                      >
+                        <span>View Rules</span> &rarr;
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="sheet-body">
+                    <div className="stamp">
+                      ✓ AI
                       <br />
-                      ψ(x) = A · e^(i(kx − ωt))
+                      VERIFIED
                     </div>
-                    <p className="margin-note hand">nice derivation — tighten step 2 before the mock ✎</p>
+                    <div className="sheet-note">
+                      <div className="fname">Quantum_Fourier_Transform.md · auto-saved</div>
+                      <h4>Quantum Fourier Transform — derivation</h4>
+                      <div className="eqn" aria-label="Mathematical expression">
+                        const qft = (state) =&gt; state.applyGate(&quot;Hadamard&quot;);
+                        <br />
+                        ψ(x) = A · e^(i(kx − ωt))
+                      </div>
+                      <p className="margin-note hand">nice derivation — tighten step 2 before the mock ✎</p>
+                    </div>
+                    <div className="sheet-stats">
+                      <div>
+                        <div className="num">42,000+</div>
+                        <div className="lbl">Notes authored</div>
+                      </div>
+                      <div>
+                        <div className="num">1.1L+</div>
+                        <div className="lbl">Doubts solved</div>
+                      </div>
+                      <div>
+                        <div className="num">4.8/5</div>
+                        <div className="lbl">Student rating</div>
+                      </div>
+                      <div>
+                        <div className="num">99.9%</div>
+                        <div className="lbl">Uptime</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="sheet-stats">
-                    <div>
-                      <div className="num">42,000+</div>
-                      <div className="lbl">Notes authored</div>
-                    </div>
-                    <div>
-                      <div className="num">1.1L+</div>
-                      <div className="lbl">Doubts solved</div>
-                    </div>
-                    <div>
-                      <div className="num">4.8/5</div>
-                      <div className="lbl">Student rating</div>
-                    </div>
-                    <div>
-                      <div className="num">99.9%</div>
-                      <div className="lbl">Uptime</div>
-                    </div>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
@@ -1359,6 +1518,9 @@ export default function MarketingPage() {
             </div>
           </div>
         </section>
+
+        {/* ── MEGA CONTEST & AD POSTER SECTION (WIN IPHONE OR MACBOOK) ── */}
+        <ContestAdPoster />
 
         {/* ── LIVE DEMO WITH FORMATTED AI OUTPUT ── */}
         <section id="demo">

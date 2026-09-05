@@ -15,10 +15,10 @@ import {
   X,
   Trash2,
   Edit3,
-  ArrowUpRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { useAlertStore } from "@/stores/alertStore";
 import Link from "next/link";
@@ -62,7 +62,7 @@ export default function CommunityPage() {
   const [isPosting, setIsPosting] = useState(false);
 
   // Edit Post modal states
-  const [, setIsEditOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [editPostId, setEditPostId] = useState("");
   const [editContent, setEditContent] = useState("");
   const [editMediaUrl, setEditMediaUrl] = useState("");
@@ -159,7 +159,6 @@ export default function CommunityPage() {
     }
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleUpdatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editContent.trim() || isUpdating) return;
@@ -254,74 +253,82 @@ export default function CommunityPage() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#F5941D]/8 rounded-full blur-[140px] animate-float-glow-reverse" />
-      </div>
-
       {/* Header Banner */}
-      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
-        <div className="border border-[#2E2118] bg-[#150F0B]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+      <div className="p-4 sm:p-6 lg:p-8 pb-0 relative z-10 max-w-3xl w-full mx-auto">
+        <div className="border border-[#2E2118] bg-[#150F0B] p-6 sm:p-8 rounded-2xl relative z-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429] shrink-0">
-                <Users className="size-7" />
+              <div className="size-12 rounded-xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/25 text-[#F5B429] shrink-0">
+                <Users className="size-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-2.5 flex-wrap font-display">
-                  Community Hub
-                  <span className="text-[10px] font-mono font-bold bg-[#F5B429]/15 text-[#F5B429] px-3 py-1 rounded-full border border-[#F5B429]/30 uppercase tracking-widest">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAFAF8] font-display">
+                    Community Hub
+                  </h1>
+                  <span className="text-[10px] font-mono font-bold bg-[#F5B429]/10 text-[#F5B429] px-2.5 py-0.5 rounded-full border border-[#F5B429]/25 uppercase tracking-wider">
                     LIVE FEED
                   </span>
-                </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
-                  Connect with student scholars, post updates, and earn activity points across university batches.
+                </div>
+                <p className="text-xs sm:text-sm text-[#8A8078] font-light mt-1">
+                  Connect with peer scholars, share learning milestones, and discuss university coursework.
                 </p>
               </div>
             </div>
 
             <Button
               onClick={() => setIsCreateOpen(true)}
-              className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
+              className="btn-premium-primary text-xs h-10 px-5 rounded-xl flex items-center gap-1.5 shrink-0"
             >
-              <Plus className="size-4 text-[#2A2118]" />
+              <Plus className="size-4" />
               <span>Create Post</span>
-              <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Posts Feed Container */}
-      <div className="p-4 sm:p-8 lg:p-10 max-w-3xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-3xl w-full mx-auto space-y-6 relative z-10">
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-[#F0C93B]" />
-            <span className="font-mono text-[#F0C93B] tracking-widest">SYNCING COMMUNITY STREAM...</span>
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="size-9 rounded-full bg-[#241811]" />
+                  <div className="space-y-1.5 flex-1">
+                    <Skeleton className="h-4 w-32 bg-[#241811]" />
+                    <Skeleton className="h-3 w-20 bg-[#241811]" />
+                  </div>
+                </div>
+                <Skeleton className="h-14 w-full bg-[#241811]" />
+                <Skeleton className="h-8 w-40 bg-[#241811]" />
+              </div>
+            ))}
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
-              <Users className="size-10 text-[#9FAEA1]" />
-              <h3 className="text-lg font-bold text-[#F3F0E4] font-heading">Community feed empty</h3>
-              <p className="text-xs text-[#9FAEA1] font-light max-w-xs">
-                Share the first post to start conversations with peer engineers!
-              </p>
-              <Button
-                onClick={() => setIsCreateOpen(true)}
-                className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs font-bold h-9 px-5 mt-2 shadow-[2px_2px_0_0_#F28B6E]"
-              >
-                Create First Post
-              </Button>
+          <div className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-10 max-w-md mx-auto text-center space-y-4 my-8">
+            <div className="size-12 rounded-xl bg-[#241811] flex items-center justify-center text-[#8A8078] mx-auto">
+              <Users className="size-6" />
             </div>
+            <div>
+              <h3 className="text-base font-bold text-[#FAFAF8] font-display">Community feed is quiet</h3>
+              <p className="text-xs text-[#8A8078] font-light max-w-xs mx-auto mt-1">
+                Be the first scholar to share an update, study question, or engineering breakthrough!
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsCreateOpen(true)}
+              className="btn-premium-primary text-xs h-9 px-4 rounded-xl"
+            >
+              Create First Post
+            </Button>
           </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ staggerChildren: 0.08 }}
-            className="space-y-6"
+            transition={{ staggerChildren: 0.05 }}
+            className="space-y-5"
           >
             {posts.map((post) => {
               const isLiked = post.likes?.includes(currentUserId || "");
@@ -330,126 +337,160 @@ export default function CommunityPage() {
               return (
                 <motion.div
                   key={post._id}
-                  whileHover={{ y: -3 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 22 }}
-                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl hover:border-[#F0C93B]/40 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/30 transition-all p-5 sm:p-6 space-y-4"
                 >
-                  <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-5">
-                    {/* Post Header */}
-                    <div className="flex items-center gap-3 select-none">
-                      {post.userImage ? (
-                        <img src={post.userImage} alt={post.userName} className="size-9 rounded-full object-cover border border-[#F3F0E4]/20 bg-[#16261D]" />
-                      ) : (
-                        <div className="size-9 rounded-full bg-[#16261D] border border-[#F3F0E4]/20 flex items-center justify-center text-[#F0C93B] text-xs font-bold">
-                          {post.userName?.[0]?.toUpperCase()}
-                        </div>
-                      )}
-                      <div>
-                        <Link href={`/user/${post.userId}`}>
-                          <p className="text-xs font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors leading-tight font-heading">
-                            {post.userName}
-                          </p>
-                        </Link>
-                        <p className="text-[10px] font-mono text-[#9FAEA1] mt-0.5">
-                          {new Date(post.createdAt).toLocaleString()}
-                        </p>
-                      </div>
-                      {post.userId === currentUserId && (
-                        <div className="ml-auto flex items-center gap-2">
-                          <button onClick={() => openEditModal(post)} className="text-[#9FAEA1] hover:text-[#F3F0E4] transition-colors">
-                            <Edit3 className="size-4" />
-                          </button>
-                          <button onClick={() => handleDeletePost(post._id)} className="text-[#9FAEA1] hover:text-[#F28B6E] transition-colors">
-                            <Trash2 className="size-4" />
-                          </button>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Post Content */}
-                    <p className="text-[#F3F0E4] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">{post.content}</p>
-
-                    {/* Media Attachment */}
-                    {post.mediaUrl && (
-                      <div className="flex items-center justify-start w-full">
-                        {post.mediaType === "image" ? (
-                          <img src={post.mediaUrl} alt="Post content" className="max-h-[300px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
-                        ) : (
-                          <video src={post.mediaUrl} controls className="max-h-[300px] object-contain w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
-                        )}
+                  {/* Post Author Header */}
+                  <div className="flex items-center gap-3 select-none">
+                    {post.userImage ? (
+                      <img
+                        src={post.userImage}
+                        alt={post.userName}
+                        className="size-9 rounded-full object-cover border border-[#2E2118] bg-[#0A0806]"
+                      />
+                    ) : (
+                      <div className="size-9 rounded-full bg-[#241811] border border-[#2E2118] flex items-center justify-center text-[#F5B429] text-xs font-bold font-mono">
+                        {post.userName?.[0]?.toUpperCase()}
                       </div>
                     )}
-
-                    {/* Engagement Actions */}
-                    <div className="flex items-center gap-4 pt-3 border-t border-[#F3F0E4]/10 select-none">
-                      <button
-                        onClick={() => handleLikeToggle(post._id)}
-                        className={`flex items-center gap-1.5 text-xs font-mono font-bold py-1 px-3 rounded-full border transition-all ${
-                          isLiked
-                            ? "bg-[#F0C93B]/15 border-[#F0C93B]/30 text-[#F0C93B]"
-                            : "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1] hover:text-[#F3F0E4]"
-                        }`}
-                      >
-                        <Heart className={`size-3.5 ${isLiked ? "fill-[#F0C93B] text-[#F0C93B]" : ""}`} />
-                        <span>{post.likes?.length || 0}</span>
-                      </button>
-
-                      <button
-                        onClick={() => setExpandedComments((prev) => ({ ...prev, [post._id]: !prev[post._id] }))}
-                        className={`flex items-center gap-1.5 text-xs font-mono font-bold py-1 px-3 rounded-full border transition-all ${
-                          isExpanded
-                            ? "bg-[#8FC3DE]/15 border-[#8FC3DE]/30 text-[#8FC3DE]"
-                            : "bg-[#16261D] border-[#F3F0E4]/15 text-[#9FAEA1] hover:text-[#F3F0E4]"
-                        }`}
-                      >
-                        <MessageSquare className="size-3.5 text-[#9FAEA1]" />
-                        <span>{post.comments?.length || 0} Comments</span>
-                      </button>
+                    <div className="min-w-0 flex-1">
+                      <Link href={`/user/${post.userId}`}>
+                        <p className="text-xs font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors leading-tight font-display truncate">
+                          {post.userName}
+                        </p>
+                      </Link>
+                      <p className="text-[10px] font-mono text-[#8A8078] mt-0.5">
+                        {new Date(post.createdAt).toLocaleString([], {
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
                     </div>
-
-                    {/* Comments section */}
-                    {isExpanded && (
-                      <div className="space-y-3 pt-3 border-t border-[#F3F0E4]/10">
-                        {post.comments?.map((comment, index) => (
-                          <div key={index} className="bg-[#16261D] border border-[#F3F0E4]/10 p-3.5 rounded-2xl flex gap-3 items-start">
-                            <div className="size-6 rounded-full bg-[#121F18] border border-[#F3F0E4]/15 flex items-center justify-center text-[#F0C93B] font-bold text-[9px] mt-0.5 shrink-0">
-                              {comment.userName?.[0]?.toUpperCase()}
-                            </div>
-                            <div className="space-y-0.5 min-w-0">
-                              <div className="flex items-center gap-2 text-[10px] font-mono select-none">
-                                <span className="font-bold text-[#F3F0E4] font-heading">{comment.userName}</span>
-                                <span className="text-[#9FAEA1]">{new Date(comment.createdAt).toLocaleDateString()}</span>
-                              </div>
-                              <p className="text-[#F3F0E4] text-xs font-light leading-relaxed">{comment.content}</p>
-                            </div>
-                          </div>
-                        ))}
-
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="text"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            data-lpignore="true"
-                            placeholder="Add a comment..."
-                            value={commentInput[post._id] || ""}
-                            onChange={(e) => setCommentInput((prev) => ({ ...prev, [post._id]: e.target.value }))}
-                            onKeyDown={(e) => { if (e.key === "Enter") handleAddComment(post._id); }}
-                            className="flex-1 bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl font-sans"
-                          />
-                          <Button
-                            onClick={() => handleAddComment(post._id)}
-                            disabled={!commentInput[post._id]?.trim()}
-                            className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 disabled:opacity-40 text-[#2A2118] h-10 px-5 font-bold transition-all shadow-[2px_2px_0_0_#F28B6E]"
-                          >
-                            <Send className="size-4 text-[#2A2118]" />
-                          </Button>
-                        </div>
+                    {post.userId === currentUserId && (
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => openEditModal(post)}
+                          className="size-7 rounded-lg flex items-center justify-center text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors"
+                          title="Edit Post"
+                        >
+                          <Edit3 className="size-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeletePost(post._id)}
+                          className="size-7 rounded-lg flex items-center justify-center text-[#8A8078] hover:text-[#EF4444] hover:bg-[#241811] transition-colors"
+                          title="Delete Post"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
                       </div>
                     )}
                   </div>
+
+                  {/* Post Content */}
+                  <p className="text-[#FAFAF8] text-xs sm:text-sm leading-relaxed whitespace-pre-wrap font-light">
+                    {post.content}
+                  </p>
+
+                  {/* Media Attachment */}
+                  {post.mediaUrl && (
+                    <div className="rounded-xl overflow-hidden border border-[#241811] bg-[#0A0806]">
+                      {post.mediaType === "image" ? (
+                        <img
+                          src={post.mediaUrl}
+                          alt="Post attachment"
+                          className="max-h-80 w-full object-contain bg-[#0A0806]"
+                        />
+                      ) : (
+                        <video
+                          src={post.mediaUrl}
+                          controls
+                          className="max-h-80 w-full object-contain bg-[#0A0806]"
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Engagement Action Bar */}
+                  <div className="flex items-center gap-3 pt-3 border-t border-[#241811] select-none">
+                    <button
+                      onClick={() => handleLikeToggle(post._id)}
+                      className={`flex items-center gap-1.5 text-xs font-mono font-semibold py-1 px-3 rounded-lg border transition-all ${
+                        isLiked
+                          ? "bg-[#F5B429]/15 border-[#F5B429]/30 text-[#F5B429]"
+                          : "bg-[#0A0806] border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811]"
+                      }`}
+                    >
+                      <Heart className={`size-3.5 ${isLiked ? "fill-[#F5B429] text-[#F5B429]" : ""}`} />
+                      <span>{post.likes?.length || 0}</span>
+                    </button>
+
+                    <button
+                      onClick={() => setExpandedComments((prev) => ({ ...prev, [post._id]: !prev[post._id] }))}
+                      className={`flex items-center gap-1.5 text-xs font-mono font-semibold py-1 px-3 rounded-lg border transition-all ${
+                        isExpanded
+                          ? "bg-[#241811] border-[#2E2118] text-[#FAFAF8]"
+                          : "bg-[#0A0806] border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811]"
+                      }`}
+                    >
+                      <MessageSquare className="size-3.5 text-[#8A8078]" />
+                      <span>{post.comments?.length || 0} Comments</span>
+                    </button>
+                  </div>
+
+                  {/* Compact Comment Thread Drawer */}
+                  {isExpanded && (
+                    <div className="space-y-3 pt-3 border-t border-[#241811]">
+                      {post.comments && post.comments.length > 0 && (
+                        <div className="max-h-72 overflow-y-auto space-y-2 custom-scroll pr-1">
+                          {post.comments.map((comment, index) => (
+                            <div
+                              key={index}
+                              className="bg-[#0A0806] border border-[#241811] p-3 rounded-xl flex gap-2.5 items-start text-xs"
+                            >
+                              <div className="size-6 rounded-full bg-[#241811] border border-[#2E2118] flex items-center justify-center text-[#F5B429] font-bold text-[9px] mt-0.5 shrink-0">
+                                {comment.userName?.[0]?.toUpperCase()}
+                              </div>
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <div className="flex items-center gap-2 text-[10px] font-mono select-none">
+                                  <span className="font-bold text-[#FAFAF8] font-display">{comment.userName}</span>
+                                  <span className="text-[#8A8078]">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <p className="text-[#B8AFA6] leading-relaxed font-light">{comment.content}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Comment Input */}
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Write a comment..."
+                          value={commentInput[post._id] || ""}
+                          onChange={(e) => setCommentInput((prev) => ({ ...prev, [post._id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddComment(post._id);
+                          }}
+                          className="flex-1 bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429]/50 text-[#FAFAF8] placeholder:text-[#8A8078] h-9 text-xs rounded-xl"
+                        />
+                        <Button
+                          onClick={() => handleAddComment(post._id)}
+                          disabled={!commentInput[post._id]?.trim() || isCommenting[post._id]}
+                          className="btn-premium-primary h-9 px-4 rounded-xl text-xs shrink-0"
+                        >
+                          {isCommenting[post._id] ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Send className="size-3.5" />
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
@@ -457,72 +498,104 @@ export default function CommunityPage() {
         )}
       </div>
 
-      {/* Create Post Modal Overlay */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-[9998] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={() => setIsCreateOpen(false)} />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="relative z-10 bg-[#1A2D23] border border-[#F3F0E4]/20 rounded-[2rem] w-full max-w-lg p-6 space-y-4 shadow-[0_25px_60px_rgba(0,0,0,0.5)]"
-          >
-            <div className="flex items-center justify-between border-b border-[#F3F0E4]/15 pb-3">
-              <h2 className="text-base font-bold text-[#F3F0E4] font-heading">Create Community Post</h2>
-              <button onClick={() => setIsCreateOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4]">
+      {/* Create / Edit Post Modal */}
+      {(isCreateOpen || isEditOpen) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-lg bg-[#150F0B] border border-[#2E2118] rounded-2xl p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#241811] pb-3">
+              <h2 className="text-base font-bold text-[#FAFAF8] font-display">
+                {isEditOpen ? "Edit Community Post" : "Create Community Post"}
+              </h2>
+              <button
+                onClick={() => {
+                  setIsCreateOpen(false);
+                  setIsEditOpen(false);
+                }}
+                className="size-7 rounded-lg text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811] flex items-center justify-center"
+              >
                 <X className="size-4" />
               </button>
             </div>
 
-            <form onSubmit={handleCreatePost} className="space-y-4">
+            <form onSubmit={isEditOpen ? handleUpdatePost : handleCreatePost} className="space-y-4">
               <textarea
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                data-lpignore="true"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="What's on your mind? Share knowledge, updates, or engineering insights..."
+                value={isEditOpen ? editContent : content}
+                onChange={(e) => (isEditOpen ? setEditContent(e.target.value) : setContent(e.target.value))}
+                placeholder="What's on your mind? Share knowledge, engineering concepts, or questions..."
                 rows={4}
                 required
                 autoFocus
-                className="w-full rounded-2xl bg-[#121F18] border border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 p-3.5 text-xs outline-none resize-none transition-colors font-sans"
+                className="w-full rounded-xl bg-[#0A0806] border border-[#2E2118] focus:border-[#F5B429]/50 text-[#FAFAF8] placeholder:text-[#8A8078] p-3.5 text-xs outline-none resize-none transition-colors"
               />
 
-              {mediaUrl && (
-                <div className="relative inline-flex items-center justify-start max-h-[200px]">
-                  {mediaType === "image" ? (
-                    <img src={mediaUrl} alt="Attached upload" className="max-h-[200px] object-contain w-auto rounded-xl border border-[#F3F0E4]/15 bg-[#16261D]" />
+              {(isEditOpen ? editMediaUrl : mediaUrl) && (
+                <div className="relative inline-flex items-center justify-start max-h-48 rounded-xl overflow-hidden border border-[#241811] bg-[#0A0806]">
+                  {(isEditOpen ? editMediaType : mediaType) === "image" ? (
+                    <img
+                      src={isEditOpen ? editMediaUrl : mediaUrl}
+                      alt="Upload preview"
+                      className="max-h-48 object-contain w-auto bg-[#0A0806]"
+                    />
                   ) : (
-                    <video src={mediaUrl} controls className="max-h-[200px] object-contain w-auto rounded-xl border border-[#F3F0E4]/15 bg-[#16261D]" />
+                    <video
+                      src={isEditOpen ? editMediaUrl : mediaUrl}
+                      controls
+                      className="max-h-48 object-contain w-auto bg-[#0A0806]"
+                    />
                   )}
                   <button
                     type="button"
-                    onClick={() => { setMediaUrl(""); setMediaType(""); }}
-                    className="absolute top-2 right-2 bg-black/80 text-[#F28B6E] p-1 rounded-lg border border-[#F28B6E]/30 z-10"
+                    onClick={() => {
+                      if (isEditOpen) {
+                        setEditMediaUrl("");
+                        setEditMediaType("");
+                      } else {
+                        setMediaUrl("");
+                        setMediaType("");
+                      }
+                    }}
+                    className="absolute top-2 right-2 bg-[#0A0806]/90 text-[#EF4444] p-1 rounded-lg border border-[#EF4444]/30"
                   >
                     <X className="size-3.5" />
                   </button>
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-2">
-                <label className="flex items-center gap-2 py-2 px-4 rounded-xl border border-[#F3F0E4]/15 bg-[#121F18] hover:bg-[#1F362A] text-xs font-mono font-bold text-[#9FAEA1] hover:text-[#F3F0E4] cursor-pointer select-none transition-all">
-                  {isUploading ? <Loader2 className="size-4 text-[#8FC3DE] animate-spin" /> : <ImageIcon className="size-4 text-[#8FC3DE]" />}
-                  <span>{mediaUrl ? "Media Attached ✓" : "Add Photo / Video"}</span>
-                  <input type="file" accept="image/*,video/*" onChange={handleMediaUpload} disabled={isUploading} className="hidden" />
+              <div className="flex items-center justify-between pt-2 border-t border-[#241811]">
+                <label className="flex items-center gap-2 py-2 px-3.5 rounded-xl border border-[#2E2118] bg-[#0A0806] hover:bg-[#241811] text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8] cursor-pointer transition-all">
+                  {isUploading ? (
+                    <Loader2 className="size-4 text-[#F5B429] animate-spin" />
+                  ) : (
+                    <ImageIcon className="size-4 text-[#F5B429]" />
+                  )}
+                  <span>
+                    {(isEditOpen ? editMediaUrl : mediaUrl) ? "Media Attached ✓" : "Add Photo / Video"}
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*,video/*"
+                    onChange={handleMediaUpload}
+                    disabled={isUploading}
+                    className="hidden"
+                  />
                 </label>
 
                 <Button
                   type="submit"
-                  disabled={isPosting}
-                  className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-10 px-6 transition-all shadow-[2px_2px_0_0_#F28B6E] font-heading"
+                  disabled={isPosting || isUpdating}
+                  className="btn-premium-primary text-xs h-10 px-6 rounded-xl"
                 >
-                  {isPosting ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post to Community"}
+                  {isPosting || isUpdating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : isEditOpen ? (
+                    "Save Changes"
+                  ) : (
+                    "Publish Post"
+                  )}
                 </Button>
               </div>
             </form>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>

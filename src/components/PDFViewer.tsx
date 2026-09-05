@@ -81,7 +81,7 @@ export function PDFViewer({ note, onUpdate }: PDFViewerProps) {
   };
 
   const handleRemove = async () => {
-    if (confirm("Are you sure you want to remove this PDF from the note?")) {
+    if (confirm("Remove this PDF attachment from the note?")) {
       await onUpdate({
         assetUrl: "",
         assetName: "",
@@ -91,16 +91,13 @@ export function PDFViewer({ note, onUpdate }: PDFViewerProps) {
 
   if (note.assetUrl) {
     return (
-      <div className="flex flex-col h-full bg-[#05070F] text-white overflow-hidden">
-        {/* PDF Top Bar Controls */}
-        <div className="h-12 border-b border-white/[0.08] bg-white/[0.02] backdrop-blur-md px-6 flex items-center justify-between shrink-0 select-none">
-          <div className="flex items-center gap-2.5 text-xs text-neutral-400 min-w-0">
-            <FileText className="h-4 w-4 text-cyan-400 shrink-0" />
-            <span
-              className="font-bold text-neutral-200 truncate max-w-[120px] sm:max-w-[240px]"
-              style={{ fontFamily: "var(--font-space-grotesk)" }}
-            >
-              {note.assetName || "Attached PDF"}
+      <div className="flex flex-col h-full bg-bg-base text-text-primary">
+        {/* PDF Top Bar */}
+        <div className="h-12 border-b border-border-subtle bg-bg-surface px-4 sm:px-6 flex items-center justify-between shrink-0 select-none">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <FileText className="size-4 text-accent-primary shrink-0" />
+            <span className="text-xs font-semibold text-text-primary truncate">
+              {note.assetName || "Attached PDF Document"}
             </span>
           </div>
 
@@ -109,25 +106,25 @@ export function PDFViewer({ note, onUpdate }: PDFViewerProps) {
               variant="ghost"
               size="sm"
               onClick={() => window.open(note.assetUrl, "_blank")}
-              className="h-8 text-[11px] gap-1.5 text-neutral-300 hover:text-white hover:bg-white/[0.06] transition-all px-2 sm:px-3"
+              className="h-8 text-[11px] gap-1.5 text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded-lg transition-colors px-2 sm:px-3 cursor-pointer"
             >
-              <ExternalLink className="h-3.5 w-3.5" />
+              <ExternalLink className="size-3.5" />
               <span className="hidden sm:inline">Open in New Tab</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleRemove}
-              className="h-8 text-[11px] gap-1.5 text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-all px-2 sm:px-3"
+              className="h-8 text-[11px] gap-1.5 text-text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors px-2 sm:px-3 cursor-pointer"
             >
-              <Trash2 className="h-3.5 w-3.5" />
+              <Trash2 className="size-3.5" />
               <span className="hidden sm:inline">Remove</span>
             </Button>
           </div>
         </div>
 
         {/* PDF Render Area */}
-        <div className="flex-1 w-full bg-[#05070F] relative">
+        <div className="flex-1 w-full bg-bg-base relative">
           <iframe
             src={`${note.assetUrl}#toolbar=1`}
             className="w-full h-full border-none"
@@ -139,19 +136,17 @@ export function PDFViewer({ note, onUpdate }: PDFViewerProps) {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#05070F] text-white p-8 items-center justify-center">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-cyan-500/5 rounded-full blur-[120px] pointer-events-none" />
-
+    <div className="flex flex-col h-full bg-bg-base text-text-primary p-8 items-center justify-center relative">
       <div
         onDragEnter={handleDrag}
         onDragOver={handleDrag}
         onDragLeave={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`relative z-10 w-full max-w-lg border border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-300 ${
+        className={`relative z-10 w-full max-w-lg border border-dashed rounded-2xl p-10 flex flex-col items-center justify-center text-center cursor-pointer transition-all duration-150 ${
           dragActive
-            ? "border-cyan-400 bg-cyan-500/[0.04] shadow-[0_0_20px_rgba(6,182,212,0.15)]"
-            : "border-white/[0.08] bg-white/[0.02] hover:border-cyan-500/50 hover:bg-cyan-500/[0.02]"
+            ? "border-accent-primary bg-accent-primary/5"
+            : "border-border-default bg-bg-surface hover:border-accent-primary/50 hover:bg-bg-elevated/50"
         }`}
       >
         <input
@@ -165,37 +160,31 @@ export function PDFViewer({ note, onUpdate }: PDFViewerProps) {
 
         {isUploading ? (
           <div className="space-y-4">
-            <Loader2 className="h-10 w-10 animate-spin text-cyan-400 mx-auto" />
+            <Loader2 className="size-9 animate-spin text-accent-primary mx-auto" />
             <div className="space-y-1">
-              <h3 className="text-sm font-bold text-neutral-200" style={{ fontFamily: "var(--font-space-grotesk)" }}>
+              <h3 className="text-sm font-semibold text-text-primary">
                 Uploading PDF...
               </h3>
-              <p className="text-xs text-neutral-500">Processing file and attaching to note</p>
+              <p className="text-xs text-text-muted">Attaching PDF file to current note</p>
             </div>
           </div>
         ) : (
-          <div className="space-y-5">
-            <div className="h-14 w-14 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center mx-auto shadow-inner group-hover:border-cyan-500/30 transition-colors">
-              <Upload className="h-6 w-6 text-cyan-400" />
+          <div className="space-y-4">
+            <div className="size-12 rounded-xl bg-bg-elevated border border-border-subtle flex items-center justify-center mx-auto text-accent-primary">
+              <Upload className="size-5" />
             </div>
 
-            <div className="space-y-2">
-              <h3
-                className="text-base font-bold text-neutral-200 tracking-tight"
-                style={{ fontFamily: "var(--font-space-grotesk)" }}
-              >
-                Attach PDF to Note
+            <div className="space-y-1.5">
+              <h3 className="text-sm font-bold text-text-primary tracking-tight font-display">
+                Attach PDF Document
               </h3>
-              <p className="text-xs text-neutral-500 max-w-xs mx-auto leading-relaxed">
-                Drag and drop a PDF document here, or click anywhere inside this area to select from your files.
+              <p className="text-xs text-text-muted max-w-xs mx-auto leading-relaxed">
+                Drag and drop a PDF file here, or click to browse files on your device.
               </p>
             </div>
 
-            <div
-              className="text-[10px] text-cyan-500 font-bold uppercase tracking-widest inline-block border border-cyan-500/20 bg-cyan-500/5 rounded-full px-4 py-1"
-              style={{ fontFamily: "var(--font-jetbrains-mono)" }}
-            >
-              PDF documents only
+            <div className="text-[10px] text-accent-primary font-mono font-medium inline-block border border-accent-primary/20 bg-accent-primary/10 rounded-full px-3 py-0.5">
+              PDF files up to 25MB
             </div>
           </div>
         )}

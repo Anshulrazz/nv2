@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "next-auth/react";
 import { BlogContentRenderer } from "@/components/blog/BlogContentRenderer";
 import { useSearchParams } from "next/navigation";
@@ -635,13 +636,13 @@ function BlogsPageContent() {
       </div>
 
       {/* Content & Tab Filter */}
-      <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl w-full mx-auto space-y-6 relative z-10">
         <div className="flex items-center gap-2 border-b border-[#2E2118] pb-4 select-none">
           <button
             onClick={() => setActiveTab("feed")}
-            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all cursor-pointer ${
+            className={`text-xs font-mono font-semibold px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeTab === "feed"
-                ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_0_15px_rgba(245,180,41,0.3)]"
+                ? "bg-[#F5B429]/15 text-[#F5B429] border border-[#F5B429]/30"
                 : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B] border border-transparent"
             }`}
           >
@@ -649,37 +650,52 @@ function BlogsPageContent() {
           </button>
           <button
             onClick={() => setActiveTab("mine")}
-            className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all cursor-pointer ${
+            className={`text-xs font-mono font-semibold px-3.5 py-1.5 rounded-xl transition-all cursor-pointer ${
               activeTab === "mine"
-                ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-bold shadow-[0_0_15px_rgba(245,180,41,0.3)]"
+                ? "bg-[#F5B429]/15 text-[#F5B429] border border-[#F5B429]/30"
                 : "text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#150F0B] border border-transparent"
             }`}
           >
-            My Written Articles
+            My Articles
           </button>
         </div>
 
         {/* Loading State */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-[#8A8078] text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-[#F5B429]" />
-            <span className="font-mono text-[#F5B429] tracking-widest">LOADING ARTICLES...</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-5 space-y-4">
+                <Skeleton className="h-40 w-full rounded-xl bg-[#241811]" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-28 bg-[#241811]" />
+                  <Skeleton className="h-5 w-3/4 bg-[#241811]" />
+                  <Skeleton className="h-3 w-full bg-[#241811]" />
+                </div>
+              </div>
+            ))}
           </div>
         ) : blogs.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-[#150F0B]/85 border border-[#2E2118] p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_0_30px_-5px_rgba(245,148,29,0.12)]">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#0A0806] border border-[#2E2118] p-8 flex flex-col items-center gap-4">
-              <Sparkles className="size-10 text-[#8A8078]" />
-              <h3 className="text-lg font-bold text-[#FAFAF8] font-display">No articles published yet</h3>
-              <p className="text-xs text-[#8A8078] font-light max-w-xs">
-                {activeTab === "mine" ? "You haven't written any blogs yet." : "Be the first scholar to publish a blog article!"}
+          <div className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-10 max-w-md mx-auto text-center space-y-4 my-8">
+            <div className="size-12 rounded-xl bg-[#241811] flex items-center justify-center text-[#8A8078] mx-auto">
+              <Rss className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-[#FAFAF8] font-display">No articles published yet</h3>
+              <p className="text-xs text-[#8A8078] font-light max-w-xs mx-auto mt-1">
+                {activeTab === "mine" ? "You haven't written any articles yet." : "Be the first scholar to publish a technical blog article!"}
               </p>
             </div>
+            {activeTab === "mine" && (
+              <Button onClick={handleCreateBlog} className="btn-premium-primary text-xs h-9 px-4 rounded-xl">
+                Write Your First Article
+              </Button>
+            )}
           </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ staggerChildren: 0.08 }}
+            transition={{ staggerChildren: 0.05 }}
             className="grid grid-cols-1 md:grid-cols-2 gap-6"
           >
             {blogs.map((blog) => {
@@ -688,62 +704,71 @@ function BlogsPageContent() {
               return (
                 <motion.div
                   key={blog._id}
-                  whileHover={{ y: -4, scale: 1.01 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                  className="rounded-[2rem] bg-[#150F0B]/85 border border-[#2E2118] p-2 backdrop-blur-xl hover:border-[#F5B429]/50 transition-all duration-300 flex flex-col h-full shadow-[0_0_30px_-5px_rgba(245,148,29,0.1)]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 transition-all flex flex-col h-full overflow-hidden group cursor-pointer"
+                  onClick={() => setSelectedBlog(blog)}
                 >
-                  <div
-                    onClick={() => setSelectedBlog(blog)}
-                    className="rounded-[calc(2rem-0.5rem)] bg-[#0A0806] border border-[#2E2118] overflow-hidden flex flex-col h-full cursor-pointer group"
-                  >
-                    {blog.coverImage && (
-                      <div className="h-44 w-full relative overflow-hidden bg-[#150F0B]">
-                        <img src={blog.coverImage} alt={blog.title} className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500" />
+                  {blog.coverImage && (
+                    <div className="h-44 w-full relative overflow-hidden bg-[#0A0806] border-b border-[#241811]">
+                      <img
+                        src={blog.coverImage}
+                        alt={blog.title}
+                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+                  <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-[#8A8078] select-none">
+                        <span>By {blog.userName}</span>
+                        <span>{new Date(blog.createdAt).toLocaleDateString([], { month: "short", day: "numeric" })}</span>
                       </div>
-                    )}
-                    <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-[10px] font-mono text-[#8A8078] select-none">
-                          <span>By {blog.userName}</span>
-                          <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-[#FAFAF8] group-hover:text-[#F5B429] transition-colors line-clamp-1 font-display">
-                          {blog.title}
-                        </h3>
-                        <p className="text-xs text-[#8A8078] font-light line-clamp-2 leading-relaxed">
-                          {blog.summary}
-                        </p>
-                      </div>
+                      <h3 className="text-base sm:text-lg font-bold text-[#FAFAF8] group-hover:text-[#F5B429] transition-colors line-clamp-1 font-display">
+                        {blog.title}
+                      </h3>
+                      <p className="text-xs text-[#8A8078] font-light line-clamp-2 leading-relaxed">
+                        {blog.summary}
+                      </p>
+                    </div>
 
-                      <div className="flex items-center justify-between border-t border-[#2E2118] pt-4 select-none">
-                        <Link
-                          href={`/blog/${encodeURIComponent(blog.userName || "author")}/${blog.slug || blog._id}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className="text-xs font-mono text-[#F5B429] font-bold flex items-center gap-1 hover:text-[#FCD34D] transition-colors"
+                    <div className="flex items-center justify-between border-t border-[#241811] pt-3.5 select-none">
+                      <Link
+                        href={`/blog/${encodeURIComponent(blog.userName || "author")}/${blog.slug || blog._id}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-xs font-mono text-[#F5B429] font-bold flex items-center gap-1 hover:text-[#FCD34D] transition-colors"
+                      >
+                        Read Article <ArrowUpRight className="size-3.5" />
+                      </Link>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => handleBookmark(blog, e)}
+                          className="size-7 rounded-lg text-[#8A8078] hover:text-[#F5B429] hover:bg-[#241811] transition-colors flex items-center justify-center cursor-pointer"
+                          title="Bookmark"
                         >
-                          Read Article <ArrowUpRight className="size-3.5" />
-                        </Link>
-                        <div className="flex items-center gap-2">
-                          <button onClick={(e) => handleBookmark(blog, e)} className="text-[#8A8078] hover:text-[#F5B429] transition-colors cursor-pointer">
-                            <Bookmark className="size-4" />
+                          <Bookmark className="size-3.5" />
+                        </button>
+                        {isOwner && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingBlog(blog);
+                            }}
+                            className="size-7 rounded-lg text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors flex items-center justify-center cursor-pointer"
+                            title="Edit"
+                          >
+                            <Edit2 className="size-3.5" />
                           </button>
-                          {isOwner && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingBlog(blog);
-                              }}
-                              className="text-[#8A8078] hover:text-[#FAFAF8] transition-colors cursor-pointer"
-                            >
-                              <Edit2 className="size-4" />
-                            </button>
-                          )}
-                          {isOwner && (
-                            <button onClick={(e) => handleDeleteBlog(blog._id, e)} className="text-[#8A8078] hover:text-[#EF4444] transition-colors cursor-pointer">
-                              <Trash2 className="size-4" />
-                            </button>
-                          )}
-                        </div>
+                        )}
+                        {isOwner && (
+                          <button
+                            onClick={(e) => handleDeleteBlog(blog._id, e)}
+                            className="size-7 rounded-lg text-[#8A8078] hover:text-[#EF4444] hover:bg-[#241811] transition-colors flex items-center justify-center cursor-pointer"
+                            title="Delete"
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -12,7 +12,7 @@ import {
   Sunset,
   Moon,
   Clock,
-  CheckCircle,
+  CheckCircle2,
   ArrowRight,
   ClipboardList,
   ArrowUpRight,
@@ -36,7 +36,7 @@ interface PlannerData {
 export default function PlannerPage() {
   const [isPlanning, setIsPlanning] = useState<boolean>(false);
   const [planData, setPlanData] = useState<PlannerData | null>(null);
-  
+
   // Database commit actions
   const [isCommitting, setIsCommitting] = useState<boolean>(false);
   const [isCommitted, setIsCommitted] = useState<boolean>(false);
@@ -106,58 +106,55 @@ export default function PlannerPage() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto antialiased relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8] custom-scroll">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#F5941D]/8 rounded-full blur-[140px] animate-float-glow-reverse" />
-      </div>
-
+    <div className="flex-1 flex flex-col h-full bg-transparent text-text-primary overflow-y-auto antialiased relative selection:bg-accent-primary/30 selection:text-text-primary custom-scroll p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto w-full">
       {/* Header Banner */}
-      <div className="p-6 sm:p-10 pb-0">
-        <div className="border border-[#2E2118] bg-[#150F0B]/80 p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-[#F5B429]/15 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429]">
-                <Calendar className="size-7" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight text-[#FAFAF8] flex items-center gap-3 font-display">
-                  AI Daily Planner
-                  <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/20 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 uppercase tracking-widest flex items-center gap-1">
-                    <Sparkles className="size-3 text-[#F0C93B] animate-pulse" /> GEMINI AI ENHANCED
-                  </span>
-                </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
-                  The AI agent parses your notes and todo items to craft an optimized hourly daily schedule.
-                </p>
-              </div>
+      <header className="rounded-2xl bg-bg-surface border border-border-subtle p-6 sm:p-8 backdrop-blur-xl shadow-lg relative z-10">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className="size-12 sm:size-14 rounded-2xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0 shadow-sm">
+              <Calendar className="size-6 sm:size-7" />
             </div>
-
-            <Button
-              onClick={handleGeneratePlan}
-              disabled={isPlanning}
-              className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] hover:translate-x-0.5 hover:translate-y-0.5"
-            >
-              {isPlanning ? (
-                <>
-                  <Loader2 className="size-4 animate-spin text-[#2A2118]" />
-                  <span>Analyzing Workspace...</span>
-                </>
-              ) : (
-                <>
-                  <Sparkles className="size-4 text-[#2A2118]" />
-                  <span>Generate Today&apos;s Plan</span>
-                  <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </>
-              )}
-            </Button>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <span className="text-[10px] font-mono font-bold text-accent-primary tracking-widest uppercase">
+                  PLANNER WORKSPACE
+                </span>
+                <span className="text-[10px] font-mono font-bold bg-accent-primary/10 text-accent-primary px-2.5 py-0.5 rounded-full border border-accent-primary/20 uppercase tracking-widest flex items-center gap-1">
+                  <Sparkles className="size-3" /> GEMINI AI ENHANCED
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary font-display">
+                AI Daily Planner
+              </h1>
+              <p className="text-xs sm:text-sm text-text-muted max-w-xl leading-relaxed">
+                Analyze your workspace notes and todo items to synthesize an optimized hourly study schedule.
+              </p>
+            </div>
           </div>
+
+          <Button
+            onClick={handleGeneratePlan}
+            disabled={isPlanning}
+            className="btn-premium-primary rounded-xl text-xs font-bold h-11 px-5 flex items-center justify-center gap-2 shrink-0 transition-transform active:scale-[0.98] cursor-pointer"
+          >
+            {isPlanning ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Analyzing Workspace...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4" />
+                <span>Generate Today&apos;s Plan</span>
+                <ArrowUpRight className="size-4" />
+              </>
+            )}
+          </Button>
         </div>
-      </div>
+      </header>
 
       {/* Main Workspace Body */}
-      <div className="p-6 sm:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+      <main className="space-y-6 relative z-10">
         <AnimatePresence mode="wait">
           {isPlanning ? (
             <motion.div
@@ -165,109 +162,140 @@ export default function PlannerPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold"
+              className="rounded-2xl bg-bg-card border border-border-subtle p-16 flex flex-col items-center justify-center text-center space-y-4"
             >
-              <Loader2 className="size-8 animate-spin text-[#F0C93B]" />
-              <span className="font-mono text-[#F3F0E4]/80 tracking-widest">COMPILING HOURLY TIMELINE...</span>
+              <div className="size-14 rounded-2xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary">
+                <Loader2 className="size-7 animate-spin" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-mono font-bold text-text-primary tracking-widest uppercase">
+                  Compiling Study Timeline
+                </h3>
+                <p className="text-xs text-text-muted">
+                  Cross-referencing active notes, topics, and deadlines...
+                </p>
+              </div>
             </motion.div>
           ) : !planData ? (
             <motion.div
               key="empty"
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]"
+              className="rounded-2xl bg-bg-card border border-border-subtle p-8 sm:p-12 max-w-md mx-auto text-center space-y-4 shadow-sm"
             >
-              <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
-                <ClipboardList className="size-10 text-[#8FC3DE] animate-pulse" />
-                <h3 className="text-lg font-bold text-[#F3F0E4]">Schedule Empty</h3>
-                <p className="text-xs text-[#9FAEA1] font-light max-w-xs leading-relaxed">
-                  Click &quot;Generate Today&apos;s Plan&quot; above to compile your personalized study timeline based on workspace notes and pending tasks.
+              <div className="size-14 rounded-2xl bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-muted mx-auto">
+                <ClipboardList className="size-7 text-accent-primary" />
+              </div>
+              <div className="space-y-1.5">
+                <h3 className="text-base font-bold text-text-primary font-display">Schedule Empty</h3>
+                <p className="text-xs text-text-muted leading-relaxed">
+                  Click &quot;Generate Today&apos;s Plan&quot; above to synthesize a personalized timeline based on workspace notes and pending tasks.
                 </p>
               </div>
+              <Button
+                onClick={handleGeneratePlan}
+                variant="outline"
+                className="rounded-xl border-border-subtle bg-bg-surface hover:bg-bg-elevated text-xs font-semibold h-9 px-4 text-text-secondary hover:text-text-primary cursor-pointer"
+              >
+                Start Scheduling
+              </Button>
             </motion.div>
           ) : (
             <motion.div
               key="content"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="space-y-8"
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
             >
-              {/* Core Focus Header */}
-              <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
-                <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-2">
-                  <h3 className="text-xs font-mono font-bold text-[#C9A9E0] uppercase tracking-widest flex items-center gap-2">
-                    <Sparkles className="size-4 text-[#C9A9E0]" /> Today&apos;s Core Focus
+              {/* Core Focus Header Card */}
+              <div className="rounded-2xl bg-bg-card border border-border-subtle p-6 space-y-2 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="size-4 text-accent-primary" />
+                  <h3 className="text-xs font-mono font-bold text-accent-primary uppercase tracking-widest">
+                    Today&apos;s Core Focus
                   </h3>
-                  <p className="text-xs text-[#F3F0E4] font-light leading-relaxed">{planData.focus}</p>
                 </div>
+                <p className="text-sm text-text-primary leading-relaxed pl-6">
+                  {planData.focus}
+                </p>
               </div>
 
               {/* Timeline Item Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {planData.timeline.map((item, idx) => {
-                  let iconElement = <Sun className="size-5 text-[#F0C93B]" />;
+                  let iconElement = <Sun className="size-5 text-accent-primary" />;
                   if (item.timeSlot === "Afternoon") {
-                    iconElement = <Sunset className="size-5 text-[#F28B6E]" />;
+                    iconElement = <Sunset className="size-5 text-accent-secondary" />;
                   } else if (item.timeSlot === "Evening") {
-                    iconElement = <Moon className="size-5 text-[#C9A9E0]" />;
+                    iconElement = <Moon className="size-5 text-accent-primary/80" />;
                   }
 
                   return (
-                    <motion.div
+                    <div
                       key={idx}
-                      whileHover={{ y: -4, scale: 1.02 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 20 }}
-                      className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl hover:border-[#F0C93B]/40 transition-all duration-300 flex flex-col h-full shadow-[0_10px_30px_rgba(0,0,0,0.2)]"
+                      className="rounded-2xl bg-bg-card border border-border-subtle hover:border-accent-primary/30 p-5 flex flex-col justify-between h-full transition-all duration-200 shadow-sm space-y-4"
                     >
-                      <div className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-4 flex flex-col justify-between h-full">
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {iconElement}
-                              <span className="text-xs font-mono font-bold text-[#F3F0E4] uppercase tracking-wider">{item.timeSlot}</span>
-                            </div>
-                            <span className="text-[10px] font-mono text-[#9FAEA1] flex items-center gap-1">
-                              <Clock className="size-3 text-[#8FC3DE]" /> {item.estimatedMinutes}m
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            {iconElement}
+                            <span className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
+                              {item.timeSlot}
                             </span>
                           </div>
-
-                          <h4 className="text-sm font-bold text-[#F3F0E4]">{item.task}</h4>
-                          <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">{item.reason}</p>
+                          <span className="text-[10px] font-mono text-text-muted bg-bg-elevated border border-border-subtle px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <Clock className="size-3 text-text-muted" /> {item.estimatedMinutes}m
+                          </span>
                         </div>
+
+                        <h4 className="text-sm font-bold text-text-primary font-display leading-snug">
+                          {item.task}
+                        </h4>
+                        <p className="text-xs text-text-muted leading-relaxed">
+                          {item.reason}
+                        </p>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
 
-              {/* Commit to Todo Action */}
-              <div className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
-                <div>
-                  <h4 className="text-sm font-bold text-[#F3F0E4]">Commit Timeline to Checklist</h4>
-                  <p className="text-xs text-[#9FAEA1] font-light mt-0.5">Export these AI scheduled tasks directly into your interactive Todo Checklist.</p>
+              {/* Commit to Todo Action Card */}
+              <div className="rounded-2xl bg-bg-surface border border-border-subtle p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-text-primary font-display">
+                    Commit Timeline to Checklist
+                  </h4>
+                  <p className="text-xs text-text-muted">
+                    Export these scheduled blocks directly into your interactive Todo Checklist.
+                  </p>
                 </div>
 
                 <Button
                   onClick={handleCommitPlanToTodo}
                   disabled={isCommitting || isCommitted}
-                  className={`rounded-xl text-xs font-bold px-6 h-11 transition-all ${
+                  className={`rounded-xl text-xs font-bold px-5 h-10 transition-all shrink-0 cursor-pointer ${
                     isCommitted
-                      ? "bg-[#8FC3DE]/20 text-[#8FC3DE] border border-[#8FC3DE]/40"
-                      : "bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] hover:translate-x-0.5 hover:translate-y-0.5"
+                      ? "bg-success/15 text-success border border-success/30 hover:bg-success/20"
+                      : "btn-premium-primary"
                   }`}
                 >
                   {isCommitting ? (
-                    <Loader2 className="size-4 animate-spin text-[#2A2118]" />
+                    <>
+                      <Loader2 className="size-3.5 animate-spin" />
+                      <span>Saving to Checklist...</span>
+                    </>
                   ) : isCommitted ? (
                     <>
-                      <CheckCircle className="size-4 mr-2 text-[#8FC3DE]" /> Tasks Committed
+                      <CheckCircle2 className="size-4 mr-1.5" />
+                      <span>Tasks Committed</span>
                     </>
                   ) : (
                     <>
                       <span>Commit Tasks</span>
-                      <ArrowRight className="size-4 ml-2" />
+                      <ArrowRight className="size-3.5 ml-1.5" />
                     </>
                   )}
                 </Button>
@@ -275,8 +303,7 @@ export default function PlannerPage() {
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+      </main>
     </div>
   );
 }
-

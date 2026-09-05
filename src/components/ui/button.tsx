@@ -5,28 +5,34 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-full border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50 active:not-aria-[haspopup]:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all duration-150 ease-out outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/40 active:not-aria-[haspopup]:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 cursor-pointer [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "bg-gradient-to-br from-[#F7C948] to-[#F5941D] text-[#150F0B] font-semibold hover:brightness-105 shadow-[0_4px_20px_-2px_rgba(245,148,29,0.35)] active:translate-y-0",
-        outline:
-          "border-[#2E2118] bg-[#150F0B] text-[#FAFAF8] hover:bg-[#241811] hover:border-[#F5B429]/40 hover:text-[#FAFAF8]",
+          "bg-primary text-primary-foreground font-semibold hover:bg-primary/90 hover:brightness-105 shadow-sm active:scale-[0.98]",
+        primary:
+          "bg-primary text-primary-foreground font-semibold hover:bg-primary/90 hover:brightness-105 shadow-sm active:scale-[0.98]",
         secondary:
-          "bg-[#241811] text-[#FAFAF8] border border-[#2E2118] hover:bg-[#2E2118] hover:text-[#FAFAF8]",
+          "bg-secondary text-secondary-foreground border border-border hover:bg-muted hover:border-primary/40 active:scale-[0.98]",
+        outline:
+          "border-border bg-transparent text-foreground hover:bg-muted hover:text-foreground active:scale-[0.98]",
         ghost:
-          "hover:bg-[#241811] hover:text-[#FAFAF8] text-[#B8AFA6]",
+          "bg-transparent hover:bg-muted hover:text-foreground text-muted-foreground active:scale-[0.98]",
         destructive:
-          "bg-[#EF4444]/15 text-[#EF4444] border border-[#EF4444]/30 hover:bg-[#EF4444]/25 focus-visible:ring-[#EF4444]/30",
-        "premium-primary": "btn-premium-primary",
-        "premium-secondary": "btn-premium-secondary",
+          "bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/25 focus-visible:ring-destructive/30 active:scale-[0.98]",
+        "premium-primary":
+          "btn-premium-primary text-[#0A0806]",
+        "premium-secondary":
+          "btn-premium-secondary",
       },
       size: {
-        default: "h-10 py-2 px-5",
-        sm: "h-8 px-3.5 text-xs rounded-full",
-        lg: "h-11 px-8 text-base rounded-full font-semibold",
-        icon: "h-9 w-9 rounded-full",
+        default: "h-10 py-2 px-4 text-sm rounded-xl",
+        sm: "h-8 px-3 text-xs rounded-lg",
+        lg: "h-11 px-6 text-sm font-semibold rounded-xl",
+        icon: "size-9 rounded-xl",
+        "icon-sm": "size-8 rounded-lg",
+        pill: "h-10 py-2 px-5 text-sm rounded-full",
       },
       asChild: {
         false: "inline-flex",
@@ -67,3 +73,5 @@ export const Button = React.forwardRef<
   )
 })
 Button.displayName = ButtonPrimitive.displayName
+
+export { buttonVariants }

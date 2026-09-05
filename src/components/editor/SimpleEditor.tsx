@@ -23,6 +23,7 @@ interface SimpleEditorProps {
 
 export function SimpleEditor({ value, onChange, placeholder, className }: SimpleEditorProps) {
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [StarterKit],
     content: value,
     onUpdate: ({ editor }) => {

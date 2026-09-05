@@ -1,5 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0A0806",
+};
 import Script from "next/script";
 import { Suspense } from "react";
 import { Inter, Playfair_Display } from "next/font/google";

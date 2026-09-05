@@ -4,10 +4,28 @@
 export const dynamic = "force-dynamic";
 
 import React, { useEffect, useState, useCallback } from "react";
-import { MessageSquare, Plus, ThumbsUp, Send, FolderHeart, CornerDownRight, Loader2, Upload, ArrowUpRight, X } from "lucide-react";
+import {
+  MessageSquare,
+  Plus,
+  ThumbsUp,
+  Send,
+  CornerDownRight,
+  Loader2,
+  Upload,
+  X,
+  FileText,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useAlertStore } from "@/stores/alertStore";
@@ -150,19 +168,37 @@ export default function ForumsPage() {
     }
   };
 
-  const handleUpvote = async (postId: string, e: React.MouseEvent) => {
+  const handleUpvote = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!currentUserId) return;
     try {
-      const res = await fetch(`/api/forums/${postId}/upvote`, {
-        method: "POST",
-      });
+      const res = await fetch(`/api/forums/${id}/upvote`, { method: "POST" });
       if (res.ok) {
-        const updatedPost = await res.json();
-        setPosts((prev) => prev.map((p) => (p._id === postId ? updatedPost : p)));
+        const updated = await res.json();
+        setPosts((prev) => prev.map((p) => (p._id === id ? updated : p)));
       }
     } catch (e) {
       console.error("upvote error:", e);
     }
+  };
+
+  const handleDelete = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    showConfirm(
+      "Delete Discussion Thread",
+      "Are you sure you want to delete this thread? This action cannot be undone.",
+      async () => {
+        try {
+          const res = await fetch(`/api/forums/${id}`, { method: "DELETE" });
+          if (res.ok) {
+            setPosts((prev) => prev.filter((p) => p._id !== id));
+            showAlert("Thread Deleted", "The discussion thread has been removed.");
+          }
+        } catch (e) {
+          console.error("delete post error:", e);
+        }
+      }
+    );
   };
 
   const handleAddComment = async (postId: string) => {
@@ -177,89 +213,65 @@ export default function ForumsPage() {
         body: JSON.stringify({ content: text }),
       });
       if (res.ok) {
-        const updatedPost = await res.json();
-        setPosts((prev) => prev.map((p) => (p._id === postId ? updatedPost : p)));
+        const updated = await res.json();
+        setPosts((prev) => prev.map((p) => (p._id === postId ? updated : p)));
         setCommentText((prev) => ({ ...prev, [postId]: "" }));
       }
     } catch (e) {
-      console.error("add comment error:", e);
+      console.error("comment error:", e);
     } finally {
       setIsCommenting((prev) => ({ ...prev, [postId]: false }));
     }
   };
 
-  const handleDelete = async (postId: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    showConfirm(
-      "Delete Post",
-      "Are you sure you want to delete this thread? This is permanent.",
-      async () => {
-        try {
-          const res = await fetch(`/api/forums/${postId}`, { method: "DELETE" });
-          if (res.ok) {
-            setPosts((prev) => prev.filter((p) => p._id !== postId));
-            if (expandedPostId === postId) setExpandedPostId(null);
-          }
-        } catch (e) {
-          console.error("delete post error:", e);
-        }
-      }
-    );
-  };
-
   return (
     <div className="flex-1 flex flex-col h-full bg-transparent text-[#FAFAF8] overflow-y-auto custom-scroll relative selection:bg-[#F5B429]/30 selection:text-[#FAFAF8]">
-      {/* Background Ambient Mesh Glow Orbs */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px] animate-float-glow" />
-        <div className="absolute bottom-0 left-1/4 w-[450px] h-[350px] bg-[#F5941D]/8 rounded-full blur-[140px] animate-float-glow-reverse" />
-      </div>
-
       {/* Header Banner */}
-      <div className="p-4 sm:p-8 lg:p-10 pb-0 relative z-10">
-        <div className="border border-[#2E2118] bg-[#150F0B]/80 p-6 sm:p-8 rounded-[2rem] relative z-10 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+      <div className="p-4 sm:p-6 lg:p-8 pb-0 relative z-10 max-w-5xl w-full mx-auto">
+        <div className="border border-[#2E2118] bg-[#150F0B] p-6 sm:p-8 rounded-2xl relative z-10">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="size-14 rounded-2xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/30 text-[#F5B429] shrink-0">
-                <MessageSquare className="size-7" />
+              <div className="size-12 rounded-xl bg-[#F5B429]/10 flex items-center justify-center border border-[#F5B429]/25 text-[#F5B429] shrink-0">
+                <MessageSquare className="size-6" />
               </div>
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-[#F3F0E4] flex items-center gap-2.5 flex-wrap font-heading">
-                  Student Forums
-                  <span className="text-[10px] font-mono font-bold bg-[#C9A9E0]/15 text-[#C9A9E0] px-3 py-1 rounded-full border border-[#C9A9E0]/30 uppercase tracking-widest">
-                    DISCUSSION DISPATCH
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#FAFAF8] font-display">
+                    Academic Forums
+                  </h1>
+                  <span className="text-[10px] font-mono font-bold bg-[#F5B429]/10 text-[#F5B429] px-2.5 py-0.5 rounded-full border border-[#F5B429]/25 uppercase tracking-wider">
+                    DISCUSSIONS
                   </span>
-                </h1>
-                <p className="text-[#9FAEA1] text-xs sm:text-sm font-light mt-1">
-                  Ask questions, share tutorials, and join focused topic discussions with fellow engineers.
+                </div>
+                <p className="text-xs sm:text-sm text-[#8A8078] font-light mt-1">
+                  Peer-to-peer engineering Q&A, tutorials, concept clarifications, and academic study groups.
                 </p>
               </div>
             </div>
 
             <Button
               onClick={() => setIsOpen(true)}
-              className="group rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 px-6 flex items-center justify-center gap-2 transition-all duration-300 active:scale-[0.97] shadow-[4px_4px_0_0_#F28B6E] font-heading"
+              className="btn-premium-primary text-xs h-10 px-5 rounded-xl flex items-center gap-1.5 shrink-0"
             >
-              <Plus className="size-4 text-[#2A2118]" />
+              <Plus className="size-4" />
               <span>New Thread</span>
-              <ArrowUpRight className="size-4 text-[#2A2118] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Category Pills & Main Feed Container */}
-      <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-8 relative z-10">
+      <div className="p-4 sm:p-6 lg:p-8 max-w-5xl w-full mx-auto space-y-6 relative z-10">
         {/* Category Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none select-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 select-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`text-xs font-mono font-bold px-4 py-2 rounded-full uppercase tracking-widest transition-all ${
+              className={`text-xs font-mono font-semibold px-3.5 py-1.5 rounded-xl transition-all shrink-0 ${
                 selectedCategory === cat
-                  ? "bg-[#F0C93B] text-[#2A2118] font-extrabold shadow-[2px_2px_0_0_#F28B6E]"
-                  : "text-[#9FAEA1] hover:text-[#F3F0E4] hover:bg-[#121F18] border border-transparent"
+                  ? "bg-[#F5B429]/15 text-[#F5B429] border border-[#F5B429]/30"
+                  : "bg-[#150F0B] text-[#8A8078] border border-[#2E2118] hover:text-[#FAFAF8] hover:bg-[#241811]"
               }`}
             >
               {cat}
@@ -269,26 +281,42 @@ export default function ForumsPage() {
 
         {/* Loading state */}
         {isLoading ? (
-          <div className="py-20 flex flex-col items-center justify-center text-[#9FAEA1] text-xs gap-3 font-semibold">
-            <Loader2 className="size-8 animate-spin text-[#C9A9E0]" />
-            <span className="font-mono text-[#C9A9E0] tracking-widest">LOADING FORUM THREADS...</span>
+          <div className="space-y-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-5 space-y-3">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-20 bg-[#241811] rounded-full" />
+                  <Skeleton className="h-3 w-32 bg-[#241811]" />
+                </div>
+                <Skeleton className="h-5 w-3/4 bg-[#241811]" />
+                <Skeleton className="h-3 w-full bg-[#241811]" />
+              </div>
+            ))}
           </div>
         ) : posts.length === 0 ? (
-          <div className="rounded-[2.5rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2.5 backdrop-blur-3xl max-w-md mx-auto text-center my-12 shadow-[0_15px_40px_rgba(0,0,0,0.3)]">
-            <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-8 flex flex-col items-center gap-4">
-              <FolderHeart className="size-10 text-[#9FAEA1]" />
-              <h3 className="text-lg font-bold text-[#F3F0E4] font-heading">No discussions found</h3>
-              <p className="text-xs text-[#9FAEA1] font-light max-w-xs">
-                Be the first scholar to start a topic thread in this category!
+          <div className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-10 max-w-md mx-auto text-center space-y-4 my-8">
+            <div className="size-12 rounded-xl bg-[#241811] flex items-center justify-center text-[#8A8078] mx-auto">
+              <MessageSquare className="size-6" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-[#FAFAF8] font-display">No discussions found</h3>
+              <p className="text-xs text-[#8A8078] font-light max-w-xs mx-auto mt-1">
+                Be the first scholar to start a discussion thread in the {selectedCategory} category!
               </p>
             </div>
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="btn-premium-primary text-xs h-9 px-4 rounded-xl"
+            >
+              Start First Thread
+            </Button>
           </div>
         ) : (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ staggerChildren: 0.08 }}
-            className="space-y-6"
+            transition={{ staggerChildren: 0.05 }}
+            className="space-y-4"
           >
             {posts.map((post) => {
               const isUpvoted = currentUserId ? post.upvotes?.includes(currentUserId) : false;
@@ -297,35 +325,45 @@ export default function ForumsPage() {
               return (
                 <motion.div
                   key={post._id}
-                  whileHover={{ y: -3 }}
-                  transition={{ type: "spring", stiffness: 350, damping: 22 }}
-                  className="rounded-[2rem] bg-[#1A2D23]/80 border border-[#F3F0E4]/15 p-2 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)]"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="rounded-2xl bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/30 transition-all p-5 sm:p-6 space-y-4"
                 >
                   <div
                     onClick={() => setExpandedPostId(isExpanded ? null : post._id)}
-                    className="rounded-[calc(2rem-0.5rem)] bg-[#121F18] border border-[#F3F0E4]/10 p-6 space-y-4 cursor-pointer hover:border-[#F0C93B]/40 transition-all duration-300"
+                    className="space-y-3 cursor-pointer"
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between select-none">
-                      <div className="flex items-center gap-3">
-                        <span className="text-[9px] font-mono bg-[#C9A9E0]/15 border border-[#C9A9E0]/30 text-[#C9A9E0] font-bold px-3 py-1 rounded-full uppercase tracking-widest">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-[10px] font-mono bg-[#F5B429]/10 border border-[#F5B429]/25 text-[#F5B429] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                           {post.category}
                         </span>
-                        <span className="text-xs font-bold text-[#9FAEA1]">
-                          By <Link href={`/user/${post.userId}`} onClick={(e) => e.stopPropagation()} className="text-[#F3F0E4] hover:text-[#F0C93B] transition-colors font-heading">{post.userName}</Link>
+                        <span className="text-xs text-[#8A8078]">
+                          By{" "}
+                          <Link
+                            href={`/user/${post.userId}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="text-[#FAFAF8] hover:text-[#F5B429] transition-colors font-semibold"
+                          >
+                            {post.userName}
+                          </Link>
                         </span>
                       </div>
-                      <span className="text-[10px] font-mono text-[#9FAEA1]">
-                        {new Date(post.createdAt).toLocaleDateString()}
+                      <span className="text-[10px] font-mono text-[#8A8078]">
+                        {new Date(post.createdAt).toLocaleDateString([], {
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </span>
                     </div>
 
-                    {/* Content */}
-                    <div className="space-y-2">
-                      <h2 className="text-lg font-bold text-[#F3F0E4] hover:text-[#F0C93B] transition-colors tracking-tight font-heading">
+                    {/* Title & Body */}
+                    <div className="space-y-1.5">
+                      <h2 className="text-base sm:text-lg font-bold text-[#FAFAF8] hover:text-[#F5B429] transition-colors font-display">
                         {post.title}
                       </h2>
-                      <p className={`text-xs text-[#F3F0E4]/90 font-light leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
+                      <p className={`text-xs text-[#B8AFA6] font-light leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-2" : ""}`}>
                         {post.content}
                       </p>
                     </div>
@@ -334,31 +372,49 @@ export default function ForumsPage() {
                     {post.mediaUrl && isExpanded && (
                       <div className="pt-2">
                         {post.mediaType === "image" ? (
-                          <img src={post.mediaUrl} alt="Post attachment" className="max-h-80 w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D] object-contain" />
+                          <img
+                            src={post.mediaUrl}
+                            alt="Discussion attachment"
+                            className="max-h-80 w-auto rounded-xl border border-[#241811] bg-[#0A0806] object-contain"
+                          />
                         ) : post.mediaType === "video" ? (
-                          <video src={post.mediaUrl} controls className="max-h-80 w-auto rounded-2xl border border-[#F3F0E4]/15 bg-[#16261D]" />
+                          <video
+                            src={post.mediaUrl}
+                            controls
+                            className="max-h-80 w-auto rounded-xl border border-[#241811] bg-[#0A0806]"
+                          />
                         ) : (
-                          <a href={post.mediaUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-xs font-mono text-[#8FC3DE] underline">
-                            View attached PDF document
+                          <a
+                            href={post.mediaUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="inline-flex items-center gap-2 text-xs font-mono text-[#F5B429] bg-[#F5B429]/10 border border-[#F5B429]/25 px-3 py-1.5 rounded-lg hover:bg-[#F5B429]/20 transition-colors"
+                          >
+                            <FileText className="size-3.5" />
+                            <span>View attached PDF document</span>
                           </a>
                         )}
                       </div>
                     )}
 
                     {/* Engagement Actions */}
-                    <div className="flex items-center justify-between border-t border-[#F3F0E4]/10 pt-4 select-none">
-                      <div className="flex items-center gap-4 text-xs font-mono">
+                    <div className="flex items-center justify-between border-t border-[#241811] pt-3 select-none">
+                      <div className="flex items-center gap-3 text-xs font-mono">
                         <button
                           onClick={(e) => handleUpvote(post._id, e)}
-                          className={`flex items-center gap-1.5 font-bold transition-colors ${
-                            isUpvoted ? "text-[#C9A9E0]" : "text-[#9FAEA1] hover:text-[#F3F0E4]"
+                          className={`flex items-center gap-1.5 font-semibold px-2.5 py-1 rounded-lg border transition-colors ${
+                            isUpvoted
+                              ? "bg-[#F5B429]/15 border-[#F5B429]/30 text-[#F5B429]"
+                              : "bg-[#0A0806] border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8]"
                           }`}
                         >
-                          <ThumbsUp className="size-4" />
+                          <ThumbsUp className="size-3.5" />
                           <span>{post.upvotes?.length || 0}</span>
                         </button>
-                        <div className="flex items-center gap-1.5 text-[#9FAEA1] font-bold">
-                          <MessageSquare className="size-4" />
+
+                        <div className="flex items-center gap-1.5 text-[#8A8078] font-semibold px-2.5 py-1 rounded-lg border border-transparent">
+                          <MessageSquare className="size-3.5" />
                           <span>{post.comments?.length || 0} replies</span>
                         </div>
                       </div>
@@ -366,59 +422,65 @@ export default function ForumsPage() {
                       {currentUserId === post.userId && (
                         <button
                           onClick={(e) => handleDelete(post._id, e)}
-                          className="text-[10px] font-mono text-[#9FAEA1] hover:text-[#F28B6E] transition-colors uppercase font-bold"
+                          className="text-xs font-mono text-[#8A8078] hover:text-[#EF4444] transition-colors flex items-center gap-1"
                         >
-                          Delete
+                          <Trash2 className="size-3" />
+                          <span>Delete</span>
                         </button>
                       )}
                     </div>
+                  </div>
 
-                    {/* Comment Thread Drawer */}
-                    {isExpanded && (
-                      <div className="border-t border-[#F3F0E4]/10 pt-4 space-y-4 cursor-default" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex gap-2">
-                          <Input
-                            type="text"
-                            autoComplete="off"
-                            autoCorrect="off"
-                            autoCapitalize="none"
-                            spellCheck={false}
-                            data-lpignore="true"
-                            placeholder="Write a response..."
-                            value={commentText[post._id] || ""}
-                            onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") handleAddComment(post._id);
-                            }}
-                            className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-10 text-xs rounded-xl font-sans"
-                          />
-                          <Button
-                            onClick={() => handleAddComment(post._id)}
-                            disabled={isCommenting[post._id]}
-                            className="rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] text-xs h-10 px-5 font-bold cursor-pointer transition-all shadow-[2px_2px_0_0_#F28B6E]"
-                          >
-                            {isCommenting[post._id] ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : <Send className="size-4 text-[#2A2118]" />}
-                          </Button>
-                        </div>
+                  {/* Comment / Reply Drawer */}
+                  {isExpanded && (
+                    <div className="border-t border-[#241811] pt-4 space-y-4">
+                      {/* Reply Input */}
+                      <div className="flex gap-2">
+                        <Input
+                          type="text"
+                          placeholder="Write a reply to this thread..."
+                          value={commentText[post._id] || ""}
+                          onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleAddComment(post._id);
+                          }}
+                          className="bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429]/50 text-[#FAFAF8] placeholder:text-[#8A8078] h-9 text-xs rounded-xl"
+                        />
+                        <Button
+                          onClick={() => handleAddComment(post._id)}
+                          disabled={!commentText[post._id]?.trim() || isCommenting[post._id]}
+                          className="btn-premium-primary text-xs h-9 px-4 rounded-xl shrink-0"
+                        >
+                          {isCommenting[post._id] ? (
+                            <Loader2 className="size-3.5 animate-spin" />
+                          ) : (
+                            <Send className="size-3.5" />
+                          )}
+                        </Button>
+                      </div>
 
-                        {/* List Comments */}
-                        <div className="space-y-3">
-                          {post.comments?.map((comment, index) => (
-                            <div key={index} className="flex gap-3 bg-[#16261D] p-3.5 rounded-2xl border border-[#F3F0E4]/10">
-                              <CornerDownRight className="size-4 text-[#9FAEA1] shrink-0 mt-1" />
-                              <div className="space-y-1 min-w-0 flex-1">
-                                <div className="flex items-center justify-between text-[10px] font-mono text-[#9FAEA1] select-none">
-                                  <span className="font-bold text-[#F3F0E4] font-heading">{comment.userName}</span>
+                      {/* Reply List */}
+                      {post.comments && post.comments.length > 0 && (
+                        <div className="max-h-72 overflow-y-auto space-y-2.5 custom-scroll pr-1">
+                          {post.comments.map((comment, index) => (
+                            <div
+                              key={index}
+                              className="flex gap-2.5 bg-[#0A0806] p-3 rounded-xl border border-[#241811] text-xs"
+                            >
+                              <CornerDownRight className="size-3.5 text-[#F5B429] shrink-0 mt-0.5" />
+                              <div className="space-y-0.5 min-w-0 flex-1">
+                                <div className="flex items-center justify-between text-[10px] font-mono text-[#8A8078] select-none">
+                                  <span className="font-bold text-[#FAFAF8] font-display">{comment.userName}</span>
                                   <span>{new Date(comment.createdAt).toLocaleDateString()}</span>
                                 </div>
-                                <p className="text-xs text-[#F3F0E4] font-light leading-relaxed">{comment.content}</p>
+                                <p className="text-[#B8AFA6] leading-relaxed font-light">{comment.content}</p>
                               </div>
                             </div>
                           ))}
                         </div>
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
+                  )}
                 </motion.div>
               );
             })}
@@ -426,44 +488,48 @@ export default function ForumsPage() {
         )}
       </div>
 
-      {/* New Post Dialog Modal */}
+      {/* New Thread Dialog Modal */}
       {isOpen && (
         <Dialog open={true} onOpenChange={() => setIsOpen(false)}>
-          <DialogContent className="bg-[#1A2D23] border border-[#F3F0E4]/20 text-[#F3F0E4] max-w-lg rounded-[2rem] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.5)]">
-            <DialogHeader className="flex flex-row items-center justify-between">
-              <DialogTitle className="text-lg font-bold text-[#F3F0E4] font-heading">Create New Thread</DialogTitle>
-              <button onClick={() => setIsOpen(false)} className="text-[#9FAEA1] hover:text-[#F3F0E4]">
+          <DialogContent className="bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8] max-w-lg rounded-2xl p-6 shadow-2xl">
+            <DialogHeader className="flex flex-row items-center justify-between border-b border-[#241811] pb-3">
+              <DialogTitle className="text-base font-bold text-[#FAFAF8] font-display">
+                Create New Thread
+              </DialogTitle>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="size-7 rounded-lg text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811] flex items-center justify-center"
+              >
                 <X className="size-4" />
               </button>
             </DialogHeader>
 
             <form onSubmit={handleCreatePost} className="space-y-4 py-2">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Title</label>
+                <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
+                  Thread Title
+                </label>
                 <Input
                   type="text"
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  data-lpignore="true"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Thread topic title..."
+                  placeholder="e.g. Solving Laplace Transforms for Circuit Analysis..."
                   required
-                  className="bg-[#121F18] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/60 h-11 text-xs rounded-xl font-sans"
+                  className="bg-[#0A0806] border-[#2E2118] focus:border-[#F5B429]/50 text-[#FAFAF8] placeholder:text-[#8A8078] h-10 text-xs rounded-xl"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Category</label>
+                <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
+                  Category
+                </label>
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 rounded-xl h-11 px-3 text-xs text-[#F3F0E4] outline-none"
+                  className="w-full bg-[#0A0806] border border-[#2E2118] rounded-xl h-10 px-3 text-xs text-[#FAFAF8] outline-none focus:border-[#F5B429]/50"
                 >
                   {CATEGORIES.filter((c) => c !== "All").map((c) => (
-                    <option key={c} value={c} className="bg-[#16261D] text-[#F3F0E4]">
+                    <option key={c} value={c} className="bg-[#150F0B] text-[#FAFAF8]">
                       {c}
                     </option>
                   ))}
@@ -471,47 +537,46 @@ export default function ForumsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Discussion Details</label>
+                <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
+                  Discussion Details
+                </label>
                 <textarea
-                  autoComplete="off"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  data-lpignore="true"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Elaborate your question, idea, or study topic..."
-                  rows={5}
+                  placeholder="Elaborate your question, derivation, or study notes..."
+                  rows={4}
                   required
-                  className="w-full bg-[#121F18] border border-[#F3F0E4]/15 rounded-2xl p-3.5 text-xs text-[#F3F0E4] placeholder-[#9FAEA1]/60 focus:outline-none focus:border-[#F0C93B] resize-none transition-colors font-sans"
+                  className="w-full bg-[#0A0806] border border-[#2E2118] rounded-xl p-3 text-xs text-[#FAFAF8] placeholder:text-[#8A8078] focus:outline-none focus:border-[#F5B429]/50 resize-none"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono font-bold text-[#9FAEA1] uppercase tracking-widest block">Media Attachment (Optional)</label>
-                <label className="flex items-center justify-center border border-dashed border-[#F3F0E4]/15 hover:border-[#F0C93B] bg-[#121F18] rounded-2xl p-4 cursor-pointer transition-all gap-2 text-xs font-mono text-[#9FAEA1] hover:text-[#F3F0E4]">
+                <label className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
+                  Media Attachment (Optional)
+                </label>
+                <label className="flex items-center justify-center border border-dashed border-[#2E2118] hover:border-[#F5B429]/50 bg-[#0A0806] rounded-xl p-3.5 cursor-pointer transition-all gap-2 text-xs font-mono text-[#8A8078] hover:text-[#FAFAF8]">
                   {isUploadingMedia ? (
                     <>
-                      <Loader2 className="size-4 animate-spin text-[#8FC3DE]" />
-                      <span>Uploading...</span>
+                      <Loader2 className="size-4 animate-spin text-[#F5B429]" />
+                      <span>Uploading media...</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="size-4 text-[#8FC3DE]" />
-                      <span>{mediaUrl ? "Media Attached ✓" : "Upload Image, Video, or PDF"}</span>
+                      <Upload className="size-4 text-[#F5B429]" />
+                      <span>{mediaUrl ? "Attachment Ready ✓" : "Upload Image, Video, or PDF"}</span>
                     </>
                   )}
                   <input type="file" onChange={handleMediaUpload} disabled={isUploadingMedia} className="hidden" />
                 </label>
               </div>
 
-              <DialogFooter className="pt-2">
+              <DialogFooter className="pt-2 border-t border-[#241811]">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-xl bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs h-11 transition-all shadow-[2px_2px_0_0_#F28B6E] font-heading"
+                  className="btn-premium-primary w-full text-xs h-10 rounded-xl"
                 >
-                  {isSubmitting ? <Loader2 className="size-4 animate-spin text-[#2A2118]" /> : "Post Discussion Thread"}
+                  {isSubmitting ? <Loader2 className="size-4 animate-spin" /> : "Post Discussion Thread"}
                 </Button>
               </DialogFooter>
             </form>

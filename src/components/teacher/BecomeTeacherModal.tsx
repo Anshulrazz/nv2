@@ -126,42 +126,42 @@ export function BecomeTeacherModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto custom-scroll bg-[#121F18] border border-[#F0C93B]/30 rounded-[2rem] sm:rounded-3xl p-5 sm:p-7 space-y-5 text-[#F3F0E4] shadow-2xl relative">
+      <div className="w-full max-w-xl max-h-[92vh] overflow-y-auto custom-scroll bg-bg-surface border border-border-default rounded-2xl p-5 sm:p-7 space-y-5 text-text-primary shadow-2xl relative">
         {/* CLOSE BUTTON */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-4 top-4 p-2 rounded-full bg-[#16261D] text-[#9FAEA1] hover:text-white border border-[#F3F0E4]/10 transition-all"
+          className="absolute right-4 top-4 p-2 rounded-xl bg-bg-elevated text-text-muted hover:text-text-primary border border-border-subtle transition-colors cursor-pointer"
         >
           <X className="size-4" />
         </button>
 
         {/* MODAL HEADER */}
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F0C93B] bg-[#F0C93B]/10 px-3 py-1 rounded-full border border-[#F0C93B]/30">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-accent-primary bg-accent-primary/10 px-3 py-1 rounded-full border border-accent-primary/20">
             <GraduationCap className="size-3.5" /> BECOME A NOTEXIA TEACHER
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-white flex items-center gap-2">
-            Teach on Notexia &amp; Earn 70% Share <Sparkles className="size-4 text-[#F0C93B]" />
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary flex items-center gap-2">
+            Teach on Notexia &amp; Earn 70% Share <Sparkles className="size-4 text-accent-primary" />
           </h2>
-          <p className="text-xs text-[#9FAEA1] font-light leading-relaxed">
+          <p className="text-xs text-text-secondary font-light leading-relaxed">
             Publish premium courses, verified notes, and research blueprints. Receive 70% direct cash payouts into your Bank/UPI.
           </p>
         </div>
 
         {/* EXISTING APPLICATION BANNER */}
         {isLoadingStatus ? (
-          <div className="py-6 flex items-center justify-center text-xs text-[#9FAEA1] gap-2">
-            <Loader2 className="size-4 animate-spin text-[#F0C93B]" /> Loading application status...
+          <div className="py-6 flex items-center justify-center text-xs text-text-muted gap-2">
+            <Loader2 className="size-4 animate-spin text-accent-primary" /> Loading application status...
           </div>
         ) : existingApp ? (
-          <div className="p-4 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/15 space-y-3">
+          <div className="p-4 rounded-xl bg-bg-elevated/60 border border-border-subtle space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#F3F0E4] uppercase tracking-wider font-mono">
+              <span className="text-xs font-bold text-text-primary uppercase tracking-wider font-mono">
                 Application Status
               </span>
               {existingApp.status === "pending" && (
-                <span className="text-[10px] font-mono font-bold bg-[#F0C93B]/15 text-[#F0C93B] px-3 py-1 rounded-full border border-[#F0C93B]/30 flex items-center gap-1">
+                <span className="text-[10px] font-mono font-bold bg-accent-primary/15 text-accent-primary px-3 py-1 rounded-full border border-accent-primary/30 flex items-center gap-1">
                   <Clock className="size-3" /> PENDING ADMIN REVIEW
                 </span>
               )}
@@ -177,7 +177,7 @@ export function BecomeTeacherModal({
               )}
             </div>
 
-            <p className="text-xs text-[#9FAEA1] leading-relaxed">
+            <p className="text-xs text-text-muted leading-relaxed">
               {existingApp.status === "pending" &&
                 "Your Teacher Application is currently being evaluated by the Admin panel. Once approved, your account will be upgraded to Teacher role immediately."}
               {existingApp.status === "approved" &&
@@ -191,14 +191,14 @@ export function BecomeTeacherModal({
         {/* TAB NAVIGATION */}
         {!existingApp || existingApp.status === "rejected" ? (
           <>
-            <div className="flex border-b border-[#F3F0E4]/10 pb-2 gap-4">
+            <div className="flex border-b border-border-subtle pb-2 gap-4">
               <button
                 type="button"
                 onClick={() => setActiveTab("requirements")}
-                className={`text-xs font-bold font-mono uppercase tracking-wider pb-2 border-b-2 transition-all ${
+                className={`text-xs font-bold font-mono uppercase tracking-wider pb-2 border-b-2 transition-all cursor-pointer ${
                   activeTab === "requirements"
-                    ? "border-[#F0C93B] text-[#F0C93B]"
-                    : "border-transparent text-[#9FAEA1] hover:text-white"
+                    ? "border-accent-primary text-accent-primary"
+                    : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
               >
                 1. Requirements Checklist
@@ -206,10 +206,10 @@ export function BecomeTeacherModal({
               <button
                 type="button"
                 onClick={() => setActiveTab("form")}
-                className={`text-xs font-bold font-mono uppercase tracking-wider pb-2 border-b-2 transition-all ${
+                className={`text-xs font-bold font-mono uppercase tracking-wider pb-2 border-b-2 transition-all cursor-pointer ${
                   activeTab === "form"
-                    ? "border-[#F0C93B] text-[#F0C93B]"
-                    : "border-transparent text-[#9FAEA1] hover:text-white"
+                    ? "border-accent-primary text-accent-primary"
+                    : "border-transparent text-text-muted hover:text-text-primary"
                 }`}
               >
                 2. Application Form
@@ -220,49 +220,49 @@ export function BecomeTeacherModal({
             {activeTab === "requirements" && (
               <div className="space-y-4">
                 <div className="space-y-3">
-                  <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-[#F0C93B]/10 text-[#F0C93B] border border-[#F0C93B]/30 shrink-0">
+                  <div className="p-3.5 rounded-xl bg-bg-elevated/50 border border-border-subtle flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-accent-primary/10 text-accent-primary border border-accent-primary/20 shrink-0">
                       <GraduationCap className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white font-heading">Domain Expertise &amp; Credentials</h4>
-                      <p className="text-[11px] text-[#9FAEA1] mt-0.5 leading-relaxed">
+                      <h4 className="text-xs font-bold text-text-primary">Domain Expertise &amp; Credentials</h4>
+                      <p className="text-[11px] text-text-muted mt-0.5 leading-relaxed">
                         Hold a degree, competitive exam rank (JEE, NEET, GATE), or verified expertise in your subject area.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shrink-0">
+                  <div className="p-3.5 rounded-xl bg-bg-elevated/50 border border-border-subtle flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
                       <DollarSign className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white font-heading">70% Creator Revenue Share</h4>
-                      <p className="text-[11px] text-[#9FAEA1] mt-0.5 leading-relaxed">
+                      <h4 className="text-xs font-bold text-text-primary">70% Creator Revenue Share</h4>
+                      <p className="text-[11px] text-text-muted mt-0.5 leading-relaxed">
                         You keep 70% of every course sale. 30% goes to Notexia platform hosting, bandwidth &amp; payment processing.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-[#8FC3DE]/10 text-[#8FC3DE] border border-[#8FC3DE]/30 shrink-0">
+                  <div className="p-3.5 rounded-xl bg-bg-elevated/50 border border-border-subtle flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-accent-primary/10 text-accent-primary border border-accent-primary/20 shrink-0">
                       <FileText className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white font-heading">High Quality Study Material</h4>
-                      <p className="text-[11px] text-[#9FAEA1] mt-0.5 leading-relaxed">
+                      <h4 className="text-xs font-bold text-text-primary">High Quality Study Material</h4>
+                      <p className="text-[11px] text-text-muted mt-0.5 leading-relaxed">
                         Commit to publishing clear, high-yield notes, formula sheets, or video lessons without plagiarism.
                       </p>
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-[#16261D] border border-[#F3F0E4]/10 flex items-start gap-3">
-                    <div className="p-2 rounded-xl bg-[#C9A9E0]/10 text-[#C9A9E0] border border-[#C9A9E0]/30 shrink-0">
+                  <div className="p-3.5 rounded-xl bg-bg-elevated/50 border border-border-subtle flex items-start gap-3">
+                    <div className="p-2 rounded-xl bg-accent-secondary/10 text-accent-secondary border border-accent-secondary/20 shrink-0">
                       <ShieldCheck className="size-4" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white font-heading">Direct Bank/UPI Payouts</h4>
-                      <p className="text-[11px] text-[#9FAEA1] mt-0.5 leading-relaxed">
+                      <h4 className="text-xs font-bold text-text-primary">Direct Bank/UPI Payouts</h4>
+                      <p className="text-[11px] text-text-muted mt-0.5 leading-relaxed">
                         Withdraw your creator earnings directly to your UPI ID or Bank Account whenever you like.
                       </p>
                     </div>
@@ -271,10 +271,10 @@ export function BecomeTeacherModal({
 
                 <Button
                   onClick={() => setActiveTab("form")}
-                  className="w-full h-11 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-2xl transition-all font-heading shadow-md flex items-center justify-center gap-2"
+                  className="w-full h-10 btn-premium-primary text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Proceed to Teacher Application Form</span>
-                  <CheckCircle2 className="size-4 text-[#2A2118]" />
+                  <CheckCircle2 className="size-4" />
                 </Button>
               </div>
             )}
@@ -284,7 +284,7 @@ export function BecomeTeacherModal({
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-3">
                   <div>
-                    <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                    <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                       Academic Qualification / Degree *
                     </label>
                     <Input
@@ -292,13 +292,13 @@ export function BecomeTeacherModal({
                       value={qualification}
                       onChange={(e) => setQualification(e.target.value)}
                       placeholder="e.g. B.Tech Computer Science (IIT Bombay), M.Sc Physics"
-                      className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 h-10 text-xs rounded-xl"
+                      className="bg-bg-elevated border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 h-10 text-xs rounded-xl font-mono"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                    <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                       Primary Subject / Exam Domain Expertise *
                     </label>
                     <Input
@@ -306,14 +306,14 @@ export function BecomeTeacherModal({
                       value={subjectExpertise}
                       onChange={(e) => setSubjectExpertise(e.target.value)}
                       placeholder="e.g. Organic Chemistry, JEE Mathematics, GATE CS"
-                      className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 h-10 text-xs rounded-xl"
+                      className="bg-bg-elevated border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 h-10 text-xs rounded-xl font-mono"
                       required
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                      <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                         Teaching Experience (Years)
                       </label>
                       <Input
@@ -323,12 +323,12 @@ export function BecomeTeacherModal({
                         value={experienceYears}
                         onChange={(e) => setExperienceYears(e.target.value ? Number(e.target.value) : "")}
                         placeholder="Years of experience"
-                        className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 h-10 text-xs rounded-xl"
+                        className="bg-bg-elevated border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 h-10 text-xs rounded-xl font-mono"
                       />
                     </div>
 
                     <div>
-                      <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                      <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                         UPI ID for Payouts (Optional)
                       </label>
                       <Input
@@ -336,13 +336,13 @@ export function BecomeTeacherModal({
                         value={payoutUpi}
                         onChange={(e) => setPayoutUpi(e.target.value)}
                         placeholder="e.g. yourname@upi"
-                        className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 h-10 text-xs rounded-xl"
+                        className="bg-bg-elevated border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 h-10 text-xs rounded-xl font-mono"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                    <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                       Educator Bio &amp; Teaching Philosophy *
                     </label>
                     <textarea
@@ -350,13 +350,13 @@ export function BecomeTeacherModal({
                       onChange={(e) => setBio(e.target.value)}
                       rows={3}
                       placeholder="Briefly describe your teaching background, achievements, and why you want to teach on Notexia..."
-                      className="w-full bg-[#16261D] border border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 p-3 text-xs rounded-xl focus:outline-none resize-none"
+                      className="w-full bg-bg-elevated border border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 p-3 text-xs rounded-xl focus:outline-none resize-none font-sans"
                       required
                     />
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-mono font-bold text-[#F3F0E4] uppercase tracking-wider block mb-1">
+                    <label className="text-[11px] font-mono font-bold text-text-muted uppercase tracking-wider block mb-1">
                       Portfolio / Demo / Resume Link (Optional)
                     </label>
                     <Input
@@ -364,7 +364,7 @@ export function BecomeTeacherModal({
                       value={portfolioUrl}
                       onChange={(e) => setPortfolioUrl(e.target.value)}
                       placeholder="e.g. https://youtube.com/@yourchannel or Drive link"
-                      className="bg-[#16261D] border-[#F3F0E4]/15 focus:border-[#F0C93B] text-[#F3F0E4] placeholder-[#9FAEA1]/50 h-10 text-xs rounded-xl"
+                      className="bg-bg-elevated border-border-subtle focus:border-accent-primary text-text-primary placeholder:text-text-muted/50 h-10 text-xs rounded-xl font-mono"
                     />
                   </div>
 
@@ -374,9 +374,9 @@ export function BecomeTeacherModal({
                       id="agree-terms"
                       checked={agreedToTerms}
                       onChange={(e) => setAgreedToTerms(e.target.checked)}
-                      className="rounded border-[#F3F0E4]/20 bg-[#16261D] text-[#F0C93B] focus:ring-0 size-4 cursor-pointer"
+                      className="rounded border-border-subtle bg-bg-elevated text-accent-primary focus:ring-0 size-4 cursor-pointer"
                     />
-                    <label htmlFor="agree-terms" className="text-xs text-[#9FAEA1] cursor-pointer">
+                    <label htmlFor="agree-terms" className="text-xs text-text-muted cursor-pointer">
                       I agree to Notexia&apos;s 70% Creator Revenue Share &amp; 30% Platform terms.
                     </label>
                   </div>
@@ -385,11 +385,11 @@ export function BecomeTeacherModal({
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full h-11 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-2xl transition-all font-heading shadow-md flex items-center justify-center gap-2"
+                  className="w-full h-10 btn-premium-primary text-xs rounded-xl flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="size-4 animate-spin text-[#2A2118]" />
+                      <Loader2 className="size-4 animate-spin" />
                       <span>Submitting Application...</span>
                     </>
                   ) : (

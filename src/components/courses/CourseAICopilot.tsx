@@ -1,4 +1,3 @@
-/* eslint-disable */
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -34,7 +33,7 @@ export function CourseAICopilot({
     {
       id: "welcome",
       role: "assistant",
-      content: `Hello! I'm your **Gemini AI Course Copilot** (with OpenRouter fallback). Ask me any questions about **"${lessonTitle || "this lecture"}"**!`,
+      content: `Hello! I'm your **Course Copilot**. Ask me any conceptual or practical questions about **"${lessonTitle || "this lecture"}"**!`,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
     },
   ]);
@@ -91,15 +90,16 @@ export function CourseAICopilot({
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errMsg = err instanceof Error ? err.message : "Failed to reach AI copilot";
       console.error(err);
-      toast.error(err.message || "Failed to reach AI copilot");
+      toast.error(errMsg);
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "⚠️ *Sorry, I encountered an issue connecting to Gemini / OpenRouter. Please try again in a moment.*",
+          content: "⚠️ *Sorry, I encountered an issue generating a response. Please try again in a moment.*",
           timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         },
       ]);
@@ -112,7 +112,7 @@ export function CourseAICopilot({
     { label: "Explain simply", icon: Lightbulb, prompt: "Can you explain this lecture in simple, beginner-friendly terms?" },
     { label: "Key Takeaways", icon: BookOpen, prompt: "What are the key takeaways and summary of this lecture?" },
     { label: "3 Quiz Questions", icon: HelpCircle, prompt: "Generate 3 quick practice quiz questions based on this lecture." },
-    { label: "Code Example", icon: Code, prompt: "Provide a practical code/formula example illustrating this lesson." },
+    { label: "Code Example", icon: Code, prompt: "Provide a practical code or formula example illustrating this lesson." },
   ];
 
   if (!isOpen) return null;
@@ -120,26 +120,26 @@ export function CourseAICopilot({
   return (
     <AnimatePresence>
       <motion.div
-        initial={{ opacity: 0, x: 300 }}
+        initial={{ opacity: 0, x: 320 }}
         animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 300 }}
+        exit={{ opacity: 0, x: 320 }}
         transition={{ type: "spring", stiffness: 350, damping: 30 }}
-        className="fixed right-0 top-0 bottom-0 w-full sm:w-[420px] bg-[#09090e] border-l border-white/10 shadow-2xl z-50 flex flex-col backdrop-blur-2xl text-zinc-100"
+        className="fixed right-0 top-0 bottom-0 w-full sm:w-[420px] bg-[#150F0B] border-l border-[#2E2118] shadow-2xl z-50 flex flex-col backdrop-blur-2xl text-[#FAFAF8]"
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-zinc-950/80">
+        <div className="p-4 sm:p-5 border-b border-[#241811] flex items-center justify-between bg-[#0A0806]">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-gradient-to-tr from-amber-500/20 to-violet-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
-              <Sparkles className="size-5 animate-pulse" />
+            <div className="size-10 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/25 flex items-center justify-center text-[#F5B429]">
+              <Sparkles className="size-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-white">Gemini Course Copilot</h3>
-                <span className="text-[9px] font-mono font-bold bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
-                  AI ACTIVE
+                <h3 className="text-sm font-bold text-[#FAFAF8] font-display">Course Copilot</h3>
+                <span className="text-[9px] font-mono font-bold bg-[#F5B429]/10 text-[#F5B429] px-2 py-0.5 rounded-full border border-[#F5B429]/25">
+                  ACTIVE
                 </span>
               </div>
-              <p className="text-[11px] text-zinc-400 truncate max-w-[220px]">
+              <p className="text-[11px] text-[#8A8078] truncate max-w-[220px]">
                 {lessonTitle ? `Lecture: ${lessonTitle}` : courseTitle}
               </p>
             </div>
@@ -148,14 +148,14 @@ export function CourseAICopilot({
             size="icon"
             variant="ghost"
             onClick={onClose}
-            className="size-8 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10"
+            className="size-8 rounded-xl text-[#8A8078] hover:text-[#FAFAF8] hover:bg-[#241811]"
           >
             <X className="size-4" />
           </Button>
         </div>
 
         {/* Prompt Pills Bar */}
-        <div className="p-3 bg-zinc-950/40 border-b border-white/5 overflow-x-auto flex gap-2 custom-scroll shrink-0">
+        <div className="p-3 bg-[#0A0806]/80 border-b border-[#241811] overflow-x-auto flex gap-2 custom-scroll shrink-0">
           {promptPills.map((pill, idx) => {
             const Icon = pill.icon;
             return (
@@ -163,9 +163,9 @@ export function CourseAICopilot({
                 key={idx}
                 onClick={() => handleSend(pill.prompt)}
                 disabled={loading}
-                className="flex items-center gap-1.5 whitespace-nowrap bg-white/5 hover:bg-amber-500/10 hover:border-amber-500/30 text-zinc-300 hover:text-amber-300 border border-white/10 px-3 py-1.5 rounded-full text-xs font-mono transition-all shrink-0"
+                className="flex items-center gap-1.5 whitespace-nowrap bg-[#241811] hover:bg-[#F5B429]/10 text-[#B8AFA6] hover:text-[#F5B429] border border-[#2E2118] hover:border-[#F5B429]/30 px-3 py-1.5 rounded-full text-xs font-mono transition-all shrink-0"
               >
-                <Icon className="size-3 text-amber-400" />
+                <Icon className="size-3 text-[#F5B429]" />
                 <span>{pill.label}</span>
               </button>
             );
@@ -180,7 +180,7 @@ export function CourseAICopilot({
               className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="size-7 rounded-xl bg-violet-500/20 border border-violet-500/30 flex items-center justify-center text-violet-300 shrink-0 mt-0.5">
+                <div className="size-7 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/25 flex items-center justify-center text-[#F5B429] shrink-0 mt-0.5">
                   <Bot className="size-4" />
                 </div>
               )}
@@ -188,8 +188,8 @@ export function CourseAICopilot({
               <div
                 className={`max-w-[85%] rounded-2xl p-3.5 text-xs leading-relaxed ${
                   msg.role === "user"
-                    ? "bg-amber-500/20 text-amber-100 border border-amber-500/40 rounded-tr-none"
-                    : "bg-zinc-900/90 text-zinc-200 border border-white/10 rounded-tl-none"
+                    ? "bg-[#F5B429]/15 text-[#FAFAF8] border border-[#F5B429]/30 rounded-tr-none"
+                    : "bg-[#0A0806] text-[#FAFAF8] border border-[#241811] rounded-tl-none"
                 }`}
               >
                 {msg.role === "assistant" ? (
@@ -197,13 +197,13 @@ export function CourseAICopilot({
                 ) : (
                   <div className="font-sans whitespace-pre-wrap">{msg.content}</div>
                 )}
-                <div className="mt-1 text-[9px] font-mono text-zinc-500 text-right">
+                <div className="mt-1 text-[9px] font-mono text-[#8A8078] text-right">
                   {msg.timestamp}
                 </div>
               </div>
 
               {msg.role === "user" && (
-                <div className="size-7 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-300 shrink-0 mt-0.5">
+                <div className="size-7 rounded-xl bg-[#241811] border border-[#2E2118] flex items-center justify-center text-[#B8AFA6] shrink-0 mt-0.5">
                   <User className="size-4" />
                 </div>
               )}
@@ -211,9 +211,9 @@ export function CourseAICopilot({
           ))}
 
           {loading && (
-            <div className="flex items-center gap-3 text-xs text-amber-400 font-mono bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl w-fit animate-pulse">
-              <Loader2 className="size-4 animate-spin text-amber-400" />
-              <span>Gemini AI synthesizing answer...</span>
+            <div className="flex items-center gap-2.5 text-xs text-[#F5B429] font-mono bg-[#F5B429]/10 border border-[#F5B429]/20 p-3 rounded-2xl w-fit">
+              <Loader2 className="size-4 animate-spin text-[#F5B429]" />
+              <span>Copilot is analyzing lecture context...</span>
             </div>
           )}
 
@@ -221,7 +221,7 @@ export function CourseAICopilot({
         </div>
 
         {/* Input Bar */}
-        <div className="p-4 border-t border-white/10 bg-zinc-950/90 shrink-0">
+        <div className="p-4 border-t border-[#241811] bg-[#0A0806] shrink-0">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -234,21 +234,21 @@ export function CourseAICopilot({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Copilot about this lecture..."
-              className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-zinc-500 outline-none focus:border-amber-500 transition-colors"
+              className="flex-1 bg-[#150F0B] border border-[#2E2118] rounded-xl px-4 py-2.5 text-xs text-[#FAFAF8] placeholder:text-[#8A8078] outline-none focus:border-[#F5B429]/50 transition-colors"
             />
             <Button
               type="submit"
               disabled={loading || !input.trim()}
-              className="bg-amber-500 hover:bg-amber-400 text-zinc-950 size-10 rounded-xl p-0 shrink-0 shadow-lg shadow-amber-500/20"
+              className="btn-premium-primary size-10 rounded-xl p-0 shrink-0"
             >
               {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
             </Button>
           </form>
-          <div className="flex items-center justify-between mt-2 px-1 text-[10px] font-mono text-zinc-500">
-            <span>Powered by Gemini & OpenRouter AI</span>
+          <div className="flex items-center justify-between mt-2 px-1 text-[10px] font-mono text-[#8A8078]">
+            <span>Powered by Gemini AI</span>
             <button
               onClick={() => setMessages([messages[0]])}
-              className="hover:text-amber-400 flex items-center gap-1 transition-colors"
+              className="hover:text-[#F5B429] flex items-center gap-1 transition-colors"
             >
               <RefreshCw className="size-2.5" /> Clear Chat
             </button>

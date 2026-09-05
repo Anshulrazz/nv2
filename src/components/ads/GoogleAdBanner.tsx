@@ -67,11 +67,11 @@ export function GoogleAdBanner({
   return (
     <div className={`w-full my-4 flex flex-col items-center justify-center select-none ${className}`}>
       {label && (
-        <span className="text-[9px] uppercase tracking-widest font-mono text-neutral-550 mb-1">
+        <span className="text-[9px] uppercase tracking-widest font-mono text-text-muted mb-1">
           {label}
         </span>
       )}
-      <div className="w-full overflow-hidden rounded-xl border border-neutral-850/60 bg-neutral-950/40 p-2 min-h-[90px] flex items-center justify-center">
+      <div className="w-full overflow-hidden rounded-xl border border-border-subtle bg-bg-surface/30 p-2 min-h-[90px] flex items-center justify-center">
         <ins
           className="adsbygoogle"
           style={{ display: "block", width: "100%" }}

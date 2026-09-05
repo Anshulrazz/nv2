@@ -27,28 +27,30 @@ export function CustomAlertDialog() {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) closeAlert(); }}>
-      <DialogContent className="bg-[#150F0B]/95 border border-[#2E2118] text-[#FAFAF8] max-w-sm backdrop-blur-2xl shadow-[0_0_50px_-10px_rgba(245,148,29,0.25)] rounded-[2rem] z-[9999]">
+      <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-[#FAFAF8] font-bold text-sm tracking-wide font-display">
+          <DialogTitle className="text-sm font-semibold">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-[#8A8078] text-xs mt-1 leading-normal">
+          <DialogDescription className="text-xs text-muted-foreground mt-1">
             {message}
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="mt-4 gap-2 flex justify-end">
+        <DialogFooter className="mt-3 gap-2">
           {type === "confirm" && (
             <Button
               variant="outline"
+              size="sm"
               onClick={handleCancel}
-              className="border-[#2E2118] text-[#8A8078] hover:text-[#FAFAF8] bg-[#0A0806] hover:bg-[#150F0B] text-xs h-8 rounded-full"
+              className="text-xs"
             >
               Cancel
             </Button>
           )}
           <Button
+            size="sm"
             onClick={handleConfirm}
-            className="btn-premium-primary text-xs h-8 px-4 font-bold font-display"
+            className="text-xs font-semibold"
           >
             Confirm
           </Button>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Loader2, Bot, User, HelpCircle, RotateCcw, Plus } from "lucide-react";
+import { Send, Loader2, Bot, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MarkdownRenderer } from "@/components/ui/MarkdownRenderer";
 import { toast } from "sonner";
@@ -19,11 +19,36 @@ interface NoteSideChatProps {
 }
 
 const QUICK_PROMPTS = [
-  { label: "Summarize note", prompt: "Summarize the key concepts and conclusion of this note." },
+  { label: "Summarize note", prompt: "Summarize the key concepts and conclusions of this note." },
   { label: "Quiz me (5 Questions)", prompt: "Generate 5 multiple-choice quiz questions based on this note to test my understanding." },
-  { label: "Key Takeaways & Formulas", prompt: "List the essential takeaways, definitions, and formulas from this note." },
-  { label: "Explain in Simple Terms", prompt: "Explain the main subject of this note in simple, easy-to-understand terms with an analogy." },
+  { label: "Key Takeaways & Formulas", prompt: "List the essential takeaways, definitions, and equations from this note." },
+  { label: "Explain in Simple Terms", prompt: "Explain the main subject of this note in simple, intuitive terms with an analogy." },
 ];
+
+function cleanSseText(text: string): string {
+  if (!text) return "";
+  if (!text.includes('data: {"text":') && !text.includes("data: {")) {
+    return text;
+  }
+  const lines = text.split("\n");
+  let result = "";
+  let matched = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("data: ")) {
+      try {
+        const parsed = JSON.parse(trimmed.substring(6));
+        if (parsed.text) {
+          result += parsed.text;
+          matched = true;
+        }
+      } catch {
+        // Ignore partial JSON parsing
+      }
+    }
+  }
+  return matched ? result : text;
+}
 
 export function NoteSideChat({ noteTitle, noteContentText, onInsertText }: NoteSideChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -71,127 +96,107 @@ export function NoteSideChat({ noteTitle, noteContentText, onInsertText }: NoteS
       });
 
       if (!response.ok) {
-        throw new Error(`Server returned ${response.status}`);
+        throw new Error("Failed to contact study copilot.");
       }
 
-      if (!response.body) {
-        throw new Error("No response body available");
-      }
+      if (!response.body) return;
 
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullAssistantText = "";
+      let buffer = "";
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value, { stream: true });
-        const lines = chunk.split("\n");
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
 
         for (const line of lines) {
           const trimmed = line.trim();
+          if (!trimmed || trimmed === "data: [DONE]") continue;
           if (trimmed.startsWith("data: ")) {
             try {
               const parsed = JSON.parse(trimmed.substring(6));
               if (parsed.text) {
                 fullAssistantText += parsed.text;
                 setStreamedText(fullAssistantText);
+              } else if (parsed.error) {
+                toast.error(parsed.error);
               }
             } catch {
-              // Ignore partial JSON parsing errors
+              // Partial stream chunk JSON parse error, ignore
             }
           }
         }
       }
 
+      // Flush remaining buffered data if any
+      if (buffer.trim().startsWith("data: ")) {
+        try {
+          const parsed = JSON.parse(buffer.trim().substring(6));
+          if (parsed.text) {
+            fullAssistantText += parsed.text;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      const finalContent = cleanSseText(fullAssistantText || buffer);
+
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: fullAssistantText || "I have analyzed your note and provided an answer.",
+        content: finalContent || "I have analyzed your note and answered your query.",
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
       setStreamedText("");
-    } catch (err) {
-      console.error("Side chat error:", err);
-      toast.error("Failed to stream response. Please try again.");
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Sorry, I encountered an issue analyzing this note. Please try asking again.",
-        },
-      ]);
+    } catch (e) {
+      console.error(e);
+      toast.error("Error communicating with AI assistant.");
     } finally {
       setIsStreaming(false);
-      setStreamedText("");
     }
   };
 
-  const handleClearChat = () => {
-    setMessages([]);
-    setStreamedText("");
-    toast.info("Side chat history cleared.");
-  };
-
   return (
-    <div className="flex flex-col h-full min-h-0 bg-[#0A0806] text-[#FAFAF8] overflow-hidden select-none">
-      {/* Context Badge Sub-header */}
-      <div className="px-3.5 py-2.5 bg-[#150F0B] border-b border-[#2E2118] flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="size-2 rounded-full bg-[#F5B429] animate-pulse shrink-0" />
-          <span className="text-[11px] font-mono text-[#8A8078] truncate">
-            Note Context: <strong className="text-[#FAFAF8]">{noteTitle || "Untitled Note"}</strong>
-          </span>
-        </div>
-
-        {messages.length > 0 && (
-          <button
-            onClick={handleClearChat}
-            className="text-[#8A8078] hover:text-[#FAFAF8] px-2 py-0.5 rounded hover:bg-[#241811] transition-colors text-[10px] font-mono flex items-center gap-1 shrink-0 cursor-pointer"
-            title="Reset Chat"
-          >
-            <RotateCcw className="size-3" />
-            <span>Clear</span>
-          </button>
-        )}
-      </div>
-
+    <div className="flex flex-col h-full bg-bg-surface text-text-primary">
       {/* Messages area */}
       <div
         ref={scrollContainerRef}
-        className="flex-1 min-h-0 overflow-y-auto p-4 pb-8 space-y-4 custom-scroll"
+        className="flex-1 overflow-y-auto p-4 space-y-3 custom-scroll select-text"
       >
         {messages.length === 0 && !isStreaming ? (
-          <div className="py-6 space-y-4">
-            <div className="p-3.5 rounded-2xl bg-[#150F0B] border border-[#2E2118] space-y-2 shadow-[0_0_20px_-5px_rgba(245,148,29,0.1)]">
-              <div className="flex items-center gap-2 text-[#F5B429] font-bold text-xs font-display">
-                <HelpCircle className="size-4 text-[#F5B429]" />
-                <span>Ask Anything About This Note</span>
-              </div>
-              <p className="text-[#8A8078] text-xs leading-relaxed font-light">
-                I have full context of this note. Select a quick prompt or type your query below to get instant AI answers, summaries, or study questions!
+          <div className="space-y-4 pt-2">
+            <div className="p-3.5 bg-bg-elevated border border-border-subtle rounded-xl space-y-1">
+              <span className="text-xs font-semibold text-text-primary block font-display">
+                Contextual AI Study Assistant
+              </span>
+              <p className="text-[11px] text-text-muted leading-relaxed">
+                Ask questions, generate practice quizzes, or summarize &ldquo;{noteTitle}&rdquo;.
               </p>
             </div>
 
-            {/* Quick Prompts Chips */}
-            <div className="space-y-2">
-              <span className="text-[10px] font-mono font-bold text-[#8A8078] uppercase tracking-wider block">
-                Suggested Actions:
+            <div className="space-y-1.5">
+              <span className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider block">
+                Suggested Prompts:
               </span>
-              <div className="grid grid-cols-1 gap-2">
+              <div className="grid grid-cols-1 gap-1.5">
                 {QUICK_PROMPTS.map((chip, idx) => (
                   <button
                     key={idx}
+                    type="button"
                     onClick={() => handleSendMessage(chip.prompt)}
-                    className="p-2.5 bg-[#150F0B] border border-[#2E2118] hover:border-[#F5B429]/40 rounded-xl text-left hover:bg-[#241811] transition-all group cursor-pointer"
+                    className="p-2.5 bg-bg-base border border-border-subtle hover:border-border-default rounded-xl text-left hover:bg-bg-elevated transition-colors group cursor-pointer"
                   >
-                    <span className="text-xs font-semibold text-[#FAFAF8] group-hover:text-[#F5B429] transition-colors block">
+                    <span className="text-xs font-medium text-text-primary group-hover:text-accent-primary transition-colors block">
                       {chip.label}
                     </span>
-                    <span className="text-[11px] text-[#8A8078] line-clamp-1 mt-0.5 font-light">
+                    <span className="text-[10px] text-text-muted line-clamp-1 mt-0.5">
                       {chip.prompt}
                     </span>
                   </button>
@@ -207,28 +212,29 @@ export function NoteSideChat({ noteTitle, noteContentText, onInsertText }: NoteS
             className={`flex gap-2.5 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
           >
             {msg.role === "assistant" && (
-              <div className="size-6 rounded-full bg-[#F5B429]/10 border border-[#F5B429]/20 flex items-center justify-center text-[#F5B429] shrink-0 mt-0.5">
+              <div className="size-6 rounded-full bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0 mt-0.5">
                 <Bot className="size-3.5" />
               </div>
             )}
 
             <div
-              className={`max-w-[85%] rounded-2xl p-3.5 text-xs ${
+              className={`max-w-[85%] rounded-xl p-3 text-xs leading-relaxed ${
                 msg.role === "user"
-                  ? "bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] font-medium rounded-tr-none shadow-[0_0_15px_rgba(245,180,41,0.2)]"
-                  : "bg-[#150F0B] border border-[#2E2118] text-[#FAFAF8] rounded-tl-none space-y-2 shadow-[0_0_20px_-5px_rgba(245,148,29,0.1)]"
+                  ? "bg-accent-primary text-bg-base font-semibold rounded-tr-none"
+                  : "bg-bg-elevated border border-border-subtle text-text-primary rounded-tl-none space-y-2"
               }`}
             >
               {msg.role === "user" ? (
                 msg.content
               ) : (
                 <>
-                  <MarkdownRenderer content={msg.content} />
+                  <MarkdownRenderer content={cleanSseText(msg.content)} />
                   {onInsertText && (
-                    <div className="pt-2 border-t border-[#2E2118] flex justify-end">
+                    <div className="pt-2 border-t border-border-subtle flex justify-end">
                       <button
-                        onClick={() => onInsertText(msg.content)}
-                        className="text-[10px] font-mono text-[#F5B429] hover:text-[#FCD34D] flex items-center gap-1 cursor-pointer"
+                        type="button"
+                        onClick={() => onInsertText(cleanSseText(msg.content))}
+                        className="text-[10px] font-mono font-medium text-accent-primary hover:text-accent-primary-hover flex items-center gap-1 cursor-pointer"
                         title="Insert response directly into note"
                       >
                         <Plus className="size-3" />
@@ -241,72 +247,57 @@ export function NoteSideChat({ noteTitle, noteContentText, onInsertText }: NoteS
             </div>
 
             {msg.role === "user" && (
-              <div className="size-6 rounded-full bg-[#241811] border border-[#2E2118] flex items-center justify-center text-[#8A8078] shrink-0 mt-0.5">
+              <div className="size-6 rounded-full bg-bg-elevated border border-border-subtle flex items-center justify-center text-text-muted shrink-0 mt-0.5">
                 <User className="size-3.5" />
               </div>
             )}
           </div>
         ))}
 
-        {/* Live streaming bubble */}
         {isStreaming && (
-          <div className="flex gap-2.5 justify-start animate-in fade-in">
-            <div className="size-6 rounded-full bg-[#F5B429]/10 border border-[#F5B429]/20 flex items-center justify-center text-[#F5B429] shrink-0 mt-0.5">
-              <Bot className="size-3.5" />
+          <div className="flex gap-2.5 justify-start">
+            <div className="size-6 rounded-full bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0 mt-0.5">
+              <Bot className="size-3.5 animate-pulse" />
             </div>
-            <div className="max-w-[85%] rounded-2xl rounded-tl-none bg-[#150F0B] border border-[#F5B429]/30 p-3.5 text-xs text-[#FAFAF8]">
-              {streamedText ? (
-                <MarkdownRenderer content={streamedText} />
-              ) : (
-                <div className="flex items-center gap-2 text-[#F5B429] font-mono text-[11px]">
-                  <Loader2 className="size-3.5 animate-spin" />
-                  <span>Analyzing note context...</span>
-                </div>
-              )}
+            <div className="max-w-[85%] rounded-xl p-3 bg-bg-elevated border border-border-subtle text-text-primary text-xs rounded-tl-none space-y-1">
+              <MarkdownRenderer content={cleanSseText(streamedText) || "Thinking..."} />
+              <div className="flex items-center gap-1 text-[10px] text-accent-primary font-mono animate-pulse">
+                <Loader2 className="size-3 animate-spin" />
+                <span>Generating response...</span>
+              </div>
             </div>
           </div>
         )}
       </div>
 
-      {/* Input Form */}
-      <div className="p-3 border-t border-[#2E2118] bg-[#0A0806]/90 backdrop-blur-md shrink-0 sticky bottom-0 z-10">
+      {/* Input bar */}
+      <div className="p-3 border-t border-border-subtle bg-bg-surface shrink-0">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             handleSendMessage();
           }}
-          autoComplete="off"
-          className="flex items-center gap-2 bg-[#150F0B] border border-[#2E2118] focus-within:border-[#F5B429]/50 rounded-xl p-1.5 transition-colors"
+          className="flex items-center gap-2"
         >
-          <input type="text" name="username" style={{ display: "none" }} tabIndex={-1} autoComplete="off" />
-          <input type="password" name="password" style={{ display: "none" }} tabIndex={-1} autoComplete="new-password" />
           <input
             type="text"
-            name="note_chat_message"
-            autoComplete="off"
-            autoCorrect="off"
-            autoCapitalize="sentences"
-            spellCheck={false}
-            data-lpignore="true"
-            data-1p-ignore="true"
-            data-bwignore="true"
-            data-form-type="other"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             disabled={isStreaming}
-            placeholder="Ask anything about this note..."
-            className="flex-1 bg-transparent px-2.5 text-xs text-[#FAFAF8] placeholder-[#8A8078] outline-none min-w-0"
+            placeholder="Ask about this note..."
+            className="flex-1 bg-bg-base border border-border-subtle focus:border-accent-primary rounded-xl px-3 py-2 text-xs text-text-primary placeholder:text-text-muted outline-none transition-colors"
           />
           <Button
             type="submit"
             size="icon"
             disabled={isStreaming || !inputValue.trim()}
-            className="h-8 w-8 rounded-lg bg-gradient-to-br from-[#F7C948] to-[#F5941D] hover:opacity-90 text-[#150F0B] shrink-0 disabled:opacity-40 shadow-sm cursor-pointer"
+            className="size-8 rounded-xl bg-accent-primary hover:bg-accent-primary-hover text-bg-base transition-transform active:scale-95 disabled:opacity-40"
+            aria-label="Send message"
           >
             {isStreaming ? (
-              <Loader2 className="size-3.5 animate-spin text-[#150F0B]" />
+              <Loader2 className="size-3.5 animate-spin" />
             ) : (
-              <Send className="size-3.5 text-[#150F0B]" />
+              <Send className="size-3.5" />
             )}
           </Button>
         </form>

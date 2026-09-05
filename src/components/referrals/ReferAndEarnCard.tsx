@@ -88,8 +88,8 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
 
   if (isLoading) {
     return (
-      <div className="p-6 rounded-2xl bg-[#121F18]/80 border border-[#F3F0E4]/15 flex items-center justify-center gap-2 text-xs text-[#9FAEA1]">
-        <Loader2 className="h-4 w-4 animate-spin text-[#F0C93B]" />
+      <div className="p-6 rounded-2xl bg-bg-surface border border-border-subtle flex items-center justify-center gap-2 text-xs text-text-muted">
+        <Loader2 className="h-4 w-4 animate-spin text-accent-primary" />
         <span>Loading referral data...</span>
       </div>
     );
@@ -98,80 +98,77 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
   if (!data) return null;
 
   return (
-    <div className="rounded-2xl bg-[#121F18]/90 border border-[#F3F0E4]/15 p-5 sm:p-6 space-y-6 shadow-xl relative overflow-hidden">
-      {/* Background ambient glow */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-[#F0C93B]/5 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 space-y-5 shadow-sm relative overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#F3F0E4]/10 pb-4 relative z-10">
+      <div className="flex items-center justify-between border-b border-border-subtle pb-4">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-[#F0C93B]/10 border border-[#F0C93B]/30 flex items-center justify-center text-[#F0C93B]">
+          <div className="h-10 w-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
             <Gift className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-bold text-[#F3F0E4] font-heading tracking-wide">
+            <h3 className="text-sm font-bold text-text-primary tracking-tight">
               Refer & Earn
             </h3>
-            <p className="text-[11px] text-[#9FAEA1]">
-              Invite a friend — you get <strong className="text-[#F0C93B]">100 coins</strong>, they get <strong className="text-[#F0C93B]">50 coins</strong> when they join.
+            <p className="text-xs text-text-secondary">
+              Invite friends — get <strong className="text-accent-primary font-semibold">100 coins</strong>, they get <strong className="text-accent-primary font-semibold">50 coins</strong>.
             </p>
           </div>
         </div>
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#F0C93B]/10 border border-[#F0C93B]/20 text-[10px] font-bold text-[#F0C93B] font-mono">
-          <Sparkles className="h-3 w-3" /> Unlimited Rewards
+        <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent-primary/10 border border-accent-primary/20 text-[10px] font-bold text-accent-primary font-mono shrink-0">
+          <Sparkles className="h-3 w-3" /> Rewards
         </span>
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 relative z-10">
-        <div className="p-3.5 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono">
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-3.5 rounded-xl bg-bg-elevated/60 border border-border-subtle space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
             Friends Invited
           </span>
           <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-[#8FC3DE]" />
-            <span className="text-lg font-black text-[#F3F0E4] font-heading">
+            <Users className="h-4 w-4 text-text-muted" />
+            <span className="text-lg font-bold text-text-primary font-mono">
               {data.referralCount}
             </span>
           </div>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-[#16261D] border border-[#F3F0E4]/10 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#9FAEA1] font-mono">
+        <div className="p-3.5 rounded-xl bg-bg-elevated/60 border border-border-subtle space-y-1">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
             Total Earned
           </span>
           <div className="flex items-center gap-2">
-            <Coins className="h-4 w-4 text-[#F0C93B]" />
-            <span className="text-lg font-black text-[#F0C93B] font-heading">
-              {data.referralRewardsEarned} <span className="text-[10px] text-[#9FAEA1]">coins</span>
+            <Coins className="h-4 w-4 text-accent-primary" />
+            <span className="text-lg font-bold text-accent-primary font-mono">
+              {data.referralRewardsEarned} <span className="text-[10px] text-text-muted font-normal">coins</span>
             </span>
           </div>
         </div>
       </div>
 
       {/* Share Link & Code */}
-      <div className="space-y-3 relative z-10">
-        <label className="text-[11px] font-bold text-[#F3F0E4] uppercase tracking-wider font-mono">
+      <div className="space-y-2">
+        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono block">
           Your Referral Link
         </label>
         <div className="flex items-center gap-2">
-          <div className="flex-1 bg-[#1A2D23] border border-[#F3F0E4]/15 rounded-xl h-10 px-3 flex items-center text-xs text-[#9FAEA1] truncate font-mono">
+          <div className="flex-1 bg-bg-elevated border border-border-subtle rounded-xl h-10 px-3 flex items-center text-xs text-text-secondary truncate font-mono select-all">
             {data.referralLink}
           </div>
           <Button
             onClick={handleCopyLink}
-            className="h-10 px-4 bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs rounded-xl shrink-0 gap-1.5 transition-all active:scale-95"
+            className="h-10 px-3.5 btn-premium-primary text-xs shrink-0 flex items-center gap-1.5"
           >
-            {copiedLink ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            <span>{copiedLink ? "Copied" : "Copy Link"}</span>
+            {copiedLink ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+            <span>{copiedLink ? "Copied" : "Copy"}</span>
           </Button>
         </div>
       </div>
 
-      {/* Manual Referral Entry (Grace Period) */}
-      <div className="pt-2 border-t border-[#F3F0E4]/10 relative z-10">
+      {/* Manual Referral Entry */}
+      <div className="pt-3 border-t border-border-subtle">
         <form onSubmit={handleApplyCode} className="space-y-2">
-          <label className="text-[10px] font-bold text-[#9FAEA1] uppercase tracking-wider font-mono">
+          <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider font-mono block">
             Have a friend&apos;s referral code?
           </label>
           <div className="flex gap-2">
@@ -180,15 +177,15 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
               name="manual_referral_code"
               autoComplete="off"
               data-1p-ignore="true"
-              placeholder="Enter code (e.g. REF-ABC123)"
+              placeholder="e.g. REF-ABC123"
               value={manualCode}
               onChange={(e) => setManualCode(e.target.value.toUpperCase())}
-              className="bg-[#1A2D23] border-[#F3F0E4]/15 text-[#F3F0E4] placeholder-[#9FAEA1]/50 text-xs h-9 rounded-xl font-mono"
+              className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-9 rounded-xl font-mono"
             />
             <Button
               type="submit"
               disabled={isApplying || !manualCode.trim()}
-              className="h-9 px-3.5 bg-[#1F362A] hover:bg-[#2A4737] text-[#F0C93B] border border-[#F0C93B]/30 font-bold text-xs rounded-xl shrink-0 gap-1 transition-all disabled:opacity-40"
+              className="h-9 px-3.5 bg-bg-elevated hover:bg-bg-elevated/80 text-accent-primary border border-border-default hover:border-accent-primary/40 font-bold text-xs rounded-xl shrink-0 flex items-center gap-1.5 transition-all disabled:opacity-40 cursor-pointer"
             >
               {isApplying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
               <span>Apply</span>
@@ -199,3 +196,4 @@ export function ReferAndEarnCard({ onCoinsUpdated }: { onCoinsUpdated?: () => vo
     </div>
   );
 }
+

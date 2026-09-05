@@ -118,17 +118,17 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
   const points = targetUser.points || 0;
   let scholarRank = "Novice Scholar";
-  let scholarRankColor = "text-zinc-400 bg-zinc-800/40 border-white/10";
+  let scholarRankColor = "text-[#8A8078] bg-[#150F0B] border-[#2E2118]";
   
   if (points >= 2000) {
     scholarRank = "Grandmaster Scholar";
-    scholarRankColor = "text-cyan-400 bg-cyan-500/10 border-cyan-500/30";
+    scholarRankColor = "text-[#F5B429] bg-[#F5B429]/10 border-[#F5B429]/30";
   } else if (points >= 500) {
     scholarRank = "Academic Specialist";
-    scholarRankColor = "text-violet-400 bg-violet-500/10 border-violet-500/30";
+    scholarRankColor = "text-amber-400 bg-amber-500/10 border-amber-500/30";
   } else if (points >= 100) {
     scholarRank = "Research Associate";
-    scholarRankColor = "text-amber-400 bg-amber-500/10 border-amber-500/30";
+    scholarRankColor = "text-[#B8AFA6] bg-[#241811] border-[#2E2118]";
   }
 
   let publicNotes: INote[] = [];
@@ -187,25 +187,25 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
       />
       {/* Background Ambient Mesh Glow Orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/10 rounded-full blur-[140px]" />
+        <div className="absolute top-0 right-1/4 w-[500px] h-[350px] bg-[#F5B429]/5 rounded-full blur-[140px]" />
       </div>
 
       {/* Header */}
-      <div className="bg-zinc-950/40 p-4 sm:p-6 lg:p-8 rounded-[2rem] border border-white/10 relative z-10 backdrop-blur-2xl m-4 sm:m-8 lg:m-10 mb-0 flex flex-wrap items-center justify-between gap-3">
-        <Link href="/dashboard" className="text-xs font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-2 font-bold uppercase tracking-widest transition-colors">
+      <div className="bg-[#150F0B] p-4 sm:p-5 rounded-2xl border border-[#2E2118] relative z-10 m-4 sm:m-8 lg:m-10 mb-0 flex flex-wrap items-center justify-between gap-3">
+        <Link href="/dashboard" className="text-xs font-mono text-[#F5B429] hover:text-[#FCD34D] flex items-center gap-2 font-bold uppercase tracking-widest transition-colors">
           <ArrowLeft className="size-4" /> Back to Dashboard
         </Link>
         
         {isOwnProfile && (
           <div className="flex items-center gap-2">
             <Link href="/wallet">
-              <Button variant="outline" className="rounded-full bg-amber-500/10 border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-bold h-9 px-4 flex items-center gap-1.5 cursor-pointer">
+              <Button variant="outline" className="rounded-xl bg-[#F5B429]/10 border-[#F5B429]/30 text-[#F5B429] hover:bg-[#F5B429]/20 text-xs font-bold h-9 px-4 flex items-center gap-1.5 cursor-pointer">
                 <Sparkles className="size-3.5" />
                 <span>My Wallet</span>
               </Button>
             </Link>
             <Link href="/settings">
-              <Button className="rounded-full bg-white hover:bg-zinc-100 text-zinc-950 text-xs font-bold h-9 px-4 sm:px-5">
+              <Button className="rounded-xl bg-[#FAFAF8] hover:bg-neutral-200 text-[#0A0806] text-xs font-bold h-9 px-4 sm:px-5">
                 Edit Profile Settings
               </Button>
             </Link>
@@ -214,15 +214,15 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
       </div>
 
       <div className="p-4 sm:p-8 lg:p-10 max-w-5xl w-full mx-auto space-y-6 sm:space-y-8 z-10 relative">
-        {/* User Doppelrand Card */}
-        <div className="rounded-[2.5rem] bg-zinc-900/40 border border-white/10 p-2.5 backdrop-blur-3xl shadow-[0_0_80px_rgba(0,0,0,0.8)]">
-          <div className="rounded-[calc(2.5rem-0.75rem)] bg-[#07070a] border border-white/5 p-8 flex flex-col md:flex-row items-center md:items-start gap-8">
+        {/* User Card */}
+        <div className="rounded-2xl bg-[#150F0B] border border-[#2E2118] p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-6 sm:gap-8">
             {/* Avatar */}
             <div className="relative shrink-0 select-none">
               <img
                 src={targetUser.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&q=80"}
                 alt={targetUser.name || "User Profile"}
-                className="size-24 md:size-28 rounded-2xl object-cover border border-white/10 shadow-lg bg-zinc-950"
+                className="size-20 md:size-24 rounded-2xl object-cover border border-[#2E2118] bg-[#0A0806]"
               />
               {targetUser.role === "admin" && (
                 <span className="absolute -bottom-1 -right-1 bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[8px] font-mono font-bold uppercase tracking-widest px-2 py-0.5 rounded-full select-none">
@@ -232,21 +232,21 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
             </div>
 
             {/* Details */}
-            <div className="flex-1 text-center md:text-left space-y-4">
-              <div className="space-y-2">
+            <div className="flex-1 text-center md:text-left space-y-3">
+              <div className="space-y-1.5">
                 <div className="flex flex-col md:flex-row md:items-center gap-3">
-                  <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                    {targetUser.name || "Scholar Scholar"}
+                  <h1 className="text-2xl md:text-3xl font-black text-[#FAFAF8] tracking-tight">
+                    {targetUser.name || "Scholar"}
                   </h1>
                   
                   {!targetUser.isPublic && (
-                    <span className="inline-flex items-center gap-1 mx-auto md:mx-0 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest select-none">
+                    <span className="inline-flex items-center gap-1 mx-auto md:mx-0 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-widest select-none">
                       <EyeOff className="size-3" /> Private Profile
                     </span>
                   )}
                 </div>
                 
-                <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-1 text-zinc-400 text-xs font-mono select-none">
+                <div className="flex flex-wrap justify-center md:justify-start gap-x-3 gap-y-1 text-[#8A8078] text-xs font-mono select-none">
                   <span>{targetUser.email}</span>
                   <span>•</span>
                   <span>Joined {joinDate}</span>
@@ -254,8 +254,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
               </div>
 
               {/* Scholar Rank Badge */}
-              <div className="pt-1 flex flex-wrap justify-center md:justify-start gap-3 items-center">
-                <div className={`px-4 py-1.5 rounded-full border text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2 ${scholarRankColor}`}>
+              <div className="pt-2 flex flex-wrap justify-center md:justify-start gap-3 items-center">
+                <div className={`px-3 py-1 rounded-full border text-xs font-mono font-bold tracking-widest uppercase flex items-center gap-2 ${scholarRankColor}`}>
                   <Sparkles className="size-3.5" />
                   <span>{scholarRank}</span>
                   <span>({points} pts)</span>
@@ -263,8 +263,8 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
                 {!isOwnProfile && canViewProfile && (
                   <Link href={`/messages?userId=${targetUser._id}`}>
-                    <Button variant="outline" className="rounded-full bg-zinc-900 border-white/10 text-xs text-white hover:bg-zinc-800 h-9 px-4 flex items-center gap-2">
-                      <MessageCircle className="size-4 text-cyan-400" />
+                    <Button variant="outline" className="rounded-xl bg-[#241811] border-[#2E2118] text-xs text-[#FAFAF8] hover:bg-[#2E2118] h-9 px-4 flex items-center gap-2">
+                      <MessageCircle className="size-4 text-[#F5B429]" />
                       <span>Message</span>
                     </Button>
                   </Link>

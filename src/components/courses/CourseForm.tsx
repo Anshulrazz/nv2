@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState } from "react";
@@ -18,14 +18,40 @@ import {
   HelpCircle,
   Coins,
   UploadCloud,
-  FileText,
   Layers,
   ArrowRight,
   Eye,
+  CheckCircle2,
+  Clock,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "sonner";
 
-export function CourseForm({ initialData = null }: { initialData?: any }) {
+export interface CourseQuizItem {
+  question: string;
+  options: string[];
+  correctOptionIndex: number;
+  [key: string]: unknown;
+}
+
+export interface CourseLessonItem {
+  title: string;
+  text?: string;
+  videoUrl?: string;
+  photoUrl?: string;
+  quiz?: CourseQuizItem[];
+  [key: string]: unknown;
+}
+
+export interface CourseModuleItem {
+  title: string;
+  lessons: CourseLessonItem[];
+  [key: string]: unknown;
+}
+
+export function CourseForm({ initialData = null }: { initialData?: any /* eslint-disable-line @typescript-eslint/no-explicit-any */ }) {
   const router = useRouter();
 
   const [loading, setLoading] = useState(false);
@@ -36,7 +62,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
   const [thumbnail, setThumbnail] = useState(initialData?.thumbnail || "");
   const [price, setPrice] = useState<number>(initialData?.price || 0);
   const [isPublished, setIsPublished] = useState(initialData?.isPublished || false);
-  const [modules, setModules] = useState<any[]>(initialData?.modules || []);
+  const [modules, setModules] = useState<CourseModuleItem[]>(initialData?.modules || []);
 
   // AI Course Generator Modal State
   const [showAIModal, setShowAIModal] = useState(false);
@@ -46,6 +72,9 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
   const [aiPrice, setAiPrice] = useState(0);
   const [aiInstructions, setAiInstructions] = useState("");
   const [generatingAI, setGeneratingAI] = useState(false);
+
+  // Mobile preview toggle
+  const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   const handleGenerateAICourse = async (e?: React.SyntheticEvent) => {
     if (e) e.preventDefault();
@@ -78,7 +107,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
         toast.success("🎉 Course successfully generated with 5,000+ words across modules and quizzes!");
         setShowAIModal(false);
       }
-    } catch (err: any) {
+    } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       console.error(err);
       toast.error(err.message || "AI Course Generation failed.");
     } finally {
@@ -90,7 +119,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
     setModules([...modules, { title: "", lessons: [] }]);
   };
 
-  const handleUpdateModule = (mIdx: number, key: string, value: any) => {
+  const handleUpdateModule = (mIdx: number, key: string, value: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
     const updated = [...modules];
     updated[mIdx][key] = value;
     setModules(updated);
@@ -106,7 +135,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
     setModules(updated);
   };
 
-  const handleUpdateLesson = (mIdx: number, lIdx: number, key: string, value: any) => {
+  const handleUpdateLesson = (mIdx: number, lIdx: number, key: string, value: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
     const updated = [...modules];
     updated[mIdx].lessons[lIdx][key] = value;
     setModules(updated);
@@ -114,12 +143,15 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
 
   const handleRemoveLesson = (mIdx: number, lIdx: number) => {
     const updated = [...modules];
-    updated[mIdx].lessons = updated[mIdx].lessons.filter((_: any, i: number) => i !== lIdx);
+    updated[mIdx].lessons = updated[mIdx].lessons.filter((_, i: number) => i !== lIdx);
     setModules(updated);
   };
 
   const handleAddQuiz = (mIdx: number, lIdx: number) => {
     const updated = [...modules];
+    if (!updated[mIdx].lessons[lIdx].quiz) {
+      updated[mIdx].lessons[lIdx].quiz = [];
+    }
     updated[mIdx].lessons[lIdx].quiz.push({
       question: "",
       options: ["", "", "", ""],
@@ -128,22 +160,30 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
     setModules(updated);
   };
 
-  const handleUpdateQuiz = (mIdx: number, lIdx: number, qIdx: number, key: string, value: any) => {
+  const handleUpdateQuiz = (mIdx: number, lIdx: number, qIdx: number, key: string, value: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) => {
     const updated = [...modules];
-    updated[mIdx].lessons[lIdx].quiz[qIdx][key] = value;
-    setModules(updated);
+    const quiz = updated[mIdx]?.lessons[lIdx]?.quiz;
+    if (quiz && quiz[qIdx]) {
+      (quiz[qIdx] as Record<string, unknown>)[key] = value;
+      setModules(updated);
+    }
   };
 
   const handleUpdateQuizOption = (mIdx: number, lIdx: number, qIdx: number, oIdx: number, value: string) => {
     const updated = [...modules];
-    updated[mIdx].lessons[lIdx].quiz[qIdx].options[oIdx] = value;
-    setModules(updated);
+    const quiz = updated[mIdx]?.lessons[lIdx]?.quiz;
+    if (quiz && quiz[qIdx]) {
+      quiz[qIdx].options[oIdx] = value;
+      setModules(updated);
+    }
   };
 
   const handleRemoveQuiz = (mIdx: number, lIdx: number, qIdx: number) => {
     const updated = [...modules];
-    updated[mIdx].lessons[lIdx].quiz = updated[mIdx].lessons[lIdx].quiz.filter((_: any, i: number) => i !== qIdx);
-    setModules(updated);
+    if (updated[mIdx].lessons[lIdx].quiz) {
+      updated[mIdx].lessons[lIdx].quiz = updated[mIdx].lessons[lIdx].quiz!.filter((_, i: number) => i !== qIdx);
+      setModules(updated);
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
@@ -158,7 +198,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
       const data = await res.json();
       callback(data.url);
       toast.success("File uploaded successfully!");
-    } catch (err: any) {
+    } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
       toast.error(err.message || "Upload failed");
     } finally {
       setLoading(false);
@@ -189,66 +229,574 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
 
       toast.success(initialData ? "Course updated!" : "Course created successfully! 🎉");
       router.push("/teacher/courses");
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: any /* eslint-disable-line @typescript-eslint/no-explicit-any */) {
+      setError(err.message || "Failed to save course");
+      toast.error(err.message || "Failed to save course");
     } finally {
       setLoading(false);
     }
   };
 
   const creatorShare = Math.floor(price * 0.7);
+  const totalLessonCount = modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-10 pb-24">
+    <form onSubmit={handleSubmit} className="space-y-8 pb-16">
       {error && (
-        <div className="p-4 bg-rose-500/10 border border-rose-500/20 text-rose-300 rounded-2xl text-xs font-medium flex items-center gap-3">
-          <X className="size-4 text-rose-400 shrink-0" />
+        <div className="p-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl text-xs font-medium flex items-center gap-3">
+          <X className="size-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* AI Course Generator Banner Card */}
-      <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-500/15 via-violet-600/10 to-amber-500/15 p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
-        <div className="absolute top-0 right-0 w-80 h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Two-Column Creator Layout (8 cols editor + 4 cols live preview on desktop) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Left Column: Editor & Curriculum Builder */}
+        <div className="lg:col-span-8 space-y-8 min-w-0">
+          {/* AI Course Generator Banner */}
+          <div className="rounded-2xl border border-accent-primary/30 bg-bg-surface p-6 sm:p-7 shadow-lg relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 px-3 py-1 rounded-full border border-amber-500/30 flex items-center gap-1.5 shadow-sm">
-                <Sparkles className="size-3.5 animate-pulse" /> AI GENERATOR (GEMINI & OPENROUTER)
-              </span>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 relative z-10">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-accent-primary bg-accent-primary/15 px-2.5 py-0.5 rounded-full border border-accent-primary/25 flex items-center gap-1.5">
+                    <Sparkles className="size-3 animate-pulse" /> AI Curriculum Generator
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-bold text-text-primary tracking-tight font-display">
+                  Auto-Generate 5,000+ Word Course
+                </h3>
+                <p className="text-xs text-text-muted font-light max-w-xl leading-relaxed">
+                  Draft a complete multi-module curriculum, deep-dive lecture notes, code examples, and practice quizzes in seconds using Gemini AI.
+                </p>
+              </div>
+
+              <Button
+                type="button"
+                onClick={() => setShowAIModal(true)}
+                className="btn-premium-primary text-xs h-10 px-5 rounded-xl shrink-0 flex items-center gap-2 font-bold cursor-pointer"
+              >
+                <Wand2 className="size-3.5" />
+                <span>Generate with AI</span>
+              </Button>
             </div>
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-              Auto-Generate 5000+ Word Course
-            </h3>
-            <p className="text-xs text-zinc-300 font-light max-w-xl leading-relaxed">
-              Generate a complete multi-module curriculum, deep-dive lecture guides (5,000+ words), code examples, and practice quizzes in seconds.
-            </p>
           </div>
 
-          <Button
-            type="button"
-            onClick={() => setShowAIModal(true)}
-            className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs h-12 px-7 rounded-2xl shadow-xl shadow-amber-500/25 shrink-0 flex items-center gap-2 transition-all hover:scale-105"
-          >
-            <Wand2 className="size-4" />
-            <span>Generate with AI</span>
-          </Button>
+          {/* Section 1: Course Overview */}
+          <div className="bg-bg-surface p-6 sm:p-8 rounded-2xl border border-border-subtle space-y-6 shadow-sm">
+            <div className="flex items-center gap-3 border-b border-border-subtle pb-4">
+              <div className="size-9 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary font-bold shrink-0">
+                <BookOpen className="size-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-text-primary font-display">Course Overview</h2>
+                <p className="text-xs text-text-muted">Title, description, pricing, and cover thumbnail.</p>
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              {/* Title */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-text-muted uppercase tracking-wider block">
+                  Course Title *
+                </label>
+                <input
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl px-4 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/25 transition-colors"
+                  placeholder="e.g. Advanced Quantum Computing & Algorithms"
+                />
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-mono font-bold text-text-muted uppercase tracking-wider block">
+                  Course Description *
+                </label>
+                <textarea
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl px-4 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary/25 min-h-[100px] leading-relaxed transition-colors resize-y"
+                  placeholder="Provide a compelling course summary for students..."
+                />
+              </div>
+
+              {/* Pricing & Creator Revenue Share Split */}
+              <div className="space-y-3 p-4 bg-bg-elevated/70 border border-border-subtle rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="text-xs font-mono font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                    <Coins className="size-4 text-accent-primary" /> Course Price (Coins)
+                  </label>
+                  <span className="text-[10px] font-mono text-success font-bold bg-success/15 px-2.5 py-0.5 rounded-full border border-success/25">
+                    70% Creator / 30% Platform Split
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min={0}
+                    value={price}
+                    onChange={(e) => setPrice(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="w-48 bg-bg-base border border-border-subtle rounded-xl px-4 py-2 outline-none focus:border-accent-primary text-xs font-mono text-text-primary font-bold"
+                    placeholder="0 for Free Course"
+                  />
+                  <span className="text-xs font-mono text-text-muted">
+                    {price === 0 ? "Free for all students" : `You earn +${creatorShare} coins per enrollment`}
+                  </span>
+                </div>
+                <p className="text-[11px] text-text-muted leading-relaxed">
+                  Set to <strong>0</strong> for a free public course. For paid courses, students unlock with coins and 70% of the coin value is deposited into your withrawable wallet.
+                </p>
+              </div>
+
+              {/* Thumbnail Image URL or Upload */}
+              <div className="space-y-2">
+                <label className="text-xs font-mono font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                  <ImageIcon className="size-3.5 text-accent-primary" /> Thumbnail Cover Image
+                </label>
+                <div className="flex flex-col sm:flex-row gap-2.5">
+                  <input
+                    value={thumbnail}
+                    onChange={(e) => setThumbnail(e.target.value)}
+                    className="flex-1 bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2 text-xs text-text-primary outline-none focus:border-accent-primary"
+                    placeholder="https://images.unsplash.com/... or upload image"
+                  />
+                  <label className="bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle rounded-xl px-3.5 py-2 text-xs font-medium text-text-primary flex items-center justify-center gap-2 cursor-pointer transition-colors shrink-0">
+                    <UploadCloud className="size-3.5 text-accent-primary" />
+                    <span>Upload Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleUpload(e, setThumbnail)}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                {thumbnail && (
+                  <div className="mt-2 h-28 w-48 rounded-xl overflow-hidden border border-border-subtle bg-bg-base relative">
+                    <img src={thumbnail} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Publish Toggle */}
+              <div className="flex items-center gap-3 pt-3 border-t border-border-subtle">
+                <input
+                  type="checkbox"
+                  id="isPublished"
+                  checked={isPublished}
+                  onChange={(e) => setIsPublished(e.target.checked)}
+                  className="size-4 rounded border-border-subtle bg-bg-base accent-accent-primary cursor-pointer"
+                />
+                <label htmlFor="isPublished" className="text-xs font-semibold text-text-primary cursor-pointer select-none">
+                  Publish instantly to public course catalog
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 2: Curriculum Builder */}
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="size-9 rounded-xl bg-accent-secondary/15 border border-accent-secondary/25 flex items-center justify-center text-accent-secondary font-bold shrink-0">
+                  <Layers className="size-4" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-text-primary font-display">Course Curriculum</h2>
+                  <p className="text-xs text-text-muted">Structured modules, lessons, notes, and quizzes.</p>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                onClick={handleAddModule}
+                variant="outline"
+                className="border-border-subtle hover:bg-bg-elevated text-text-primary text-xs font-mono font-medium rounded-xl h-9 px-3.5 flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="size-3.5 text-accent-primary" />
+                <span>Add Module</span>
+              </Button>
+            </div>
+
+            {modules.length === 0 && (
+              <div className="p-8 text-center border border-dashed border-border-subtle rounded-2xl bg-bg-surface space-y-2.5">
+                <BookOpen className="size-8 text-text-muted mx-auto" />
+                <h3 className="text-xs font-bold text-text-primary">No curriculum modules yet</h3>
+                <p className="text-xs text-text-muted max-w-sm mx-auto">
+                  Click &ldquo;Add Module&rdquo; to build lessons manually, or use the &ldquo;Generate with AI&rdquo; banner above!
+                </p>
+              </div>
+            )}
+
+            {modules.map((module, mIdx) => (
+              <div
+                key={mIdx}
+                className="bg-bg-surface p-5 sm:p-7 rounded-2xl border border-border-subtle space-y-5 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3 border-b border-border-subtle pb-3.5">
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold bg-accent-primary/15 text-accent-primary px-2.5 py-0.5 rounded-full border border-accent-primary/25">
+                        MODULE {mIdx + 1 < 10 ? `0${mIdx + 1}` : mIdx + 1}
+                      </span>
+                    </div>
+                    <input
+                      required
+                      value={module.title}
+                      onChange={(e) => handleUpdateModule(mIdx, "title", e.target.value)}
+                      className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2 text-xs text-text-primary font-bold outline-none focus:border-accent-primary"
+                      placeholder="Module Title (e.g. Fundamentals & Core Architecture)"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => handleRemoveModule(mIdx)}
+                    className="text-text-muted hover:text-destructive hover:bg-destructive/10 rounded-xl size-8 p-0 mt-5 cursor-pointer"
+                    aria-label="Remove Module"
+                  >
+                    <Trash2 className="size-4" />
+                  </Button>
+                </div>
+
+                {/* Lessons List within Module */}
+                <div className="pl-2 sm:pl-4 border-l-2 border-accent-primary/20 space-y-4 pt-1">
+                  {module.lessons?.map((lesson: CourseLessonItem, lIdx: number) => (
+                    <div
+                      key={lIdx}
+                      className="bg-bg-elevated/50 p-4 rounded-xl border border-border-subtle space-y-3.5 shadow-sm"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 space-y-1">
+                          <span className="text-[10px] font-mono font-bold text-accent-secondary">
+                            LESSON {lIdx + 1}
+                          </span>
+                          <input
+                            required
+                            value={lesson.title}
+                            onChange={(e) => handleUpdateLesson(mIdx, lIdx, "title", e.target.value)}
+                            className="w-full bg-bg-base border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary font-semibold outline-none focus:border-accent-primary"
+                            placeholder="Lesson Title"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          onClick={() => handleRemoveLesson(mIdx, lIdx)}
+                          className="text-text-muted hover:text-destructive hover:bg-destructive/10 rounded-lg size-7 p-0 mt-4 cursor-pointer"
+                          aria-label="Remove Lesson"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+
+                      {/* Text Notes Content (Markdown formatted) */}
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider flex items-center justify-between">
+                          <span>Lecture Notes & Guide (Markdown)</span>
+                          <span className="text-text-muted/70 font-normal lowercase">headers, code, lists</span>
+                        </label>
+                        <textarea
+                          value={lesson.text}
+                          onChange={(e) => handleUpdateLesson(mIdx, lIdx, "text", e.target.value)}
+                          className="w-full bg-bg-base border border-border-subtle rounded-xl px-3 py-2 text-xs text-text-primary outline-none focus:border-accent-primary min-h-[100px] font-mono leading-relaxed"
+                          placeholder="Write comprehensive lesson content..."
+                        />
+                      </div>
+
+                      {/* Video & Photo Assets */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
+                            <Video className="size-3 text-accent-primary" /> Video Lecture (URL/MP4)
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              value={lesson.videoUrl}
+                              onChange={(e) => handleUpdateLesson(mIdx, lIdx, "videoUrl", e.target.value)}
+                              className="flex-1 bg-bg-base border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent-primary"
+                              placeholder="https://... video link"
+                            />
+                            <label className="bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle rounded-xl px-2.5 py-1.5 text-xs text-text-primary flex items-center gap-1 cursor-pointer shrink-0">
+                              <UploadCloud className="size-3.5 text-accent-primary" />
+                              <input
+                                type="file"
+                                accept="video/*"
+                                onChange={(e) =>
+                                  handleUpload(e, (url) => handleUpdateLesson(mIdx, lIdx, "videoUrl", url))
+                                }
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-mono font-bold text-text-muted uppercase tracking-wider flex items-center gap-1">
+                            <ImageIcon className="size-3 text-accent-secondary" /> Diagram / Graphic
+                          </label>
+                          <div className="flex gap-2">
+                            <input
+                              value={lesson.photoUrl}
+                              onChange={(e) => handleUpdateLesson(mIdx, lIdx, "photoUrl", e.target.value)}
+                              className="flex-1 bg-bg-base border border-border-subtle rounded-xl px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent-primary"
+                              placeholder="https://... image link"
+                            />
+                            <label className="bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle rounded-xl px-2.5 py-1.5 text-xs text-text-primary flex items-center gap-1 cursor-pointer shrink-0">
+                              <UploadCloud className="size-3.5 text-accent-secondary" />
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) =>
+                                  handleUpload(e, (url) => handleUpdateLesson(mIdx, lIdx, "photoUrl", url))
+                                }
+                                className="hidden"
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Knowledge Checks (Quizzes) */}
+                      <div className="pt-2 border-t border-border-subtle space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-mono font-bold text-text-primary uppercase tracking-wider flex items-center gap-1">
+                            <HelpCircle className="size-3 text-accent-primary" /> Knowledge Check (Quiz)
+                          </span>
+                          <Button
+                            type="button"
+                            onClick={() => handleAddQuiz(mIdx, lIdx)}
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-[11px] text-accent-primary hover:bg-accent-primary/10 rounded-lg px-2 cursor-pointer font-mono"
+                          >
+                            <Plus className="size-3 mr-1" /> Add Question
+                          </Button>
+                        </div>
+
+                        {lesson.quiz?.map((q: CourseQuizItem, qIdx: number) => (
+                          <div
+                            key={qIdx}
+                            className="bg-bg-base p-3.5 rounded-xl border border-border-subtle space-y-2.5 relative"
+                          >
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              onClick={() => handleRemoveQuiz(mIdx, lIdx, qIdx)}
+                              className="absolute top-2.5 right-2.5 size-6 p-0 text-text-muted hover:text-destructive cursor-pointer"
+                              aria-label="Remove Question"
+                            >
+                              <Trash2 className="size-3" />
+                            </Button>
+                            <div className="space-y-1 pr-7">
+                              <label className="text-[10px] font-mono text-text-muted font-bold uppercase">
+                                Question {qIdx + 1}
+                              </label>
+                              <input
+                                required
+                                value={q.question}
+                                onChange={(e) => handleUpdateQuiz(mIdx, lIdx, qIdx, "question", e.target.value)}
+                                className="w-full bg-bg-surface border border-border-subtle rounded-lg px-3 py-1.5 text-xs text-text-primary outline-none focus:border-accent-primary"
+                                placeholder="Enter question prompt..."
+                              />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                              {q.options.map((opt: string, oIdx: number) => (
+                                <div
+                                  key={oIdx}
+                                  className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
+                                    q.correctOptionIndex === oIdx
+                                      ? "bg-accent-primary/10 border-accent-primary/30"
+                                      : "bg-bg-surface border-border-subtle"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`correct-${mIdx}-${lIdx}-${qIdx}`}
+                                    checked={q.correctOptionIndex === oIdx}
+                                    onChange={() => handleUpdateQuiz(mIdx, lIdx, qIdx, "correctOptionIndex", oIdx)}
+                                    className="size-3.5 accent-accent-primary cursor-pointer"
+                                  />
+                                  <input
+                                    required
+                                    value={opt}
+                                    onChange={(e) => handleUpdateQuizOption(mIdx, lIdx, qIdx, oIdx, e.target.value)}
+                                    className="w-full bg-transparent text-xs text-text-primary outline-none"
+                                    placeholder={`Option ${oIdx + 1}`}
+                                  />
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  <Button
+                    type="button"
+                    onClick={() => handleAddLesson(mIdx)}
+                    variant="outline"
+                    size="sm"
+                    className="border-border-subtle hover:bg-bg-elevated rounded-xl text-xs font-mono h-8 px-3.5 cursor-pointer text-text-secondary"
+                  >
+                    <Plus className="size-3 mr-1 text-accent-primary" />
+                    <span>Add Lesson</span>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Sticky Bottom Action Bar */}
+          <div className="pt-4 border-t border-border-subtle flex items-center justify-between gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => router.push("/teacher/courses")}
+              className="text-xs font-mono text-text-muted hover:text-text-primary cursor-pointer"
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="btn-premium-primary text-xs h-11 px-7 flex items-center justify-center gap-2 font-bold cursor-pointer"
+            >
+              {loading ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle className="size-4" />
+                  <span>{initialData ? "Save & Update Course" : "Publish Course to Catalog"}</span>
+                  <ArrowRight className="size-3.5" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* Right Column: Live Student Preview (Sticky on Desktop) */}
+        <div className="lg:col-span-4 sticky top-6 space-y-6">
+          {/* Preview Header / Toggle for Mobile */}
+          <div className="flex items-center justify-between lg:hidden">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowMobilePreview(!showMobilePreview)}
+              className="w-full rounded-xl border-border-subtle text-xs font-mono py-2 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Eye className="size-3.5 text-accent-primary" />
+              <span>{showMobilePreview ? "Hide Student Preview" : "Show Student Preview"}</span>
+              {showMobilePreview ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+            </Button>
+          </div>
+
+          <div className={`space-y-6 ${showMobilePreview ? "block" : "hidden lg:block"}`}>
+            {/* Live Student Course Card Preview */}
+            <div className="rounded-2xl bg-bg-surface border border-border-subtle overflow-hidden shadow-xl space-y-4">
+              <div className="px-5 pt-4 pb-1 border-b border-border-subtle flex items-center justify-between text-xs font-mono text-text-muted">
+                <span className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-accent-primary">
+                  <Eye className="size-3" /> Student Card Preview
+                </span>
+                <span className="text-[10px]">Live Catalog Card</span>
+              </div>
+
+              <div className="p-5 pt-2 space-y-4">
+                {/* Thumbnail Preview */}
+                <div className="relative aspect-video rounded-xl bg-bg-base border border-border-subtle overflow-hidden flex items-center justify-center">
+                  {thumbnail ? (
+                    <img src={thumbnail} alt="Cover Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-text-muted">
+                      <BookOpen className="size-8 text-border-default" />
+                      <span className="text-[10px] font-mono">No cover uploaded</span>
+                    </div>
+                  )}
+
+                  <div className="absolute top-2.5 right-2.5">
+                    {isPublished ? (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-success/90 text-bg-base shadow">
+                        <CheckCircle2 className="size-2.5" /> Published
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-warning/90 text-bg-base shadow">
+                        <Clock className="size-2.5" /> Draft
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Content Info */}
+                <div className="space-y-2">
+                  <h3 className="font-bold text-sm text-text-primary line-clamp-2 leading-snug font-display">
+                    {title || "Untitled Course Title"}
+                  </h3>
+                  <p className="text-xs text-text-muted line-clamp-2 leading-relaxed font-light">
+                    {description || "Course description summary will appear here as students browse the public catalog..."}
+                  </p>
+                </div>
+
+                {/* Price & Modules summary */}
+                <div className="pt-3 border-t border-border-subtle flex items-center justify-between text-xs font-mono">
+                  <div className="flex items-center gap-1 font-bold text-text-primary">
+                    <Coins className="size-3.5 text-accent-primary" />
+                    <span>{price > 0 ? `${price} Coins` : "Free"}</span>
+                  </div>
+                  <span className="text-text-muted text-[11px]">
+                    {modules.length} {modules.length === 1 ? "Module" : "Modules"} · {totalLessonCount} Lessons
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Creator Earnings Breakdown Card */}
+            <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 space-y-3.5 shadow-sm">
+              <div className="flex items-center gap-2 text-xs font-mono font-bold text-text-primary uppercase tracking-wider">
+                <ShieldCheck className="size-4 text-success" />
+                <span>Creator Revenue Split</span>
+              </div>
+
+              <div className="space-y-2 text-xs font-mono">
+                <div className="flex justify-between py-1 border-b border-border-subtle/50 text-text-muted">
+                  <span>Student Enrollment Price:</span>
+                  <span className="text-text-primary font-bold">{price} Coins</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle/50 text-success">
+                  <span>Your 70% Share:</span>
+                  <span className="font-bold">+{creatorShare} Coins</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-border-subtle/50 text-text-muted">
+                  <span>Cash Value:</span>
+                  <span className="text-text-primary">₹{creatorShare}</span>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-text-muted leading-relaxed font-light">
+                Earnings are credited to your creator balance as soon as a student enrolls. Request cash withdrawals to your UPI or bank account anytime.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* AI Course Generator Modal */}
       {showAIModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fade-in">
-          <div className="w-full max-w-xl bg-[#0b0b12] border border-amber-500/30 rounded-[2.5rem] p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
-            <div className="flex items-center justify-between border-b border-white/10 pb-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
+          <div className="w-full max-w-xl bg-bg-surface border border-border-default rounded-2xl p-6 sm:p-7 space-y-5 shadow-2xl relative overflow-hidden">
+            <div className="flex items-center justify-between border-b border-border-subtle pb-4">
               <div className="flex items-center gap-3">
-                <div className="size-11 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-inner">
+                <div className="size-10 rounded-xl bg-accent-primary/15 border border-accent-primary/25 flex items-center justify-center text-accent-primary shrink-0">
                   <Sparkles className="size-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-white">AI Curriculum Builder</h3>
-                  <p className="text-[11px] text-zinc-400 font-mono">Gemini AI with OpenRouter Fallback</p>
+                  <h3 className="text-base font-bold text-text-primary font-display">AI Curriculum Builder</h3>
+                  <p className="text-[11px] text-text-muted font-mono">Gemini AI with OpenRouter Fallback</p>
                 </div>
               </div>
               <Button
@@ -257,35 +805,36 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
                 variant="ghost"
                 onClick={() => setShowAIModal(false)}
                 disabled={generatingAI}
-                className="size-9 text-zinc-400 hover:text-white rounded-xl hover:bg-white/10"
+                className="size-8 text-text-muted hover:text-text-primary rounded-lg hover:bg-bg-elevated cursor-pointer"
+                aria-label="Close modal"
               >
-                <X className="size-5" />
+                <X className="size-4" />
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-4 text-xs">
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
+                <label className="font-mono font-bold text-text-muted uppercase tracking-wider block">
                   Course Topic / Title *
                 </label>
                 <input
                   required
                   value={aiTopic}
                   onChange={(e) => setAiTopic(e.target.value)}
-                  placeholder="e.g. Full Stack Next.js 15 & AI Web Development"
-                  className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition-colors"
+                  placeholder="e.g. Master Next.js 15 & AI Engineering"
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary"
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-                    Target Difficulty Level
+                  <label className="font-mono font-bold text-text-muted uppercase tracking-wider block">
+                    Target Difficulty
                   </label>
                   <select
                     value={aiLevel}
                     onChange={(e) => setAiLevel(e.target.value)}
-                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-amber-500 transition-colors"
+                    className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary"
                   >
                     <option value="Beginner">Beginner</option>
                     <option value="Intermediate">Intermediate</option>
@@ -294,7 +843,7 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
+                  <label className="font-mono font-bold text-text-muted uppercase tracking-wider block">
                     Course Price (Coins)
                   </label>
                   <input
@@ -303,46 +852,46 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
                     value={aiPrice}
                     onChange={(e) => setAiPrice(Math.max(0, parseInt(e.target.value) || 0))}
                     placeholder="0 for Free"
-                    className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white font-mono outline-none focus:border-amber-500 transition-colors"
+                    className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-primary font-mono outline-none focus:border-accent-primary"
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
+                <label className="font-mono font-bold text-text-muted uppercase tracking-wider block">
                   Target Audience
                 </label>
                 <input
                   value={aiTargetAudience}
                   onChange={(e) => setAiTargetAudience(e.target.value)}
-                  placeholder="e.g. College Students, Web Developers"
-                  className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-amber-500 transition-colors"
+                  placeholder="e.g. Engineering Students, Developers"
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-                  Special Focus / Instructions (Optional)
+                <label className="font-mono font-bold text-text-muted uppercase tracking-wider block">
+                  Special Instructions (Optional)
                 </label>
                 <textarea
                   value={aiInstructions}
                   onChange={(e) => setAiInstructions(e.target.value)}
-                  placeholder="e.g. Include code snippets in TypeScript, practice quizzes, and real-world project tasks..."
-                  className="w-full bg-zinc-950 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-amber-500 min-h-[90px] transition-colors"
+                  placeholder="e.g. Include real-world system architecture diagrams, code walk-throughs, and practice quizzes..."
+                  className="w-full bg-bg-base border border-border-subtle rounded-xl px-3.5 py-2.5 text-xs text-text-primary outline-none focus:border-accent-primary min-h-[75px]"
                 />
               </div>
 
-              <div className="pt-4 space-y-3">
+              <div className="pt-3 space-y-2">
                 <Button
                   type="button"
                   onClick={(e: React.MouseEvent) => handleGenerateAICourse(e)}
                   disabled={generatingAI || !aiTopic.trim()}
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-extrabold text-xs h-12 rounded-2xl shadow-xl shadow-amber-500/25 flex items-center justify-center gap-2 transition-all"
+                  className="btn-premium-primary w-full text-xs h-11 rounded-xl flex items-center justify-center gap-2 font-bold cursor-pointer"
                 >
                   {generatingAI ? (
                     <>
-                      <Loader2 className="size-4 animate-spin text-zinc-950" />
-                      <span>Generating 5000+ Word Course (Gemini & OpenRouter)...</span>
+                      <Loader2 className="size-4 animate-spin" />
+                      <span>Generating 5,000+ Word Course...</span>
                     </>
                   ) : (
                     <>
@@ -351,401 +900,15 @@ export function CourseForm({ initialData = null }: { initialData?: any }) {
                     </>
                   )}
                 </Button>
-                <p className="text-[10px] text-zinc-500 font-mono text-center">
-                  Will generate 4-6 Modules, 12-20 detailed Lectures with Markdown notes & quizzes.
+                <p className="text-[10px] text-text-muted font-mono text-center">
+                  Will generate 4-6 Modules and multiple detailed Lectures with Markdown notes & quizzes.
                 </p>
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Basic Course Details */}
-      <div className="bg-zinc-950/60 p-6 sm:p-8 rounded-[2rem] border border-white/10 space-y-6 shadow-xl backdrop-blur-xl">
-        <div className="flex items-center gap-3 border-b border-white/10 pb-4">
-          <div className="size-10 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 font-bold">
-            <BookOpen className="size-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-white">Course Overview</h2>
-            <p className="text-xs text-zinc-400 font-light">Title, description, thumbnail, and coin pricing.</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-              Course Title *
-            </label>
-            <input
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-violet-500 transition-colors"
-              placeholder="e.g. Master Next.js 15 & AI Engineering"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider">
-              Course Description *
-            </label>
-            <textarea
-              required
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-zinc-900/80 border border-white/10 rounded-2xl px-4 py-3 text-xs text-white outline-none focus:border-violet-500 min-h-[110px] leading-relaxed transition-colors"
-              placeholder="Provide a compelling course summary for students..."
-            />
-          </div>
-
-          {/* Pricing & Creator Revenue Share Split */}
-          <div className="space-y-3 p-5 bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-transparent border border-emerald-500/20 rounded-2xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-              <label className="text-xs font-mono font-bold text-emerald-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Coins className="size-4 text-emerald-400" /> Course Price (in Coins)
-              </label>
-              <span className="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-500/30">
-                70% Creator / 30% Platform Split
-              </span>
-            </div>
-            <input
-              type="number"
-              min={0}
-              value={price}
-              onChange={(e) => setPrice(Math.max(0, parseInt(e.target.value) || 0))}
-              className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 outline-none focus:border-emerald-500 text-xs font-mono text-emerald-300 font-bold"
-              placeholder="0 for Free Course"
-            />
-            <p className="text-[11px] text-zinc-400 leading-normal">
-              Set to <strong>0</strong> for a free course. If set to paid (e.g. 200 coins), students unlock it using coins.
-              <span className="text-emerald-400 font-semibold ml-1">
-                You receive 70% ({creatorShare} coins)
-              </span> on every enrollment!
-            </p>
-          </div>
-
-          {/* Thumbnail Image URL or Upload */}
-          <div className="space-y-2">
-            <label className="text-xs font-mono font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="size-3.5 text-cyan-400" /> Thumbnail Cover Image
-            </label>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <input
-                value={thumbnail}
-                onChange={(e) => setThumbnail(e.target.value)}
-                className="flex-1 bg-zinc-900/80 border border-white/10 rounded-2xl px-4 py-2.5 text-xs text-white outline-none focus:border-cyan-400"
-                placeholder="https://example.com/cover.jpg"
-              />
-              <label className="bg-zinc-900 hover:bg-zinc-800 border border-white/10 rounded-2xl px-4 py-2.5 text-xs font-bold text-zinc-300 hover:text-white flex items-center justify-center gap-2 cursor-pointer transition-colors shrink-0">
-                <UploadCloud className="size-4 text-cyan-400" /> Upload File
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleUpload(e, setThumbnail)}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            {thumbnail && (
-              <div className="mt-2 h-32 w-full max-w-xs rounded-2xl overflow-hidden border border-white/10 bg-zinc-950 relative">
-                <img src={thumbnail} alt="Preview" className="w-full h-full object-cover" />
-              </div>
-            )}
-          </div>
-
-          {/* Publish Toggle */}
-          <div className="flex items-center gap-3 pt-3 border-t border-white/10">
-            <input
-              type="checkbox"
-              id="isPublished"
-              checked={isPublished}
-              onChange={(e) => setIsPublished(e.target.checked)}
-              className="h-4 w-4 rounded border-white/20 bg-zinc-900 text-amber-500 focus:ring-amber-500/30"
-            />
-            <label htmlFor="isPublished" className="text-xs font-bold text-white cursor-pointer select-none">
-              Publish this course instantly (make visible to all students in directory)
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Curriculum & Modules */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="size-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 font-bold">
-              <Layers className="size-5" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-white">Course Curriculum</h2>
-              <p className="text-xs text-zinc-400 font-light">Structure modules, lessons, and student quizzes.</p>
-            </div>
-          </div>
-
-          <Button
-            type="button"
-            onClick={handleAddModule}
-            variant="outline"
-            className="border-amber-500/30 text-amber-300 hover:bg-amber-500/10 text-xs font-bold rounded-2xl h-10 px-5 flex items-center gap-2"
-          >
-            <Plus className="size-4" /> Add Module
-          </Button>
-        </div>
-
-        {modules.length === 0 && (
-          <div className="p-10 text-center border border-dashed border-white/10 rounded-[2rem] bg-zinc-950/40 space-y-3">
-            <BookOpen className="size-10 text-zinc-600 mx-auto" />
-            <h3 className="text-sm font-bold text-white">No curriculum modules yet</h3>
-            <p className="text-xs text-zinc-400 font-light max-w-sm mx-auto">
-              Click &quot;Add Module&quot; above to build lessons manually, or use the &quot;Generate with AI&quot; banner at top!
-            </p>
-          </div>
-        )}
-
-        {modules.map((module, mIdx) => (
-          <div
-            key={mIdx}
-            className="bg-zinc-950/80 p-6 sm:p-8 rounded-[2rem] border border-white/10 space-y-6 shadow-xl backdrop-blur-xl relative"
-          >
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300 px-3 py-0.5 rounded-full border border-amber-500/30">
-                    MODULE {mIdx + 1 < 10 ? `0${mIdx + 1}` : mIdx + 1}
-                  </span>
-                </div>
-                <input
-                  required
-                  value={module.title}
-                  onChange={(e) => handleUpdateModule(mIdx, "title", e.target.value)}
-                  className="w-full bg-zinc-900 border border-white/10 rounded-2xl px-4 py-2.5 text-xs text-white font-bold outline-none focus:border-amber-500"
-                  placeholder="Module Title (e.g. Introduction & Setup)"
-                />
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => handleRemoveModule(mIdx)}
-                className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl size-9 p-0 mt-6"
-              >
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-
-            {/* Lessons List */}
-            <div className="pl-2 sm:pl-4 border-l-2 border-amber-500/20 space-y-5 pt-2">
-              {module.lessons?.map((lesson: any, lIdx: number) => (
-                <div
-                  key={lIdx}
-                  className="bg-zinc-900/60 p-5 rounded-2xl border border-white/10 space-y-4 shadow-md"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 space-y-1">
-                      <span className="text-[10px] font-mono font-bold text-cyan-400">
-                        LESSON {lIdx + 1}
-                      </span>
-                      <input
-                        required
-                        value={lesson.title}
-                        onChange={(e) => handleUpdateLesson(mIdx, lIdx, "title", e.target.value)}
-                        className="w-full bg-zinc-950 border border-white/10 rounded-xl px-3.5 py-2 text-xs text-white font-semibold outline-none focus:border-cyan-400"
-                        placeholder="Lesson title"
-                      />
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      onClick={() => handleRemoveLesson(mIdx, lIdx)}
-                      className="text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl size-8 p-0 mt-5"
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                  </div>
-
-                  {/* Text Notes Content (Markdown formatted) */}
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center justify-between">
-                      <span>Lesson Text Guide (Markdown supported)</span>
-                      <span className="text-zinc-500 lowercase"># headers, ```code, KaTeX math</span>
-                    </label>
-                    <textarea
-                      value={lesson.text}
-                      onChange={(e) => handleUpdateLesson(mIdx, lIdx, "text", e.target.value)}
-                      className="w-full bg-zinc-950 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-zinc-200 outline-none focus:border-cyan-400 min-h-[120px] font-mono leading-relaxed"
-                      placeholder="Write detailed lesson content in Markdown..."
-                    />
-                  </div>
-
-                  {/* Video & Photo Assets */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                        <Video className="size-3 text-cyan-400" /> Video URL or Upload (MP4)
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          value={lesson.videoUrl}
-                          onChange={(e) => handleUpdateLesson(mIdx, lIdx, "videoUrl", e.target.value)}
-                          className="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-cyan-400"
-                          placeholder="https://example.com/video.mp4"
-                        />
-                        <label className="bg-zinc-950 hover:bg-zinc-800 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1 cursor-pointer shrink-0">
-                          <UploadCloud className="size-3.5 text-cyan-400" />
-                          <input
-                            type="file"
-                            accept="video/*"
-                            onChange={(e) =>
-                              handleUpload(e, (url) => handleUpdateLesson(mIdx, lIdx, "videoUrl", url))
-                            }
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                        <ImageIcon className="size-3 text-violet-400" /> Photo Illustration URL
-                      </label>
-                      <div className="flex gap-2">
-                        <input
-                          value={lesson.photoUrl}
-                          onChange={(e) => handleUpdateLesson(mIdx, lIdx, "photoUrl", e.target.value)}
-                          className="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-violet-400"
-                          placeholder="https://example.com/diagram.png"
-                        />
-                        <label className="bg-zinc-950 hover:bg-zinc-800 border border-white/10 rounded-xl px-3 py-1.5 text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1 cursor-pointer shrink-0">
-                          <UploadCloud className="size-3.5 text-violet-400" />
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) =>
-                              handleUpload(e, (url) => handleUpdateLesson(mIdx, lIdx, "photoUrl", url))
-                            }
-                            className="hidden"
-                          />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Knowledge Checks (Quizzes) */}
-                  <div className="pt-3 border-t border-white/10 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1">
-                        <HelpCircle className="size-3.5 text-emerald-400" /> Knowledge Check (Quiz)
-                      </span>
-                      <Button
-                        type="button"
-                        onClick={() => handleAddQuiz(mIdx, lIdx)}
-                        variant="outline"
-                        size="sm"
-                        className="h-7 text-xs border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 rounded-xl px-3"
-                      >
-                        <Plus className="size-3 mr-1" /> Add Question
-                      </Button>
-                    </div>
-
-                    {lesson.quiz?.map((q: any, qIdx: number) => (
-                      <div
-                        key={qIdx}
-                        className="bg-zinc-950/80 p-4 rounded-xl border border-white/10 space-y-3 relative"
-                      >
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          onClick={() => handleRemoveQuiz(mIdx, lIdx, qIdx)}
-                          className="absolute top-3 right-3 size-7 p-0 text-zinc-500 hover:text-rose-400"
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                        <div className="space-y-1 pr-8">
-                          <label className="text-[10px] font-mono text-zinc-400 font-bold uppercase">
-                            Question {qIdx + 1}
-                          </label>
-                          <input
-                            required
-                            value={q.question}
-                            onChange={(e) => handleUpdateQuiz(mIdx, lIdx, qIdx, "question", e.target.value)}
-                            className="w-full bg-zinc-900 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-emerald-500"
-                            placeholder="Enter quiz question..."
-                          />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                          {q.options.map((opt: string, oIdx: number) => (
-                            <div
-                              key={oIdx}
-                              className={`flex items-center gap-2 p-2 rounded-xl border transition-all ${
-                                q.correctOptionIndex === oIdx
-                                  ? "bg-emerald-500/10 border-emerald-500/40"
-                                  : "bg-zinc-900/60 border-white/5"
-                              }`}
-                            >
-                              <input
-                                type="radio"
-                                name={`correct-${mIdx}-${lIdx}-${qIdx}`}
-                                checked={q.correctOptionIndex === oIdx}
-                                onChange={() => handleUpdateQuiz(mIdx, lIdx, qIdx, "correctOptionIndex", oIdx)}
-                                className="h-3.5 w-3.5 accent-emerald-500 cursor-pointer"
-                              />
-                              <input
-                                required
-                                value={opt}
-                                onChange={(e) => handleUpdateQuizOption(mIdx, lIdx, qIdx, oIdx, e.target.value)}
-                                className="w-full bg-transparent text-xs text-white outline-none"
-                                placeholder={`Option ${oIdx + 1}`}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-
-              <Button
-                type="button"
-                onClick={() => handleAddLesson(mIdx)}
-                variant="outline"
-                size="sm"
-                className="border-cyan-500/30 text-cyan-300 hover:bg-cyan-500/10 rounded-xl text-xs font-bold h-9 px-4"
-              >
-                <Plus className="size-3.5 mr-1.5" /> Add Lesson
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Bottom Sticky Action Bar */}
-      <div className="pt-6 border-t border-white/10 flex items-center justify-between gap-4">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => router.push("/teacher/courses")}
-          className="text-xs font-mono text-zinc-400 hover:text-white"
-        >
-          Cancel
-        </Button>
-
-        <Button
-          type="submit"
-          disabled={loading}
-          className="bg-amber-500 hover:bg-amber-400 text-zinc-950 font-extrabold text-xs h-12 px-8 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition-all hover:scale-105"
-        >
-          {loading ? (
-            <Loader2 className="size-4 animate-spin text-zinc-950" />
-          ) : (
-            <>
-              <CheckCircle className="size-4 text-zinc-950" />
-              <span>{initialData ? "Update Course" : "Create & Publish Course"}</span>
-              <ArrowRight className="size-4 text-zinc-950" />
-            </>
-          )}
-        </Button>
-      </div>
     </form>
   );
 }
+

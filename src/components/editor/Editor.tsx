@@ -50,8 +50,12 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
 
   // Initialise TipTap instance
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        link: false,
+        underline: false,
+      }),
       Underline,
       Link.configure({ openOnClick: false }),
       Image.configure({ inline: true }),
@@ -78,7 +82,7 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
     };
   }, []);
 
-  const triggerAutosave = (newTitle: string, newContent: JSONContent) => {
+  const triggerAutosave = (newTitle: string, newContent?: JSONContent) => {
     setIsSaving(true);
     if (saveTimeoutRef.current) {
       clearTimeout(saveTimeoutRef.current);
@@ -86,12 +90,15 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
 
     saveTimeoutRef.current = setTimeout(async () => {
       try {
-        await onSave({ title: newTitle, content: newContent });
+        await onSave({
+          title: newTitle,
+          ...(newContent !== undefined ? { content: newContent } : {}),
+        });
         if (isMountedRef.current) setIsSaving(false);
       } catch (err) {
         console.error("Autosave failed:", err);
       }
-    }, 1000); // 1-second debounce window
+    }, 1000);
   };
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -104,69 +111,72 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
     const file = e.target.files?.[0];
     if (!file || !editor) return;
 
-    const formData = new FormData();
-    formData.append("file", file);
-
+    const toastId = toast.loading("Uploading image...");
     try {
+      const formData = new FormData();
+      formData.append("file", file);
+
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
-      if (res.ok) {
-        const { url } = await res.json();
-        editor.chain().focus().setImage({ src: url }).run();
-        triggerAutosave(title, editor.getJSON());
-      } else {
-        alert("Failed to upload image.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error uploading image.");
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      editor.chain().focus().setImage({ src: data.url }).run();
+      toast.success("Image inserted!", { id: toastId });
+      triggerAutosave(title, editor.getJSON());
+    } catch {
+      toast.error("Failed to upload image", { id: toastId });
     }
   };
 
-  const handleAiAction = async (action: "continue" | "summarize" | "improve" | "action_items") => {
+  const handleAiAction = async (action: "continue" | "summary" | "format") => {
     if (!editor || isAiWriting) return;
-    const textContent = editor.getText();
-    if (!textContent || textContent.trim() === "") {
-      toast.error("Please add some text to your note before using Smart AI Writer.");
-      return;
-    }
-
     setIsAiWriting(true);
     setShowAiMenu(false);
-    const toastId = toast.loading("Gemini AI Smart Writer working...");
+
+    const fullContent = editor.getText();
+    const actionDescriptions = {
+      continue: "Generating next section...",
+      summary: "Drafting study summary...",
+      format: "Polishing academic notes...",
+    };
+
+    const toastId = toast.loading(actionDescriptions[action]);
 
     try {
       const res = await fetch("/api/notes/ai", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, text: textContent, title }),
+        body: JSON.stringify({
+          action,
+          prompt: fullContent,
+          title,
+        }),
       });
 
       const data = await res.json();
-      if (!res.ok) {
-        if (data.isPremiumRequired) {
-          toast.error(data.error || "Premium membership required.", { id: toastId });
-        } else {
-          toast.error(data.error || "AI Writing request failed.", { id: toastId });
-        }
-        return;
+      if (!res.ok) throw new Error(data.error || "AI generation failed");
+
+      if (action === "continue") {
+        editor.chain().focus().insertContent(`<p>${data.result}</p>`).run();
+      } else if (action === "summary") {
+        editor
+          .chain()
+          .focus()
+          .insertContent(`<h3>Key Study Summary</h3><p>${data.result}</p>`)
+          .run();
+      } else if (action === "format") {
+        editor.commands.setContent(data.result);
       }
 
-      if (data.result) {
-        if (action === "continue") {
-          editor.chain().focus().insertContent(`\n\n${data.result}`).run();
-        } else {
-          editor.chain().focus().insertContent(`\n\n<hr /><p><strong>AI ${action.toUpperCase()}:</strong></p><p>${data.result.replace(/\n/g, "<br/>")}</p>`).run();
-        }
-        triggerAutosave(title, editor.getJSON());
-        toast.success("AI Writing generated successfully!", { id: toastId });
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Error generating AI content.", { id: toastId });
+      toast.success("AI draft completed!", { id: toastId });
+      triggerAutosave(title, editor.getJSON());
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to run AI action";
+      toast.error(msg, { id: toastId });
     } finally {
       setIsAiWriting(false);
     }
@@ -190,241 +200,277 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
   if (!editor) return null;
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-zinc-950 text-white">
+    <div className="flex-1 flex flex-col h-full min-h-0 overflow-hidden bg-bg-base text-text-primary">
       {/* Editor Header / Title & Status */}
-      <div className="h-16 border-b border-zinc-900 px-6 flex items-center justify-between shrink-0 bg-zinc-900/10">
+      <div className="h-14 border-b border-border-subtle px-4 sm:px-6 flex items-center justify-between shrink-0 bg-bg-surface">
         <input
           type="text"
           value={title}
           onChange={handleTitleChange}
-          className="text-lg font-bold bg-transparent text-white focus:outline-none flex-1 placeholder-zinc-700 min-w-0"
+          className="text-base sm:text-lg font-bold bg-transparent text-text-primary focus:outline-none flex-1 placeholder:text-text-muted min-w-0 font-display"
           placeholder="Untitled Note"
         />
 
-        <div className="flex items-center gap-3 ml-4 select-none shrink-0">
+        <div className="flex items-center gap-2 ml-4 select-none shrink-0 font-mono text-[11px]">
           {isSaving ? (
-            <div className="flex items-center gap-1.5 text-[#8A8078] text-xs font-semibold">
-              <Loader2 className="h-3 w-3 animate-spin text-[#F5B429]" />
-              <span>Saving...</span>
+            <div className="flex items-center gap-1.5 text-accent-primary">
+              <Loader2 className="size-3 animate-spin" />
+              <span>Saving</span>
             </div>
           ) : (
-            <span className="text-[#8A8078] text-xs font-semibold">Saved</span>
+            <span className="text-text-muted">Saved</span>
           )}
         </div>
       </div>
 
       {/* Rich Text Toolbar */}
-      <div className="flex flex-wrap items-center gap-1.5 p-3 border-b border-[#2E2118] bg-[#150F0B]/40 shrink-0 select-none relative">
+      <div className="flex flex-wrap items-center gap-1 p-2 px-4 sm:px-6 border-b border-border-subtle bg-bg-surface/50 shrink-0 select-none relative">
         {/* Smart AI Writer Menu Button */}
-        <div className="relative">
+        <div className="relative mr-1.5">
           <Button
             type="button"
             variant="ghost"
             size="sm"
             onClick={() => setShowAiMenu(!showAiMenu)}
             disabled={isAiWriting}
-            className="h-8 px-2.5 bg-[#F5B429]/10 border border-[#F5B429]/20 hover:bg-[#F5B429]/20 text-[#FCD34D] font-bold text-xs gap-1.5 rounded-full transition-all"
+            className="h-8 px-2.5 bg-accent-primary/10 border border-accent-primary/25 hover:bg-accent-primary/20 text-accent-primary font-semibold text-xs gap-1.5 rounded-lg transition-colors cursor-pointer"
           >
             {isAiWriting ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin text-[#F5B429]" />
+              <Loader2 className="size-3.5 animate-spin" />
             ) : (
-              <Sparkles className="h-3.5 w-3.5 text-[#F5B429]" />
+              <Sparkles className="size-3.5" />
             )}
             <span>AI Writer</span>
-            <ChevronDown className="h-3 w-3 text-[#F5B429]" />
+            <ChevronDown className="size-3" />
           </Button>
 
           {showAiMenu && (
-            <div className="absolute top-10 left-0 z-50 w-64 bg-[#150F0B] border border-[#2E2118] rounded-2xl p-1.5 shadow-2xl space-y-1">
+            <div className="absolute top-9 left-0 z-50 w-56 bg-bg-surface border border-border-subtle rounded-xl p-1 shadow-2xl space-y-0.5 animate-in fade-in duration-100">
               <button
                 type="button"
                 onClick={() => {
                   setShowAiMenu(false);
                   setShowTopicModal(true);
                 }}
-                className="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-bold bg-[#F5B429]/15 border border-[#F5B429]/30 text-[#FCD34D] hover:bg-[#F5B429]/25 transition-colors text-left"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium text-accent-primary hover:bg-bg-elevated transition-colors text-left cursor-pointer"
               >
-                <div className="flex items-center gap-2">
-                  <Wand2 className="h-3.5 w-3.5 text-[#F5B429]" />
-                  <span>Generate Topic Note</span>
-                </div>
-                <span className="text-[9px] font-mono bg-gradient-to-r from-[#F7C948] to-[#F5941D] text-[#150F0B] px-1.5 py-0.5 rounded font-bold">2,000+ words</span>
+                <Wand2 className="size-3.5 shrink-0" />
+                <span>Generate Deep Note</span>
               </button>
+
               <button
                 type="button"
                 onClick={() => handleAiAction("continue")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors text-left"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors text-left cursor-pointer"
               >
-                <Sparkles className="h-3.5 w-3.5 text-[#F5B429]" />
+                <FileText className="size-3.5 shrink-0" />
                 <span>Continue Writing</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => handleAiAction("summarize")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#B8AFA6] hover:text-[#FAFAF8] hover:bg-[#241811] transition-colors text-left"
+                onClick={() => handleAiAction("summary")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors text-left cursor-pointer"
               >
-                <FileText className="h-3.5 w-3.5 text-[#F5941D]" />
-                <span>Summarize Note</span>
+                <CheckSquare className="size-3.5 shrink-0" />
+                <span>Add Study Summary</span>
               </button>
+
               <button
                 type="button"
-                onClick={() => handleAiAction("improve")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
+                onClick={() => handleAiAction("format")}
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors text-left cursor-pointer"
               >
-                <Sparkles className="h-3.5 w-3.5 text-amber-400" />
-                <span>Improve & Polish</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => handleAiAction("action_items")}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-300 hover:text-white hover:bg-zinc-800 transition-colors text-left"
-              >
-                <CheckSquare className="h-3.5 w-3.5 text-emerald-400" />
-                <span>Extract Action Items</span>
+                <Sparkles className="size-3.5 shrink-0" />
+                <span>Format &amp; Polish Note</span>
               </button>
             </div>
           )}
         </div>
 
-        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-4 bg-border-subtle mx-1" />
+
+        {/* Formatting Actions */}
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleBold().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("bold") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("bold") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Bold"
         >
-          <Bold className="h-4 w-4" />
+          <Bold className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("italic") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("italic") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Italic"
         >
-          <Italic className="h-4 w-4" />
+          <Italic className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleUnderline().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("underline") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("underline") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Underline"
         >
-          <UnderlineIcon className="h-4 w-4" />
+          <UnderlineIcon className="size-3.5" />
         </Button>
 
-        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-4 bg-border-subtle mx-1" />
 
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("heading", { level: 1 }) ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("heading", { level: 1 }) ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Heading 1"
         >
-          <Heading1 className="h-4 w-4" />
+          <Heading1 className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("heading", { level: 2 }) ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("heading", { level: 2 }) ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Heading 2"
         >
-          <Heading2 className="h-4 w-4" />
+          <Heading2 className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("heading", { level: 3 }) ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("heading", { level: 3 }) ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Heading 3"
         >
-          <Heading3 className="h-4 w-4" />
+          <Heading3 className="size-3.5" />
         </Button>
 
-        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-4 bg-border-subtle mx-1" />
 
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("bulletList") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("bulletList") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Bullet list"
         >
-          <List className="h-4 w-4" />
+          <List className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("orderedList") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("orderedList") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Numbered list"
         >
-          <ListOrdered className="h-4 w-4" />
+          <ListOrdered className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("codeBlock") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("codeBlock") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Code block"
         >
-          <Code className="h-4 w-4" />
+          <Code className="size-3.5" />
         </Button>
+
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("blockquote") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("blockquote") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Quote"
         >
-          <Quote className="h-4 w-4" />
+          <Quote className="size-3.5" />
         </Button>
 
-        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-4 bg-border-subtle mx-1" />
 
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={setLink}
-          className={`h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900 ${editor.isActive("link") ? "bg-zinc-800 text-white" : ""}`}
+          className={`size-8 rounded-lg text-text-secondary hover:text-text-primary hover:bg-bg-elevated cursor-pointer ${
+            editor.isActive("link") ? "bg-bg-elevated text-accent-primary font-bold" : ""
+          }`}
+          aria-label="Link"
         >
-          <LinkIcon className="h-4 w-4" />
+          <LinkIcon className="size-3.5" />
         </Button>
 
-        <label className="h-8 w-8 flex items-center justify-center cursor-pointer text-zinc-400 hover:text-white hover:bg-zinc-900 rounded-md transition-colors">
-          <ImageIcon className="h-4 w-4" />
+        <label className="size-8 flex items-center justify-center cursor-pointer text-text-secondary hover:text-text-primary hover:bg-bg-elevated rounded-lg transition-colors">
+          <ImageIcon className="size-3.5" />
           <input type="file" accept="image/*" onChange={addImage} className="hidden" />
         </label>
 
-        <div className="w-[1px] h-5 bg-zinc-800 mx-1" />
+        <div className="w-px h-4 bg-border-subtle mx-1" />
 
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().undo().run()}
-          className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900"
+          className="size-8 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated cursor-pointer"
+          aria-label="Undo"
         >
-          <Undo className="h-4 w-4" />
+          <Undo className="size-3.5" />
         </Button>
         <Button
           size="icon"
           variant="ghost"
           type="button"
           onClick={() => editor.chain().focus().redo().run()}
-          className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-900"
+          className="size-8 rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-elevated cursor-pointer"
+          aria-label="Redo"
         >
-          <Redo className="h-4 w-4" />
+          <Redo className="size-3.5" />
         </Button>
       </div>
 
       {/* Editor Content Area */}
-      <div className="flex-1 overflow-y-auto px-10 py-8 pb-28 max-w-none focus:outline-none">
+      <div className="flex-1 min-h-0 overflow-y-auto px-6 sm:px-12 lg:px-16 py-8 pb-32 max-w-4xl mx-auto w-full focus:outline-none custom-scroll">
         <EditorContent editor={editor} className="h-full focus:outline-none min-h-[400px]" />
       </div>
 
