@@ -660,3 +660,118 @@
 .katex-html::-webkit-scrollbar-thumb:hover {
   background: rgba(245, 180, 41, 0.6);
 }
+
+/* ═══════════════════════════════════════════════
+   Giveaway Popup Animations
+   ═══════════════════════════════════════════════ */
+
+/* Overlay enter */
+.giveaway-overlay-enter {
+  animation: giveawayOverlayIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes giveawayOverlayIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Overlay exit */
+.giveaway-overlay-exit {
+  animation: giveawayOverlayOut 0.35s ease-in forwards;
+}
+@keyframes giveawayOverlayOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* Card enter — spring scale + fade */
+.giveaway-card-enter {
+  animation: giveawayCardIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+@keyframes giveawayCardIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Card exit */
+.giveaway-card-exit {
+  animation: giveawayCardOut 0.3s ease-in forwards;
+}
+@keyframes giveawayCardOut {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+  }
+}
+
+/* Phone float */
+.giveaway-phone-float {
+  animation: giveawayPhoneFloat 4s ease-in-out infinite;
+}
+@keyframes giveawayPhoneFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%      { transform: translateY(-8px); }
+}
+
+/* Shimmer text */
+.giveaway-shimmer {
+  background-size: 200% auto;
+  animation: giveawayShimmer 3s linear infinite;
+}
+@keyframes giveawayShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Floating particles */
+.giveaway-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(245, 180, 41, 0.6), transparent);
+  animation: giveawayParticleFloat linear infinite;
+  pointer-events: none;
+  opacity: 0;
+}
+@keyframes giveawayParticleFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0);
+  }
+  20% {
+    opacity: 0.8;
+    transform: translateY(-20px) scale(1);
+  }
+  80% {
+    opacity: 0.4;
+    transform: translateY(-80px) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(0.3);
+  }
+}
+
+/* Animated border gradient */
+.giveaway-border-spin {
+  background-size: 300% 100%;
+  animation: giveawayBorderSpin 3s linear infinite;
+}
+@keyframes giveawayBorderSpin {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Radial gradient helper */
+.bg-gradient-radial {
+  background: radial-gradient(ellipse at center, var(--tw-gradient-stops));
+}

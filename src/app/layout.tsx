@@ -13,6 +13,7 @@ import { Inter, Playfair_Display } from "next/font/google";
 import { Providers } from "@/components/providers";
 import MetaPixelRouteTracker from "@/components/MetaPixelRouteTracker";
 import { RouteLoadingProgress } from "@/components/common/RouteLoadingProgress";
+import { GiveawayPopup } from "@/components/GiveawayPopup";
 import { FB_PIXEL_ID } from "@/lib/metaPixel";
 import "./globals.css";
 
@@ -181,7 +182,12 @@ export default function RootLayout({
         </Suspense>
 
         <div className="relative z-10 min-h-screen flex flex-col">
-          <Providers>{children}</Providers>
+          <Providers>
+            {children}
+            <Suspense fallback={null}>
+              <GiveawayPopup />
+            </Suspense>
+          </Providers>
         </div>
       </body>
     </html>
