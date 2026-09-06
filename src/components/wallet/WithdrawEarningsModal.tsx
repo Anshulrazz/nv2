@@ -56,8 +56,8 @@ export function WithdrawEarningsModal({
 
   if (!isOpen) return null;
 
-  const isTeacherOrAdmin = userRole === "teacher" || userRole === "admin";
-  const availableBalance = isTeacherOrAdmin ? creatorEarnings + userCoins : creatorEarnings;
+  // ONLY creatorEarnings can be withdrawn
+  const availableBalance = creatorEarnings;
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,7 +71,7 @@ export function WithdrawEarningsModal({
 
     if (withdrawNum > availableBalance) {
       setErrorMsg(
-        `Withdrawal amount exceeds your available balance of ${availableBalance} coins.`
+        `Withdrawal amount exceeds your available creator earnings of ${availableBalance} coins (₹${(availableBalance / 10).toFixed(2)}). Only creator earnings can be withdrawn.`
       );
       return;
     }
@@ -138,16 +138,13 @@ export function WithdrawEarningsModal({
         {/* MODAL HEADER */}
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 text-xs font-mono font-bold text-[#F5B429] bg-[#F5B429]/10 px-3 py-1 rounded-full border border-[#F5B429]/30">
-            <DollarSign className="size-3.5" />{" "}
-            {isTeacherOrAdmin ? `${userRole.toUpperCase()} CASH PAYOUT` : "WITHDRAWABLE EARNINGS"}
+            <DollarSign className="size-3.5" /> WITHDRAWABLE CREATOR EARNINGS
           </div>
           <h2 className="text-xl sm:text-2xl font-bold font-display text-[#FAFAF8]">
-            {isTeacherOrAdmin ? "Request Cash Payout" : "Withdraw Creator Earnings"}
+            Withdraw Creator Earnings
           </h2>
           <p className="text-xs text-[#8A8078] font-light leading-relaxed">
-            {isTeacherOrAdmin
-              ? "Withdraw your project and course sales, platform earnings, or teacher revenue directly to UPI or Bank Account."
-              : "Convert your 70% Project & Course Sales revenue into direct cash payout via UPI or Bank Transfer (1 INR = 10 Coins)."}
+            Convert your 70% Project &amp; Course Sales revenue into direct cash payout via UPI or Bank Transfer (1 INR = 10 Coins).
           </p>
         </div>
 
@@ -155,7 +152,7 @@ export function WithdrawEarningsModal({
         <div className="rounded-2xl bg-[#0A0806] border border-[#F5B429]/30 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-inner">
           <div className="space-y-0.5">
             <span className="text-[11px] font-mono text-[#8A8078] uppercase tracking-wider">
-              {isTeacherOrAdmin ? "Total Withdrawable Balance" : "Withdrawable Earnings Balance"}
+              Withdrawable Creator Earnings Balance
             </span>
             <div className="text-2xl font-black text-[#F5B429] font-mono flex items-center gap-1.5">
               <Coins className="size-5" />
@@ -176,7 +173,7 @@ export function WithdrawEarningsModal({
             <ShieldCheck className="size-3.5" /> Earnings &amp; Rate Policy
           </div>
           <p className="text-[11px] text-[#B8AFA6] leading-relaxed">
-            Exchange rate: <strong>1 INR = 10 Coins</strong> (1 Coin = ₹0.10). Only 70% Creator Project and Course Sales revenue can be withdrawn. Activity, promotional, and referral bonus coins are non-withdrawable.
+            Exchange rate: <strong>1 INR = 10 Coins</strong> (1 Coin = ₹0.10). <strong>Only creator earnings</strong> from Project and Course sales can be withdrawn to cash. Regular wallet coins, activity coins, and referral bonuses are non-withdrawable.
           </p>
         </div>
 

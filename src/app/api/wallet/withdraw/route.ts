@@ -67,24 +67,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
-    const isTeacherOrAdmin = user.role === "teacher" || user.role === "admin";
     const creatorEarnings = user.creatorEarnings || 0;
-    const coinBalance = user.coins || 0;
 
-    // Total available withdrawable balance
-    const availableWithdrawable = isTeacherOrAdmin
-      ? creatorEarnings + coinBalance
-      : creatorEarnings;
+    // Total available withdrawable balance: ONLY creatorEarnings can be withdrawn
+    const availableWithdrawable = creatorEarnings;
 
     if (withdrawAmount > availableWithdrawable) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_EARNINGS",
-          message: isTeacherOrAdmin
-            ? `Withdrawal amount exceeds your total available balance of ${availableWithdrawable} coins (Creator Earnings: ${creatorEarnings}, Wallet Coins: ${coinBalance}).`
-            : `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins (₹${(creatorEarnings / 10).toFixed(2)}) from project and course sales. Regular promotional/activity coins cannot be withdrawn to cash.`,
+          message: `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins (₹${(creatorEarnings / 10).toFixed(2)}) from project and course sales. Only creator earnings can be withdrawn to cash. Regular promotional, activity, and referral bonus coins cannot be withdrawn.`,
           creatorEarnings,
-          coinBalance,
+          coinBalance: user.coins || 0,
           availableWithdrawable,
           requestedAmount: withdrawAmount,
           requestedINR: amountINR,
@@ -95,21 +89,15 @@ export async function POST(req: Request) {
 
     const wallet = await getOrCreateUserWallet(user._id);
 
-    // Compute balance deduction split
-    const deductFromEarnings = Math.min(creatorEarnings, withdrawAmount);
-    const deductFromCoins = withdrawAmount - deductFromEarnings;
-
     const dbSession = await mongoose.startSession();
     let withdrawalReq;
 
     try {
       await dbSession.withTransaction(async () => {
-        user.creatorEarnings = Math.max(0, user.creatorEarnings - deductFromEarnings);
-        if (deductFromCoins > 0) {
-          user.coins = Math.max(0, user.coins - deductFromCoins);
-          wallet.balance = Math.max(0, wallet.balance - deductFromCoins);
-          await wallet.save({ session: dbSession });
-        }
+        user.creatorEarnings = Math.max(0, user.creatorEarnings - withdrawAmount);
+        user.coins = Math.max(0, (user.coins || 0) - withdrawAmount);
+        wallet.balance = Math.max(0, wallet.balance - withdrawAmount);
+        await wallet.save({ session: dbSession });
 
         user.payoutDetails = {
           ...(user.payoutDetails || {}),
@@ -152,11 +140,10 @@ export async function POST(req: Request) {
                 payoutMethod,
                 userRole: user.role,
                 withdrawalRequestId: reqDoc._id,
-                deductFromEarnings,
-                deductFromCoins,
+                deductFromEarnings: withdrawAmount,
                 amountINR,
                 exchangeRate: "1 INR = 10 Coins",
-                note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
+                note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) from Creator Earnings via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
               },
             },
           ],
@@ -166,12 +153,10 @@ export async function POST(req: Request) {
     } catch (txError) {
       console.warn("MongoDB transaction fallback for withdrawal request:", txError);
 
-      user.creatorEarnings = Math.max(0, user.creatorEarnings - deductFromEarnings);
-      if (deductFromCoins > 0) {
-        user.coins = Math.max(0, user.coins - deductFromCoins);
-        wallet.balance = Math.max(0, wallet.balance - deductFromCoins);
-        await wallet.save();
-      }
+      user.creatorEarnings = Math.max(0, user.creatorEarnings - withdrawAmount);
+      user.coins = Math.max(0, (user.coins || 0) - withdrawAmount);
+      wallet.balance = Math.max(0, wallet.balance - withdrawAmount);
+      await wallet.save();
 
       user.payoutDetails = {
         ...(user.payoutDetails || {}),
@@ -204,11 +189,10 @@ export async function POST(req: Request) {
           payoutMethod,
           userRole: user.role,
           withdrawalRequestId: withdrawalReq._id,
-          deductFromEarnings,
-          deductFromCoins,
+          deductFromEarnings: withdrawAmount,
           amountINR,
           exchangeRate: "1 INR = 10 Coins",
-          note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
+          note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) from Creator Earnings via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
         },
       });
     } finally {

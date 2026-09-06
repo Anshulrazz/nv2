@@ -366,8 +366,8 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
       {/* TWO SEPARATE BALANCE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (TEACHER / ADMIN ONLY) OR BECOME TEACHER CTA */}
-        {userRole === "teacher" || userRole === "admin" ? (
+        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (CREATORS WITH EARNINGS OR TEACHER/ADMIN) OR BECOME TEACHER CTA */}
+        {userRole === "teacher" || userRole === "admin" || creatorEarnings > 0 ? (
           <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -385,13 +385,13 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
               </div>
 
               <div>
-                <span className="text-xs text-text-muted">70% Course Sales &amp; Project Revenue</span>
+                <span className="text-xs text-text-muted">70% Project &amp; Course Creator Revenue</span>
                 <div className="flex items-baseline gap-2 mt-1">
                   <h2 className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
                     {isLoading ? "..." : creatorEarnings.toLocaleString()}
                   </h2>
                   <span className="text-xs font-mono text-text-muted uppercase">
-                    Coins (₹{creatorEarnings})
+                    Coins (₹{(creatorEarnings / 10).toFixed(2)})
                   </span>
                 </div>
               </div>
@@ -399,11 +399,12 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
             <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <span className="text-[11px] text-text-muted">
-                Only Creator Earnings can be withdrawn to bank/UPI.
+                Only Creator Earnings can be withdrawn to bank/UPI (1 INR = 10 Coins).
               </span>
               <Button
                 onClick={() => setIsWithdrawModalOpen(true)}
-                className="w-full sm:w-auto h-9 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
+                disabled={creatorEarnings < 1}
+                className="w-full sm:w-auto h-9 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
               >
                 Withdraw Cash
               </Button>
