@@ -14,13 +14,20 @@ export const GET = auth(async function GET(req) {
 
     await connectToDatabase();
 
-    const user = await User.findById(userId).select("isPremiumUser coins");
+    const user = await User.findById(userId).select("isPremium isPremiumUser coins premiumExpiresAt");
     if (!user) {
       return NextResponse.json({ error: "User not found." }, { status: 404 });
     }
 
+    const hasUpgraded = Boolean(
+      user.isPremium ||
+      user.isPremiumUser ||
+      (user.premiumExpiresAt && new Date(user.premiumExpiresAt) > new Date())
+    );
+
     return NextResponse.json({
-      isPremiumUser: !!user.isPremiumUser,
+      isPremium: hasUpgraded,
+      isPremiumUser: hasUpgraded,
       coins: user.coins || 0,
     });
   } catch (error) {
@@ -36,35 +43,13 @@ export const POST = auth(async function POST(req) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectToDatabase();
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return NextResponse.json({ error: "User not found." }, { status: 404 });
-    }
-
-    if (user.isPremiumUser) {
-      return NextResponse.json({ error: "You are already a premium user." }, { status: 400 });
-    }
-
-    const premiumCost = 500;
-    if (user.coins < premiumCost) {
-      return NextResponse.json(
-        { error: `Insufficient Coins. You need ${premiumCost} coins to upgrade to premium (Your balance: ${user.coins} coins).` },
-        { status: 400 }
-      );
-    }
-
-    // Deduct coins and upgrade to premium
-    user.coins -= premiumCost;
-    user.isPremiumUser = true;
-    await user.save();
-
-    return NextResponse.json({
-      message: "Congratulations! You have upgraded to Premium successfully.",
-      isPremiumUser: true,
-      coins: user.coins,
-    });
+    return NextResponse.json(
+      {
+        error: "Profile upgrades must be purchased via INR payment. Coin-based upgrades are no longer supported. Please upgrade using Razorpay with available coupon codes.",
+        code: "INR_PAYMENT_REQUIRED",
+      },
+      { status: 400 }
+    );
   } catch (error) {
     console.error("Premium upgrade error:", error);
     return NextResponse.json({ error: "Failed to process premium upgrade." }, { status: 500 });

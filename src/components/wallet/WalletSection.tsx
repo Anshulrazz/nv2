@@ -33,7 +33,7 @@ import { ListSkeleton } from "@/components/ui/skeleton";
 
 interface TransactionItem {
   id: string;
-  type: "referral_bonus" | "signup_bonus" | "transfer" | "premium_purchase" | "admin_adjustment" | "creator_withdrawal";
+  type: string;
   amount: number;
   isDebit: boolean;
   fromWalletAddress: string | null;
@@ -579,6 +579,16 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
                           ? `Premium Subscription (${tx.metadata?.plan || "Upgrade"})`
                           : tx.type === "signup_bonus"
                           ? "Welcome Signup Bonus"
+                          : tx.type === "project_creator_payout"
+                          ? "Project Creator Earnings (70%)"
+                          : tx.type === "project_purchase"
+                          ? "Project Unlock"
+                          : tx.type === "course_creator_payout"
+                          ? "Course Creator Earnings (70%)"
+                          : tx.type === "course_purchase"
+                          ? "Course Enrollment"
+                          : tx.type === "creator_withdrawal"
+                          ? "Creator Cash Withdrawal"
                           : isCredit
                           ? `Received from ${tx.counterpartyName}`
                           : `Sent to ${tx.counterpartyName}`}

@@ -92,14 +92,20 @@ export const POST = auth(async function POST(req) {
 
     await connectToDatabase();
 
-    // Fetch current user to verify premium limits
+    // Fetch current user to verify upgraded profile file limits
     const user = await User.findById(userId);
-    const isPremiumUser = user?.isPremiumUser || false;
-    const limit = isPremiumUser ? 250 : 50;
+    const isProfileUpgraded = Boolean(
+      user?.isPremium ||
+      user?.isPremiumUser ||
+      (user?.premiumExpiresAt && new Date(user.premiumExpiresAt) > new Date())
+    );
+    const limit = isProfileUpgraded ? 250 : 50;
 
     if (files.length > limit) {
       return NextResponse.json(
-        { error: `Upload limit exceeded. Normal users can upload up to 50 files. Premium users can upload up to 250 files. (You provided ${files.length} files)` },
+        {
+          error: `Upload limit exceeded. Standard accounts can upload up to 50 files. Upgraded profile accounts can upload up to 250 files. (You provided ${files.length} files)`,
+        },
         { status: 400 }
       );
     }

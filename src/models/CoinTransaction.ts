@@ -9,6 +9,9 @@ export type TransactionType =
   | "course_purchase"
   | "course_creator_payout"
   | "course_platform_fee"
+  | "project_purchase"
+  | "project_creator_payout"
+  | "project_platform_fee"
   | "buy_coins"
   | "creator_withdrawal";
 
@@ -52,6 +55,9 @@ const CoinTransactionSchema = new Schema<ICoinTransaction>(
         "course_purchase",
         "course_creator_payout",
         "course_platform_fee",
+        "project_purchase",
+        "project_creator_payout",
+        "project_platform_fee",
         "buy_coins",
         "creator_withdrawal",
       ],

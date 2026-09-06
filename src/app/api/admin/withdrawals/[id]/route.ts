@@ -82,8 +82,10 @@ export async function PATCH(
         }
       );
 
+      const inrValue = withdrawal.amountINR || Number((withdrawal.amount / 10).toFixed(2));
+
       return NextResponse.json({
-        message: `Payout of ₹${withdrawal.amount} completed successfully! UTR/Ref: ${transactionRef || "N/A"}`,
+        message: `Payout of ₹${inrValue} (${withdrawal.amount} coins) completed successfully! UTR/Ref: ${transactionRef || "N/A"}`,
         withdrawal,
       });
     }

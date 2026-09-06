@@ -50,7 +50,9 @@ export async function GET(req: Request) {
         userImage: userObj?.image || null,
         userRole: item.userRole || userObj?.role || "user",
         amount: item.amount,
-        amountINR: item.amount,
+        amountINR: item.amountINR !== undefined && item.amountINR !== null && item.amountINR > 0
+          ? item.amountINR
+          : Number((item.amount / 10).toFixed(2)),
         payoutMethod: item.payoutMethod,
         payoutDetails: item.payoutDetails || {},
         status: item.status,

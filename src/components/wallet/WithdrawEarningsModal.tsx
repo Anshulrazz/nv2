@@ -146,8 +146,8 @@ export function WithdrawEarningsModal({
           </h2>
           <p className="text-xs text-[#8A8078] font-light leading-relaxed">
             {isTeacherOrAdmin
-              ? "Withdraw your course sales, platform earnings, or teacher revenue directly to UPI or Bank Account."
-              : "Convert your 70% Course Sales revenue into direct cash payout via UPI or Bank Transfer."}
+              ? "Withdraw your project and course sales, platform earnings, or teacher revenue directly to UPI or Bank Account."
+              : "Convert your 70% Project & Course Sales revenue into direct cash payout via UPI or Bank Transfer (1 INR = 10 Coins)."}
           </p>
         </div>
 
@@ -160,7 +160,7 @@ export function WithdrawEarningsModal({
             <div className="text-2xl font-black text-[#F5B429] font-mono flex items-center gap-1.5">
               <Coins className="size-5" />
               <span>{availableBalance.toLocaleString()}</span>
-              <span className="text-xs text-[#8A8078] font-normal">Coins (₹{availableBalance})</span>
+              <span className="text-xs text-[#8A8078] font-normal">Coins (₹{(availableBalance / 10).toFixed(2)})</span>
             </div>
           </div>
           <div className="text-right">
@@ -173,10 +173,10 @@ export function WithdrawEarningsModal({
         {/* IMPORTANT DISCLOSURE ALERT */}
         <div className="p-3 rounded-xl bg-[#241811] border border-[#F5941D]/30 text-[#FCD34D] text-xs font-light space-y-1">
           <div className="font-bold flex items-center gap-1.5 text-[#F5941D] font-mono">
-            <ShieldCheck className="size-3.5" /> Earnings Protection Policy
+            <ShieldCheck className="size-3.5" /> Earnings &amp; Rate Policy
           </div>
           <p className="text-[11px] text-[#B8AFA6] leading-relaxed">
-            Only 70% Creator Course Sales revenue can be withdrawn. Activity, promotional, and referral bonus coins are non-withdrawable.
+            Exchange rate: <strong>1 INR = 10 Coins</strong> (1 Coin = ₹0.10). Only 70% Creator Project and Course Sales revenue can be withdrawn. Activity, promotional, and referral bonus coins are non-withdrawable.
           </p>
         </div>
 
@@ -188,7 +188,7 @@ export function WithdrawEarningsModal({
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-[#FAFAF8] font-display">Withdrawal Requested!</h3>
               <p className="text-xs text-[#8A8078] max-w-sm mx-auto">
-                Your payout request has been queued for verification. Funds will be transferred to your account within 24–48 hours.
+                Your payout request of ₹{(Number(amount || 0) / 10).toFixed(2)} ({amount} coins) has been queued for verification. Funds will be transferred to your account within 24–48 hours.
               </p>
             </div>
             <Button
@@ -210,13 +210,13 @@ export function WithdrawEarningsModal({
             {/* WITHDRAW AMOUNT INPUT */}
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-[#FAFAF8] flex items-center justify-between">
-                <span>WITHDRAWAL AMOUNT (COINS / ₹)</span>
+                <span>WITHDRAWAL AMOUNT (COINS)</span>
                 <button
                   type="button"
                   onClick={() => setAmount(String(availableBalance))}
                   className="text-[10px] text-[#F5B429] hover:underline font-mono"
                 >
-                  Withdraw Max ({availableBalance})
+                  Withdraw Max ({availableBalance} Coins)
                 </button>
               </label>
               <div className="relative">
@@ -226,10 +226,16 @@ export function WithdrawEarningsModal({
                   max={availableBalance}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter amount to withdraw..."
+                  placeholder="Enter coin amount (e.g. 500)..."
                   className="w-full bg-[#16261D] border-[#F3F0E4]/20 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#F0C93B] font-mono"
                 />
               </div>
+              {Number(amount) > 0 && (
+                <div className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[#F5B429]/10 border border-[#F5B429]/20 text-xs font-mono text-[#F5B429]">
+                  <span>Payout Value:</span>
+                  <span className="font-bold text-[#FAFAF8]">₹{(Number(amount) / 10).toFixed(2)} (at 1 INR = 10 Coins)</span>
+                </div>
+              )}
             </div>
 
             {/* PAYOUT METHOD TABS */}

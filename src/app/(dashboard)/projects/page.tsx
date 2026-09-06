@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import JSZip from "jszip";
 import { motion } from "framer-motion";
+import { PremiumUpgradeModal } from "@/components/premium/PremiumUpgradeModal";
 
 interface ProjectOwner {
   id: string;
@@ -173,7 +174,8 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Upgrade premium state
+  // Upgrade premium modal state
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Create Project Form state
@@ -261,7 +263,12 @@ export default function ProjectsPage() {
       if (profileRes.ok) {
         const profile = await profileRes.json();
         setCoins(profile.coins || 0);
-        setIsPremiumUser(!!profile.isPremiumUser);
+        const hasUpgradedProfile = Boolean(
+          profile.isPremium ||
+          profile.isPremiumUser ||
+          (profile.premiumExpiresAt && new Date(profile.premiumExpiresAt) > new Date())
+        );
+        setIsPremiumUser(hasUpgradedProfile);
       }
 
       // Fetch projects
@@ -282,34 +289,8 @@ export default function ProjectsPage() {
     fetchProfileAndProjects();
   }, []);
 
-  const handleUpgradePremium = async () => {
-    if (coins < 500) {
-      alert("You need at least 500 Coins to upgrade to Premium! Refer friends to earn more coins.");
-      return;
-    }
-
-    if (!confirm("Are you sure you want to spend 500 Coins to upgrade to Premium status?")) {
-      return;
-    }
-
-    try {
-      setIsUpgrading(true);
-      const res = await fetch("/api/user/premium", {
-        method: "POST",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Upgrade failed.");
-      }
-
-      setCoins(data.coins);
-      setIsPremiumUser(true);
-      alert("Congratulations! You are now a Premium user with a 150 file upload limit!");
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Upgrade failed.");
-    } finally {
-      setIsUpgrading(false);
-    }
+  const handleUpgradePremium = () => {
+    setIsUpgradeModalOpen(true);
   };
 
   const handleFolderUpload = async (e: React.ChangeEvent<HTMLInputElement>, forEdit: boolean = false) => {
@@ -991,18 +972,17 @@ export default function ProjectsPage() {
                   <Shield className="h-4 w-4 text-[#F5B429] fill-[#F5B429]/20 shrink-0" />
                   <div className="text-left">
                     <p className="text-[9px] text-[#F5B429] uppercase font-bold font-display">Plan Tier</p>
-                    <p className="text-xs font-bold text-[#FAFAF8] uppercase tracking-wider whitespace-nowrap">Premium (250 Limit)</p>
+                    <p className="text-xs font-bold text-[#FAFAF8] uppercase tracking-wider whitespace-nowrap">Upgraded (250 Limit)</p>
                   </div>
                 </div>
               ) : (
                 <Button
                   onClick={handleUpgradePremium}
-                  disabled={isUpgrading}
                   className="bg-[#0A0806] border border-[#2E2118] hover:border-[#F5B429]/50 text-[#FAFAF8] font-bold h-11 px-3.5 sm:px-4 rounded-xl flex items-center gap-2 transition-all duration-300 font-display cursor-pointer"
                 >
                   <Shield className="h-4 w-4 text-[#F5B429] shrink-0" />
                   <div className="text-left">
-                    <p className="text-[8px] text-[#8A8078] uppercase font-bold whitespace-nowrap">Go Premium (500 Coins)</p>
+                    <p className="text-[8px] text-[#8A8078] uppercase font-bold whitespace-nowrap">Upgrade Profile</p>
                     <p className="text-[10px] font-bold text-[#F5B429] uppercase whitespace-nowrap">Unlock 250 file limit</p>
                   </div>
                 </Button>
@@ -2018,6 +1998,12 @@ export default function ProjectsPage() {
           </div>
         </div>
       )}
+
+      <PremiumUpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => setIsUpgradeModalOpen(false)}
+        onSuccess={fetchProfileAndProjects}
+      />
     </div>
   );
 }

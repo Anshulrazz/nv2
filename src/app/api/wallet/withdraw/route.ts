@@ -26,6 +26,9 @@ export async function POST(req: Request) {
       );
     }
 
+    // 1 INR = 10 Coins canonical exchange rate
+    const amountINR = Number((withdrawAmount / 10).toFixed(2));
+
     if (payoutMethod !== "upi" && payoutMethod !== "bank_transfer") {
       return NextResponse.json(
         { error: "Please select a valid payout method ('upi' or 'bank_transfer')." },
@@ -79,11 +82,12 @@ export async function POST(req: Request) {
           error: "INSUFFICIENT_EARNINGS",
           message: isTeacherOrAdmin
             ? `Withdrawal amount exceeds your total available balance of ${availableWithdrawable} coins (Creator Earnings: ${creatorEarnings}, Wallet Coins: ${coinBalance}).`
-            : `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins from course sales. Regular promotional/activity coins cannot be withdrawn to cash.`,
+            : `Insufficient withdrawable creator earnings. You have ${creatorEarnings} withdrawable coins (₹${(creatorEarnings / 10).toFixed(2)}) from project and course sales. Regular promotional/activity coins cannot be withdrawn to cash.`,
           creatorEarnings,
           coinBalance,
           availableWithdrawable,
           requestedAmount: withdrawAmount,
+          requestedINR: amountINR,
         },
         { status: 400 }
       );
@@ -113,13 +117,14 @@ export async function POST(req: Request) {
         };
         await user.save({ session: dbSession });
 
-        // Record Withdrawal Request
+        // Record Withdrawal Request with amount (coins) and amountINR (rupees)
         const [reqDoc] = await WithdrawalRequest.create(
           [
             {
               userId: user._id,
               userRole: user.role || "user",
               amount: withdrawAmount,
+              amountINR,
               payoutMethod,
               payoutDetails: {
                 upiId: payoutDetails.upiId?.trim() || "",
@@ -149,7 +154,9 @@ export async function POST(req: Request) {
                 withdrawalRequestId: reqDoc._id,
                 deductFromEarnings,
                 deductFromCoins,
-                note: `Withdrawal request of ₹${withdrawAmount} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
+                amountINR,
+                exchangeRate: "1 INR = 10 Coins",
+                note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
               },
             },
           ],
@@ -176,6 +183,7 @@ export async function POST(req: Request) {
         userId: user._id,
         userRole: user.role || "user",
         amount: withdrawAmount,
+        amountINR,
         payoutMethod,
         payoutDetails: {
           upiId: payoutDetails.upiId?.trim() || "",
@@ -198,7 +206,9 @@ export async function POST(req: Request) {
           withdrawalRequestId: withdrawalReq._id,
           deductFromEarnings,
           deductFromCoins,
-          note: `Withdrawal request of ₹${withdrawAmount} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
+          amountINR,
+          exchangeRate: "1 INR = 10 Coins",
+          note: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"} (${user.role.toUpperCase()})`,
         },
       });
     } finally {
@@ -206,8 +216,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({
-      message: `Withdrawal request of ₹${withdrawAmount} submitted successfully via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"}! Funds will be transferred to your account within 24–48 hours.`,
+      message: `Withdrawal request of ₹${amountINR} (${withdrawAmount} coins) submitted successfully via ${payoutMethod === "upi" ? "UPI" : "Bank Transfer"}! Funds will be transferred to your account within 24–48 hours.`,
       withdrawalRequest: withdrawalReq,
+      amountINR,
       remainingCreatorEarnings: user.creatorEarnings,
       remainingCoins: user.coins,
       walletBalance: wallet.balance,

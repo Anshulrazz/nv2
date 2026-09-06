@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Crown, Check, Sparkles, Loader2, X, AlertCircle, Coins, Tag, TicketCheck, CreditCard, ShieldCheck } from "lucide-react";
+import { Crown, Check, Sparkles, Loader2, X, Tag, TicketCheck, CreditCard, ShieldCheck, FolderGit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import { openRazorpayCheckout } from "@/lib/razorpay";
 interface PremiumUpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentBalance: number;
+  currentBalance?: number;
   onSuccess?: () => void;
   onOpenCoinConverter?: () => void;
 }
@@ -18,12 +18,9 @@ interface PremiumUpgradeModalProps {
 export function PremiumUpgradeModal({
   isOpen,
   onClose,
-  currentBalance,
   onSuccess,
-  onOpenCoinConverter,
 }: PremiumUpgradeModalProps) {
   const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly">("monthly");
-  const [paymentMethod, setPaymentMethod] = useState<"razorpay" | "coins">("razorpay");
   const [isUpgrading, setIsUpgrading] = useState(false);
 
   // Coupon State
@@ -37,15 +34,10 @@ export function PremiumUpgradeModal({
 
   if (!isOpen) return null;
 
-  // changed by ravi - monthly plan starting from 149 INR
-  const basePlanCoins = selectedPlan === "monthly" ? 500 : 5000;
+  // Monthly plan starting from 149 INR, Yearly pass 399 INR
   const basePlanInr = selectedPlan === "monthly" ? 149 : 399;
-
   const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
-  const finalPlanCostCoins = Math.max(0, basePlanCoins - discountAmount);
-  const finalPlanCostInr = Math.max(1, basePlanInr - (appliedCoupon ? Math.round(discountAmount / 10) : 0));
-
-  const isInsufficientCoins = currentBalance < finalPlanCostCoins;
+  const finalPlanCostInr = Math.max(1, basePlanInr - discountAmount);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) return;
@@ -56,7 +48,7 @@ export function PremiumUpgradeModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           code: couponCode.trim(),
-          amount: paymentMethod === "coins" ? basePlanCoins : basePlanInr,
+          amount: basePlanInr,
         }),
       });
       const data = await res.json();
@@ -71,7 +63,7 @@ export function PremiumUpgradeModal({
         discountAmount: data.discountAmount,
         description: data.description,
       });
-      toast.success(`Coupon '${data.code}' applied!`);
+      toast.success(`Coupon '${data.code}' applied! ₹${data.discountAmount} discount.`);
     } catch (err) {
       console.error(err);
       toast.error("Failed to validate coupon.");
@@ -86,7 +78,6 @@ export function PremiumUpgradeModal({
     toast.info("Coupon removed.");
   };
 
-  // changed by ravi - support monthly recurring subscription & order fallback for 100% reliable checkout
   const handleRazorpayUpgrade = async () => {
     try {
       setIsUpgrading(true);
@@ -176,7 +167,7 @@ export function PremiumUpgradeModal({
           amount: json.amount,
           currency: json.currency || "INR",
           name: "Notexia Premium Pass",
-          description: "Annual Premium Subscription",
+          description: "Annual Premium Subscription (₹399/yr)",
           order_id: json.orderId,
           theme: { color: "#F0C93B" },
           handler: async (response) => {
@@ -217,59 +208,30 @@ export function PremiumUpgradeModal({
     }
   };
 
-  const handleCoinsUpgrade = async () => {
-    if (isInsufficientCoins) return;
-
-    try {
-      setIsUpgrading(true);
-      const res = await fetch("/api/premium/upgrade", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan: selectedPlan,
-          couponCode: appliedCoupon ? appliedCoupon.code : undefined,
-        }),
-      });
-
-      const json = await res.json();
-      if (!res.ok) {
-        toast.error(json.message || json.error || "Failed to upgrade.");
-        return;
-      }
-
-      toast.success(json.message || "Upgraded to Premium successfully! ✨");
-      if (onSuccess) onSuccess();
-      onClose();
-    } catch (err) {
-      console.error(err);
-      toast.error("An unexpected error occurred during upgrade.");
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
-
   const perks = [
-    "Ad-free learning experience across all courses & notes",
-    "Priority AI doubt resolution & unlimited note chats",
-    "Exclusive premium formula sheets & verified notes",
-    "Gold Leaderboard badge & custom profile wallpapers",
+    { text: "250 Project Files Capacity (No separate storage plan needed)", icon: FolderGit2, highlight: true },
+    { text: "Ad-free learning experience across all courses & notes", icon: Check },
+    { text: "Priority AI doubt resolution & unlimited note chats", icon: Check },
+    { text: "Monetize projects & courses with 70% direct creator revenue", icon: Check, highlight: true },
+    { text: "Exclusive premium formula sheets & verified notes", icon: Check },
+    { text: "Gold Leaderboard badge & custom profile wallpapers", icon: Check },
   ];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-lg bg-bg-surface border border-border-default rounded-2xl p-6 sm:p-7 space-y-5 shadow-2xl relative overflow-hidden max-h-[90vh] overflow-y-auto text-text-primary">
+      <div className="w-full max-w-lg bg-[#150F0B] border border-[#2E2118] rounded-2xl p-6 sm:p-7 space-y-5 shadow-2xl relative overflow-hidden max-h-[92vh] overflow-y-auto text-[#FAFAF8]">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-border-subtle pb-4">
+        <div className="flex items-center justify-between border-b border-[#2E2118] pb-4">
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+            <div className="size-10 rounded-xl bg-[#F5B429]/15 border border-[#F5B429]/30 flex items-center justify-center text-[#F5B429] shrink-0">
               <Crown className="size-5" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-tight flex items-center gap-2">
-                Notexia Premium <Sparkles className="size-4 text-accent-primary" />
+              <h2 className="text-base sm:text-lg font-bold text-[#FAFAF8] tracking-tight flex items-center gap-2">
+                Upgrade Profile <Sparkles className="size-4 text-[#F5B429]" />
               </h2>
-              <p className="text-xs text-text-secondary">
-                Unlock unlimited learning tools & exclusive perks.
+              <p className="text-xs text-[#8A8078]">
+                One plan for all perks: 250 project files, monetization &amp; AI tools.
               </p>
             </div>
           </div>
@@ -277,7 +239,7 @@ export function PremiumUpgradeModal({
             size="icon"
             variant="ghost"
             onClick={onClose}
-            className="size-8 text-text-muted hover:text-text-primary rounded-xl"
+            className="size-8 text-[#8A8078] hover:text-[#FAFAF8] rounded-xl hover:bg-[#2E2118]/50"
           >
             <X className="size-4" />
           </Button>
@@ -292,23 +254,23 @@ export function PremiumUpgradeModal({
               setSelectedPlan("monthly");
               if (appliedCoupon) setAppliedCoupon(null);
             }}
-            className={`p-4 rounded-xl border text-left transition-colors cursor-pointer relative ${
+            className={`p-4 rounded-xl border text-left transition-all cursor-pointer relative ${
               selectedPlan === "monthly"
-                ? "bg-bg-elevated border-accent-primary"
-                : "bg-bg-elevated/40 border-border-subtle hover:border-border-default"
+                ? "bg-[#241811] border-[#F5B429] shadow-lg shadow-[#F5B429]/10"
+                : "bg-[#0A0806] border-[#2E2118] hover:border-[#8A8078]"
             }`}
           >
             {selectedPlan === "monthly" && (
-              <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-accent-primary" />
+              <span className="absolute top-2.5 right-2.5 size-2 rounded-full bg-[#F5B429]" />
             )}
-            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8078] font-mono block">
               Monthly Pass
             </span>
             <div className="mt-1.5 flex items-baseline gap-1">
-              <span className="text-2xl font-bold font-mono text-accent-primary">500</span>
-              <span className="text-xs text-text-muted font-mono">coins</span>
+              <span className="text-2xl font-bold font-mono text-[#F5B429]">₹149</span>
+              <span className="text-xs text-[#8A8078] font-mono">/ mo</span>
             </div>
-            <span className="text-[10px] text-text-muted block mt-1">30 days validity</span>
+            <span className="text-[10px] text-[#8A8078] block mt-1">30 days validity</span>
           </button>
 
           {/* Yearly */}
@@ -318,54 +280,57 @@ export function PremiumUpgradeModal({
               setSelectedPlan("yearly");
               if (appliedCoupon) setAppliedCoupon(null);
             }}
-            className={`p-4 rounded-xl border text-left transition-colors cursor-pointer relative ${
+            className={`p-4 rounded-xl border text-left transition-all cursor-pointer relative ${
               selectedPlan === "yearly"
-                ? "bg-bg-elevated border-accent-primary"
-                : "bg-bg-elevated/40 border-border-subtle hover:border-border-default"
+                ? "bg-[#241811] border-[#F5B429] shadow-lg shadow-[#F5B429]/10"
+                : "bg-[#0A0806] border-[#2E2118] hover:border-[#8A8078]"
             }`}
           >
-            <span className="absolute -top-2.5 right-3 bg-accent-primary text-bg-base text-[9px] font-bold px-2 py-0.5 rounded-full font-mono uppercase">
-              Save 16%
+            <span className="absolute -top-2.5 right-3 bg-[#F5B429] text-[#150F0B] text-[9px] font-bold px-2 py-0.5 rounded-full font-mono uppercase">
+              Best Value
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8078] font-mono block">
               Annual Pass
             </span>
             <div className="mt-1.5 flex items-baseline gap-1">
-              <span className="text-2xl font-bold font-mono text-accent-primary">5,000</span>
-              <span className="text-xs text-text-muted font-mono">coins</span>
+              <span className="text-2xl font-bold font-mono text-[#F5B429]">₹399</span>
+              <span className="text-xs text-[#8A8078] font-mono">/ yr</span>
             </div>
-            <span className="text-[10px] text-text-muted block mt-1">365 days validity</span>
+            <span className="text-[10px] text-[#8A8078] block mt-1">365 days validity</span>
           </button>
         </div>
 
         {/* Premium Perks */}
-        <div className="space-y-2 bg-bg-elevated/40 border border-border-subtle rounded-xl p-4">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
-            What&apos;s Included with Premium:
+        <div className="space-y-2.5 bg-[#0A0806] border border-[#2E2118] rounded-xl p-4">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A8078] font-mono block">
+            What&apos;s Included with Upgraded Profile:
           </span>
           <div className="space-y-2">
-            {perks.map((perk, i) => (
-              <div key={i} className="flex items-center gap-2.5 text-xs text-text-secondary">
-                <div className="size-4 rounded-full bg-accent-primary/15 flex items-center justify-center shrink-0 text-accent-primary">
-                  <Check className="size-3 stroke-[2.5]" />
+            {perks.map((perk, i) => {
+              const IconComp = perk.icon;
+              return (
+                <div key={i} className={`flex items-center gap-2.5 text-xs ${perk.highlight ? "text-[#FAFAF8] font-semibold" : "text-[#B8AFA6]"}`}>
+                  <div className={`size-4 rounded-full flex items-center justify-center shrink-0 ${perk.highlight ? "bg-[#F5B429]/20 text-[#F5B429]" : "bg-white/10 text-[#8A8078]"}`}>
+                    <IconComp className="size-3 stroke-[2.5]" />
+                  </div>
+                  <span>{perk.text}</span>
                 </div>
-                <span>{perk}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* Coupon Code Section */}
-        <div className="space-y-2 bg-bg-elevated/40 border border-border-subtle rounded-xl p-3">
-          <div className="flex items-center justify-between text-xs font-mono text-text-muted">
-            <span className="flex items-center gap-1.5 font-semibold text-text-primary">
-              <Tag className="size-3.5 text-accent-primary" /> Have a Coupon Code?
+        <div className="space-y-2 bg-[#0A0806] border border-[#2E2118] rounded-xl p-3">
+          <div className="flex items-center justify-between text-xs font-mono text-[#8A8078]">
+            <span className="flex items-center gap-1.5 font-semibold text-[#FAFAF8]">
+              <Tag className="size-3.5 text-[#F5B429]" /> Have a Coupon Code?
             </span>
             {appliedCoupon && (
               <button
                 type="button"
                 onClick={handleRemoveCoupon}
-                className="text-destructive hover:underline text-[11px]"
+                className="text-rose-400 hover:underline text-[11px]"
               >
                 Remove
               </button>
@@ -373,11 +338,11 @@ export function PremiumUpgradeModal({
           </div>
 
           {appliedCoupon ? (
-            <div className="flex items-center justify-between p-2.5 rounded-xl bg-accent-primary/10 border border-accent-primary/25 text-xs font-mono">
-              <div className="flex items-center gap-2 text-accent-primary">
+            <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#F5B429]/10 border border-[#F5B429]/25 text-xs font-mono">
+              <div className="flex items-center gap-2 text-[#F5B429]">
                 <TicketCheck className="size-4 shrink-0" />
                 <span>
-                  <strong>{appliedCoupon.code}</strong> applied (-{appliedCoupon.discountAmount} coins)
+                  <strong>{appliedCoupon.code}</strong> applied (-₹{appliedCoupon.discountAmount})
                 </span>
               </div>
               <span className="text-emerald-400 font-semibold">Saved!</span>
@@ -386,16 +351,16 @@ export function PremiumUpgradeModal({
             <div className="flex gap-2">
               <Input
                 type="text"
-                placeholder="Enter coupon code (e.g. NOTEXIA50)"
+                placeholder="Enter coupon code (e.g. DISCOUNT20)"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                className="bg-bg-elevated border-border-subtle text-text-primary placeholder:text-text-muted/60 text-xs h-9 font-mono"
+                className="bg-[#150F0B] border-[#2E2118] text-[#FAFAF8] placeholder:text-[#8A8078]/60 text-xs h-9 font-mono"
               />
               <Button
                 type="button"
                 onClick={handleApplyCoupon}
                 disabled={isValidatingCoupon || !couponCode.trim()}
-                className="bg-bg-elevated hover:bg-bg-elevated/80 text-accent-primary border border-border-default hover:border-accent-primary/40 text-xs h-9 font-bold px-3 shrink-0"
+                className="bg-[#241811] hover:bg-[#2E2118] text-[#F5B429] border border-[#F5B429]/30 text-xs h-9 font-bold px-3 shrink-0"
               >
                 {isValidatingCoupon ? <Loader2 className="size-3.5 animate-spin" /> : "Apply"}
               </Button>
@@ -403,135 +368,51 @@ export function PremiumUpgradeModal({
           )}
         </div>
 
-        {/* Payment Method Selector */}
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted font-mono block">
-            Select Payment Method:
-          </span>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("razorpay")}
-              className={`p-3 rounded-xl border text-left transition-colors flex items-center gap-2.5 cursor-pointer ${
-                paymentMethod === "razorpay"
-                  ? "bg-bg-elevated border-accent-primary text-text-primary"
-                  : "bg-bg-elevated/40 border-border-subtle hover:border-border-default text-text-muted"
-              }`}
-            >
-              <div className="size-7 rounded-lg bg-accent-primary/15 text-accent-primary flex items-center justify-center shrink-0">
-                <CreditCard className="size-4" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-text-primary">Razorpay</div>
-                <div className="text-[10px] font-mono text-text-muted">UPI / Cards / NetBanking</div>
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPaymentMethod("coins")}
-              className={`p-3 rounded-xl border text-left transition-colors flex items-center gap-2.5 cursor-pointer ${
-                paymentMethod === "coins"
-                  ? "bg-bg-elevated border-accent-primary text-text-primary"
-                  : "bg-bg-elevated/40 border-border-subtle hover:border-border-default text-text-muted"
-              }`}
-            >
-              <div className="size-7 rounded-lg bg-accent-primary/15 text-accent-primary flex items-center justify-center shrink-0">
-                <Coins className="size-4" />
-              </div>
-              <div>
-                <div className="text-xs font-semibold text-text-primary">Coins</div>
-                <div className="text-[10px] font-mono text-text-muted">Use Coin Balance</div>
-              </div>
-            </button>
-          </div>
-        </div>
-
-        {/* Balance Status & Action */}
+        {/* Amount & Checkout CTA */}
         <div className="space-y-3">
-          <div className="flex justify-between items-center text-xs p-3 rounded-xl bg-bg-elevated/60 border border-border-subtle font-mono">
-            <span className="text-text-muted">Total Amount:</span>
+          <div className="flex justify-between items-center text-xs p-3 rounded-xl bg-[#0A0806] border border-[#2E2118] font-mono">
+            <span className="text-[#8A8078]">Total Amount Payable:</span>
             <div className="flex items-center gap-2">
-              {paymentMethod === "razorpay" ? (
-                <span className="font-bold text-accent-primary text-sm font-mono">₹{finalPlanCostInr}</span>
-              ) : (
-                <span className="font-bold text-accent-primary flex items-center gap-1 font-mono">
-                  <Coins className="size-3.5" /> {finalPlanCostCoins.toLocaleString()} coins
-                </span>
+              {appliedCoupon && (
+                <span className="line-through text-[#8A8078] text-xs">₹{basePlanInr}</span>
               )}
+              <span className="font-bold text-[#F5B429] text-base font-mono">₹{finalPlanCostInr} INR</span>
             </div>
           </div>
-
-          {paymentMethod === "coins" && (
-            <div className="flex justify-between items-center text-xs px-3 font-mono text-text-muted">
-              <span>Your Coin Balance:</span>
-              <span className="text-text-primary font-bold">{currentBalance.toLocaleString()} coins</span>
-            </div>
-          )}
-
-          {paymentMethod === "coins" && isInsufficientCoins && (
-            <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-xs flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="size-4 shrink-0" />
-                <span>Need <strong>{finalPlanCostCoins - currentBalance}</strong> more coins.</span>
-              </div>
-              {onOpenCoinConverter && (
-                <Button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenCoinConverter();
-                  }}
-                  className="bg-accent-primary hover:bg-accent-primary-hover text-bg-base text-[10px] font-bold h-7 px-2.5 rounded-lg shrink-0 cursor-pointer"
-                >
-                  Buy Coins
-                </Button>
-              )}
-            </div>
-          )}
 
           <div className="flex gap-2 pt-1">
             <Button
               type="button"
               variant="ghost"
               onClick={onClose}
-              className="flex-1 bg-bg-elevated hover:bg-bg-elevated/80 border border-border-subtle text-text-secondary text-xs h-10 rounded-xl"
+              className="flex-1 bg-[#0A0806] hover:bg-[#241811] border border-[#2E2118] text-[#8A8078] text-xs h-10 rounded-xl"
             >
               Cancel
             </Button>
             <Button
               type="button"
-              disabled={isUpgrading || (paymentMethod === "coins" && isInsufficientCoins)}
-              onClick={paymentMethod === "razorpay" ? handleRazorpayUpgrade : handleCoinsUpgrade}
-              className="flex-1 btn-premium-primary text-xs h-10 rounded-xl flex items-center justify-center gap-2 disabled:opacity-40"
+              disabled={isUpgrading}
+              onClick={handleRazorpayUpgrade}
+              className="flex-1 btn-premium-primary text-xs h-10 rounded-xl flex items-center justify-center gap-2"
             >
               {isUpgrading ? (
                 <>
                   <Loader2 className="size-4 animate-spin" />
-                  <span>Processing...</span>
+                  <span>Connecting Razorpay...</span>
                 </>
-              ) : paymentMethod === "razorpay" ? (
+              ) : (
                 <>
                   <CreditCard className="size-4" />
                   <span>Pay ₹{finalPlanCostInr} via Razorpay</span>
-                </>
-              ) : isInsufficientCoins ? (
-                <span>Not Enough Coins</span>
-              ) : (
-                <>
-                  <Crown className="size-4" />
-                  <span>Upgrade ({finalPlanCostCoins} Coins)</span>
                 </>
               )}
             </Button>
           </div>
 
-          {paymentMethod === "razorpay" && (
-            <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-text-muted text-center pt-1">
-              <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
-              <span>Instant Premium Activation via Razorpay (UPI, Credit/Debit Cards, NetBanking)</span>
-            </div>
-          )}
+          <div className="flex items-center justify-center gap-2 text-[10px] font-mono text-[#8A8078] text-center pt-1">
+            <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" />
+            <span>Secure INR checkout via Razorpay (UPI, Credit/Debit Cards, NetBanking)</span>
+          </div>
         </div>
       </div>
     </div>

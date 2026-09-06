@@ -6,7 +6,8 @@ export type PayoutMethod = "upi" | "bank_transfer";
 export interface IWithdrawalRequest extends Document {
   userId: mongoose.Types.ObjectId;
   userRole?: "user" | "teacher" | "admin";
-  amount: number;
+  amount: number; // Coin amount requested
+  amountINR: number; // Net payout in INR (amount / 10)
   payoutMethod: PayoutMethod;
   payoutDetails: {
     upiId?: string;
@@ -27,6 +28,7 @@ const WithdrawalRequestSchema = new Schema<IWithdrawalRequest>(
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     userRole: { type: String, enum: ["user", "teacher", "admin"], default: "user" },
     amount: { type: Number, required: true, min: 1 },
+    amountINR: { type: Number, default: 0 },
     payoutMethod: { type: String, enum: ["upi", "bank_transfer"], required: true },
     payoutDetails: { type: Schema.Types.Mixed, required: true },
     status: {
