@@ -27,7 +27,7 @@ const WithdrawalRequestSchema = new Schema<IWithdrawalRequest>(
   {
     userId: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     userRole: { type: String, enum: ["user", "teacher", "admin"], default: "user" },
-    amount: { type: Number, required: true, min: 1 },
+    amount: { type: Number, required: true, min: 5000 },
     amountINR: { type: Number, default: 0 },
     payoutMethod: { type: String, enum: ["upi", "bank_transfer"], required: true },
     payoutDetails: { type: Schema.Types.Mixed, required: true },

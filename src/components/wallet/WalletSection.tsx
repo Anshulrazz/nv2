@@ -366,89 +366,50 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
 
       {/* TWO SEPARATE BALANCE CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (CREATORS WITH EARNINGS OR TEACHER/ADMIN) OR BECOME TEACHER CTA */}
-        {userRole === "teacher" || userRole === "admin" || creatorEarnings > 0 ? (
-          <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold shrink-0">
-                    ₹
-                  </div>
-                  <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
-                    Withdrawable Creator Earnings
-                  </span>
+        {/* CARD 1: WITHDRAWABLE CREATOR EARNINGS (OPEN FOR ALL USERS) */}
+        <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="size-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold shrink-0">
+                  ₹
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0 font-bold">
-                  WITHDRAWABLE CASH
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">
+                  Withdrawable Creator Earnings
                 </span>
               </div>
-
-              <div>
-                <span className="text-xs text-text-muted">70% Project &amp; Course Creator Revenue</span>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <h2 className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
-                    {isLoading ? "..." : creatorEarnings.toLocaleString()}
-                  </h2>
-                  <span className="text-xs font-mono text-text-muted uppercase">
-                    Coins (₹{(creatorEarnings / 10).toFixed(2)})
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-[11px] text-text-muted">
-                Only Creator Earnings can be withdrawn to bank/UPI (1 INR = 10 Coins).
+              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20 shrink-0 font-bold">
+                WITHDRAWABLE CASH
               </span>
-              <Button
-                onClick={() => setIsWithdrawModalOpen(true)}
-                disabled={creatorEarnings < 1}
-                className="w-full sm:w-auto h-9 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
-              >
-                Withdraw Cash
-              </Button>
             </div>
-          </div>
-        ) : (
-          <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="size-8 rounded-lg bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
-                    <GraduationCap className="size-4" />
-                  </div>
-                  <span className="text-xs font-bold text-accent-primary uppercase tracking-wider font-mono">
-                    Become a Notexia Teacher
-                  </span>
-                </div>
-                <span className="text-[10px] font-mono text-accent-primary bg-accent-primary/10 px-2.5 py-0.5 rounded-full border border-accent-primary/20 shrink-0 font-bold">
-                  70% REVENUE SHARE
+
+            <div>
+              <span className="text-xs text-text-muted">70% Project &amp; Course Creator Revenue</span>
+              <div className="flex items-baseline gap-2 mt-1">
+                <h2 className="text-2xl sm:text-3xl font-bold font-mono text-text-primary tracking-tight">
+                  {isLoading ? "..." : creatorEarnings.toLocaleString()}
+                </h2>
+                <span className="text-xs font-mono text-text-muted uppercase">
+                  Coins (₹{(creatorEarnings / 10).toFixed(2)})
                 </span>
               </div>
-
-              <div>
-                <h3 className="text-sm font-bold text-text-primary">Publish Courses &amp; Earn Money</h3>
-                <p className="text-xs text-text-secondary mt-1 leading-relaxed">
-                  Earn 70% direct cash payout on every course &amp; research project sold. Apply as an educator in 2 simple steps!
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <span className="text-[11px] text-text-muted">
-                Requires academic qualification or domain expertise.
-              </span>
-              <Button
-                onClick={() => setShowBecomeTeacherModal(true)}
-                className="w-full sm:w-auto h-9 px-4 btn-premium-primary text-xs shrink-0 flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <GraduationCap className="size-4" />
-                <span>Become a Teacher</span>
-              </Button>
             </div>
           </div>
-        )}
+
+          <div className="pt-3 border-t border-border-subtle flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <span className="text-[11px] text-text-muted">
+              Only Creator Earnings can be withdrawn to bank/UPI (1 INR = 10 Coins). Min. withdrawal: <strong>5,000 Coins (₹500)</strong>.
+            </span>
+            <Button
+              onClick={() => setIsWithdrawModalOpen(true)}
+              disabled={creatorEarnings < 5000}
+              title={creatorEarnings < 5000 ? "Minimum 5,000 creator coins required to withdraw" : "Withdraw earnings"}
+              className="w-full sm:w-auto h-9 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-xl transition-all shrink-0 cursor-pointer"
+            >
+              Withdraw Cash
+            </Button>
+          </div>
+        </div>
 
         {/* CARD 2: NOTEXIA ACTIVITY COINS (NON-WITHDRAWABLE) */}
         <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 shadow-sm relative overflow-hidden flex flex-col justify-between space-y-4">
@@ -509,6 +470,35 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
           </div>
         </div>
       </div>
+
+      {/* EDUCATOR / TEACHER APPLICATION BANNER FOR NORMAL USERS */}
+      {userRole === "user" && (
+        <div className="rounded-2xl bg-gradient-to-r from-bg-surface via-bg-surface to-accent-primary/5 border border-border-subtle p-5 sm:p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="size-10 rounded-xl bg-accent-primary/10 border border-accent-primary/20 flex items-center justify-center text-accent-primary shrink-0">
+              <GraduationCap className="size-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <h4 className="text-sm font-bold text-text-primary">Want to earn more? Become a Notexia Teacher</h4>
+                <span className="text-[10px] font-mono text-accent-primary bg-accent-primary/10 px-2 py-0.5 rounded-full border border-accent-primary/20 font-bold">
+                  70% REVENUE SHARE
+                </span>
+              </div>
+              <p className="text-xs text-text-secondary leading-relaxed max-w-xl">
+                Publish video courses, notes, and research projects. Receive direct cash payouts to your bank account or UPI!
+              </p>
+            </div>
+          </div>
+          <Button
+            onClick={() => setShowBecomeTeacherModal(true)}
+            className="h-9 px-4 btn-premium-primary text-xs shrink-0 flex items-center justify-center gap-2 cursor-pointer self-start md:self-auto"
+          >
+            <GraduationCap className="size-4" />
+            <span>Apply as Teacher</span>
+          </Button>
+        </div>
+      )}
 
       {/* Transaction History Ledger */}
       <div className="rounded-2xl bg-bg-surface border border-border-subtle p-5 sm:p-6 space-y-4 shadow-sm">

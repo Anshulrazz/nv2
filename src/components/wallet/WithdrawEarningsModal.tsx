@@ -36,8 +36,6 @@ export function WithdrawEarningsModal({
   isOpen,
   onClose,
   creatorEarnings,
-  userCoins = 0,
-  userRole = "user",
   existingPayoutDetails,
   onSuccess,
 }: WithdrawEarningsModalProps) {
@@ -64,14 +62,21 @@ export function WithdrawEarningsModal({
     setErrorMsg(null);
 
     const withdrawNum = Number(amount);
-    if (isNaN(withdrawNum) || withdrawNum < 1) {
-      setErrorMsg("Please enter a valid withdrawal amount of at least 1 coin.");
+    if (isNaN(withdrawNum) || withdrawNum < 5000) {
+      setErrorMsg("Minimum withdrawal limit is 5,000 coins (₹500.00).");
+      return;
+    }
+
+    if (availableBalance < 5000) {
+      setErrorMsg(
+        `You need a minimum balance of 5,000 creator coins to request a withdrawal (you currently have ${availableBalance.toLocaleString()} coins).`
+      );
       return;
     }
 
     if (withdrawNum > availableBalance) {
       setErrorMsg(
-        `Withdrawal amount exceeds your available creator earnings of ${availableBalance} coins (₹${(availableBalance / 10).toFixed(2)}). Only creator earnings can be withdrawn.`
+        `Withdrawal amount exceeds your available creator earnings of ${availableBalance.toLocaleString()} coins (₹${(availableBalance / 10).toFixed(2)}). Only creator earnings can be withdrawn.`
       );
       return;
     }
@@ -173,9 +178,18 @@ export function WithdrawEarningsModal({
             <ShieldCheck className="size-3.5" /> Earnings &amp; Rate Policy
           </div>
           <p className="text-[11px] text-[#B8AFA6] leading-relaxed">
-            Exchange rate: <strong>1 INR = 10 Coins</strong> (1 Coin = ₹0.10). <strong>Only creator earnings</strong> from Project and Course sales can be withdrawn to cash. Regular wallet coins, activity coins, and referral bonuses are non-withdrawable.
+            Exchange rate: <strong>1 INR = 10 Coins</strong> (1 Coin = ₹0.10). Minimum withdrawal limit: <strong>5,000 Coins (₹500.00)</strong>. <strong>Only creator earnings</strong> from Project and Course sales can be withdrawn to cash. Regular wallet coins, activity coins, and referral bonuses are non-withdrawable.
           </p>
         </div>
+
+        {availableBalance < 5000 && (
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="size-4 shrink-0 text-amber-400" />
+            <span>
+              Minimum withdrawal threshold is <strong>5,000 coins (₹500.00)</strong>. Your current withdrawable creator balance is <strong>{availableBalance.toLocaleString()}</strong> coins (₹{(availableBalance / 10).toFixed(2)}).
+            </span>
+          </div>
+        )}
 
         {isSuccess ? (
           <div className="space-y-5 text-center py-6">
@@ -207,23 +221,25 @@ export function WithdrawEarningsModal({
             {/* WITHDRAW AMOUNT INPUT */}
             <div className="space-y-1.5">
               <label className="text-xs font-mono font-bold text-[#FAFAF8] flex items-center justify-between">
-                <span>WITHDRAWAL AMOUNT (COINS)</span>
-                <button
-                  type="button"
-                  onClick={() => setAmount(String(availableBalance))}
-                  className="text-[10px] text-[#F5B429] hover:underline font-mono"
-                >
-                  Withdraw Max ({availableBalance} Coins)
-                </button>
+                <span>WITHDRAWAL AMOUNT (COINS - MIN. 5,000)</span>
+                {availableBalance >= 5000 && (
+                  <button
+                    type="button"
+                    onClick={() => setAmount(String(availableBalance))}
+                    className="text-[10px] text-[#F5B429] hover:underline font-mono"
+                  >
+                    Withdraw Max ({availableBalance.toLocaleString()} Coins)
+                  </button>
+                )}
               </label>
               <div className="relative">
                 <Input
                   type="number"
-                  min="1"
+                  min="5000"
                   max={availableBalance}
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  placeholder="Enter coin amount (e.g. 500)..."
+                  placeholder="Enter coin amount (min. 5,000 coins / ₹500)..."
                   className="w-full bg-[#16261D] border-[#F3F0E4]/20 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#F0C93B] font-mono"
                 />
               </div>
@@ -318,11 +334,13 @@ export function WithdrawEarningsModal({
             {/* SUBMIT BUTTON */}
             <Button
               type="submit"
-              disabled={isLoading || creatorEarnings < 1}
+              disabled={isLoading || creatorEarnings < 5000}
               className="w-full rounded-full bg-[#F0C93B] hover:bg-[#F0C93B]/90 text-[#2A2118] font-bold text-xs py-3.5 flex items-center justify-center gap-2 font-heading transition-all disabled:opacity-50"
             >
               {isLoading ? (
                 <Loader2 className="size-4 animate-spin" />
+              ) : creatorEarnings < 5000 ? (
+                <span>Min. 5,000 Coins Required to Withdraw</span>
               ) : (
                 <>
                   <span>Request Cash Payout</span>

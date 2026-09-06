@@ -19,9 +19,9 @@ export async function POST(req: Request) {
     const { amount, payoutMethod, payoutDetails } = body || {};
 
     const withdrawAmount = Number(amount);
-    if (isNaN(withdrawAmount) || withdrawAmount < 1) {
+    if (isNaN(withdrawAmount) || withdrawAmount < 5000) {
       return NextResponse.json(
-        { error: "Please enter a valid withdrawal amount of at least 1 coin." },
+        { error: "Minimum withdrawal limit is 5,000 coins (₹500.00)." },
         { status: 400 }
       );
     }
@@ -71,6 +71,20 @@ export async function POST(req: Request) {
 
     // Total available withdrawable balance: ONLY creatorEarnings can be withdrawn
     const availableWithdrawable = creatorEarnings;
+
+    if (availableWithdrawable < 5000) {
+      return NextResponse.json(
+        {
+          error: "MINIMUM_LIMIT_NOT_MET",
+          message: `Minimum withdrawal limit is 5,000 coins (₹500.00). You currently have ${creatorEarnings} withdrawable coins (₹${(creatorEarnings / 10).toFixed(2)}).`,
+          creatorEarnings,
+          coinBalance: user.coins || 0,
+          availableWithdrawable,
+          minRequired: 5000,
+        },
+        { status: 400 }
+      );
+    }
 
     if (withdrawAmount > availableWithdrawable) {
       return NextResponse.json(
