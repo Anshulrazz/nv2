@@ -366,6 +366,7 @@ export default function TeacherDashboardPage() {
                                 <div className="flex items-center gap-1">
                                   <Coins className="size-3 text-accent-primary" />
                                   <span>{cPrice} Coins</span>
+                                  <span className="text-text-muted font-normal">(₹{(cPrice / 10).toFixed(2)})</span>
                                 </div>
                               ) : (
                                 <span className="text-text-muted">Free</span>
@@ -373,7 +374,7 @@ export default function TeacherDashboardPage() {
                             </td>
                             <td className="px-6 py-4 font-mono font-bold text-success">
                               {cPrice > 0 ? (
-                                <span>+{creatorShare} Coins (₹{creatorShare})</span>
+                                <span>+{creatorShare} Coins <span className="font-normal text-success/70">(₹{(creatorShare / 10).toFixed(2)})</span></span>
                               ) : (
                                 <span className="text-text-muted">Free Course</span>
                               )}
@@ -481,14 +482,20 @@ export default function TeacherDashboardPage() {
                         <div>
                           <span className="text-[9px] uppercase text-text-muted block">Price</span>
                           <span className="font-bold text-text-primary">
-                            {cPrice > 0 ? `${cPrice} Coins` : "Free"}
+                            {cPrice > 0 ? `${cPrice}c` : "Free"}
                           </span>
+                          {cPrice > 0 && (
+                            <span className="text-[9px] text-text-muted block">(₹{(cPrice / 10).toFixed(2)})</span>
+                          )}
                         </div>
                         <div>
                           <span className="text-[9px] uppercase text-text-muted block">Your 70%</span>
                           <span className="font-bold text-success">
-                            {cPrice > 0 ? `+${creatorShare}` : "0"}
+                            {cPrice > 0 ? `+${creatorShare}c` : "0"}
                           </span>
+                          {cPrice > 0 && (
+                            <span className="text-[9px] text-success/70 block">(₹{(creatorShare / 10).toFixed(2)})</span>
+                          )}
                         </div>
                         <div>
                           <span className="text-[9px] uppercase text-text-muted block">Modules</span>
