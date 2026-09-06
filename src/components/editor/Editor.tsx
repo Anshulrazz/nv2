@@ -31,6 +31,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TopicGeneratorModal } from "@/components/notes/TopicGeneratorModal";
+import { FeaturePremiumModal } from "@/components/premium/FeaturePremiumModal";
+import { PremiumUpgradeModal } from "@/components/premium/PremiumUpgradeModal";
+import { Pen, Brain, FileCheck } from "lucide-react";
 
 interface EditorProps {
   noteId: string;
@@ -45,6 +48,9 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
   const [isAiWriting, setIsAiWriting] = useState(false);
   const [showAiMenu, setShowAiMenu] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+  const [isUpgradeCheckoutOpen, setIsUpgradeCheckoutOpen] = useState(false);
+  const [premiumErrorMessage, setPremiumErrorMessage] = useState("");
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isMountedRef = useRef(false);
 
@@ -158,7 +164,15 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "AI generation failed");
+      if (!res.ok) {
+        if (data.isPremiumRequired || res.status === 403) {
+          setPremiumErrorMessage(data.error || "Smart AI Notes Writing is an exclusive Premium feature. Upgrade to unlock AI Superpowers!");
+          setIsPremiumModalOpen(true);
+          toast.dismiss(toastId);
+          return;
+        }
+        throw new Error(data.error || "AI generation failed");
+      }
 
       if (action === "continue") {
         editor.chain().focus().insertContent(`<p>${data.result}</p>`).run();
@@ -488,6 +502,51 @@ export function Editor({ noteId, initialTitle, initialContent, onSave }: EditorP
             }
             triggerAutosave(updatedTitle, editor.getJSON());
           }
+        }}
+      />
+
+      {/* Premium Upgrade Modal for AI Notes */}
+      <FeaturePremiumModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
+        onUpgrade={() => {
+          setIsPremiumModalOpen(false);
+          setIsUpgradeCheckoutOpen(true);
+        }}
+        title="Unlock Smart AI Notes"
+        badge="PREMIUM EXCLUSIVE"
+        errorMessage={premiumErrorMessage}
+        features={[
+          {
+            title: "AI Continue Writing",
+            desc: "Let AI draft the next section of your notes based on context.",
+            icon: Pen,
+            badge: "Auto-Draft",
+            color: "from-amber-500/20 to-orange-500/10 text-amber-400 border-amber-500/30",
+          },
+          {
+            title: "Smart Summaries",
+            desc: "Generate concise key-study summaries from your full notes.",
+            icon: Brain,
+            badge: "Quick Recall",
+            color: "from-yellow-500/20 to-amber-500/10 text-yellow-400 border-yellow-500/30",
+          },
+          {
+            title: "Academic Formatter",
+            desc: "Auto-format notes with proper headings, structure, and citations.",
+            icon: FileCheck,
+            badge: "Polish",
+            color: "from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30",
+          },
+        ]}
+      />
+
+      <PremiumUpgradeModal
+        isOpen={isUpgradeCheckoutOpen}
+        onClose={() => setIsUpgradeCheckoutOpen(false)}
+        onSuccess={() => {
+          setIsUpgradeCheckoutOpen(false);
+          toast.success("🎉 Premium active! AI Notes features unlocked.");
         }}
       />
     </div>

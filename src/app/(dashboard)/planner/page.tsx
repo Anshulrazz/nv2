@@ -16,9 +16,12 @@ import {
   ArrowRight,
   ClipboardList,
   ArrowUpRight,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { FeaturePremiumModal } from "@/components/premium/FeaturePremiumModal";
+import { PremiumUpgradeModal } from "@/components/premium/PremiumUpgradeModal";
 
 interface TimelineItem {
   timeSlot: "Morning" | "Afternoon" | "Evening";
@@ -41,6 +44,11 @@ export default function PlannerPage() {
   const [isCommitting, setIsCommitting] = useState<boolean>(false);
   const [isCommitted, setIsCommitted] = useState<boolean>(false);
 
+  // Premium modal states
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState<boolean>(false);
+  const [isUpgradeCheckoutModalOpen, setIsUpgradeCheckoutModalOpen] = useState<boolean>(false);
+  const [premiumErrorMessage, setPremiumErrorMessage] = useState<string>("");
+
   const handleGeneratePlan = async () => {
     setIsPlanning(true);
     setPlanData(null);
@@ -54,12 +62,21 @@ export default function PlannerPage() {
 
       if (!res.ok) {
         let errMessage = "Failed to generate schedule.";
+        let isPremiumRequired = false;
         try {
           const errData = await res.json();
           if (errData.error) errMessage = errData.error;
+          if (errData.isPremiumRequired) isPremiumRequired = true;
         } catch {
           // ignore non-JSON body
         }
+
+        if (isPremiumRequired || res.status === 403) {
+          setPremiumErrorMessage(errMessage);
+          setIsPremiumModalOpen(true);
+          return;
+        }
+
         throw new Error(errMessage);
       }
 
@@ -304,6 +321,55 @@ export default function PlannerPage() {
           )}
         </AnimatePresence>
       </main>
+
+      {/* ── PREMIUM UPGRADE MODALS ── */}
+      <FeaturePremiumModal
+        isOpen={isPremiumModalOpen}
+        onClose={() => setIsPremiumModalOpen(false)}
+        onUpgrade={() => {
+          setIsPremiumModalOpen(false);
+          setIsUpgradeCheckoutModalOpen(true);
+        }}
+        title="Unlock AI Study Planner"
+        badge="PREMIUM EXCLUSIVE"
+        errorMessage={
+          premiumErrorMessage ||
+          "AI Daily Planner is an exclusive Premium feature. Upgrade to Premium to unlock Gemini AI study timelines!"
+        }
+        features={[
+          {
+            title: "Optimized Hourly Schedules",
+            desc: "Personalized morning, afternoon, and evening timelines based on active notes.",
+            icon: Clock,
+            badge: "Time Blocking",
+            color: "from-amber-500/20 to-orange-500/10 text-amber-400 border-amber-500/30",
+          },
+          {
+            title: "Dynamic Task Balancing",
+            desc: "Cross-references your pending assignments, exam countdowns, and revision goals.",
+            icon: Calendar,
+            badge: "Smart Priorities",
+            color: "from-yellow-500/20 to-amber-500/10 text-yellow-400 border-yellow-500/30",
+          },
+          {
+            title: "Direct Checklist Sync",
+            desc: "Commit synthesized tasks to your workspace todo list in a single click.",
+            icon: ClipboardList,
+            badge: "1-Click Sync",
+            color: "from-emerald-500/20 to-teal-500/10 text-emerald-400 border-emerald-500/30",
+          },
+        ]}
+      />
+
+      <PremiumUpgradeModal
+        isOpen={isUpgradeCheckoutModalOpen}
+        onClose={() => setIsUpgradeCheckoutModalOpen(false)}
+        onSuccess={() => {
+          setIsUpgradeCheckoutModalOpen(false);
+          toast.success("🎉 Premium active! You can now generate study plans.");
+          handleGeneratePlan();
+        }}
+      />
     </div>
   );
 }

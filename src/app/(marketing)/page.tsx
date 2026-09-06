@@ -364,7 +364,7 @@ export default function MarketingPage() {
             </Link>
 
             <Link
-              href="/register"
+              href="/signup"
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#F5B429] hover:bg-[#F5941D] text-[#0A0806] font-mono font-bold text-xs uppercase tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(245,180,41,0.25)] hover:scale-[1.02]"
             >
               <span>Get Started</span>
@@ -403,7 +403,7 @@ export default function MarketingPage() {
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href="/signup"
                 className="w-full text-center py-2.5 rounded-xl bg-[#F5B429] text-[#0A0806] text-xs font-mono font-bold uppercase"
               >
                 Get Started Free
@@ -447,7 +447,7 @@ export default function MarketingPage() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4"
             >
               <Link
-                href="/register"
+                href="/signup"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-[#F5B429] hover:bg-[#F5941D] text-[#0A0806] font-bold text-sm font-mono uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(245,180,41,0.3)] hover:scale-105"
               >
                 <span>Start Studying Free</span>
@@ -711,7 +711,7 @@ export default function MarketingPage() {
                 {showGiveaway ? "Hide Campaign Details" : "View Campaign Rules"}
               </button>
               <Link
-                href="/register"
+                href="/signup"
                 className="px-6 py-3 rounded-xl bg-[#F5B429] hover:bg-[#F5941D] text-[#0A0806] text-xs font-mono uppercase tracking-wider font-bold transition-all shadow-[0_0_20px_rgba(245,180,41,0.25)]"
               >
                 Enter Contest
@@ -900,7 +900,7 @@ export default function MarketingPage() {
               </div>
 
               <Link
-                href="/register"
+                href="/signup"
                 className="mt-8 w-full py-3.5 rounded-xl bg-[#0A0806] border border-[#2E2118] hover:border-[#F5B429] text-[#FAFAF8] text-center font-mono text-xs uppercase tracking-wider font-bold transition-all"
               >
                 Sign Up Free
@@ -1021,7 +1021,7 @@ export default function MarketingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
-              href="/register"
+              href="/signup"
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#F5B429] hover:bg-[#F5941D] text-[#0A0806] font-bold text-sm font-mono uppercase tracking-wider transition-all duration-300 shadow-[0_0_35px_rgba(245,180,41,0.35)] hover:scale-105"
             >
               Get Started Free Now

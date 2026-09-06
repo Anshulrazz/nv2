@@ -1,28 +1,56 @@
-# Notexia (notexia.in)
+# Notexia
 
-> Notexia is an AI-powered study platform for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE).
+> Notexia (https://notexia.in) is an all-in-one AI-powered study platform, notes repository, and academic collaboration network built for Indian students, engineering undergraduates, and competitive exam aspirants (JEE, NEET, GATE, CBSE, UPSC).
 
-## Core Capabilities
-- **AI Study Assistant**: AI Notes Generator, PDF Textbook Summarizer, 24/7 Step-by-Step Doubt Solver, AI Revision Planner, and AI Flashcards.
-- **Digital Study Notes**: Rich markdown note-taking with block LaTeX formulas (KaTeX), code blocks, and instant PDF/Markdown exports.
-- **Free Student Tools**: Interactive formula sheets (Physics, Chemistry, Math, CS) and official university CGPA to Percentage converters.
-- **Academic Community**: Public blog publishing platform, student Q&A forums, online study groups, and gamified batch leaderboards.
+## Overview
+Notexia unifies AI study copilot tools, rich digital note-taking with block LaTeX and code syntax highlighting, curated semester and entrance exam revision notes, interactive formula calculators, and a gamified student creator economy. It empowers students to understand difficult concepts faster, prepare for high-stakes Indian examinations, publish verified study materials, and collaborate in peer study groups.
 
-## Key Index & Public Structure
-- [AI Study Tools](https://notexia.in/ai-study-tools): AI notes generator, PDF summarizer, doubt solver, and study planner.
-- [Study Notes Directory](https://notexia.in/study-notes): Free digital study notes for Engineering, JEE, NEET, GATE, and CBSE.
-- [Engineering Notes](https://notexia.in/study-notes/engineering): BTech semester notes for Computer Science, Electrical, Mechanical, and Civil.
-- [JEE Study Notes](https://notexia.in/study-notes/jee): JEE Main & Advanced Physics, Chemistry, and Math notes.
-- [NEET Study Notes](https://notexia.in/study-notes/neet): NCERT line-by-line revision notes for Biology, Physics, and Chemistry.
-- [GATE Exam Notes](https://notexia.in/study-notes/gate): Short revision notes and formula sheets for GATE CS, EC, EE, ME, CE.
-- [CBSE Study Material](https://notexia.in/study-notes/cbse): Class 10 & 12 board exam revision notes and NCERT solutions.
-- [Free Tools Hub](https://notexia.in/tools): Calculators and interactive academic formula sheets.
-- [Formula Sheets](https://notexia.in/tools/formula-sheets): Formula sheets for JEE, NEET, GATE, and BTech.
-- [CGPA Converter](https://notexia.in/tools/cgpa-converter): CGPA to percentage converter for CBSE, VTU, KTU, Mumbai University, Anna University.
-- [Public Blogs](https://notexia.in/blogs): Educational articles and research posts by scholars and educators.
-- [Q&A Forums](https://notexia.in/forums): Academic discussion forum and student doubt resolution threads.
-- [Student Community](https://notexia.in/community): Peer learning hub, online study groups, and scholar collaboration.
-- [Leaderboard](https://notexia.in/leaderboard): Community contribution points and scholar rankings.
+## Core Capabilities & AI Study Suite
+- [AI Study Tools](https://notexia.in/ai-study-tools): Comprehensive AI learning suite featuring note generation, textbook summarization, formula extraction, and exam prep assistants.
+- **AI Notes Generator**: Transforms raw syllabus topics, lecture transcripts, and textbook concepts into structured study notes formatted with headers, definitions, and key takeaways.
+- **PDF Textbook & Document Summarizer**: Upload college textbooks, research papers, or syllabus PDFs to generate concise chapter summaries, key formula sheets, and concept checklists.
+- **24/7 Step-by-Step Doubt Solver**: Resolves complex STEM questions in Physics, Chemistry, Mathematics, and Computer Science with step-by-step solutions and copyable LaTeX math formulas.
+- **AI Revision & Study Planner**: Generates personalized revision schedules, exam countdown timelines, and spaced repetition intervals for competitive exams and university semesters.
+- **AI Flashcards Generator**: Automatically converts notes and textbook chapters into active-recall flashcard decks for quick review.
+- **YouTube Lecture Summarizer**: Extracts timestamps, core concepts, and structured notes directly from educational YouTube lectures.
+- **AI Presentation (PPT) Generator**: Auto-generates academic presentation outlines and slide decks for student projects and classroom seminars.
 
-## Technology Stack
-- Next.js 15 App Router, TypeScript, Tailwind CSS, TipTap, KaTeX, MongoDB Mongoose, Anthropic Claude & Google Gemini AI.
+## Free Digital Study Notes & Exam Directories
+- [Study Notes Hub](https://notexia.in/study-notes): Free library of community and educator-verified notes across Indian engineering curricula and national entrance exams.
+- [Engineering & BTech Notes](https://notexia.in/study-notes/engineering): Semester notes, algorithms, operating systems, DBMS, computer networks, and core branch materials for BTech CSE, IT, ECE, ME, and Civil.
+- [BTech Semester Guides](https://notexia.in/study-notes/btech): University exam revision guides, previous year question patterns, and subject blueprints.
+- [JEE Main & Advanced Notes](https://notexia.in/study-notes/jee): High-yield Physics derivations, Organic Chemistry reaction mechanisms, and Mathematics shortcut formulas for IIT-JEE aspirants.
+- [NEET-UG Revision Notes](https://notexia.in/study-notes/neet): NCERT line-by-line Biology revision summaries, Physics formula charts, and Physical/Inorganic Chemistry reference tables.
+- [GATE Examination Notes](https://notexia.in/study-notes/gate): Short revision notes, engineering mathematics guides, and previous year solved problems for GATE Computer Science, Electronics, Electrical, Mechanical, and Civil branches.
+- [CBSE Board Material](https://notexia.in/study-notes/cbse): Class 10 and Class 12 board exam revision notes, NCERT exemplar solutions, and concept summaries for Science and Mathematics.
+
+## Free Interactive Student Tools & Calculators
+- [Free Tools Directory](https://notexia.in/tools): Collection of free calculators, formula sheets, and academic utilities for students.
+- [Interactive Formula Sheets](https://notexia.in/tools/formula-sheets): Quick-reference LaTeX formula sheets covering Physics, Chemistry, Mathematics, and Computer Science for JEE, NEET, GATE, and BTech.
+- [CGPA to Percentage Converter](https://notexia.in/tools/cgpa-converter): Official conversion formulas and calculators for CBSE Class 10 & 12, VTU, KTU, Mumbai University, Anna University, SPPU, and standard 10-point scale universities.
+
+## Courses, Community & Creator Ecosystem
+- [Verified Courses & Masterclasses](https://notexia.in/courses): Structured academic courses, programming bootcamps, and exam preparation tracks led by educators and top student creators.
+- [Academic Blogs & Research](https://notexia.in/blogs): Articles, study strategies, exam analysis, and academic writing published by scholars and educators.
+- [Student Q&A Forums](https://notexia.in/forums): Peer discussion forums for homework doubts, code debugging, and competitive exam strategies.
+- [Peer Community](https://notexia.in/community): Collaborative study groups, batch channels, and academic networking.
+- [Contributor Leaderboard](https://notexia.in/leaderboard): Gamified ranking system tracking community contributions, answered doubts, and published notes with reward programs and periodic tech giveaways for top scholars.
+- **Coin Economy & Creator Monetization**: Transparent tokenized economy (1 INR = 10 Coins) where student authors and educators earn 70% revenue share on premium resources with direct UPI and bank account payouts.
+
+## Technology Stack & Platform Architecture
+- **Frontend Framework**: Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS, Lucide Icons, GSAP animations.
+- **Rich Text & Math Engine**: TipTap headless editor, KaTeX block and inline LaTeX formula rendering, syntax-highlighted code blocks.
+- **Backend & Database**: Next.js Server Components, Route Handlers, MongoDB via Mongoose ODM.
+- **Authentication**: Auth.js (NextAuth v5) supporting Credentials and Google OAuth.
+- **AI Integrations**: Anthropic Claude (Claude 3.5 Sonnet) and Google Gemini models for deep reasoning and STEM problem-solving.
+- **Payments**: Razorpay payment gateway integration for coins, course purchases, and subscription tiers.
+
+## Optional
+- [About Notexia](https://notexia.in/about): Mission, vision, and team behind the platform.
+- [Contact Support](https://notexia.in/contact): Support email, developer contacts, and student assistance.
+- [Terms of Service](https://notexia.in/terms): Platform terms and academic fair-use guidelines.
+- [Privacy Policy](https://notexia.in/privacy): Student data protection, encryption, and privacy commitments.
+- [Security Policy](https://notexia.in/security): Platform security protocols and data safeguard standards.
+- [Community Guidelines](https://notexia.in/community-guidelines): Academic integrity rules and community standards.
+- [Refund Policy](https://notexia.in/refund-policy): Transparent refund and dispute resolution policy.
+- [Sitemap](https://notexia.in/sitemap.xml): Complete machine-readable XML sitemap.

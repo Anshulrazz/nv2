@@ -24,8 +24,11 @@ import {
   Flame,
   Search,
   ArrowRight,
+  Crown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RevisionPremiumModal } from "@/components/premium/RevisionPremiumModal";
+import { PremiumUpgradeModal } from "@/components/premium/PremiumUpgradeModal";
 
 // Structured interfaces matching API response schema
 interface CheatSheetConcept {
@@ -89,6 +92,11 @@ export default function RevisionPage() {
 
   // Takeaways checklist state
   const [checkedHighlights, setCheckedHighlights] = useState<Record<number, boolean>>({});
+
+  // Premium modal states
+  const [isRevisionPremiumModalOpen, setIsRevisionPremiumModalOpen] = useState<boolean>(false);
+  const [isUpgradeCheckoutModalOpen, setIsUpgradeCheckoutModalOpen] = useState<boolean>(false);
+  const [premiumErrorMessage, setPremiumErrorMessage] = useState<string>("");
 
   useEffect(() => {
     fetchNotes();
@@ -157,12 +165,21 @@ export default function RevisionPage() {
 
       if (!res.ok) {
         let errMessage = "Generation request failed.";
+        let isPremiumRequired = false;
         try {
           const errData = await res.json();
           if (errData.error) errMessage = errData.error;
+          if (errData.isPremiumRequired) isPremiumRequired = true;
         } catch {
           // ignore non-JSON body
         }
+
+        if (isPremiumRequired || res.status === 403) {
+          setPremiumErrorMessage(errMessage);
+          setIsRevisionPremiumModalOpen(true);
+          return;
+        }
+
         throw new Error(errMessage);
       }
 
@@ -373,19 +390,31 @@ export default function RevisionPage() {
           </p>
         </div>
 
-        {/* Quick Stats Chips */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="px-4 py-2.5 rounded-xl bg-bg-elevated border border-border-subtle text-center min-w-[100px]">
-            <div className="text-[10px] text-text-muted uppercase font-mono font-bold">Notes Synced</div>
-            <div className="text-base font-bold text-text-primary font-mono">{notes.filter((n) => !n.isTrashed).length}</div>
-          </div>
-          <div className="px-4 py-2.5 rounded-xl bg-bg-elevated border border-accent-primary/20 text-center min-w-[100px]">
-            <div className="text-[10px] text-text-muted uppercase font-mono font-bold">XP Reward</div>
-            <div className="text-base font-bold text-accent-primary font-mono flex items-center justify-center gap-1">
-              <Flame className="size-4 text-accent-secondary" /> +5 XP
+          {/* Quick Stats Chips */}
+          <div className="flex items-center gap-3 shrink-0 flex-wrap">
+            <button
+              onClick={() => {
+                setPremiumErrorMessage(
+                  "Revision Generator (Cheat Sheets, Flashcards, Quizzes) is an exclusive Premium feature. Upgrade to Premium to unlock AI Revision!"
+                );
+                setIsRevisionPremiumModalOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-[#F5B429]/15 border border-[#F5B429]/30 text-center hover:bg-[#F5B429]/25 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold text-[#F5B429] shadow-[0_0_15px_rgba(245,180,41,0.1)]"
+            >
+              <Crown className="size-3.5" />
+              <span>Premium AI</span>
+            </button>
+            <div className="px-4 py-2.5 rounded-xl bg-bg-elevated border border-border-subtle text-center min-w-[100px]">
+              <div className="text-[10px] text-text-muted uppercase font-mono font-bold">Notes Synced</div>
+              <div className="text-base font-bold text-text-primary font-mono">{notes.filter((n) => !n.isTrashed).length}</div>
+            </div>
+            <div className="px-4 py-2.5 rounded-xl bg-bg-elevated border border-accent-primary/20 text-center min-w-[100px]">
+              <div className="text-[10px] text-text-muted uppercase font-mono font-bold">XP Reward</div>
+              <div className="text-base font-bold text-accent-primary font-mono flex items-center justify-center gap-1">
+                <Flame className="size-4 text-accent-secondary" /> +5 XP
+              </div>
             </div>
           </div>
-        </div>
       </header>
 
       {/* ── 2-COLUMN MAIN WORKSPACE GRID ── */}
@@ -915,6 +944,27 @@ export default function RevisionPage() {
           </div>
         </section>
       </div>
+
+      {/* ── REVISION PREMIUM EXCLUSIVE MODAL & CHECKOUT ── */}
+      <RevisionPremiumModal
+        isOpen={isRevisionPremiumModalOpen}
+        onClose={() => setIsRevisionPremiumModalOpen(false)}
+        onUpgrade={() => {
+          setIsRevisionPremiumModalOpen(false);
+          setIsUpgradeCheckoutModalOpen(true);
+        }}
+        errorMessage={premiumErrorMessage || undefined}
+      />
+
+      <PremiumUpgradeModal
+        isOpen={isUpgradeCheckoutModalOpen}
+        onClose={() => setIsUpgradeCheckoutModalOpen(false)}
+        onSuccess={() => {
+          setIsUpgradeCheckoutModalOpen(false);
+          toast.success("🎉 Premium active! You can now generate revision materials.");
+          handleGenerateStack();
+        }}
+      />
     </div>
   );
 }

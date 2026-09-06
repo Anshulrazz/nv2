@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth;
   const { nextUrl } = req;
 
@@ -21,7 +21,25 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/blogs") ||
     nextUrl.pathname.startsWith("/bookmarks") ||
     nextUrl.pathname.startsWith("/leaderboard") ||
-    nextUrl.pathname.startsWith("/admin");
+    nextUrl.pathname.startsWith("/admin") ||
+    nextUrl.pathname.startsWith("/revision") ||
+    nextUrl.pathname.startsWith("/planner") ||
+    nextUrl.pathname.startsWith("/projects") ||
+    nextUrl.pathname.startsWith("/certificates") ||
+    nextUrl.pathname.startsWith("/community") ||
+    nextUrl.pathname.startsWith("/courses") ||
+    nextUrl.pathname.startsWith("/events") ||
+    nextUrl.pathname.startsWith("/host") ||
+    nextUrl.pathname.startsWith("/messages") ||
+    nextUrl.pathname.startsWith("/notifications") ||
+    nextUrl.pathname.startsWith("/ppt") ||
+    nextUrl.pathname.startsWith("/prototype") ||
+    nextUrl.pathname.startsWith("/referrals") ||
+    nextUrl.pathname.startsWith("/research") ||
+    nextUrl.pathname.startsWith("/teacher") ||
+    nextUrl.pathname.startsWith("/user") ||
+    nextUrl.pathname.startsWith("/wallet") ||
+    nextUrl.pathname.startsWith("/youtube-summarizer");
 
   if (isDashboardPage) {
     if (!isLoggedIn) {
@@ -37,6 +55,8 @@ export default auth((req) => {
 
   return NextResponse.next();
 });
+
+export default proxy;
 
 export const config = {
   matcher: [
