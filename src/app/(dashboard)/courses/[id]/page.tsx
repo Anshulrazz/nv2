@@ -195,6 +195,7 @@ export default function CourseViewerPage() {
 
       toast.success(data.message || "Course unlocked successfully! 🎉");
       setShowUnlockModal(false);
+      setUserCoins(data.studentCoins ?? userCoins - finalCoursePrice);
       fetchCourseData();
     } catch (err) {
       console.error(err);
@@ -585,7 +586,7 @@ export default function CourseViewerPage() {
             <div className="p-4 rounded-xl bg-[#0A0806] border border-[#241811] max-w-sm mx-auto space-y-2 font-mono text-xs">
               <div className="flex justify-between text-[#8A8078]">
                 <span>Course Price:</span>
-                <span className="font-bold text-[#F5B429]">{basePrice} Coins</span>
+                <span className="font-bold text-[#F5B429]">{basePrice} Coins <span className="text-[#8A8078] font-normal">(₹{(basePrice / 10).toFixed(2)})</span></span>
               </div>
               <div className="flex justify-between text-[#8A8078]">
                 <span>Instructor Revenue Share:</span>
@@ -595,12 +596,24 @@ export default function CourseViewerPage() {
                 <span>Platform Fee:</span>
                 <span className="text-[#8A8078]">30%</span>
               </div>
+              <div className="flex justify-between pt-1 border-t border-[#241811]">
+                <span className="text-[#8A8078]">Your Balance:</span>
+                <span className={userCoins >= basePrice ? "text-emerald-400 font-bold" : "text-[#EF4444] font-bold"}>
+                  {userCoins} Coins <span className="font-normal">(₹{(userCoins / 10).toFixed(2)})</span>
+                </span>
+              </div>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              {userCoins < basePrice && (
+                <p className="text-[10px] font-mono text-[#EF4444] text-center w-full">
+                  ⚠ You need {basePrice - userCoins} more coins (₹{((basePrice - userCoins) / 10).toFixed(2)}) to unlock this course.
+                </p>
+              )}
               <Button
                 onClick={() => setShowUnlockModal(true)}
-                className="btn-premium-primary text-xs h-11 px-8 rounded-xl"
+                disabled={userCoins < basePrice}
+                className="btn-premium-primary text-xs h-11 px-8 rounded-xl disabled:opacity-50"
               >
                 <Lock className="size-3.5 mr-2" /> Unlock Full Track ({basePrice} Coins)
               </Button>
@@ -609,7 +622,7 @@ export default function CourseViewerPage() {
                 onClick={() => setShowCoinConverter(true)}
                 className="bg-[#241811] hover:bg-[#2E2118] text-[#FAFAF8] border border-[#2E2118] text-xs h-11 px-6 rounded-xl"
               >
-                <Coins className="size-3.5 mr-2 text-[#F5B429]" /> Convert / Buy Coins
+                <Coins className="size-3.5 mr-2 text-[#F5B429]" /> {userCoins < basePrice ? "Buy More Coins" : "Convert / Buy Coins"}
               </Button>
             </div>
           </div>
@@ -854,7 +867,7 @@ export default function CourseViewerPage() {
             <div className="p-4 rounded-xl bg-[#0A0806] border border-[#241811] space-y-2 font-mono text-xs">
               <div className="flex justify-between text-[#8A8078]">
                 <span>Base Price:</span>
-                <span className="text-[#FAFAF8] font-bold">{basePrice} Coins</span>
+                <span className="text-[#FAFAF8] font-bold">{basePrice} Coins <span className="font-normal">(₹{(basePrice / 10).toFixed(2)})</span></span>
               </div>
               {appliedCoupon && (
                 <div className="flex justify-between text-emerald-400 font-bold">
@@ -864,12 +877,23 @@ export default function CourseViewerPage() {
               )}
               <div className="flex justify-between text-[#F5B429] font-bold pt-1 border-t border-[#241811]">
                 <span>Final Price:</span>
-                <span>{finalCoursePrice} Coins</span>
+                <span>{finalCoursePrice} Coins <span className="text-[#F5B429]/70 font-normal">(₹{(finalCoursePrice / 10).toFixed(2)})</span></span>
               </div>
               <div className="flex justify-between text-[10px] text-[#8A8078] pt-1">
                 <span>70% Instructor Payout:</span>
                 <span className="text-emerald-400">{Math.floor(finalCoursePrice * 0.7)} Coins</span>
               </div>
+              <div className="flex justify-between text-[10px] pt-1 border-t border-[#241811]">
+                <span className="text-[#8A8078]">Your Balance:</span>
+                <span className={userCoins >= finalCoursePrice ? "text-emerald-400 font-bold" : "text-[#EF4444] font-bold"}>
+                  {userCoins} Coins <span className="font-normal">(₹{(userCoins / 10).toFixed(2)})</span>
+                </span>
+              </div>
+              {userCoins < finalCoursePrice && (
+                <p className="text-[10px] text-[#EF4444] pt-0.5">
+                  ⚠ Need {finalCoursePrice - userCoins} more coins (₹{((finalCoursePrice - userCoins) / 10).toFixed(2)})
+                </p>
+              )}
             </div>
 
             {/* Coupon Input */}
@@ -900,13 +924,15 @@ export default function CourseViewerPage() {
             <div className="space-y-2 pt-2">
               <Button
                 onClick={handleUnlockCourse}
-                disabled={isEnrolling}
-                className="btn-premium-primary w-full text-xs h-11 rounded-xl"
+                disabled={isEnrolling || userCoins < finalCoursePrice}
+                className="btn-premium-primary w-full text-xs h-11 rounded-xl disabled:opacity-50"
               >
                 {isEnrolling ? (
                   <Loader2 className="size-4 animate-spin" />
+                ) : userCoins < finalCoursePrice ? (
+                  `Insufficient Coins (Need ${finalCoursePrice - userCoins} more)`
                 ) : (
-                  `Confirm & Unlock Track (${finalCoursePrice} Coins)`
+                  `Confirm & Unlock Track (${finalCoursePrice} Coins · ₹${(finalCoursePrice / 10).toFixed(2)})`
                 )}
               </Button>
               <Button
@@ -917,7 +943,7 @@ export default function CourseViewerPage() {
                 }}
                 className="w-full text-xs text-[#8A8078] hover:text-[#FAFAF8]"
               >
-                Need Coins? Open Coin Converter
+                {userCoins < finalCoursePrice ? "⚡ Buy Coins to Unlock" : "Need More Coins? Open Coin Converter"}
               </Button>
             </div>
           </div>

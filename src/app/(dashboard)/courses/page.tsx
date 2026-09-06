@@ -14,6 +14,7 @@ import {
   BookOpen,
   Coins,
   X,
+  CheckCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -221,6 +222,7 @@ export default function CoursesPage() {
           {filteredCourses.map((course, idx) => {
             const coursePrice = course.price || 0;
             const isFree = coursePrice === 0;
+            const isEnrolled = course.isEnrolled;
 
             return (
               <motion.div
@@ -247,9 +249,13 @@ export default function CoursesPage() {
                   {/* Gradient bottom overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#150F0B] via-transparent to-transparent pointer-events-none" />
 
-                  {/* Price Badge */}
+                  {/* Price / Enrollment Badge */}
                   <div className="absolute top-3 right-3 z-10">
-                    {isFree ? (
+                    {isEnrolled ? (
+                      <span className="bg-emerald-500/20 backdrop-blur-md text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-emerald-500/30 uppercase flex items-center gap-1">
+                        <CheckCircle className="size-3" /> ENROLLED
+                      </span>
+                    ) : isFree ? (
                       <span className="bg-emerald-500/20 backdrop-blur-md text-emerald-400 text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-emerald-500/30 uppercase">
                         FREE TRACK
                       </span>
@@ -257,6 +263,7 @@ export default function CoursesPage() {
                       <span className="bg-[#150F0B]/90 backdrop-blur-md text-[#F5B429] text-[10px] font-mono font-bold px-2.5 py-1 rounded-full border border-[#F5B429]/30 uppercase flex items-center gap-1">
                         <Coins className="size-3 text-[#F5B429]" />
                         {coursePrice} Coins
+                        <span className="text-[#F5B429]/60 font-normal">&middot;₹{(coursePrice / 10).toFixed(0)}</span>
                       </span>
                     )}
                   </div>
@@ -297,11 +304,19 @@ export default function CoursesPage() {
                   {/* Card Action */}
                   <div className="pt-2 border-t border-[#241811]/60">
                     <Link href={`/courses/${course._id}`} className="block w-full">
-                      <Button className="w-full rounded-xl bg-[#241811] hover:bg-[#F5B429] text-[#FAFAF8] hover:text-[#0A0806] border border-[#2E2118] hover:border-[#F5B429] font-semibold text-xs h-10 flex items-center justify-center gap-1.5 transition-all duration-200">
+                      <Button
+                        className={`w-full rounded-xl font-semibold text-xs h-10 flex items-center justify-center gap-1.5 transition-all duration-200 ${
+                          isEnrolled
+                            ? "bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/30 hover:border-emerald-500"
+                            : "bg-[#241811] hover:bg-[#F5B429] text-[#FAFAF8] hover:text-[#0A0806] border border-[#2E2118] hover:border-[#F5B429]"
+                        }`}
+                      >
                         <span>
-                          {isFree
+                          {isEnrolled
+                            ? "View Course"
+                            : isFree
                             ? "Start Free Track"
-                            : `View & Unlock (${coursePrice} Coins)`}
+                            : `View & Unlock (${coursePrice} Coins · ₹${(coursePrice / 10).toFixed(0)})`}
                         </span>
                         <ArrowUpRight className="size-3.5" />
                       </Button>

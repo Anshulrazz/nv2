@@ -99,13 +99,22 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
 
     const studentWallet = await getOrCreateUserWallet(student._id);
 
-    if (studentWallet.balance < finalPrice || (student.coins || 0) < finalPrice) {
+    // Sync wallet balance with user.coins (authoritative source)
+    if (studentWallet.balance !== (student.coins || 0)) {
+      studentWallet.balance = student.coins || 0;
+      await studentWallet.save();
+    }
+
+    const currentCoins = student.coins || 0;
+    if (currentCoins < finalPrice) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_BALANCE",
-          message: `Insufficient coins balance. ${finalPrice} coins required.`,
+          message: `Insufficient coins balance. You need ${finalPrice} coins (₹${(finalPrice / 10).toFixed(2)}) but only have ${currentCoins} coins (₹${(currentCoins / 10).toFixed(2)}).`,
           requiredCoins: finalPrice,
-          currentBalance: studentWallet.balance,
+          requiredINR: (finalPrice / 10).toFixed(2),
+          currentBalance: currentCoins,
+          currentINR: (currentCoins / 10).toFixed(2),
         },
         { status: 400 }
       );

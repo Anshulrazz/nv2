@@ -48,13 +48,22 @@ export const POST = auth(async function POST(req, context) {
 
     const buyerWallet = await getOrCreateUserWallet(buyer._id);
 
-    if ((buyer.coins || 0) < project.cost || buyerWallet.balance < project.cost) {
+    // Sync wallet balance with user.coins (authoritative source)
+    if (buyerWallet.balance !== (buyer.coins || 0)) {
+      buyerWallet.balance = buyer.coins || 0;
+      await buyerWallet.save();
+    }
+
+    const currentCoins = buyer.coins || 0;
+    if (currentCoins < project.cost) {
       return NextResponse.json(
         {
           error: "INSUFFICIENT_BALANCE",
-          message: `Insufficient Coins balance. ${project.cost} coins required to unlock.`,
+          message: `Insufficient coins balance. You need ${project.cost} coins (₹${(project.cost / 10).toFixed(2)}) but only have ${currentCoins} coins (₹${(currentCoins / 10).toFixed(2)}).`,
           requiredCoins: project.cost,
-          currentBalance: buyerWallet.balance,
+          requiredINR: (project.cost / 10).toFixed(2),
+          currentBalance: currentCoins,
+          currentINR: (currentCoins / 10).toFixed(2),
         },
         { status: 400 }
       );

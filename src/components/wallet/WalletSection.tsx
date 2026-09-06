@@ -468,13 +468,13 @@ export function WalletSection({ onCoinsUpdated }: { onCoinsUpdated?: () => void 
             </div>
 
             <div>
-              <span className="text-xs text-text-muted">Referrals, Signups &amp; Activity Tokens</span>
+              <span className="text-xs text-text-muted">Referrals, Signups &amp; Activity Tokens • Spendable on Courses &amp; Projects</span>
               <div className="flex flex-wrap items-center gap-2.5 mt-1">
                 <h2 className="text-2xl sm:text-3xl font-bold font-mono text-accent-primary tracking-tight">
                   {isLoading ? "..." : balance.toLocaleString()}
                 </h2>
                 <span className="text-xs font-mono text-text-muted uppercase">
-                  Coins
+                  Coins <span className="normal-case text-text-muted/70">(≈₹{isLoading ? "..." : (balance / 10).toFixed(2)})</span>
                 </span>
 
                 <button
